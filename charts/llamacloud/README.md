@@ -6,7 +6,7 @@ The Helm Chart for installing LlamaCloud in Kubernetes. Deplying Self-Hosted Lla
 
 ```sh
 # Add the LlamaIndex Helm Chart Repository
-helm repo add llamaindex https://llamaindex-ai.github.io/helm-charts
+helm repo add llamaindex https://run-llama.github.io/helm-charts
 
 # (Optional) Update repo information
 helm repo update
