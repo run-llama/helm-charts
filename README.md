@@ -15,7 +15,7 @@ LlamaIndex Helm Charts is a collection of charts for deploying [llamaindex.ai](h
 
 ```sh
 # Add helm repository
-helm repo add llamaindex https://llamaindex-ai.github.io/helm-charts
+helm repo add llamaindex https://run-llama.github.io/helm-charts/
 
 # (Optional) Update your helm local cache
 helm repo update
