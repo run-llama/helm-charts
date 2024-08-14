@@ -1,0 +1,161 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "llamacloud.fullname" . }}-{{ .Values.jobsWorker.name }}
+  labels:
+    {{- include "llamacloud.labels" . | nindent 4 }}
+    {{- with.Values.jobsWorker.labels }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- include "llamacloud.annotations" . | nindent 4 }}
+    {{- with.Values.jobsWorker.annotations }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  {{- if not .Values.jobsWorker.autoscaling.enabled }}
+  replicas: {{ .Values.jobsWorker.replicas }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "llamacloud.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: {{ include "llamacloud.fullname" . }}-{{ .Values.jobsWorker.name }}
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      {{- with .Values.jobsWorker.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        app.kubernetes.io/component: {{ include "llamacloud.fullname" . }}-{{ .Values.jobsWorker.name }}
+        {{- include "llamacloud.labels" . | nindent 8 }}
+        {{- with .Values.jobsWorker.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "jobsWorker.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.jobsWorker.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Values.jobsWorker.name | default "jobs-worker" }}
+          securityContext:
+            {{- toYaml .Values.jobsWorker.securityContext | nindent 12 }}
+          image: "{{ .Values.jobsWorker.image.repository }}:{{ .Values.jobsWorker.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.jobsWorker.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.jobsWorker.containerPort }}
+              protocol: TCP
+          command: ["poetry", "run", "start_consumer"]
+          livenessProbe:
+            {{- toYaml .Values.jobsWorker.livenessProbe | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.jobsWorker.readinessProbe | nindent 12 }}
+          startupProbe:
+            {{- toYaml .Values.jobsWorker.startupProbe | nindent 12 }}
+          resources:
+            {{- toYaml .Values.jobsWorker.resources | nindent 12 }}
+          env:
+          - name: LLAMACLOUD_LICENSE_KEY
+            valueFrom:
+              secretKeyRef:
+                {{- if .Values.global.config.existingLicenseKeySecret }}
+                name: {{ .Values.global.config.existingLicenseKeySecret }}
+                {{- else }}
+                name: {{ include "llamacloud.fullname" . }}-license-key
+                {{- end }}
+                key: llamacloud-license-key
+          {{- if .Values.postgresql.enabled }}
+          - name: DATABASE_HOST
+            value: {{ printf "%s-%s" .Release.Name "postgresql" | quote}}
+          - name: DATABASE_PORT
+            value: "5432"
+          - name: DATABASE_NAME
+            value: {{ .Values.postgresql.auth.database | quote }}
+          - name: DATABASE_USER
+            value: {{ .Values.postgresql.auth.username | quote }}
+          - name: DATABASE_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ printf "%s-%s" .Release.Name "postgresql" }}
+                key: password
+          {{- end }}
+          - name: JOB_SERVICE_URL
+            value: {{ printf "http://%s-%s:%d" (include "llamacloud.fullname" .) .Values.jobsService.name (.Values.jobsService.service.port | int ) | quote }}
+          {{- if .Values.rabbitmq.enabled }}
+          - name: JOB_QUEUE_ENDPOINT
+            value: {{ printf "amqp://%s-rabbitmq:5672" (include "llamacloud.fullname" .) | quote }}
+          - name: JOB_QUEUE_USERNAME
+            value: "user"
+          - name: JOB_QUEUE_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "llamacloud.fullname" . }}-rabbitmq
+                key: rabbitmq-password
+          {{- end }}
+          {{- if .Values.mongodb.enabled }}
+          - name: MONGODB_HOST
+            value: {{ printf "%s-%s" .Release.Name (default "mongodb" .Values.mongodb.nameOverride) | quote }}
+          - name: MONGODB_PORT
+            value: {{ .Values.mongodb.service.port | default "27017" | quote }}
+          - name: MONGODB_USER
+            value: {{ .Values.mongodb.auth.rootUser | quote }}
+          - name: MONGODB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ printf "%s-%s" .Release.Name (default "mongodb" .Values.mongodb.nameOverride) | quote }}
+                key: mongodb-root-password
+          {{- end }}
+          {{- if .Values.redis.enabled }}
+          - name: REDIS_HOST
+            value: {{ printf "%s-redis-master" (include "llamacloud.fullname" .) | quote }}
+          - name: REDIS_PORT
+            value: "6379"
+          {{- end }}
+          {{- with .Values.jobsWorker.extraEnvVariables }}
+          {{- toYaml . | nindent 10 }}
+          {{- end }}
+          envFrom:
+          - configMapRef:
+              name: {{ include "llamacloud.fullname" . }}-{{ .Values.jobsWorker.name }}-config
+          {{- if .Values.backend.config.existingAwsSecretName }}
+          - secretRef:
+              name: {{ .Values.backend.config.existingAwsSecretName }}
+          {{- end }}
+          {{- if not .Values.jobsWorker.externalSecrets.enabled }}
+          - secretRef:
+              name: {{ include "llamacloud.fullname" . }}-{{ .Values.jobsWorker.name }}-secret
+          {{- else }}
+          {{- range .Values.jobsWorker.externalSecrets.secrets }}
+          - secretRef:
+              name: {{ . }}
+          {{- end }}
+          {{- end }}
+          {{- with .Values.jobsWorker.volumeMounts }}
+          volumeMounts:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- with .Values.jobsWorker.volumes }}
+      volumes:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.jobsWorker.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.jobsWorker.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.jobsWorker.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

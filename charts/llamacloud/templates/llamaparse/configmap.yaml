@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "llamacloud.fullname" . }}-{{ .Values.llamaParse.name }}-config
+  labels:
+    {{- include "llamacloud.labels" . | nindent 4 }}
+  annotations:
+    {{- include "llamacloud.annotations" . | nindent 4 }}
+data:
+  BYOC_MODE_ENABLED: "true"
+  DEBUG_MODE: {{ .Values.llamaParse.config.debugMode | default false | quote }}
+  MAX_PDF_PAGES: {{ .Values.llamaParse.config.maxPdfPages | default 1200 | quote }}
+  JOB_SERVICE_URL: {{ printf "http://%s-%s:%d" (include "llamacloud.fullname" .) .Values.jobsService.name (.Values.jobsService.service.port | int) | quote }}
+  OCR_SERVER_URL: {{ printf "http://%s-%s:%d/ocr" (include "llamacloud.fullname" .) .Values.llamaParseOcr.name (.Values.llamaParseOcr.service.port | int) | quote }}
+  TRACKING_SERVICE_URL: {{ printf "http://%s-%s:%d" (include "llamacloud.fullname" .) .Values.usage.name (.Values.usage.service.port | int) | quote }}
+  S3_UPLOAD_BUCKET: {{ .Values.llamaParse.config.s3UploadBucket }}
+  S3_OUTPUT_BUCKET: {{ .Values.llamaParse.config.s3OutputBucket }}
+  S3_OUTPUT_BUCKET_TEMP: {{ .Values.llamaParse.config.s3OutputBucketTemp }}
+  {{- if .Values.s3proxy.enabled }}
+  S3_ENDPOINT_URL: {{ printf "http://%s-%s:%d" (include "llamacloud.fullname" .) .Values.s3proxy.name (.Values.s3proxy.service.port | int) | quote }}
+  {{- end }}

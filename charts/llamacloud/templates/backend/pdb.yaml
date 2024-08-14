@@ -1,0 +1,14 @@
+{{- if .Values.backend.podDisruptionBudget.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "llamacloud.fullname" . }}-{{ .Values.backend.name}}
+spec:
+  {{- if .Values.backend.podDisruptionBudget.maxUnavailable }}
+  maxUnavailable: {{ .Values.backend.podDisruptionBudget.maxUnavailable }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: {{ include "llamacloud.fullname" . }}-{{ .Values.backend.name }}
+{{- end }}
+  

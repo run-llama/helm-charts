@@ -1,0 +1,32 @@
+{{- if and .Values.s3proxy.enabled .Values.s3proxy.autoscaling.enabled }}
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "llamacloud.fullname" . }}-{{ .Values.s3proxy.name }}
+  labels:
+    {{- include "llamacloud.labels" . | nindent 4 }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "llamacloud.fullname" . }}-{{ .Values.s3proxy.name }}
+  minReplicas: {{ .Values.s3proxy.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.s3proxy.autoscaling.maxReplicas }}
+  metrics:
+    {{- if .Values.s3proxy.autoscaling.targetCPUUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.s3proxy.autoscaling.targetCPUUtilizationPercentage }}
+    {{- end }}
+    {{- if .Values.s3proxy.autoscaling.targetMemoryUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.s3proxy.autoscaling.targetMemoryUtilizationPercentage }}
+    {{- end }}
+{{- end }}

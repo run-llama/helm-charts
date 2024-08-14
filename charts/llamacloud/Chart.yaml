@@ -1,0 +1,49 @@
+apiVersion: v2
+name: llamacloud
+description: A Helm chart to deploy LlamaCloud and all of its necessary services.
+
+home: https://github.com/run-llama/helm-charts
+
+sources:
+- https://github.com/run-llama/helm-charts
+- https://github.com/bitnami/charts/tree/main/bitnami/postgresql
+- https://github.com/bitnami/charts/tree/main/bitnami/mongodb
+- https://github.com/bitnami/charts/tree/main/bitnami/rabbitmq
+- https://github.com/bitnami/charts/tree/main/bitnami/redis
+
+dependencies:
+- name: postgresql
+  version: 15.5.17
+  repository: oci://registry-1.docker.io/bitnamicharts
+  condition: postgresql.enabled
+- name: mongodb
+  version: 15.6.13
+  repository: oci://registry-1.docker.io/bitnamicharts
+  condition: mongodb.enabled
+- name: rabbitmq
+  version: 14.5.0
+  repository: oci://registry-1.docker.io/bitnamicharts
+  condition: rabbitmq.enabled
+- name: redis
+  version: 19.6.2
+  repository: oci://registry-1.docker.io/bitnamicharts
+  condition: redis.enabled
+
+maintainers:
+- name: Jerry Liu
+  email: jerry@runllama.ai
+  url: https://github.com/jerryjliu
+- name: Simon Suo
+  email: simon@runllama.ai
+  url: https://github.com/Disiok
+- name: Luke Chui
+  email: luke@runllam.ai
+  url: https://github.com/epicchewy
+
+keywords:
+- llamaindex
+- llamacloud
+- rag
+
+version: 0.1.0
+appVersion: "0.1.0"

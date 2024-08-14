@@ -1,0 +1,1379 @@
+## For more information, please refer to the README of this chart or the official LlamaCloud Documentation.
+## Ref: https://docs.cloud.llamaindex.ai/
+
+## @section Global Configuration
+global:
+  ## @param global.cloudProvider Cloud provider where the chart is deployed in.
+  ## Supported values: aws, azure, gcp
+  cloudProvider: aws
+
+  ## @param global.imagePullSecrets Global Docker registry secret names as an array
+  ## imagePullSecrets:
+  ##   - name: myRegistryKeySecretName
+  ##
+  imagePullSecrets: []
+
+  ## @param global.storageClass Storage class to use for dynamic provisioning
+  storageClass: ""
+
+  ## Global configuration for all components
+  config:
+    ## @param global.config.licenseKey License key for all components
+    ## @param global.config.existingLicenseKeySecret Name of the secret to use for the license key
+    licenseKey: ""
+    existingLicenseKeySecret: ""
+
+    ## @param global.config.awsAccessKeyId AWS Access Key ID
+    ## @param global.config.awsSecretAccessKey AWS Secret Access Key
+    ## @param global.config.existingAwsSecretName Name of the existing secret to use for AWS credentials
+    ## If global.cloudProvider is set to "aws", these values are required
+    awsAccessKeyId: ""
+    awsSecretAccessKey: ""
+    existingAwsSecretName: ""
+
+    ## Uncomment the below lines to configure file store bucket names
+    ## The default file store is AWS S3. If you are using a different cloud provider, please set s3proxy.enabled=true
+    # parsedDocumentsCloudBucketName: "llama-platform-parsed-documents"
+    # parsedEtlCloudBucketName: "llama-platform-etl"
+    # parsedExternalComponentsCloudBucketName: "llama-platform-external-components"
+    # parsedFileParsingCloudBucketName: "llama-platform-file-parsing"
+    # parsedRawFileCloudBucketName: "llama-platform-raw-files"
+    # parsedLlamaCloudParseOutputCloudBucketName: "llama-cloud-parse-output"
+
+
+## @section Overrides and Common Configuration
+
+## @param nameOverride String to fully override llamacloud.name
+##
+nameOverride: ""
+## @param fullnameOverride String to fully override llamaecloud.fullname
+##
+fullnameOverride: ""
+## @param namespaceOverride String to fully override llamaecloud.namespace
+##
+namespaceOverride: ""
+## @param commonLabels Labels to add to all deployed objects
+##
+commonLabels: {}
+## @param commonAnnotations Annotations to add to all deployed objects
+##
+commonAnnotations: {}
+
+
+## @section Frontend Configuration
+frontend:
+  ## @param frontend.name Name suffix of the Frontend related resources
+  name: frontend
+
+  ## @param frontend.replicas Number of replicas of Frontend Deployment
+  replicas: 1
+
+  ## @param frontend.image.registry Frontend Image registry
+  ## @param frontend.image.repository Frontend Image repository
+  ## @param frontend.image.tag Frontend Image tag
+  ## @param frontend.image.pullPolicy Frontend Image pull policy
+  image:
+    registry: docker.io
+    repository: llamaindex/llamacloud-frontend
+    tag: 0.1.0
+    pullPolicy: IfNotPresent
+
+  ## @param frontend.service.type Frontend Service type
+  ## @param frontend.service.port Frontend Service port
+  service:
+    type: ClusterIP
+    port: 3000
+
+  ## @param frontend.serviceAccount.create Whether or not to create a new service account
+  ## @param frontend.serviceAccount.name Name of the service account
+  ## @param frontend.serviceAccount.labels Labels to add to the service account
+  ## @param frontend.serviceAccount.annotations Annotations to add to the service account
+  serviceAccount:
+    create: true
+    name: ""
+    labels: {}
+    annotations: {}
+
+  ## @param frontend.labels Labels added to the Frontend Deployment.
+  labels: {}
+  ## @param frontend.annotations Annotations added to the Frontend Deployment.
+  annotations: {}
+
+  ## @param frontend.containerPort Port to expose on the Frontend container
+  ## Ref: https://kubernetes.io/docs/tutorials/services/connect-applications-service/#exposing-pods-to-the-cluster
+  containerPort: 3000
+
+  ## @param frontend.extraEnvVariables Extra environment variables to add to Frontend pods
+  ## Example:
+  ## extraEnvVars:
+  ##   - name: FOO
+  ##     value: BAR
+  ##
+  extraEnvVariables: []
+
+  ## @param frontend.envFromSecretName Name of the secret to use for environment variables
+  ## Loads environment variables from a secret object
+  envFromSecretName: ""
+  ## @param frontend.envFromConfigMapName Name of the config map to use for environment variables
+  ## Loads environment variables from a ConfigMap object
+  envFromConfigMapName: ""
+
+  ## @param frontend.podAnnotations Annotations to add to the resulting Pods of the Deployment.
+  podAnnotations: {}
+  ## @param frontend.podLabels Labels to add to the resulting Pods of the Deployment.
+  podLabels: {}
+  ## @param frontend.podSecurityContext Annotations to add to the resulting Pods of the Deployment.
+  podSecurityContext: {}
+
+  ## @param frontend.securityContext Security context for the container
+  securityContext: {}
+  #  runAsUser: 1000
+  #  runAsGroup: 1000
+
+  ## @param frontend.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
+  ## Ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+  resources: {}
+  ## To use the recommended values, uncomment the following lines and remove the curly braces after 'resources:'
+  #  limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  #  requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+  ## Frontend Liveness probe configuration
+  ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+  livenessProbe:
+    httpGet:
+      ## @param frontend.livenessProbe.httpGet.path Path to hit for the liveness probe
+      ## @param frontend.livenessProbe.httpGet.port Port to hit for the liveness probe
+      path: /api/healthz
+      port: http
+
+  readinessProbe:
+    httpGet:
+      ## @param frontend.readinessProbe.httpGet.path Path to hit for the liveness probe
+      ## @param frontend.readinessProbe.httpGet.port Port to hit for the liveness probe
+      path: /api/healthz
+      port: http
+
+  ## forntend.autoscaling HorizontalPodAutoScaler configuration
+  ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/
+  ## The HPA scales by the target CPU utilization percentage by default
+  ## Uncomment the targetMemoryUtilizationPercentage line below to scale by memory utilization
+  ## @param frontend.autoscaling.enabled Enable autoscaling for the Frontend Deployment
+  ## @param frontend.autoscaling.minReplicas Minimum number of replicas for the Frontend Deployment
+  ## @param frontend.autoscaling.maxReplicas Maximum number of replicas for the Frontend Deployment
+  ## @param frontend.autoscaling.targetCPUUtilizationPercentage Target CPU utilization percentage for the Frontend Deployment
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 4
+    targetCPUUtilizationPercentage: 80
+    # targetMemoryUtilizationPercentage: 80
+
+  ## @param frontend.volumes List of volumes that can be mounted by containers belonging to the pod
+  ## @param frontend.volumeMounts List of volumeMounts that can be mounted by containers belonging to the pod
+  ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-volume-storage/
+  volumes: []
+  volumeMounts: []
+
+  ## @param frontend.nodeSelector Node labels for pod assignment
+  ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
+  nodeSelector: {}
+
+  ## @param frontend.tolerations Taints to tolerate on node assignment:
+  ## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+  tolerations: []
+
+  ## @param frontend.affinity Pod scheduling constraints
+  ## Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
+  affinity: {}
+
+
+## @section Backend Configuration
+backend:
+  ## @param backend.name Name suffix of the Backend related resources
+  name: backend
+
+  ## Backend configuration to enable backend features
+  config:
+    ## @param backend.config.logLevel Log level for the backend
+    logLevel: info
+
+    ## @param backend.config.openAiApiKey (Required) OpenAI API key
+    openAiApiKey: ""
+
+    ## Backend OpenID Connect configuration
+    ## @param backend.config.oidc.existingSecretName Name of the existing secret to use for OIDC configuration
+    ## @param backend.config.oidc.discoveryUrl OIDC discovery URL
+    ## @param backend.config.oidc.clientId OIDC client ID
+    ## @param backend.config.oidc.clientSecret OIDC client secret
+    oidc:
+      existingSecretName: ""
+      discoveryUrl: ""
+      clientId: ""
+      clientSecret: ""
+
+  ## @param backend.replicas Number of replicas of Backend Deployment
+  replicas: 1
+
+  ## Backend Image information
+  ## @param backend.image.registry Backend Image registry
+  ## @param backend.image.repository Backend Image repository
+  ## @param backend.image.tag Backend Image tag
+  ## @param backend.image.pullPolicy Backend Image pull policy
+  image:
+    registry: docker.io
+    repository: llamaindex/llamacloud-backend
+    tag: 0.1.0
+    pullPolicy: IfNotPresent
+
+  ## Backend Service information
+  ## @param backend.service.type Backend Service type
+  ## @param backend.service.port Backend Service port
+  service:
+    type: ClusterIP
+    port: 8000
+
+  serviceAccount:
+    ## @param backend.serviceAccount.create Whether or not to create a new service account
+    ## @param backend.serviceAccount.name Name of the service account
+    ## @param backend.serviceAccount.labels Labels to add to the service account
+    ## @param backend.serviceAccount.annotations Annotations to add to the service account
+    create: true
+    name: ""
+    labels: {}
+    annotations: {}
+
+  ## @param backend.labels Labels added to the Backend Deployment.
+  labels: {}
+  ## @param backend.annotations Annotations added to the Backend Deployment.
+  annotations: {}
+
+  ## @param backend.containerPort Port to expose on the Backend container
+  ## Ref: https://kubernetes.io/docs/tutorials/services/connect-applications-service/#exposing-pods-to-the-cluster
+  containerPort: 8000
+
+  ## @param backend.extraEnvVariables Extra environment variables to add to backend pods
+  ## Example:
+  ## extraEnvVariables:
+  ##   - name: FOO
+  ##     value: BAR
+  ##   - name: OPENAI_API_KEY
+  ##     valueFrom:
+  ##       secretKeyRef:
+  ##         name: openai-api-secret
+  ##         key: openai-api-key
+  extraEnvVariables: []
+
+  ## Backend External secrets to load environment variables from
+  externalSecrets:
+    ## @param backend.externalSecrets.enabled Enable external secrets for the Backend Deployment
+    enabled: false
+    ## @param backend.externalSecrets.secrets List of external secrets to load environment variables from
+    ## ["secret-1", "secret-2"]
+    secrets: []
+
+  ## @param backend.podAnnotations Annotations to add to the resulting Pods of the Deployment.
+  podAnnotations: {}
+
+  ## @param backend.podLabels Labels to add to the resulting Pods of the Deployment.
+  podLabels: {}
+
+  ## @param backend.podSecurityContext Pod security context
+  ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+  podSecurityContext: {}
+
+  ## @param backend.securityContext Security context for the container
+  securityContext: {}
+  #  runAsUser: 1000
+  #  runAsGroup: 1000
+
+  ## @param backend.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
+  ## Ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+  resources: {}
+    # requests:
+    #   memory: 2Gi
+    #   cpu: 1
+    # limits:
+    #   memory: 8Gi
+    #   cpu: 4
+
+  ## Backend Liveness probe configuration
+  ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+  livenessProbe:
+    ## @param backend.livenessProbe.httpGet.path Path to hit for the liveness probe
+    ## @param backend.livenessProbe.httpGet.port Port to hit for the liveness probe
+    ## @param backend.livenessProbe.initialDelaySeconds Number of seconds after the container has started before liveness probes are initiated
+    ## @param backend.livenessProbe.periodSeconds How often (in seconds) to perform the probe
+    ## @param backend.livenessProbe.timeoutSeconds Number of seconds after which the probe times out
+    ## @param backend.livenessProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
+    failureThreshold: 5
+    httpGet:
+      path: /api/health
+      port: 8000
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 30
+
+  ## Backend Readiness probe configuration
+  ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+  readinessProbe:
+    ## @param backend.readinessProbe.httpGet.path Path to hit for the readiness probe
+    ## @param backend.readinessProbe.httpGet.port Port to hit for the readiness probe
+    ## @param backend.readinessProbe.initialDelaySeconds Number of seconds after the container has started before readiness probes are initiated
+    ## @param backend.readinessProbe.periodSeconds How often (in seconds) to perform the probe
+    ## @param backend.readinessProbe.timeoutSeconds Number of seconds after which the probe times out
+    ## @param backend.readinessProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
+    failureThreshold: 5
+    httpGet:
+      path: /api/health
+      port: 8000
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 30
+
+  ## Backend Startup probe configuration
+  ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+  startupProbe:
+    ## @param backend.startupProbe.httpGet.path Path to hit for the startup probe
+    ## @param backend.startupProbe.httpGet.port Port to hit for the startup probe
+    ## @param backend.startupProbe.initialDelaySeconds Number of seconds after the container has started before liveness probes are initiated
+    ## @param backend.startupProbe.periodSeconds How often (in seconds) to perform the probe
+    ## @param backend.startupProbe.timeoutSeconds Number of seconds after which the probe times out
+    ## @param backend.startupProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
+    failureThreshold: 5
+    httpGet:
+      path: /api/health
+      port: 8000
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 30
+
+  ## Backend HorizontalPodAutoScaler configuration
+  ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/
+  ## The HPA scales by the target CPU utilization percentage by default
+  ## Uncomment the targetMemoryUtilizationPercentage line below to scale by memory utilization
+  autoscaling:
+    ## @param backend.autoscaling.enabled Enable autoscaling for the Backend Deployment
+    ## @param backend.autoscaling.minReplicas Minimum number of replicas for the Backend Deployment
+    ## @param backend.autoscaling.maxReplicas Maximum number of replicas for the Backend Deployment
+    ## @param backend.autoscaling.targetCPUUtilizationPercentage Target CPU utilization percentage for the Backend Deployment
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 8
+    targetCPUUtilizationPercentage: 80
+    # targetMemoryUtilizationPercentage: 80
+
+  ## Backend PodDisruptionBudget configuration
+  ## Ref: https://kubernetes.io/docs/tasks/run-application/configure-pdb/
+  podDisruptionBudget:
+    ## @param backend.podDisruptionBudget.enabled Enable PodDisruptionBudget for the Backend Deployment
+    ## @param backend.podDisruptionBudget.maxUnavailable Maximum number of pods that can be unavailable during an update
+    enabled: false
+    maxUnavailable: 1
+
+  ## @param backend.volumes List of volumes that can be mounted by containers belonging to the pod
+  ## @param backend.volumeMounts List of volumeMounts that can be mounted by containers belonging to the pod
+  ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-volume-storage/
+  volumes: []
+  volumeMounts: []
+
+  ## @param backend.nodeSelector Node labels for pod assignment
+  ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
+  nodeSelector: {}
+
+  ## @param backend.tolerations Taints to tolerate on node assignment:
+  ## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+  tolerations: []
+
+  ## @param backend.affinity Pod scheduling constraints
+  ## Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
+  affinity: {}
+
+
+## @section JobsService Configuration
+jobsService:
+  ## @param jobsService.name Name suffix of the JobsService related resources
+  name: jobs-service
+
+  config:
+    ## @param jobsService.config.logLevel Log level for the JobsService
+    logLevel: "info"
+
+  ## @param jobsService.replicas Number of replicas of JobsService Deployment
+  replicas: 1
+
+  ## JobsService Image information
+  ## @param jobsService.image.registry JobsService Image registry
+  ## @param jobsService.image.repository JobsService Image repository
+  ## @param jobsService.image.tag JobsService Image tag
+  ## @param jobsService.image.pullPolicy JobsService Image pull policy
+  image:
+    registry: docker.io
+    repository: llamaindex/llamacloud-jobs-service
+    tag: 0.1.0
+    pullPolicy: IfNotPresent
+
+  ## JobsService Service information\
+  ## @param jobsService.service.type JobsService Service type
+  ## @param jobsService.service.port JobsService Service port
+  service:
+    type: ClusterIP
+    port: 8002
+
+  ## JobsService ServiceAccount configuration
+  ## @param jobsService.serviceAccount.create Whether or not to create a new service account
+  ## @param jobsService.serviceAccount.name Name of the service account
+  ## @param jobsService.serviceAccount.labels Labels to add to the service account
+  ## @param jobsService.serviceAccount.annotations Annotations to add to the service account
+  serviceAccount:
+    create: true
+    name: ""
+    labels: {}
+    annotations: {}
+
+  ## @param jobsService.containerPort Port to expose on the JobsService container
+  ## Ref: https://kubernetes.io/docs/tutorials/services/connect-applications-service/#exposing-pods-to-the-cluster
+  containerPort: 8002
+
+  ## @param jobsService.extraEnvVariables Extra environment variables to add to jobsService pods
+  ## Example:
+  ## extraEnvVariables:
+  ##   - name: FOO
+  ##     value: BAR
+  ##   - name: OPENAI_API_KEY
+  ##     valueFrom:
+  ##       secretKeyRef:
+  ##         name: openai-api-secret
+  ##         key: openai-api-key
+  extraEnvVariables: []
+
+  ## Jobs Service External secrets to load environment variables from
+  externalSecrets:
+    ## @param jobsService.externalSecrets.enabled Enable external secrets for the JobsService Deployment
+    enabled: false
+    ## @param jobsService.externalSecrets.secrets List of external secrets to load environment variables from
+    ## ["secret-1", "secret-2"]
+    secrets: []
+
+  ## @param jobsService.podAnnotations Annotations to add to the resulting Pods of the Deployment.
+  podAnnotations: {}
+
+  ## @param jobsService.podLabels Labels to add to the resulting Pods of the Deployment.
+  podLabels: {}
+
+  ## @param jobsService.podSecurityContext Pod security context
+  podSecurityContext: {}
+
+  ## @param jobsService.securityContext Security context for the container
+  securityContext: {}
+  #  runAsUser: 1000
+  #  runAsGroup: 1000
+
+  ## @param jobsService.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
+  ## Ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+  resources: {}
+    # To use the recommended values, uncomment the following lines and remove the curly braces after 'resources:'
+    # requests:
+    #   memory: 500Mi
+    #   cpu: 1
+    # limits:
+    #   memory: 4Gi
+    #   cpu: 4
+
+  ## Job Service Liveness probe configuration
+  ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+  livenessProbe:
+    ## @param jobsService.livenessProbe.httpGet.path Path to hit for the liveness probe
+    ## @param jobsService.livenessProbe.httpGet.port Port to hit for the liveness probe
+    ## @param jobsService.livenessProbe.initialDelaySeconds Number of seconds after the container has started before liveness probes are initiated
+    ## @param jobsService.livenessProbe.periodSeconds How often (in seconds) to perform the probe
+    ## @param jobsService.livenessProbe.timeoutSeconds Number of seconds after which the probe times out
+    ## @param jobsService.livenessProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
+    httpGet:
+      path: /api/health
+      port: 8002
+    initialDelaySeconds: 30
+    periodSeconds: 5
+    timeoutSeconds: 30
+    failureThreshold: 5
+
+  ## Job Service Readiness probe configuration
+  ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+  readinessProbe:
+    ## @param jobsService.readinessProbe.httpGet.path Path to hit for the liveness probe
+    ## @param jobsService.readinessProbe.httpGet.port Port to hit for the liveness probe
+    ## @param jobsService.readinessProbe.initialDelaySeconds Number of seconds after the container has started before liveness probes are initiated
+    ## @param jobsService.readinessProbe.periodSeconds How often (in seconds) to perform the probe
+    ## @param jobsService.readinessProbe.timeoutSeconds Number of seconds after which the probe times out
+    ## @param jobsService.readinessProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
+    httpGet:
+      path: /api/health
+      port: 8002
+    initialDelaySeconds: 30
+    periodSeconds: 5
+    timeoutSeconds: 30
+    failureThreshold: 5
+
+  ## Job Service HorizontalPodAutoScaler configuration
+  ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/
+  ## The HPA scales by the target CPU utilization percentage by default
+  ## Uncomment the targetMemoryUtilizationPercentage line below to scale by memory utilization
+  ## @param jobsService.autoscaling.enabled Enable autoscaling for the JobsService Deployment
+  ## @param jobsService.autoscaling.minReplicas Minimum number of replicas for the JobsService Deployment
+  ## @param jobsService.autoscaling.maxReplicas Maximum number of replicas for the JobsService Deployment
+  ## @param jobsService.autoscaling.targetCPUUtilizationPercentage Target CPU utilization percentage for the JobsService Deployment
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 4
+    targetCPUUtilizationPercentage: 80
+    # targetMemoryUtilizationPercentage: 80
+
+  ## @param jobsService.volumes List of volumes that can be mounted by containers belonging to the pod
+  ## @param jobsService.volumeMounts List of volumeMounts that can be mounted by containers belonging to the pod
+  ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-volume-storage/
+  volumes: []
+  volumeMounts: []
+
+  ## @param jobsService.nodeSelector Node labels for pod assignment
+  ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
+  nodeSelector: {}
+
+  ## @param jobsService.tolerations Taints to tolerate on node assignment:
+  ## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+  tolerations: []
+
+  ## @param jobsService.affinity Pod scheduling constraints
+  ## Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
+  affinity: {}
+
+## @section JobsWorker Configuration
+jobsWorker:
+  ## @param jobsWorker.name Name suffix of the JobsWorker related resources
+  name: jobs-worker
+
+  config:
+    ## @param jobsWorker.config.logLevel Log level for the JobsWorker
+    logLevel: "info"
+
+  ## @param jobsWorker.replicas Number of replicas of JobsWorker Deployment
+  replicas: 1
+
+  ## JobsWorker Image information
+  ## @param jobsWorker.image.registry JobsWorker Image registry
+  ## @param jobsWorker.image.repository JobsWorker Image repository
+  ## @param jobsWorker.image.tag JobsWorker Image tag
+  ## @param jobsWorker.image.pullPolicy JobsWorker Image pull policy
+  image:
+    registry: docker.io
+    repository: llamaindex/llamacloud-jobs-worker
+    tag: 0.1.0
+    pullPolicy: IfNotPresent
+
+  ## JobsWorker Service information
+  ## @param jobsWorker.service.type JobsWorker Service type
+  ## @param jobsWorker.service.port JobsWorker Service port
+  service:
+    type: ClusterIP
+    port: 8001
+
+  ## ServiceAccount configuration
+  ## @param jobsWorker.serviceAccount.create Whether or not to create a new service account
+  ## @param jobsWorker.serviceAccount.name Name of the service account
+  ## @param jobsWorker.serviceAccount.labels Labels to add to the service account
+  ## @param jobsWorker.serviceAccount.annotations Annotations to add to the service account
+  serviceAccount:
+    create: true
+    name: ""
+    labels: {}
+    annotations: {}
+
+  ## @param jobsWorker.labels Labels added to the JobsWorker Deployment.
+  labels: {}
+  ## @param jobsWorker.annotations Annotations added to the JobsWorker Deployment.
+  annotations: {}
+
+  ## @param jobsWorker.containerPort Port to expose on the jobsWorker container
+  ## Ref: https://kubernetes.io/docs/tutorials/services/connect-applications-service/#exposing-pods-to-the-cluster
+  containerPort: 8001
+
+  ## @param jobsWorker.extraEnvVariables Extra environment variables to add to jobsWorker pods
+  ## Example:
+  ## extraEnvVariables:
+  ##   - name: FOO
+  ##     value: BAR
+  ##   - name: OPENAI_API_KEY
+  ##     valueFrom:
+  ##       secretKeyRef:
+  ##         name: openai-api-secret
+  ##         key: openai-api-key
+  extraEnvVariables: []
+
+  ## External secrets to load environment variables from
+  ## @param jobsWorker.externalSecrets.enabled Enable external secrets for the JobsWorker Deployment
+  ## @param jobsWorker.externalSecrets.secrets List of external secrets to load environment variables from
+  externalSecrets:
+    ## @param jobsWorker.externalSecrets.enabled Enable external secrets for the JobsWorker Deployment
+    enabled: false
+    ## @param jobsWorker.externalSecrets.secrets List of external secrets to load environment variables from
+    ## ["secret-1", "secret-2"]
+    secrets: []
+
+  ## @param jobsWorker.podAnnotations Annotations to add to the resulting Pods of the Deployment.
+  podAnnotations: {}
+
+  ## @param jobsWorker.podLabels Labels to add to the resulting Pods of the Deployment.
+  podLabels: {}
+
+  ## @param jobsWorker.podSecurityContext Pod security context
+  podSecurityContext: {}
+
+  ## @param jobsWorker.securityContext Security context for the container
+  securityContext: {}
+  #  runAsUser: 1000
+  #  runAsGroup: 1000
+
+  ## @param jobsWorker.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
+  ## Ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+  resources: {}
+    # To use the recommended values, uncomment the following lines and remove the curly braces after 'resources:'
+    # resources:
+    #   requests:
+    #     memory: 500Mi
+    #     cpu: 1
+    #   limits:
+    #     memory: 4Gi
+    #     cpu: 4
+
+  ## Jobs Worker Liveness probe configuration
+  ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+  livenessProbe:
+    ## @param jobsWorker.livenessProbe.httpGet.path Path to hit for the liveness probe
+    ## @param jobsWorker.livenessProbe.httpGet.port Port to hit for the liveness probe
+    ## @param jobsWorker.livenessProbe.initialDelaySeconds Number of seconds after the container has started before liveness probes are initiated
+    ## @param jobsWorker.livenessProbe.periodSeconds How often (in seconds) to perform the probe
+    ## @param jobsWorker.livenessProbe.timeoutSeconds Number of seconds after which the probe times out
+    ## @param jobsWorker.livenessProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
+    failureThreshold: 5
+    httpGet:
+      path: /api/health
+      port: 8001
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 30
+
+  ## Jobs Worker Readiness probe configuration
+  ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+  readinessProbe:
+    ## @param jobsWorker.readinessProbe.httpGet.path Path to hit for the liveness probe
+    ## @param jobsWorker.readinessProbe.httpGet.port Port to hit for the liveness probe
+    ## @param jobsWorker.readinessProbe.initialDelaySeconds Number of seconds after the container has started before liveness probes are initiated
+    ## @param jobsWorker.readinessProbe.periodSeconds How often (in seconds) to perform the probe
+    ## @param jobsWorker.readinessProbe.timeoutSeconds Number of seconds after which the probe times out
+    ## @param jobsWorker.readinessProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
+    failureThreshold: 5
+    httpGet:
+      path: /api/health
+      port: 8001
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 30
+
+  ## Jobs Worker Startup probe configuration
+  ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+  startupProbe:
+    ## @param jobsWorker.startupProbe.httpGet.path Path to hit for the liveness probe
+    ## @param jobsWorker.startupProbe.httpGet.port Port to hit for the liveness probe
+    ## @param jobsWorker.startupProbe.initialDelaySeconds Number of seconds after the container has started before liveness probes are initiated
+    ## @param jobsWorker.startupProbe.periodSeconds How often (in seconds) to perform the probe
+    ## @param jobsWorker.startupProbe.timeoutSeconds Number of seconds after which the probe times out
+    ## @param jobsWorker.startupProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
+    failureThreshold: 5
+    httpGet:
+      path: /api/health
+      port: 8001
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 30
+
+  ## Jobs Worker HorizontalPodAutoScaler configuration
+  ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/
+  ## The HPA scales by the target CPU utilization percentage by default
+  ## Uncomment the targetMemoryUtilizationPercentage line below to scale by memory utilization
+  autoscaling:
+    ## @param jobsWorker.autoscaling.enabled Enable autoscaling for the JobsWorker Deployment
+    ## @param jobsWorker.autoscaling.minReplicas Minimum number of replicas for the JobsWorker Deployment
+    ## @param jobsWorker.autoscaling.maxReplicas Maximum number of replicas for the JobsWorker Deployment
+    ## @param jobsWorker.autoscaling.targetCPUUtilizationPercentage Target CPU utilization percentage for the JobsWorker Deployment
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 4
+    targetCPUUtilizationPercentage: 80
+    # targetMemoryUtilizationPercentage: 80
+
+  ## @param jobsWorker.volumes List of volumes that can be mounted by containers belonging to the pod
+  ## @param jobsWorker.volumeMounts List of volumeMounts that can be mounted by containers belonging to the pod
+  ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-volume-storage/
+  volumes: []
+  volumeMounts: []
+
+  ## @param jobsWorker.nodeSelector Node labels for pod assignment
+  ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
+  nodeSelector: {}
+
+  ## @param jobsWorker.tolerations Taints to tolerate on node assignment:
+  ## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+  tolerations: []
+
+  ## @param jobsWorker.affinity Pod scheduling constraints
+  ## Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
+  affinity: {}
+
+
+## @section LlamaParse Configuration
+llamaParse:
+  ## @param llamaParse.name Name suffix of the LlamaParse related resources
+  name: llamaparse
+
+  config:
+    ## @param llamaParse.config.maxPdfPages Maximum number of pages to parse in a PDF
+    ## @param llamaParse.config.openAiApiKey OpenAI API key
+    ## @param llamaParse.config.anthropicApiKey Anthropic
+    ## @param llamaParse.config.s3UploadBucket S3 bucket to upload files to
+    ## @param llamaParse.config.s3OutputBucket S3 bucket to output files to
+    ## @param llamaParse.config.s3OutputBucketTemp S3 bucket to output temporary files to
+    maxPdfPages: 1200
+    openAiApiKey: ""
+    anthropicApiKey: ""
+    s3UploadBucket: "llama-platform-file-parsing"
+    s3OutputBucket: "llama-platform-file-parsing"
+    s3OutputBucketTemp: "llama-platform-file-parsing"
+
+  ## @param llamaParse.replicas Number of replicas of LlamaParse Deployment
+  replicas: 2
+
+  ## LlamaParse Image information
+  ## @param llamaParse.image.registry LlamaParse Image registry
+  ## @param llamaParse.image.repository LlamaParse Image repository
+  ## @param llamaParse.image.tag LlamaParse Image tag
+  ## @param llamaParse.image.pullPolicy LlamaParse Image pull policy
+  image:
+    registry: docker.io
+    repository: llamaindex/llamacloud-llamaparse
+    tag: 0.1.0
+    pullPolicy: IfNotPresent
+
+  ## ServiceAccount configuration
+  ## @param llamaParse.serviceAccount.create Whether or not to create a new service account
+  ## @param llamaParse.serviceAccount.name Name of the service account
+  ## @param llamaParse.serviceAccount.labels Labels to add to the service account
+  ## @param llamaParse.serviceAccount.annotations Annotations to add to the service account
+  serviceAccount:
+    create: true
+    name: ""
+    labels: {}
+    annotations: {}
+
+  ## @param llamaParse.labels Labels added to the LlamaParse Deployment.
+  labels: {}
+  ## @param llamaParse.annotations Annotations added to the LlamaParse Deployment.
+  annotations: {}
+
+  ## @param llamaParse.containerPort Port to expose on the LlamaParse container
+  ## Ref: https://kubernetes.io/docs/tutorials/services/connect-applications-service/#exposing-pods-to-the-cluster
+  containerPort: 8000
+
+  ## @param llamaParse.extraEnvVariables Extra environment variables to add to llamaParse pods
+  ## Example:
+  ## extraEnvVariables:
+  ##   - name: FOO
+  ##     value: BAR
+  ##   - name: OPENAI_API_KEY
+  ##     valueFrom:
+  ##       secretKeyRef:
+  ##         name: openai-api-secret
+  ##         key: openai-api-key
+  extraEnvVariables: []
+
+  ## External Secrets Configuration
+  ## @param llamaParse.externalSecrets.enabled Enable external secrets for the LlamaParse Deployment
+  ## @param llamaParse.externalSecrets.secrets List of external secrets to load environment variables from
+  externalSecrets:
+    ## @param llamaParse.externalSecrets.enabled Enable external secrets for the LlamaParse Deployment
+    enabled: false
+    ## @param llamaParse.externalSecrets.secrets List of external secrets to load environment variables from
+    ## ["secret-1", "secret-2"]
+    secrets: []
+
+  ## @param llamaParse.podAnnotations Annotations to add to the resulting Pods of the Deployment.
+  podAnnotations: {}
+
+  ## @param llamaParse.podLabels Labels to add to the resulting Pods of the Deployment.
+  podLabels: {}
+
+  ## @param llamaParse.podSecurityContext Pod security context
+  podSecurityContext: {}
+
+  ## @param llamaParse.securityContext Security context for the container
+  securityContext: {}
+  #  runAsUser: 1000
+  #  runAsGroup: 1000
+
+  ## LlamaParse resources: Set container requests and limits for different resources like CPU or memory (essential for production workloads)
+  ## Ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+  ## Below are the recommended values for LlamaParse. Please adjust according to your deployment's needs.
+  resources:
+    ## @param llamaParse.resources.requests.memory Memory request for the LlamaParse container
+    ## @param llamaParse.resources.requests.cpu CPU request for the LlamaParse container
+    ## @param llamaParse.resources.limits.memory Memory limit for the LlamaParse container
+    ## @param llamaParse.resources.limits.cpu CPU limit for the LlamaParse container
+    requests:
+      memory: 16Gi
+      cpu: 2
+    limits:
+      memory: 20Gi
+      cpu: 10
+
+  ## LlamaParse HorizontalPodAutoScaler configuration
+  ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/
+  ## The HPA scales by the target CPU utilization percentage by default
+  ## Uncomment the targetMemoryUtilizationPercentage line below to scale by memory utilization
+  autoscaling:
+    ## @param llamaParse.autoscaling.enabled Enable autoscaling for the LlamaParse Deployment
+    ## @param llamaParse.autoscaling.minReplicas Minimum number of replicas for the LlamaParse Deployment
+    ## @param llamaParse.autoscaling.maxReplicas Maximum number of replicas for the LlamaParse Deployment
+    ## @param llamaParse.autoscaling.targetCPUUtilizationPercentage Target CPU utilization percentage for the LlamaParse Deployment
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 80
+    # targetMemoryUtilizationPercentage: 80
+
+  ## PodDisruptionBudget configuration
+  ## Ref: https://kubernetes.io/docs/tasks/run-application/configure-pdb/
+  podDisruptionBudget:
+    ## @param llamaParse.podDisruptionBudget.enabled Enable PodDisruptionBudget for the LlamaParse Deployment
+    ## @param llamaParse.podDisruptionBudget.maxUnavailable Maximum number of unavailable pods
+    enabled: true
+    maxUnavailable: 1
+
+  ## @param llamaParse.volumes List of volumes that can be mounted by containers belonging to the pod
+  ## @param llamaParse.volumeMounts List of volumeMounts that can be mounted by containers belonging to the pod
+  ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-volume-storage/
+  volumes: []
+  volumeMounts: []
+
+  ## @param llamaParse.nodeSelector Node labels for pod assignment
+  ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
+  nodeSelector: {}
+
+  ## @param llamaParse.tolerations Taints to tolerate on node assignment:
+  ## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+  tolerations: []
+
+  ## @param llamaParse.affinity Pod scheduling constraints
+  ## Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
+  affinity: {}
+
+## @section LlamaParseOcr Configuration
+llamaParseOcr:
+  ## @param llamaParseOcr.name Name suffix of the LlamaParseOcr related resources
+  name: llamaparse-ocr
+
+  ## @param llamaParseOcr.replicas Number of replicas of LlamaParseOcr Deployment
+  replicas: 2
+
+  ## LlamaParseOcr Image information
+  ## @param llamaParseOcr.image.registry LlamaParseOcr Image registry
+  ## @param llamaParseOcr.image.repository LlamaParseOcr Image repository
+  ## @param llamaParseOcr.image.tag LlamaParseOcr Image tag
+  ## @param llamaParseOcr.image.pullPolicy LlamaParseOcr Image pull policy
+  image:
+    registry: docker.io
+    repository: llamaindex/llamacloud-llamaparse-ocr
+    tag: 0.1.0
+    pullPolicy: IfNotPresent
+
+  ## LlamaParseOcr Service information
+  ## @param llamaParseOcr.service.type LlamaParseOcr Service type
+  ## @param llamaParseOcr.service.port LlamaParseOcr Service port
+  service:
+    type: ClusterIP
+    port: 8080
+
+  ## ServiceAccount configuration
+  ## @param llamaParseOcr.serviceAccount.create Whether or not to create a new service account
+  ## @param llamaParseOcr.serviceAccount.name Name of the service account
+  ## @param llamaParseOcr.serviceAccount.labels Labels to add to the service account
+  ## @param llamaParseOcr.serviceAccount.annotations Annotations to add to the service account
+  serviceAccount:
+    create: true
+    name: ""
+    labels: {}
+    annotations: {}
+
+  ## @param llamaParseOcr.containerPort Port to expose on the LlamaParseOcr container
+  ## Ref: https://kubernetes.io/docs/tutorials/services/connect-applications-service/#exposing-pods-to-the-cluster
+  containerPort: 8080
+
+  ## @param llamaParseOcr.labels Labels added to the LlamaParseOcr Deployment.
+  labels: {}
+  ## @param llamaParseOcr.annotations Annotations added to the LlamaParseOcr Deployment.
+  annotations: {}
+
+  ## @param llamaParseOcr.podAnnotations Annotations to add to the resulting Pods of the Deployment.
+  podAnnotations: {}
+
+  ## @param llamaParseOcr.podLabels Labels to add to the resulting Pods of the Deployment.
+  podLabels: {}
+
+  ## @param llamaParseOcr.podSecurityContext Pod security context
+  podSecurityContext: {}
+
+  ## @param llamaParseOcr.securityContext Security context for the container
+  securityContext: {}
+  #  runAsUser: 1000
+  #  runAsGroup: 1000
+
+  ## LlamaParseOcr Resources: Set container requests and limits for different resources like CPU or memory (essential for production workloads)
+  ## Ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+  ## Below are the recommended settings for a basic deployment. Adjust according to your needs.
+  resources:
+    ## @param llamaParseOcr.resources.requests.memory Memory request for the LlamaParse container
+    ## @param llamaParseOcr.resources.requests.cpu CPU request for the LlamaParse container
+    ## @param llamaParseOcr.resources.limits.memory Memory limit for the LlamaParse container
+    ## @param llamaParseOcr.resources.limits.cpu CPU limit for the LlamaParse container
+    requests:
+      cpu: 1
+      memory: 2Gi
+    limits:
+      cpu: 2
+      memory: 10Gi
+
+  ## LlamaParse Ocr Liveness probe configuration
+  livenessProbe:
+    ## @param llamaParseOcr.livenessProbe.httpGet.path Path to hit for the liveness probe
+    ## @param llamaParseOcr.livenessProbe.httpGet.port Port to hit for the liveness probe
+    ## @param llamaParseOcr.livenessProbe.httpGet.scheme Scheme to use for the liveness probe
+    ## @param llamaParseOcr.livenessProbe.initialDelaySeconds Number of seconds after the container has started before liveness probes are initiated
+    ## @param llamaParseOcr.livenessProbe.periodSeconds How often (in seconds) to perform the probe
+    ## @param llamaParseOcr.livenessProbe.timeoutSeconds Number of seconds after which the probe times out
+    ## @param llamaParseOcr.livenessProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
+    ## @param llamaParseOcr.livenessProbe.successThreshold Minimum consecutive successes for the probe to be considered successful after having failed
+    failureThreshold: 3
+    httpGet:
+      path: /health_check
+      port: 8080
+      scheme: HTTP
+    initialDelaySeconds: 30
+    periodSeconds: 15
+    successThreshold: 1
+    timeoutSeconds: 120
+
+  ## LlamaParse Ocr Readiness probe configuration
+  readinessProbe:
+    ## @param llamaParseOcr.readinessProbe.httpGet.path Path to hit for the readiness probe
+    ## @param llamaParseOcr.readinessProbe.httpGet.port Port to hit for the readiness probe
+    ## @param llamaParseOcr.readinessProbe.httpGet.scheme Scheme to use for the readiness probe
+    ## @param llamaParseOcr.readinessProbe.initialDelaySeconds Number of seconds after the container has started before readiness probes are initiated
+    ## @param llamaParseOcr.readinessProbe.periodSeconds How often (in seconds) to perform the probe
+    ## @param llamaParseOcr.readinessProbe.timeoutSeconds Number of seconds after which the probe times out
+    ## @param llamaParseOcr.readinessProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
+    ## @param llamaParseOcr.readinessProbe.successThreshold Minimum consecutive successes for the probe to be considered successful after having failed
+    failureThreshold: 3
+    httpGet:
+      path: /health_check
+      port: 8080
+      scheme: HTTP
+    initialDelaySeconds: 30
+    periodSeconds: 15
+    successThreshold: 1
+    timeoutSeconds: 120
+
+  ## HorizontalPodAutoScaler configuration
+  ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/
+  ## The HPA scales by the target CPU utilization percentage by default
+  ## Uncomment the targetMemoryUtilizationPercentage line below to scale by memory utilization
+  autoscaling:
+    ## @param llamaParseOcr.autoscaling.enabled Enable autoscaling for the LlamaParseOcr Deployment
+    ## @param llamaParseOcr.autoscaling.minReplicas Minimum number of replicas for the LlamaParseOcr Deployment
+    ## @param llamaParseOcr.autoscaling.maxReplicas Maximum number of replicas for the LlamaParseOcr Deployment
+    ## @param llamaParseOcr.autoscaling.targetCPUUtilizationPercentage Target CPU utilization percentage for the LlamaParseOcr Deployment
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 80
+    # targetMemoryUtilizationPercentage: 80
+
+  ## PodDisruptionBudget configuration
+  ## Ref: https://kubernetes.io/docs/tasks/run-application/configure-pdb/
+  podDisruptionBudget:
+    ## @param llamaParseOcr.podDisruptionBudget.enabled Enable PodDisruptionBudget for the LlamaParseOcr Deployment
+    ## @param llamaParseOcr.podDisruptionBudget.maxUnavailable Maximum number of unavailable pods
+    enabled: true
+    maxUnavailable: 1
+
+  ## @param llamaParseOcr.volumes List of volumes that can be mounted by containers belonging to the pod
+  ## @param llamaParseOcr.volumeMounts List of volumeMounts that can be mounted by containers belonging to the pod
+  ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-volume-storage/
+  volumes: []
+  volumeMounts: []
+
+  ## @param llamaParseOcr.nodeSelector Node labels for pod assignment
+  ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
+  nodeSelector: {}
+
+  ## @param llamaParseOcr.tolerations Taints to tolerate on node assignment:
+  ## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+  tolerations: []
+
+  ## @param llamaParseOcr.affinity Pod scheduling constraints
+  ## Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
+  affinity: {}
+
+## @section LlamaParsePdf Configuration
+usage:
+  ## @param usage.name Name suffix of the usage related resources
+  name: usage
+
+  ## @param usage.replicas Number of replicas of usage Deployment
+  replicas: 1
+
+  ## Usage Image information
+  ## @param usage.image.registry Usage Image registry
+  ## @param usage.image.repository Usage Image repository
+  ## @param usage.image.tag Usage Image tag
+  ## @param usage.image.pullPolicy Usage Image pull policy
+  image:
+    registry: docker.io
+    repository: llamaindex/llamacloud-usage
+    tag: 0.1.0
+    pullPolicy: IfNotPresent
+
+  ## Usage Service information
+  ## @param usage.service.type Usage Service type
+  ## @param usage.service.port Usage Service port
+  service:
+    type: ClusterIP
+    port: 8005
+
+  ## ServiceAccount configuration
+  ## @param usage.serviceAccount.create Whether or not to create a new service account
+  ## @param usage.serviceAccount.name Name of the service account
+  ## @param usage.serviceAccount.labels Labels to add to the service account
+  ## @param usage.serviceAccount.annotations Annotations to add to the service account
+  serviceAccount:
+    create: true
+    name: ""
+    labels: {}
+    annotations: {}
+
+  ## @param usage.containerPort Port to expose on the usage container
+  ## Ref: https://kubernetes.io/docs/tutorials/services/connect-applications-service/#exposing-pods-to-the-cluster
+  containerPort: 8005
+
+  ## @param usage.labels Labels added to the usage Deployment.
+  labels: {}
+  ## @param usage.annotations Annotations added to the usage Deployment.
+  annotations: {}
+
+  ## @param usage.extraEnvVariables Extra environment variables to add to usage pods
+  ## Example:
+  ## extraEnvVariables:
+  ##   - name: FOO
+  ##     value: BAR
+  ##   - name: OPENAI_API_KEY
+  ##     valueFrom:
+  ##       secretKeyRef:
+  ##         name: openai-api-secret
+  ##         key: openai-api-key
+  extraEnvVariables: []
+
+  ## Usage Service External Secrets
+  externalSecrets:
+    ## @param usage.externalSecrets.enabled Enable external secrets for the Usage Deployment
+    enabled: false
+    ## @param usage.externalSecrets.secrets List of external secrets to load environment variables from
+    ## ["secret-1", "secret-2"]
+    secrets: []
+
+  ## @param usage.podAnnotations Annotations to add to the resulting Pods of the Deployment.
+  podAnnotations: {}
+
+  ## @param usage.podLabels Labels to add to the resulting Pods of the Deployment.
+  podLabels: {}
+
+  ## @param usage.podSecurityContext Pod security context
+  podSecurityContext: {}
+
+  ## @param usage.securityContext Security context for the container
+  securityContext: {}
+  #  runAsUser: 1000
+  #  runAsGroup: 1000
+
+  ## @param usage.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
+  ## Ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+  resources: {}
+    ## To use the recommended values, uncomment the following lines and remove the curly braces after 'resources:'
+    # requests:
+    #   cpu: 4
+    #   memory: 2Gi
+    # limits:
+    #   cpu: 8
+    #   memory: 30Gi
+
+  ## Usage Service Liveness probe configuration
+  livenessProbe:
+    ## @param usage.livenessProbe.httpGet.path Path to hit for the liveness probe
+    ## @param usage.livenessProbe.httpGet.port Port to hit for the liveness probe
+    ## @param usage.livenessProbe.httpGet.scheme Scheme to use for the liveness probe
+    ## @param usage.livenessProbe.initialDelaySeconds Number of seconds after the container has started before liveness probes are initiated
+    ## @param usage.livenessProbe.periodSeconds How often (in seconds) to perform the probe
+    ## @param usage.livenessProbe.timeoutSeconds Number of seconds after which the probe times out
+    ## @param usage.livenessProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
+    ## @param usage.livenessProbe.successThreshold Minimum consecutive successes for the probe to be considered successful after having failed
+    failureThreshold: 3
+    httpGet:
+      path: /health_check
+      port: 8005
+      scheme: HTTP
+    initialDelaySeconds: 15
+    periodSeconds: 15
+    successThreshold: 1
+    timeoutSeconds: 60
+
+  ## Usage Service Readiness probe configuration
+  readinessProbe:
+    ## @param usage.readinessProbe.httpGet.path Path to hit for the liveness probe
+    ## @param usage.readinessProbe.httpGet.port Port to hit for the liveness probe
+    ## @param usage.readinessProbe.httpGet.scheme Scheme to use for the liveness probe
+    ## @param usage.readinessProbe.initialDelaySeconds Number of seconds after the container has started before liveness probes are initiated
+    ## @param usage.readinessProbe.periodSeconds How often (in seconds) to perform the probe
+    ## @param usage.readinessProbe.timeoutSeconds Number of seconds after which the probe times out
+    ## @param usage.readinessProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
+    ## @param usage.readinessProbe.successThreshold Minimum consecutive successes for the probe to be considered successful after having failed
+    failureThreshold: 3
+    httpGet:
+      path: /health_check
+      port: 8005
+      scheme: HTTP
+    initialDelaySeconds: 15
+    periodSeconds: 15
+    successThreshold: 1
+    timeoutSeconds: 60
+
+  ## Usage HorizontalPodAutoScaler configuration
+  ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/
+  ## The HPA scales by the target CPU utilization percentage by default
+  ## Uncomment the targetMemoryUtilizationPercentage line below to scale by memory utilization
+  autoscaling:
+    ## @param usage.autoscaling.enabled Enable autoscaling for the Usage Deployment
+    ## @param usage.autoscaling.minReplicas Minimum number of replicas for the Usage Deployment
+    ## @param usage.autoscaling.maxReplicas Maximum number of replicas for the Usage Deployment
+    ## @param usage.autoscaling.targetCPUUtilizationPercentage Target CPU utilization percentage for the Usage Deployment
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 4
+    targetCPUUtilizationPercentage: 80
+    # targetMemoryUtilizationPercentage: 80
+
+  ## @param usage.volumes List of volumes that can be mounted by containers belonging to the pod
+  ## @param usage.volumeMounts List of volumeMounts that can be mounted by containers belonging to the pod
+  ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-volume-storage/
+  volumes: []
+  volumeMounts: []
+
+  ## @param usage.nodeSelector Node labels for pod assignment
+  ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
+  nodeSelector: {}
+
+  ## @param usage.tolerations Taints to tolerate on node assignment:
+  ## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+  tolerations: []
+
+  ## @param usage.affinity Pod scheduling constraints
+  ## Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
+  affinity: {}
+
+
+## @section S3Proxy Configuration
+s3proxy:
+  ## @param s3proxy.enabled Enable s3proxy Deployment
+  enabled: true
+
+  ## @param s3proxy.name Name suffix of the s3proxy related resources
+  name: s3proxy
+
+  ## @param s3proxy.config s3proxy configuration to enable s3proxy features
+  ## For reference for configuration examples, please visit the following page:
+  ## - https://github.com/gaul/s3proxy/wiki/Storage-backend-examples
+  ## For reference for available configuration options, see the s3proxy Dockerfile here:
+  ## - https://github.com/gaul/s3proxy/blob/master/Dockerfile
+  config: {}
+    # Example configuration for azure blob storage:
+    # S3PROXY_ENDPOINT: "http://0.0.0.0:80"
+    # S3PROXY_AUTHORIZATION: "none"
+    # JCLOUDS_PROVIDER: "azureblob"
+    # JCLOUDS_AZUREBLOB_AUTH: "azureKey"
+    # JCLOUDS_IDENTITY: "<azure-storage-account-name>"
+    # JCLOUDS_CREDENTIAL: "<azure-storage-account-key>"
+    # JCLOUDS_ENDPOINT: "<azure-storage-account-endpoint>"
+
+  ## @param s3proxy.replicas Number of replicas of s3proxy Deployment
+  replicas: 1
+
+  ## Image information
+  ## @param s3proxy.image.registry s3proxy Image registry
+  ## @param s3proxy.image.repository s3proxy Image repository
+  ## @param s3proxy.image.tag s3proxy Image tag
+  ## @param s3proxy.image.pullPolicy s3proxy Image pull policy
+  image:
+    registry: docker.io
+    repository: andrewgaul/s3proxy
+    tag: sha-82e50ee
+    pullPolicy: IfNotPresent
+
+  ## s3proxy Service information
+  ## @param s3proxy.service.type s3proxy Service type
+  ## @param s3proxy.service.port s3proxy Service port
+  service:
+    type: ClusterIP
+    port: 80
+
+  ## ServiceAccount configuration
+  ## @param s3proxy.serviceAccount.create Whether or not to create a new service account
+  ## @param s3proxy.serviceAccount.name Name of the service account
+  ## @param s3proxy.serviceAccount.labels Labels to add to the service account
+  ## @param s3proxy.serviceAccount.annotations Annotations to add to the service account
+  serviceAccount:
+    create: true
+    name: ""
+    labels: {}
+    annotations: {}
+
+  ## @param s3proxy.containerPort Port to expose on the s3proxy container
+  ## Ref: https://kubernetes.io/docs/tutorials/services/connect-applications-service/#exposing-pods-to-the-cluster
+  containerPort: 80
+
+  ## @param s3proxy.labels Labels added to the s3proxy Deployment.
+  labels: {}
+  ## @param s3proxy.annotations Annotations added to the s3proxy Deployment.
+  annotations: {}
+
+  ## @param s3proxy.extraEnvVariables Extra environment variables to add to s3proxy pods
+  ## Example:
+  ## extraEnvVariables:
+  ##   - name: FOO
+  ##     value: BAR
+  ##   - name: OPENAI_API_KEY
+  ##     valueFrom:
+  ##       secretKeyRef:
+  ##         name: openai-api-secret
+  ##         key: openai-api-key
+  extraEnvVariables: []
+
+  ## @param s3proxy.envFromSecretName Name of the secret to use for environment variables
+  ## Loads environment variables from a secret object
+  envFromSecretName: ""
+  ## @param s3proxy.envFromConfigMapName Name of the config map to use for environment variables
+  ## Loads environment variables from a ConfigMap object
+  envFromConfigMapName: ""
+
+  ## @param s3proxy.podAnnotations Annotations to add to the resulting Pods of the Deployment.
+  podAnnotations: {}
+
+  ## @param s3proxy.podLabels Labels to add to the resulting Pods of the Deployment.
+  podLabels: {}
+
+  ## @param s3proxy.podSecurityContext Pod security context
+  podSecurityContext: {}
+
+  ## @param s3proxy.securityContext Security context for the container
+  securityContext: {}
+  #  runAsUser: 1000
+  #  runAsGroup: 1000
+
+  ## @param s3proxy.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
+  ## Ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+  resources: {}
+    ## To use the recommended values, uncomment the following lines and remove the curly braces after 'resources:'
+    # requests:
+    #   cpu: 1
+    #   memory: 1Gi
+    # limits:
+    #   cpu: 4
+    #   memory: 2Gi
+
+  ## s3Proxy HorizontalPodAutoScaler configuration
+  ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/
+  ## The HPA scales by the target CPU utilization percentage by default
+  ## Uncomment the targetMemoryUtilizationPercentage line below to scale by memory utilization
+  autoscaling:
+    ## @param s3proxy.autoscaling.enabled Enable autoscaling for the s3proxy Deployment
+    ## @param s3proxy.autoscaling.minReplicas Minimum number of replicas for the s3proxy Deployment
+    ## @param s3proxy.autoscaling.maxReplicas Maximum number of replicas for the s3proxy Deployment
+    ## @param s3proxy.autoscaling.targetCPUUtilizationPercentage Target CPU utilization percentage for the s3proxy Deployment
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 4
+    targetCPUUtilizationPercentage: 80
+    # targetMemoryUtilizationPercentage: 80
+
+  ## @param s3proxy.nodeSelector Node labels for pod assignment
+  ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
+  nodeSelector: {}
+
+  ## @param s3proxy.tolerations Taints to tolerate on node assignment:
+  ## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+  tolerations: []
+
+  ## @param s3proxy.affinity Pod scheduling constraints
+  ## Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
+  affinity: {}
+
+
+################
+### DEPENDENCIES
+################
+
+## @section Dependencies Configuration
+postgresql:
+  ## @param postgresql.enabled Enable PostgreSQL
+  enabled: true
+
+  # Postgres Auth
+  auth:
+    ## @param postgresql.auth.enabled Enable PostgreSQL Auth
+    ## @param postgresql.auth.database Database name
+    ## @param postgresql.auth.username Username
+    enabled: true
+    database: llamacloud
+    username: llamacloud
+
+mongodb:
+  ## @param mongodb.enabled Enable MongoDB
+  enabled: true
+
+  # MongoDB Auth
+  auth:
+    ## @param mongodb.auth.enabled Enable MongoDB Auth
+    ## @param mongodb.auth.rootUser Root user name
+    enabled: true
+
+    rootUser: root
+
+redis:
+  ## @param redis.enabled Enable Redis
+  enabled: true
+
+  ## DO NOT ENABLE REDIS AUTH FOR NOW
+  auth:
+    ## @param redis.auth.enabled Enable Redis Auth (DO NOT SET TO TRUE)
+    enabled: false
+
+rabbitmq:
+  ## @param rabbitmq.enabled Enable RabbitMQ
+  enabled: true

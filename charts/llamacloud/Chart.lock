@@ -1,0 +1,15 @@
+dependencies:
+- name: postgresql
+  repository: oci://registry-1.docker.io/bitnamicharts
+  version: 15.5.17
+- name: mongodb
+  repository: oci://registry-1.docker.io/bitnamicharts
+  version: 15.6.13
+- name: rabbitmq
+  repository: oci://registry-1.docker.io/bitnamicharts
+  version: 14.5.0
+- name: redis
+  repository: oci://registry-1.docker.io/bitnamicharts
+  version: 19.6.2
+digest: sha256:aed9b58fa007cdca5c4a4af24abeadeac3858b0557ff710f737ed35000c8ab85
+generated: "2024-08-12T18:38:31.354126-04:00"
