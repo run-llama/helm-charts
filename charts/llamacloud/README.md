@@ -20,9 +20,8 @@ helm install my-llamacloud-release llamaindex/llamacloud --version 0.1.3
 - Kubernetes `>=1.28.0`
     - We are largely aligned with the versions supported in [EKS](https://endoflife.date/amazon-eks), [AKS](https://learn.microsoft.com/en-us/azure/aks/supported-kubernetes-versions?tabs=azure-cli), and [GKE](https://cloud.google.com/kubernetes-engine/versioning).
 - Helm v3.0.0+ [(Docs)](https://helm.sh/docs/)
-- LlamaCloud Images
+- LlamaCloud Images - [(Docker Hub Repository)](https://hub.docker.com/u/llamaindex)
     - By default, this chart uses public images for all LlamaCloud specific services and its dependencies.
-    - TODO: add dockerhub repo here once images are public
 - LlamaCloud License Key
 
 ## Hardware Requirements
