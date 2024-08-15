@@ -20,7 +20,7 @@ global:
   config:
     ## @param global.config.licenseKey License key for all components
     ## @param global.config.existingLicenseKeySecret Name of the secret to use for the license key
-    licenseKey: ""
+    licenseKey: "<input-license-key-here>"
     existingLicenseKeySecret: ""
 
     ## @param global.config.awsAccessKeyId AWS Access Key ID
@@ -75,7 +75,7 @@ frontend:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-frontend
-    tag: 0.1.2
+    tag: 0.1.3
     pullPolicy: IfNotPresent
 
   ## @param frontend.service.type Frontend Service type
@@ -110,13 +110,6 @@ frontend:
   ##     value: BAR
   ##
   extraEnvVariables: []
-
-  ## @param frontend.envFromSecretName Name of the secret to use for environment variables
-  ## Loads environment variables from a secret object
-  envFromSecretName: ""
-  ## @param frontend.envFromConfigMapName Name of the config map to use for environment variables
-  ## Loads environment variables from a ConfigMap object
-  envFromConfigMapName: ""
 
   ## @param frontend.podAnnotations Annotations to add to the resulting Pods of the Deployment.
   podAnnotations: {}
@@ -202,7 +195,9 @@ backend:
     logLevel: info
 
     ## @param backend.config.openAiApiKey (Required) OpenAI API key
+    ## @param backend.config.existingOpenAiApiKeySecret Name of the existing secret to use for the OpenAI API key
     openAiApiKey: ""
+    existingOpenAiApiKeySecret: ""
 
     ## Backend OpenID Connect configuration
     ## @param backend.config.oidc.existingSecretName Name of the existing secret to use for OIDC configuration
@@ -226,7 +221,7 @@ backend:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-backend
-    tag: 0.1.2
+    tag: 0.1.3
     pullPolicy: IfNotPresent
 
   ## Backend Service information
@@ -413,7 +408,7 @@ jobsService:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-jobs-service
-    tag: 0.1.2
+    tag: 0.1.3
     pullPolicy: IfNotPresent
 
   ## JobsService Service information\
@@ -570,7 +565,7 @@ jobsWorker:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-jobs-worker
-    tag: 0.1.2
+    tag: 0.1.3
     pullPolicy: IfNotPresent
 
   ## JobsWorker Service information
@@ -741,13 +736,17 @@ llamaParse:
   config:
     ## @param llamaParse.config.maxPdfPages Maximum number of pages to parse in a PDF
     ## @param llamaParse.config.openAiApiKey OpenAI API key
+    ## @param llamaParse.config.existingOpenAiApiKeySecret Name of the existing secret to use for the OpenAI API key
     ## @param llamaParse.config.anthropicApiKey Anthropic
+    ## @param llamaParse.config.existingAnthropicApiKeySecret Name of the existing secret to use for the Anthropic API key
     ## @param llamaParse.config.s3UploadBucket S3 bucket to upload files to
     ## @param llamaParse.config.s3OutputBucket S3 bucket to output files to
     ## @param llamaParse.config.s3OutputBucketTemp S3 bucket to output temporary files to
     maxPdfPages: 1200
     openAiApiKey: ""
+    existingOpenAiApiKeySecret: ""
     anthropicApiKey: ""
+    existingAnthropicApiKeySecret: ""
     s3UploadBucket: "llama-platform-file-parsing"
     s3OutputBucket: "llama-platform-file-parsing"
     s3OutputBucketTemp: "llama-platform-file-parsing"
@@ -763,7 +762,7 @@ llamaParse:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-llamaparse
-    tag: 0.1.2
+    tag: 0.1.3
     pullPolicy: IfNotPresent
 
   ## ServiceAccount configuration
@@ -894,7 +893,7 @@ llamaParseOcr:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-llamaparse-ocr
-    tag: 0.1.2
+    tag: 0.1.3
     pullPolicy: IfNotPresent
 
   ## LlamaParseOcr Service information
@@ -1050,7 +1049,7 @@ usage:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-usage
-    tag: 0.1.2
+    tag: 0.1.3
     pullPolicy: IfNotPresent
 
   ## Usage Service information

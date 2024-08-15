@@ -55,16 +55,16 @@ For more information about using this chart, feel free to visit the [Official Ll
 
 ### Global Configuration
 
-| Name                                     | Description                                            | Value |
-| ---------------------------------------- | ------------------------------------------------------ | ----- |
-| `global.cloudProvider`                   | Cloud provider where the chart is deployed in.         | `aws` |
-| `global.imagePullSecrets`                | Global Docker registry secret names as an array        | `[]`  |
-| `global.storageClass`                    | Storage class to use for dynamic provisioning          | `""`  |
-| `global.config.licenseKey`               | License key for all components                         | `""`  |
-| `global.config.existingLicenseKeySecret` | Name of the secret to use for the license key          | `""`  |
-| `global.config.awsAccessKeyId`           | AWS Access Key ID                                      | `""`  |
-| `global.config.awsSecretAccessKey`       | AWS Secret Access Key                                  | `""`  |
-| `global.config.existingAwsSecretName`    | Name of the existing secret to use for AWS credentials | `""`  |
+| Name                                     | Description                                            | Value                      |
+| ---------------------------------------- | ------------------------------------------------------ | -------------------------- |
+| `global.cloudProvider`                   | Cloud provider where the chart is deployed in.         | `aws`                      |
+| `global.imagePullSecrets`                | Global Docker registry secret names as an array        | `[]`                       |
+| `global.storageClass`                    | Storage class to use for dynamic provisioning          | `""`                       |
+| `global.config.licenseKey`               | License key for all components                         | `<input-license-key-here>` |
+| `global.config.existingLicenseKeySecret` | Name of the secret to use for the license key          | `""`                       |
+| `global.config.awsAccessKeyId`           | AWS Access Key ID                                      | `""`                       |
+| `global.config.awsSecretAccessKey`       | AWS Secret Access Key                                  | `""`                       |
+| `global.config.existingAwsSecretName`    | Name of the existing secret to use for AWS credentials | `""`                       |
 
 ### Overrides and Common Configuration
 
@@ -84,7 +84,7 @@ For more information about using this chart, feel free to visit the [Official Ll
 | `frontend.replicas`                                   | Number of replicas of Frontend Deployment                                                                         | `1`                              |
 | `frontend.image.registry`                             | Frontend Image registry                                                                                           | `docker.io`                      |
 | `frontend.image.repository`                           | Frontend Image repository                                                                                         | `llamaindex/llamacloud-frontend` |
-| `frontend.image.tag`                                  | Frontend Image tag                                                                                                | `0.1.0`                          |
+| `frontend.image.tag`                                  | Frontend Image tag                                                                                                | `0.1.3`                          |
 | `frontend.image.pullPolicy`                           | Frontend Image pull policy                                                                                        | `IfNotPresent`                   |
 | `frontend.service.type`                               | Frontend Service type                                                                                             | `ClusterIP`                      |
 | `frontend.service.port`                               | Frontend Service port                                                                                             | `3000`                           |
@@ -96,8 +96,6 @@ For more information about using this chart, feel free to visit the [Official Ll
 | `frontend.annotations`                                | Annotations added to the Frontend Deployment.                                                                     | `{}`                             |
 | `frontend.containerPort`                              | Port to expose on the Frontend container                                                                          | `3000`                           |
 | `frontend.extraEnvVariables`                          | Extra environment variables to add to Frontend pods                                                               | `[]`                             |
-| `frontend.envFromSecretName`                          | Name of the secret to use for environment variables                                                               | `""`                             |
-| `frontend.envFromConfigMapName`                       | Name of the config map to use for environment variables                                                           | `""`                             |
 | `frontend.podAnnotations`                             | Annotations to add to the resulting Pods of the Deployment.                                                       | `{}`                             |
 | `frontend.podLabels`                                  | Labels to add to the resulting Pods of the Deployment.                                                            | `{}`                             |
 | `frontend.podSecurityContext`                         | Annotations to add to the resulting Pods of the Deployment.                                                       | `{}`                             |
@@ -124,6 +122,7 @@ For more information about using this chart, feel free to visit the [Official Ll
 | `backend.name`                                       | Name suffix of the Backend related resources                                                                      | `backend`                       |
 | `backend.config.logLevel`                            | Log level for the backend                                                                                         | `info`                          |
 | `backend.config.openAiApiKey`                        | (Required) OpenAI API key                                                                                         | `""`                            |
+| `backend.config.existingOpenAiApiKeySecret`          | Name of the existing secret to use for the OpenAI API key                                                         | `""`                            |
 | `backend.config.oidc.existingSecretName`             | Name of the existing secret to use for OIDC configuration                                                         | `""`                            |
 | `backend.config.oidc.discoveryUrl`                   | OIDC discovery URL                                                                                                | `""`                            |
 | `backend.config.oidc.clientId`                       | OIDC client ID                                                                                                    | `""`                            |
@@ -131,7 +130,7 @@ For more information about using this chart, feel free to visit the [Official Ll
 | `backend.replicas`                                   | Number of replicas of Backend Deployment                                                                          | `1`                             |
 | `backend.image.registry`                             | Backend Image registry                                                                                            | `docker.io`                     |
 | `backend.image.repository`                           | Backend Image repository                                                                                          | `llamaindex/llamacloud-backend` |
-| `backend.image.tag`                                  | Backend Image tag                                                                                                 | `0.1.0`                         |
+| `backend.image.tag`                                  | Backend Image tag                                                                                                 | `0.1.3`                         |
 | `backend.image.pullPolicy`                           | Backend Image pull policy                                                                                         | `IfNotPresent`                  |
 | `backend.service.type`                               | Backend Service type                                                                                              | `ClusterIP`                     |
 | `backend.service.port`                               | Backend Service port                                                                                              | `8000`                          |
@@ -189,7 +188,7 @@ For more information about using this chart, feel free to visit the [Official Ll
 | `jobsService.replicas`                                   | Number of replicas of JobsService Deployment                                                                      | `1`                                  |
 | `jobsService.image.registry`                             | JobsService Image registry                                                                                        | `docker.io`                          |
 | `jobsService.image.repository`                           | JobsService Image repository                                                                                      | `llamaindex/llamacloud-jobs-service` |
-| `jobsService.image.tag`                                  | JobsService Image tag                                                                                             | `0.1.0`                              |
+| `jobsService.image.tag`                                  | JobsService Image tag                                                                                             | `0.1.3`                              |
 | `jobsService.image.pullPolicy`                           | JobsService Image pull policy                                                                                     | `IfNotPresent`                       |
 | `jobsService.service.type`                               | JobsService Service type                                                                                          | `ClusterIP`                          |
 | `jobsService.service.port`                               | JobsService Service port                                                                                          | `8002`                               |
@@ -237,7 +236,7 @@ For more information about using this chart, feel free to visit the [Official Ll
 | `jobsWorker.replicas`                                   | Number of replicas of JobsWorker Deployment                                                                       | `1`                                 |
 | `jobsWorker.image.registry`                             | JobsWorker Image registry                                                                                         | `docker.io`                         |
 | `jobsWorker.image.repository`                           | JobsWorker Image repository                                                                                       | `llamaindex/llamacloud-jobs-worker` |
-| `jobsWorker.image.tag`                                  | JobsWorker Image tag                                                                                              | `0.1.0`                             |
+| `jobsWorker.image.tag`                                  | JobsWorker Image tag                                                                                              | `0.1.3`                             |
 | `jobsWorker.image.pullPolicy`                           | JobsWorker Image pull policy                                                                                      | `IfNotPresent`                      |
 | `jobsWorker.service.type`                               | JobsWorker Service type                                                                                           | `ClusterIP`                         |
 | `jobsWorker.service.port`                               | JobsWorker Service port                                                                                           | `8001`                              |
@@ -293,14 +292,16 @@ For more information about using this chart, feel free to visit the [Official Ll
 | `llamaParse.name`                                       | Name suffix of the LlamaParse related resources                             | `llamaparse`                       |
 | `llamaParse.config.maxPdfPages`                         | Maximum number of pages to parse in a PDF                                   | `1200`                             |
 | `llamaParse.config.openAiApiKey`                        | OpenAI API key                                                              | `""`                               |
+| `llamaParse.config.existingOpenAiApiKeySecret`          | Name of the existing secret to use for the OpenAI API key                   | `""`                               |
 | `llamaParse.config.anthropicApiKey`                     | Anthropic                                                                   | `""`                               |
+| `llamaParse.config.existingAnthropicApiKeySecret`       | Name of the existing secret to use for the Anthropic API key                | `""`                               |
 | `llamaParse.config.s3UploadBucket`                      | S3 bucket to upload files to                                                | `llama-platform-file-parsing`      |
 | `llamaParse.config.s3OutputBucket`                      | S3 bucket to output files to                                                | `llama-platform-file-parsing`      |
 | `llamaParse.config.s3OutputBucketTemp`                  | S3 bucket to output temporary files to                                      | `llama-platform-file-parsing`      |
 | `llamaParse.replicas`                                   | Number of replicas of LlamaParse Deployment                                 | `2`                                |
 | `llamaParse.image.registry`                             | LlamaParse Image registry                                                   | `docker.io`                        |
 | `llamaParse.image.repository`                           | LlamaParse Image repository                                                 | `llamaindex/llamacloud-llamaparse` |
-| `llamaParse.image.tag`                                  | LlamaParse Image tag                                                        | `0.1.0`                            |
+| `llamaParse.image.tag`                                  | LlamaParse Image tag                                                        | `0.1.3`                            |
 | `llamaParse.image.pullPolicy`                           | LlamaParse Image pull policy                                                | `IfNotPresent`                     |
 | `llamaParse.serviceAccount.create`                      | Whether or not to create a new service account                              | `true`                             |
 | `llamaParse.serviceAccount.name`                        | Name of the service account                                                 | `""`                               |
@@ -342,7 +343,7 @@ For more information about using this chart, feel free to visit the [Official Ll
 | `llamaParseOcr.replicas`                                   | Number of replicas of LlamaParseOcr Deployment                                              | `2`                                    |
 | `llamaParseOcr.image.registry`                             | LlamaParseOcr Image registry                                                                | `docker.io`                            |
 | `llamaParseOcr.image.repository`                           | LlamaParseOcr Image repository                                                              | `llamaindex/llamacloud-llamaparse-ocr` |
-| `llamaParseOcr.image.tag`                                  | LlamaParseOcr Image tag                                                                     | `0.1.0`                                |
+| `llamaParseOcr.image.tag`                                  | LlamaParseOcr Image tag                                                                     | `0.1.3`                                |
 | `llamaParseOcr.image.pullPolicy`                           | LlamaParseOcr Image pull policy                                                             | `IfNotPresent`                         |
 | `llamaParseOcr.service.type`                               | LlamaParseOcr Service type                                                                  | `ClusterIP`                            |
 | `llamaParseOcr.service.port`                               | LlamaParseOcr Service port                                                                  | `8080`                                 |
@@ -397,7 +398,7 @@ For more information about using this chart, feel free to visit the [Official Ll
 | `usage.replicas`                                   | Number of replicas of usage Deployment                                                                            | `1`                           |
 | `usage.image.registry`                             | Usage Image registry                                                                                              | `docker.io`                   |
 | `usage.image.repository`                           | Usage Image repository                                                                                            | `llamaindex/llamacloud-usage` |
-| `usage.image.tag`                                  | Usage Image tag                                                                                                   | `0.1.0`                       |
+| `usage.image.tag`                                  | Usage Image tag                                                                                                   | `0.1.3`                       |
 | `usage.image.pullPolicy`                           | Usage Image pull policy                                                                                           | `IfNotPresent`                |
 | `usage.service.type`                               | Usage Service type                                                                                                | `ClusterIP`                   |
 | `usage.service.port`                               | Usage Service port                                                                                                | `8005`                        |

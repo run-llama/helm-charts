@@ -126,9 +126,13 @@ spec:
           envFrom:
           - configMapRef:
               name: {{ include "llamacloud.fullname" . }}-{{ .Values.jobsWorker.name }}-config
-          {{- if .Values.backend.config.existingAwsSecretName }}
+          {{- if .Values.global.config.existingAwsSecretName }}
           - secretRef:
-              name: {{ .Values.backend.config.existingAwsSecretName }}
+              name: {{ .Values.global.config.existingAwsSecretName }}
+          {{- end }}
+          {{- if .Values.backend.config.existingOpenAiApiKeySecretName }}
+          - secretRef:
+              name: {{ .Values.backend.config.existingOpenAiApiKeySecretName }}
           {{- end }}
           {{- if not .Values.jobsWorker.externalSecrets.enabled }}
           - secretRef:

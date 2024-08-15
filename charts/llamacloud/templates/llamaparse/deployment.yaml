@@ -79,7 +79,7 @@ spec:
                 key: llamacloud-license-key
           {{- if .Values.rabbitmq.enabled }}
           - name: JOB_QUEUE_HOST
-            value: {{ printf "%s-%s.test.svc.cluster.local" (include "llamacloud.fullname" .) (default "rabbitmq" .Values.rabbitmq.nameOverride)| quote }}
+            value: {{ printf "%s-%s.%s.svc.cluster.local" (include "llamacloud.fullname" .) (default "rabbitmq" .Values.rabbitmq.nameOverride) .Release.Namespace | quote }}
           - name: JOB_QUEUE_USERNAME
             value: {{ .Values.rabbitmq.auth.username | quote }}
           - name: JOB_QUEUE_PASSWORD
@@ -94,9 +94,17 @@ spec:
           envFrom:
           - configMapRef:
               name: {{ include "llamacloud.fullname" . }}-{{ .Values.llamaParse.name }}-config
-          {{- if .Values.backend.config.existingAwsSecretName }}
+          {{- if .Values.global.config.existingAwsSecretName }}
           - secretRef:
-              name: {{ .Values.backend.config.existingAwsSecretName }}
+              name: {{ .Values.global.config.existingAwsSecretName }}
+          {{- end }}
+          {{- if .Values.llamaParse.config.existingOpenAiApiKeySecret }}
+          - secretRef:
+              name: {{ .Values.llamaParse.config.existingOpenAiApiKeySecret }}
+          {{- end }}
+          {{- if .Values.llamaParse.config.existingAnthropicApiKeySecret }}
+          - secretRef:
+              name: {{ .Values.llamaParse.config.existingAnthropicApiKeySecret }}
           {{- end }}
           {{- if not .Values.llamaParse.externalSecrets.enabled }}
           - secretRef:

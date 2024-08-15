@@ -63,31 +63,21 @@ spec:
           resources:
             {{- toYaml .Values.frontend.resources | nindent 12 }}
           env:
-          {{- if not .Values.global.config.existingLicenseKeySecret }}
           - name: LLAMACLOUD_LICENSE_KEY
             valueFrom:
               secretKeyRef:
+                {{- if .Values.global.config.existingLicenseKeySecret }}
+                name: {{ .Values.global.config.existingLicenseKeySecret }}
+                {{- else }}
                 name: {{ include "llamacloud.fullname" . }}-license-key
+                {{- end }}
                 key: llamacloud-license-key
-          {{- end }}
           - name: HOSTNAME
             value: 0.0.0.0
           - name: NEXT_PUBLIC_BACKEND_URL
             value: {{ printf "http://%s-%s:%d" (include "llamacloud.fullname" .) .Values.backend.name (.Values.backend.service.port | int) | quote }}
-          {{- range $key, $value := .Values.frontend.extraEnvVariables }}
-          - name: {{ $key }}
-            value: "{{ $value }}"
-          {{- end }}
-          {{- if (or .Values.frontend.envFromSecretName .Values.frontend.envFromConfigMapName) }}
-          envFrom:
-          {{- if .Values.frontend.envFromConfigMapName }}
-          - configMapRef:
-              name: {{ .Values.frontend.envFromConfigMapName }}
-          {{- end }}
-          {{- if .Values.frontend.envFromSecretName }}
-          - secretRef:
-              name: {{ .Values.frontend.envFromSecretName }}
-          {{- end }}
+          {{- with .Values.jobsWorker.extraEnvVariables }}
+          {{- toYaml . | nindent 10 }}
           {{- end }}
           {{- with .Values.frontend.volumeMounts }}
           volumeMounts:
