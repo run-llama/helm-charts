@@ -12,7 +12,7 @@ helm repo add llamaindex https://run-llama.github.io/helm-charts
 helm repo update
 
 # Install the basic version of the chart
-helm install my-llamacloud-release llamaindex/llamacloud --version 0.1.2
+helm install my-llamacloud-release llamaindex/llamacloud --version 0.1.3
 ```
 
 ## Prerequisites
