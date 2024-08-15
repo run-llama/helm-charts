@@ -70,8 +70,6 @@ spec:
           resources:
             {{- toYaml .Values.usage.resources | nindent 12 }}
           env:
-          - name: BYOC_MODE_ENABLED
-            value: "true"
           - name: LLAMACLOUD_LICENSE_KEY
             valueFrom:
               secretKeyRef:
