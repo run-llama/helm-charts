@@ -19,7 +19,7 @@ helm install my-llamacloud-release llamaindex/llamacloud --version 0.1.3
 
 - Kubernetes `>=1.28.0`
     - We are largely aligned with the versions supported in [EKS](https://endoflife.date/amazon-eks), [AKS](https://learn.microsoft.com/en-us/azure/aks/supported-kubernetes-versions?tabs=azure-cli), and [GKE](https://cloud.google.com/kubernetes-engine/versioning).
-- Helm v3.0.0+ [(Docs)](https://helm.sh/docs/)
+- Helm v3.7.0+ [(Docs)](https://helm.sh/docs/)
 - LlamaCloud Images - [(Docker Hub Repository)](https://hub.docker.com/u/llamaindex)
     - By default, this chart uses public images for all LlamaCloud specific services and its dependencies.
 - LlamaCloud License Key
@@ -40,10 +40,15 @@ Warning #2:The base cpu/memory requirements may increase if you are running cont
 The LlamaCloud charts provide easy deployment options for the 3rd party dependencies that the platform requires. Each of the following dependencies can be enabled directly through the `values.yaml` file, or alternatively, you can supply your own `Secret` objects to provide the LlamaCloud deployments with the necessar credentials to those services.
 
 - PostgreSQL (Helm Chart Dependency)
+    - [Bitnami Helm Chart](https://github.com/bitnami/charts/blob/main/bitnami/postgresql/README.md)
 - MongoDB (Helm Chart Dependency)
+    - [Bitnami Helm Chart](https://github.com/bitnami/charts/blob/main/bitnami/mongodb/README.md)
 - RabbitMQ (Helm Chart Dependency)
+    - [Bitnami Helm Chart](https://github.com/bitnami/charts/blob/main/bitnami/rabbitmq/README.md)
 - Redis (Helm Chart Dependency)
+    - [Bitnami Helm Chart](https://github.com/bitnami/charts/blob/main/bitnami/redis/README.md)
 - S3Proxy (Templates)
+    - If enabled, we are deploying a containerized version of gaul's [s3proxy project](https://github.com/gaul/s3proxy).
     - If you wish to use a non-aws file store such as Azure Blob Storage or GCP Filestore, enable and configure the s3proxy deployment. For more information, please feel free refer to our docs!
 
 ## Documentation
