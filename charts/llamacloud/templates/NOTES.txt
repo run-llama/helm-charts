@@ -1,0 +1,9 @@
+Welcome to LlamaCloud!
+
+View your deployment with the following:
+
+  kubectl --namespace {{ .Release.Namespace }} get pods
+
+To view LlamaCloud UI in your browser, run the following:
+
+  kubectl --namespace {{ .Release.Namespace }} port-forward svc/{{ include "llamacloud.fullname" . }}-{{ .Values.frontend.name }} 3000:{{ .Values.frontend.service.port }}

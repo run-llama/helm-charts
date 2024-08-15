@@ -1,0 +1,6 @@
+**/charts/*.tgz
+
+.vscode/
+.idea/
+
+.DS_STORE

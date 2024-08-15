@@ -1,0 +1,167 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "llamacloud.fullname" . }}-{{ .Values.backend.name }}
+  labels:
+    {{- include "llamacloud.labels" . | nindent 4 }}
+    {{- with .Values.backend.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- include "llamacloud.annotations" . | nindent 4 }}
+    {{- with .Values.backend.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  {{- if not .Values.backend.autoscaling.enabled }}
+  replicas: {{ .Values.backend.replicas }}
+  {{- end }}
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 1
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      {{- include "llamacloud.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: {{ include "llamacloud.fullname" . }}-{{ .Values.backend.name }}
+  template:
+    metadata:
+      {{- with .Values.backend.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        app.kubernetes.io/component: {{ include "llamacloud.fullname" . }}-{{ .Values.backend.name }}
+        {{- include "llamacloud.labels" . | nindent 8 }}
+        {{- with .Values.backend.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "backend.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.backend.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Values.backend.name | default "backend" }}
+          securityContext:
+            {{- toYaml .Values.backend.securityContext | nindent 12 }}
+          image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.backend.image.pullPolicy }}
+          ports:
+            - name: {{ .Values.backend.name }}-http
+              containerPort: {{ .Values.backend.containerPort }}
+              protocol: TCP
+          command: ["poetry", "run", "start"]
+          livenessProbe:
+            {{- toYaml .Values.backend.livenessProbe | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.backend.readinessProbe | nindent 12 }}
+          startupProbe:
+            {{- toYaml .Values.backend.startupProbe | nindent 12 }}
+          resources:
+            {{- toYaml .Values.backend.resources | nindent 12 }}
+          env:
+          - name: LLAMACLOUD_LICENSE_KEY
+            valueFrom:
+              secretKeyRef:
+                {{- if .Values.global.config.existingLicenseKeySecret }}
+                name: {{ .Values.global.config.existingLicenseKeySecret }}
+                {{- else }}
+                name: {{ include "llamacloud.fullname" . }}-license-key
+                {{- end }}
+                key: llamacloud-license-key
+          {{- if .Values.postgresql.enabled }}
+          - name: DATABASE_HOST
+            value: {{ printf "%s-%s" .Release.Name "postgresql" | quote}}
+          - name: DATABASE_PORT
+            value: "5432"
+          - name: DATABASE_NAME
+            value: {{ .Values.postgresql.auth.database | quote }}
+          - name: DATABASE_USER
+            value: {{ .Values.postgresql.auth.username | quote }}
+          - name: DATABASE_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ printf "%s-%s" .Release.Name "postgresql" }}
+                key: password
+          {{- end }}
+          {{- if .Values.mongodb.enabled }}
+          - name: MONGODB_HOST
+            value: {{ printf "%s-%s" .Release.Name (default "mongodb" .Values.mongodb.nameOverride) | quote }}
+          - name: MONGODB_PORT
+            value: {{ .Values.mongodb.service.port | default "27017" | quote }}
+          - name: MONGODB_USER
+            value: {{ .Values.mongodb.auth.rootUser | quote }}
+          - name: MONGODB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ printf "%s-%s" .Release.Name (default "mongodb" .Values.mongodb.nameOverride) | quote }}
+                key: mongodb-root-password
+          {{- end }}
+          {{- if .Values.rabbitmq.enabled }}
+          - name: JOB_QUEUE_ENDPOINT
+            value: {{ printf "amqp://%s-%s:5672" (include "llamacloud.fullname" .) (default "rabbitmq" .Values.rabbitmq.nameOverride) | quote }}
+          - name: JOB_QUEUE_USERNAME
+            value: {{ .Values.rabbitmq.auth.username | default "user" | quote }}
+          - name: JOB_QUEUE_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ printf "%s-%s" (include "llamacloud.fullname" .) (default "rabbitmq" .Values.rabbitmq.nameOverride) | quote }}
+                key: rabbitmq-password
+          {{- end }}
+          {{- if .Values.redis.enabled }}
+          - name: REDIS_HOST
+            value: {{ printf "%s-%s-master" (include "llamacloud.fullname" .) (default "redis" .Values.redis.nameOverride) | quote }}
+          - name: REDIS_PORT
+            value: {{ .Values.redis.master.service.ports.redis | default "6379" | quote }}
+          {{- end }}
+          {{- with .Values.backend.extraEnvVariables }}
+          {{- toYaml . | nindent 10 }}
+          {{- end }}
+          envFrom:
+          - configMapRef:
+              name: {{ include "llamacloud.fullname" . }}-{{ .Values.backend.name }}-config
+          {{- if .Values.backend.config.oidc.existingSecretName }}
+          - secretRef:
+              name: {{ .Values.backend.config.oidc.existingSecretName }}
+          {{- end }}
+          {{- if .Values.global.config.existingAwsSecretName }}
+          - secretRef:
+              name: {{ .Values.global.config.existingAwsSecretName }}
+          {{- end }}
+          {{- if .Values.backend.config.existingOpenAiApiKeySecretName }}
+          - secretRef:
+              name: {{ .Values.backend.config.existingOpenAiApiKeySecretName }}
+          {{- end }}
+          {{- if not .Values.backend.externalSecrets.enabled }}
+          - secretRef:
+              name: {{ include "llamacloud.fullname" . }}-{{ .Values.backend.name }}-secret
+          {{- else }}
+          {{- range .Values.backend.externalSecrets.secrets }}
+          - secretRef:
+              name: {{ . }}
+          {{- end }}
+          {{- end }}
+          {{- with .Values.backend.volumeMounts }}
+          volumeMounts:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- with .Values.backend.volumes }}
+      volumes:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.backend.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.backend.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.backend.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

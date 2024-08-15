@@ -1,0 +1,137 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "llamacloud.fullname" . }}-{{ .Values.llamaParse.name }}
+  labels:
+    {{- include "llamacloud.labels" . | nindent 4 }}
+    {{- with.Values.llamaParse.labels }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- include "llamacloud.annotations" . | nindent 4 }}
+    {{- with.Values.llamaParse.annotations }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  {{- if not .Values.llamaParse.autoscaling.enabled }}
+  replicas: {{ .Values.llamaParse.replicas }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "llamacloud.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: {{ include "llamacloud.fullname" . }}-{{ .Values.llamaParse.name }}
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      {{- with .Values.llamaParse.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        app.kubernetes.io/component: {{ include "llamacloud.fullname" . }}-{{ .Values.llamaParse.name }}
+        {{- include "llamacloud.labels" . | nindent 8 }}
+        {{- with .Values.llamaParse.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "llamaParse.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.llamaParse.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Values.llamaParse.name }}
+          securityContext:
+            {{- toYaml .Values.llamaParse.securityContext | nindent 12 }}
+          image: "{{ .Values.llamaParse.image.repository }}:{{ .Values.llamaParse.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.llamaParse.image.pullPolicy }}
+          command: ["pm2", "start"]
+          args:
+            [
+              "--name",
+              "worker",
+              "--node-args='--max-old-space-size=14240'",
+              "--no-daemon",
+              "npm",
+              "--",
+              "start",
+            ]
+          livenessProbe:
+            {{- toYaml .Values.llamaParse.livenessProbe | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.llamaParse.readinessProbe | nindent 12 }}
+          resources:
+            {{- toYaml .Values.llamaParse.resources | nindent 12 }}
+          env:
+          - name: LLAMACLOUD_LICENSE_KEY
+            valueFrom:
+              secretKeyRef:
+                {{- if .Values.global.config.existingLicenseKeySecret }}
+                name: {{ .Values.global.config.existingLicenseKeySecret }}
+                {{- else }}
+                name: {{ include "llamacloud.fullname" . }}-license-key
+                {{- end }}
+                key: llamacloud-license-key
+          {{- if .Values.rabbitmq.enabled }}
+          - name: JOB_QUEUE_HOST
+            value: {{ printf "%s-%s.%s.svc.cluster.local" (include "llamacloud.fullname" .) (default "rabbitmq" .Values.rabbitmq.nameOverride) .Release.Namespace | quote }}
+          - name: JOB_QUEUE_USERNAME
+            value: {{ .Values.rabbitmq.auth.username | quote }}
+          - name: JOB_QUEUE_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ printf "%s-%s" (include "llamacloud.fullname" .) (default "rabbitmq" .Values.rabbitmq.nameOverride) | quote }}
+                key: rabbitmq-password
+          {{- end }}
+          {{- with .Values.llamaParse.extraEnvVariables }}
+          {{- toYaml . | nindent 10 }}
+          {{- end }}
+          envFrom:
+          - configMapRef:
+              name: {{ include "llamacloud.fullname" . }}-{{ .Values.llamaParse.name }}-config
+          {{- if .Values.global.config.existingAwsSecretName }}
+          - secretRef:
+              name: {{ .Values.global.config.existingAwsSecretName }}
+          {{- end }}
+          {{- if .Values.llamaParse.config.existingOpenAiApiKeySecret }}
+          - secretRef:
+              name: {{ .Values.llamaParse.config.existingOpenAiApiKeySecret }}
+          {{- end }}
+          {{- if .Values.llamaParse.config.existingAnthropicApiKeySecret }}
+          - secretRef:
+              name: {{ .Values.llamaParse.config.existingAnthropicApiKeySecret }}
+          {{- end }}
+          {{- if not .Values.llamaParse.externalSecrets.enabled }}
+          - secretRef:
+              name: {{ include "llamacloud.fullname" . }}-{{ .Values.llamaParse.name }}-secret
+          {{- else }}
+          {{- range .Values.llamaParse.externalSecrets.secrets }}
+          - secretRef:
+              name: {{ . }}
+          {{- end }}
+          {{- end }}
+          {{- with .Values.llamaParse.volumeMounts }}
+          volumeMounts:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- with .Values.llamaParse.volumes }}
+      volumes:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.llamaParse.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.llamaParse.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.llamaParse.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
