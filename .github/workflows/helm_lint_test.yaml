@@ -9,7 +9,9 @@ on:
 
 jobs:
   lint-test:
-    runs-on: ubuntu-latest
+    name: "Lint and Test Helm Charts"
+    runs-on:
+      labels: helm-charts-runner
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -19,7 +21,7 @@ jobs:
       - name: Set up Helm
         uses: azure/setup-helm@v3
         with:
-          version: v3.12.1
+          version: v3.14.4
 
       - uses: actions/setup-python@v4
         with:
@@ -27,16 +29,41 @@ jobs:
           check-latest: true
 
       - name: Set up chart-testing
-        uses: helm/chart-testing-action@v2.6.0
+        uses: helm/chart-testing-action@v2.6.1
+
+      # - name: Run chart-testing (list-changed)
+      #   id: list-changed
+      #   run: |
+      #     changed=$(ct list-changed --target-branch ${{ github.event.repository.default_branch }})
+      #     echo $changed
+      #     if [[ -n "$changed" ]]; then
+      #       echo "changed=true" >> "$GITHUB_OUTPUT"
+      #     fi
 
       - name: Lint
+        id: lint-charts
+        # if: steps.list-changed.outputs.changed == 'true'
         run: ct lint --target-branch ${{ github.event.repository.default_branch }} --all --validate-maintainers=false
 
-      # - name: Create kind cluster
-      #   uses: helm/kind-action@v1.7.0
+      - name: Create kind cluster
+        # if: steps.list-changed.outputs.changed == 'true'
+        uses: helm/kind-action@v1.10.0
     
-      # - name: Test
-      #   env:
-      #     LLAMACLOUD_LICENSE_KEY: ${{ secrets.LLAMACLOUD_LICENSE_KEY }}
-      #     OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-      #   run: ct install --target-branch ${{ github.event.repository.default_branch }} --all --helm-extra-set-args "--set=global.config.licenseKey=$LLAMACLOUD_LICENSE_KEY --set=backend.config.openAiApiKey=$OPENAI_API_KEY --set=llamaParse.config.openAiApiKey=$OPENAI_API_KEY"
+      - name: Test
+        id: test-charts
+        # if: steps.list-changed.outputs.changed == 'true'
+        env:
+          LLAMACLOUD_LICENSE_KEY: ${{ secrets.LLAMACLOUD_LICENSE_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OIDC_DISCOVERY_URL: ${{ secrets.OIDC_DISCOVERY_URL }}
+          OIDC_CLIENT_ID: ${{ secrets.OIDC_CLIENT_ID }}
+          OIDC_CLIENT_SECRET: ${{ secrets.OIDC_CLIENT_SECRET }}
+        run: |
+          ct install --target-branch ${{ github.event.repository.default_branch }} --all \
+            --helm-extra-set-args \
+            "--set=global.config.licenseKey=$LLAMACLOUD_LICENSE_KEY \
+            --set=backend.config.oidc.discoveryUrl=$OIDC_DISCOVERY_URL \
+            --set=backend.config.oidc.clientId=$OIDC_CLIENT_ID \
+            --set=backend.config.oidc.clientSecret=$OIDC_CLIENT_SECRET \
+            --set=backend.config.openAiApiKey=$OPENAI_API_KEY \
+            --set=llamaParse.config.openAiApiKey=$OPENAI_API_KEY"
