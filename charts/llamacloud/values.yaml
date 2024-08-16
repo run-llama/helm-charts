@@ -75,7 +75,7 @@ frontend:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-frontend
-    tag: 0.1.3
+    tag: 0.1.4
     pullPolicy: IfNotPresent
 
   ## @param frontend.service.type Frontend Service type
@@ -199,6 +199,21 @@ backend:
     openAiApiKey: ""
     existingOpenAiApiKeySecret: ""
 
+    ## Backend Azure OpenAI configuration
+    ## @param backend.config.azureOpenAi.enabled Enable Azure OpenAI for backend
+    ## @param backend.config.azureOpenAi.existingSecret Name of the existing secret to use for the Azure OpenAI API key
+    ## @param backend.config.azureOpenAi.key Azure OpenAI API key
+    ## @param backend.config.azureOpenAi.endpoint Azure OpenAI endpoint
+    ## @param backend.config.azureOpenAi.deploymentName Azure OpenAI deployment
+    ## @param backend.config.azureOpenAi.apiVersion Azure OpenAI API version
+    azureOpenAi:
+      enabled: false
+      existingSecret: ""
+      key: ""
+      endpoint: ""
+      deploymentName: ""
+      apiVersion: ""
+
     ## Backend OpenID Connect configuration
     ## @param backend.config.oidc.existingSecretName Name of the existing secret to use for OIDC configuration
     ## @param backend.config.oidc.discoveryUrl OIDC discovery URL
@@ -221,7 +236,7 @@ backend:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-backend
-    tag: 0.1.3
+    tag: 0.1.4
     pullPolicy: IfNotPresent
 
   ## Backend Service information
@@ -408,7 +423,7 @@ jobsService:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-jobs-service
-    tag: 0.1.3
+    tag: 0.1.4
     pullPolicy: IfNotPresent
 
   ## JobsService Service information\
@@ -565,7 +580,7 @@ jobsWorker:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-jobs-worker
-    tag: 0.1.3
+    tag: 0.1.4
     pullPolicy: IfNotPresent
 
   ## JobsWorker Service information
@@ -735,18 +750,35 @@ llamaParse:
 
   config:
     ## @param llamaParse.config.maxPdfPages Maximum number of pages to parse in a PDF
+    maxPdfPages: 1200
+
     ## @param llamaParse.config.openAiApiKey OpenAI API key
     ## @param llamaParse.config.existingOpenAiApiKeySecret Name of the existing secret to use for the OpenAI API key
-    ## @param llamaParse.config.anthropicApiKey Anthropic
+    openAiApiKey: ""
+    existingOpenAiApiKeySecret: ""
+
+    ## @param llamaParse.config.azureOpenAi.enabled Enable Azure OpenAI for LlamaParse
+    ## @param llamaParse.config.azureOpenAi.existingSecret Name of the existing secret to use for the Azure OpenAI API key
+    ## @param llamaParse.config.azureOpenAi.key Azure OpenAI API key
+    ## @param llamaParse.config.azureOpenAi.endpoint Azure OpenAI endpoint
+    ## @param llamaParse.config.azureOpenAi.deploymentName Azure OpenAI deployment
+    ## @param llamaParse.config.azureOpenAi.apiVersion Azure OpenAI API version
+    azureOpenAi:
+      enabled: false
+      existingSecret: ""
+      key: ""
+      endpoint: ""
+      deploymentName: ""
+      apiVersion: ""
+
+    ## @param llamaParse.config.anthropicApiKey Anthropic API key
     ## @param llamaParse.config.existingAnthropicApiKeySecret Name of the existing secret to use for the Anthropic API key
+    anthropicApiKey: ""
+    existingAnthropicApiKeySecret: ""
+
     ## @param llamaParse.config.s3UploadBucket S3 bucket to upload files to
     ## @param llamaParse.config.s3OutputBucket S3 bucket to output files to
     ## @param llamaParse.config.s3OutputBucketTemp S3 bucket to output temporary files to
-    maxPdfPages: 1200
-    openAiApiKey: ""
-    existingOpenAiApiKeySecret: ""
-    anthropicApiKey: ""
-    existingAnthropicApiKeySecret: ""
     s3UploadBucket: "llama-platform-file-parsing"
     s3OutputBucket: "llama-platform-file-parsing"
     s3OutputBucketTemp: "llama-platform-file-parsing"
@@ -762,7 +794,7 @@ llamaParse:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-llamaparse
-    tag: 0.1.3
+    tag: 0.1.4
     pullPolicy: IfNotPresent
 
   ## ServiceAccount configuration
@@ -893,7 +925,7 @@ llamaParseOcr:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-llamaparse-ocr
-    tag: 0.1.3
+    tag: 0.1.4
     pullPolicy: IfNotPresent
 
   ## LlamaParseOcr Service information
@@ -1049,7 +1081,7 @@ usage:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-usage
-    tag: 0.1.3
+    tag: 0.1.4
     pullPolicy: IfNotPresent
 
   ## Usage Service information

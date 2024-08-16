@@ -136,6 +136,10 @@ spec:
           - secretRef:
               name: {{ .Values.backend.config.existingOpenAiApiKeySecretName }}
           {{- end }}
+          {{- if and .Values.backend.config.azureOpenAi.enabled .Values.backend.config.azureOpenAi.existingSecret }}
+          - secretRef:
+              name: {{ .Values.backend.config.azureOpenAi.existingSecret }}
+          {{- end }}
           {{- if not .Values.backend.externalSecrets.enabled }}
           - secretRef:
               name: {{ include "llamacloud.fullname" . }}-{{ .Values.backend.name }}-secret

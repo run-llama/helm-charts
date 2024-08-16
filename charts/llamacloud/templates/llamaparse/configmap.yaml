@@ -7,6 +7,7 @@ metadata:
   annotations:
     {{- include "llamacloud.annotations" . | nindent 4 }}
 data:
+  CLOUD_PROVIDER: {{ .Values.global.cloudProvider | quote }}
   DEBUG_MODE: {{ .Values.llamaParse.config.debugMode | default false | quote }}
   MAX_PDF_PAGES: {{ .Values.llamaParse.config.maxPdfPages | default 1200 | quote }}
   JOB_SERVICE_URL: {{ printf "http://%s-%s:%d" (include "llamacloud.fullname" .) .Values.jobsService.name (.Values.jobsService.service.port | int) | quote }}
