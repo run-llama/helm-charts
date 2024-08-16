@@ -102,6 +102,10 @@ spec:
           - secretRef:
               name: {{ .Values.llamaParse.config.existingOpenAiApiKeySecret }}
           {{- end }}
+          {{- if and .Values.llamaParse.config.azureOpenAi.enabled .Values.llamaParse.config.azureOpenAi.existingSecret }}
+          - secretRef:
+              name: {{ .Values.llamaParse.config.azureOpenAi.existingSecret }}
+          {{- end }}
           {{- if .Values.llamaParse.config.existingAnthropicApiKeySecret }}
           - secretRef:
               name: {{ .Values.llamaParse.config.existingAnthropicApiKeySecret }}

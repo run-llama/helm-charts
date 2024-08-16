@@ -127,6 +127,12 @@ For more information about using this chart, feel free to visit the [Official Ll
 | `backend.config.logLevel`                            | Log level for the backend                                                                                         | `info`                          |
 | `backend.config.openAiApiKey`                        | (Required) OpenAI API key                                                                                         | `""`                            |
 | `backend.config.existingOpenAiApiKeySecret`          | Name of the existing secret to use for the OpenAI API key                                                         | `""`                            |
+| `backend.config.azureOpenAi.enabled`                 | Enable Azure OpenAI for backend                                                                                   | `false`                         |
+| `backend.config.azureOpenAi.existingSecret`          | Name of the existing secret to use for the Azure OpenAI API key                                                   | `""`                            |
+| `backend.config.azureOpenAi.key`                     | Azure OpenAI API key                                                                                              | `""`                            |
+| `backend.config.azureOpenAi.endpoint`                | Azure OpenAI endpoint                                                                                             | `""`                            |
+| `backend.config.azureOpenAi.deploymentName`          | Azure OpenAI deployment                                                                                           | `""`                            |
+| `backend.config.azureOpenAi.apiVersion`              | Azure OpenAI API version                                                                                          | `""`                            |
 | `backend.config.oidc.existingSecretName`             | Name of the existing secret to use for OIDC configuration                                                         | `""`                            |
 | `backend.config.oidc.discoveryUrl`                   | OIDC discovery URL                                                                                                | `""`                            |
 | `backend.config.oidc.clientId`                       | OIDC client ID                                                                                                    | `""`                            |
@@ -297,7 +303,13 @@ For more information about using this chart, feel free to visit the [Official Ll
 | `llamaParse.config.maxPdfPages`                         | Maximum number of pages to parse in a PDF                                   | `1200`                             |
 | `llamaParse.config.openAiApiKey`                        | OpenAI API key                                                              | `""`                               |
 | `llamaParse.config.existingOpenAiApiKeySecret`          | Name of the existing secret to use for the OpenAI API key                   | `""`                               |
-| `llamaParse.config.anthropicApiKey`                     | Anthropic                                                                   | `""`                               |
+| `llamaParse.config.azureOpenAi.enabled`                 | Enable Azure OpenAI for LlamaParse                                          | `false`                            |
+| `llamaParse.config.azureOpenAi.existingSecret`          | Name of the existing secret to use for the Azure OpenAI API key             | `""`                               |
+| `llamaParse.config.azureOpenAi.key`                     | Azure OpenAI API key                                                        | `""`                               |
+| `llamaParse.config.azureOpenAi.endpoint`                | Azure OpenAI endpoint                                                       | `""`                               |
+| `llamaParse.config.azureOpenAi.deploymentName`          | Azure OpenAI deployment                                                     | `""`                               |
+| `llamaParse.config.azureOpenAi.apiVersion`              | Azure OpenAI API version                                                    | `""`                               |
+| `llamaParse.config.anthropicApiKey`                     | Anthropic API key                                                           | `""`                               |
 | `llamaParse.config.existingAnthropicApiKeySecret`       | Name of the existing secret to use for the Anthropic API key                | `""`                               |
 | `llamaParse.config.s3UploadBucket`                      | S3 bucket to upload files to                                                | `llama-platform-file-parsing`      |
 | `llamaParse.config.s3OutputBucket`                      | S3 bucket to output files to                                                | `llama-platform-file-parsing`      |
