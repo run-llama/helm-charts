@@ -1,0 +1,43 @@
+global:
+  cloudProvider: azure
+
+  config:
+    licenseKey: "<contact-support-for-key>"
+
+backend:
+  config:
+    oidc:
+      discoveryUrl: "fill-out"
+      clientId: "fill-out"
+      clientSecret: "fill-out"
+
+    azureOpenAi:
+      enabled: true
+      key: "fill-out"
+      endpoint: "fill-out"
+      deploymentName: "fill-out"
+      apiVersion: "fill-out"
+
+llamaParse:
+  config:
+    azureOpenAi:
+      enabled: true
+      key: "fill-out"
+      endpoint: "fill-out"
+      deploymentName: "fill-out"
+      apiVersion: "fill-out"
+
+s3proxy:
+  enabled: true
+
+  config:
+    S3PROXY_ENDPOINT: "http://0.0.0.0:80"
+    S3PROXY_AUTHORIZATION: "none"
+    S3PROXY_IGNORE_UNKNOWN_HEADERS: "true"
+    S3PROXY_CORS_ALLOW_ORIGINS: "*"
+    JCLOUDS_PROVIDER: "azureblob"
+    JCLOUD_REGION: "eastus"
+    JCLOUDS_AZUREBLOB_AUTH: "azureKey"
+    JCLOUDS_IDENTITY: "fill-out"
+    JCLOUDS_CREDENTIAL: "fill-out"
+    JCLOUDS_ENDPOINT: "fill-out"
