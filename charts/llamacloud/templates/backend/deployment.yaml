@@ -90,9 +90,9 @@ spec:
           {{- end }}
           {{- if .Values.mongodb.enabled }}
           - name: MONGODB_HOST
-            value: {{ printf "%s-%s" .Release.Name (default "mongodb" .Values.mongodb.nameOverride) | quote }}
+            value: {{ include "common.mongodb.host" . }}
           - name: MONGODB_PORT
-            value: {{ .Values.mongodb.service.port | default "27017" | quote }}
+            value: {{ include "common.mongodb.port" . }}
           - name: MONGODB_USER
             value: {{ .Values.mongodb.auth.rootUser | quote }}
           - name: MONGODB_PASSWORD
@@ -114,9 +114,9 @@ spec:
           {{- end }}
           {{- if .Values.redis.enabled }}
           - name: REDIS_HOST
-            value: {{ printf "%s-%s-master" (include "llamacloud.fullname" .) (default "redis" .Values.redis.nameOverride) | quote }}
+            value: {{- include "common.redisHost" -}}
           - name: REDIS_PORT
-            value: {{ .Values.redis.master.service.ports.redis | default "6379" | quote }}
+            value: {{- include "common.redisPort" -}}
           {{- end }}
           {{- with .Values.backend.extraEnvVariables }}
           {{- toYaml . | nindent 10 }}

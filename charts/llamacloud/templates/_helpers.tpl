@@ -132,3 +132,35 @@ Service Accounts Names
     {{ default "default" .Values.s3proxy.serviceAccount.name }}
 {{- end -}}
 {{- end -}}
+
+{{- define "common.postgresql.host" -}}
+{{- printf "%s-%s" .Release.Name "postgresql" | quote }}
+{{- end -}}
+
+{{- define "common.mongodb.host" -}}
+{{- printf "%s-%s" .Release.Name (default "mongodb" .Values.mongodb.nameOverride) | quote }}
+{{- end -}}
+
+{{- define  "common.mongodb.port" }}
+{{ .Values.mongodb.service.port | default "27017" | quote }}
+{{- end -}}
+
+{{- define "common.redis.host" -}}
+{{ printf "%s-%s-master" (include "llamacloud.fullname" .) (default "redis" .Values.redis.nameOverride) | quote }}
+{{- end -}}
+
+{{- define "common.dependencyInitContianer" -}}
+command:
+  - /bin/sh
+  - -ce
+  - |
+    {{- if .Values.postgresql.enabled -}}
+    # Wait for postgresql
+    ./docker_scripts/wait-for-it.sh {{ include "common.postgresql.host" . }}:5432
+    {{- end -}}
+    {{- if .Values.redis.enabled -}}
+    {{- end -}}
+    # wait for redis
+    until kubectl 
+    {{- end -}}
+{{- end -}}
