@@ -20,3 +20,4 @@ data:
   S3_FILE_PARSING_BUCKET_NAME: {{ .Values.global.config.parsedFileParsingCloudBucketName | default "llama-platform-file-parsing" }}
   S3_RAW_FILE_BUCKET_NAME: {{ .Values.global.config.parsedRawFileCloudBucketName | default "llama-platform-raw-files" }}
   S3_LLAMA_CLOUD_PARSE_OUTPUT_BUCKET_NAME: {{ .Values.global.config.parsedLlamaCloudParseOutputCloudBucketName | default "llama-cloud-parse-output" }}
+  S3_FILE_SCREENSHOT_BUCKET_NAME: {{ .Values.global.config.parsedFileScreenshotCloudBucketName | default "llama-platform-file-screenshots" }}
