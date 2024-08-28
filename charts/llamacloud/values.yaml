@@ -39,6 +39,7 @@ global:
     # parsedFileParsingCloudBucketName: "llama-platform-file-parsing"
     # parsedRawFileCloudBucketName: "llama-platform-raw-files"
     # parsedLlamaCloudParseOutputCloudBucketName: "llama-cloud-parse-output"
+    # parsedFileScreenshotCloudBucketName: "llama-platform-file-screenshots"
 
 
 ## @section Overrides and Common Configuration
