@@ -76,7 +76,7 @@ frontend:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-frontend
-    tag: 0.1.11
+    tag: 0.1.12
     pullPolicy: IfNotPresent
 
   ## @param frontend.service.type Frontend Service type
@@ -237,7 +237,7 @@ backend:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-backend
-    tag: 0.1.11
+    tag: 0.1.12
     pullPolicy: IfNotPresent
 
   ## Backend Service information
@@ -424,7 +424,7 @@ jobsService:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-jobs-service
-    tag: 0.1.11
+    tag: 0.1.12
     pullPolicy: IfNotPresent
 
   ## JobsService Service information\
@@ -581,7 +581,7 @@ jobsWorker:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-jobs-worker
-    tag: 0.1.11
+    tag: 0.1.12
     pullPolicy: IfNotPresent
 
   ## JobsWorker Service information
@@ -795,7 +795,7 @@ llamaParse:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-llamaparse
-    tag: 0.1.11
+    tag: 0.1.12
     pullPolicy: IfNotPresent
 
   ## ServiceAccount configuration
@@ -926,7 +926,7 @@ llamaParseOcr:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-llamaparse-ocr
-    tag: 0.1.11
+    tag: 0.1.12
     pullPolicy: IfNotPresent
 
   ## LlamaParseOcr Service information
@@ -1082,7 +1082,7 @@ usage:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-usage
-    tag: 0.1.11
+    tag: 0.1.12
     pullPolicy: IfNotPresent
 
   ## Usage Service information
