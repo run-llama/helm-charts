@@ -1248,6 +1248,7 @@ s3proxy:
     # Example configuration for azure blob storage:
     # S3PROXY_ENDPOINT: "http://0.0.0.0:80"
     # S3PROXY_AUTHORIZATION: "none"
+    # S3PROXY_IGNORE_UNKNOWN_HEADERS=true
     # JCLOUDS_PROVIDER: "azureblob"
     # JCLOUDS_AZUREBLOB_AUTH: "azureKey"
     # JCLOUDS_IDENTITY: "<azure-storage-account-name>"
@@ -1409,3 +1410,11 @@ redis:
 rabbitmq:
   ## @param rabbitmq.enabled Enable RabbitMQ
   enabled: true
+
+  ## @param rabbitmq.auth.username RabbitMQ username
+  ## @param rabbitmq.auth.password RabbitMQ password
+  auth:
+    username: user
+    password: guest
+
+
