@@ -31,6 +31,66 @@ global:
     awsSecretAccessKey: ""
     existingAwsSecretName: ""
 
+    ## @param global.config.postgresql.external.enabled Use an external PostgreSQL database
+    ## @param global.config.postgresql.external.host PostgreSQL host
+    ## @param global.config.postgresql.external.port PostgreSQL port
+    ## @param global.config.postgresql.external.database PostgreSQL database
+    ## @param global.config.postgresql.external.user PostgreSQL user
+    ## @param global.config.postgresql.external.password PostgreSQL password
+    ## @param global.config.postgresql.external.existingSecretName Name of the existing secret to use for PostgreSQL credentials
+    postgresql:
+      external:
+        enabled: false
+        host: ""
+        port: "5432"
+        database: ""
+        user: ""
+        password: ""
+        existingSecretName: ""
+
+    ## @param global.config.mongodb.external.enabled Use an external MongoDB database
+    ## @param global.config.mongodb.external.host MongoDB host
+    ## @param global.config.mongodb.external.port MongoDB port
+    ## @param global.config.mongodb.external.user MongoDB user
+    ## @param global.config.mongodb.external.password MongoDB password
+    ## @param global.config.mongodb.external.existingSecretName Name of the existing secret to use for MongoDB credentials
+    mongodb:
+      external:
+        enabled: false
+        host: ""
+        port: "27017"
+        user: ""
+        password: ""
+        existingSecretName: ""
+
+    ## @param global.config.rabbitmq.external.enabled Use an external RabbitMQ instance
+    ## @param global.config.rabbitmq.external.scheme RabbitMQ scheme
+    ## @param global.config.rabbitmq.external.host RabbitMQ host
+    ## @param global.config.rabbitmq.external.port RabbitMQ port
+    ## @param global.config.rabbitmq.external.user RabbitMQ user
+    ## @param global.config.rabbitmq.external.password RabbitMQ password
+    ## @param global.config.rabbitmq.external.existingSecretName Name of the existing secret to use for RabbitMQ credentials
+    rabbitmq:
+      external:
+        enabled: false
+        scheme: "amqp"
+        host: ""
+        port: "5672"
+        user: ""
+        password: ""
+        existingSecretName: ""
+
+    ## @param global.config.redis.external.enabled Use an external Redis instance
+    ## @param global.config.redis.external.host Redis host
+    ## @param global.config.redis.external.port Redis port
+    ## @param global.config.redis.external.existingSecretName Name of the existing secret to use for Redis credentials
+    redis:
+      external:
+        enabled: false
+        host: ""
+        port: "6379"
+        existingSecretName: ""
+
     ## Uncomment the below lines to configure file store bucket names
     ## The default file store is AWS S3. If you are using a different cloud provider, please set s3proxy.enabled=true
     # parsedDocumentsCloudBucketName: "llama-platform-parsed-documents"
@@ -76,7 +136,7 @@ frontend:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-frontend
-    tag: 0.1.12
+    tag: 0.1.13
     pullPolicy: IfNotPresent
 
   ## @param frontend.service.type Frontend Service type
@@ -237,7 +297,7 @@ backend:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-backend
-    tag: 0.1.12
+    tag: 0.1.13
     pullPolicy: IfNotPresent
 
   ## Backend Service information
@@ -424,7 +484,7 @@ jobsService:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-jobs-service
-    tag: 0.1.12
+    tag: 0.1.13
     pullPolicy: IfNotPresent
 
   ## JobsService Service information\
@@ -581,7 +641,7 @@ jobsWorker:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-jobs-worker
-    tag: 0.1.12
+    tag: 0.1.13
     pullPolicy: IfNotPresent
 
   ## JobsWorker Service information
@@ -795,7 +855,7 @@ llamaParse:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-llamaparse
-    tag: 0.1.12
+    tag: 0.1.13
     pullPolicy: IfNotPresent
 
   ## ServiceAccount configuration
@@ -926,7 +986,7 @@ llamaParseOcr:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-llamaparse-ocr
-    tag: 0.1.12
+    tag: 0.1.13
     pullPolicy: IfNotPresent
 
   ## LlamaParseOcr Service information
@@ -1082,7 +1142,7 @@ usage:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-usage
-    tag: 0.1.12
+    tag: 0.1.13
     pullPolicy: IfNotPresent
 
   ## Usage Service information
