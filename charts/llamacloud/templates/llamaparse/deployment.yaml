@@ -77,17 +77,7 @@ spec:
                 name: {{ include "llamacloud.fullname" . }}-license-key
                 {{- end }}
                 key: llamacloud-license-key
-          {{- if .Values.rabbitmq.enabled }}
-          - name: JOB_QUEUE_HOST
-            value: {{ printf "%s-%s.%s.svc.cluster.local" (include "llamacloud.fullname" .) (default "rabbitmq" .Values.rabbitmq.nameOverride) .Release.Namespace | quote }}
-          - name: JOB_QUEUE_USERNAME
-            value: {{ .Values.rabbitmq.auth.username | quote }}
-          - name: JOB_QUEUE_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: {{ printf "%s-%s" (include "llamacloud.fullname" .) (default "rabbitmq" .Values.rabbitmq.nameOverride) | quote }}
-                key: rabbitmq-password
-          {{- end }}
+          {{- include "common.rabbitmq.envVars" . | nindent 10 }}
           {{- with .Values.llamaParse.extraEnvVariables }}
           {{- toYaml . | nindent 10 }}
           {{- end }}
@@ -109,6 +99,10 @@ spec:
           {{- if .Values.llamaParse.config.existingAnthropicApiKeySecret }}
           - secretRef:
               name: {{ .Values.llamaParse.config.existingAnthropicApiKeySecret }}
+          {{- end }}
+          {{- if and (not .Values.rabbitmq.enabled) .Values.global.config.rabbitmq.external.enabled .Values.global.config.rabbitmq.external.existingSecretName }}
+          - secretRef:
+              name: {{ .Values.global.config.rabbitmq.external.existingSecretName }}
           {{- end }}
           {{- if not .Values.llamaParse.externalSecrets.enabled }}
           - secretRef:

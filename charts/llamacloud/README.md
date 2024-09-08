@@ -59,16 +59,40 @@ For more information about using this chart, feel free to visit the [Official Ll
 
 ### Global Configuration
 
-| Name                                     | Description                                            | Value                      |
-| ---------------------------------------- | ------------------------------------------------------ | -------------------------- |
-| `global.cloudProvider`                   | Cloud provider where the chart is deployed in.         | `aws`                      |
-| `global.imagePullSecrets`                | Global Docker registry secret names as an array        | `[]`                       |
-| `global.storageClass`                    | Storage class to use for dynamic provisioning          | `""`                       |
-| `global.config.licenseKey`               | License key for all components                         | `<input-license-key-here>` |
-| `global.config.existingLicenseKeySecret` | Name of the secret to use for the license key          | `""`                       |
-| `global.config.awsAccessKeyId`           | AWS Access Key ID                                      | `""`                       |
-| `global.config.awsSecretAccessKey`       | AWS Secret Access Key                                  | `""`                       |
-| `global.config.existingAwsSecretName`    | Name of the existing secret to use for AWS credentials | `""`                       |
+| Name                                                   | Description                                                   | Value                      |
+| ------------------------------------------------------ | ------------------------------------------------------------- | -------------------------- |
+| `global.cloudProvider`                                 | Cloud provider where the chart is deployed in.                | `aws`                      |
+| `global.imagePullSecrets`                              | Global Docker registry secret names as an array               | `[]`                       |
+| `global.storageClass`                                  | Storage class to use for dynamic provisioning                 | `""`                       |
+| `global.config.licenseKey`                             | License key for all components                                | `<input-license-key-here>` |
+| `global.config.existingLicenseKeySecret`               | Name of the secret to use for the license key                 | `""`                       |
+| `global.config.awsAccessKeyId`                         | AWS Access Key ID                                             | `""`                       |
+| `global.config.awsSecretAccessKey`                     | AWS Secret Access Key                                         | `""`                       |
+| `global.config.existingAwsSecretName`                  | Name of the existing secret to use for AWS credentials        | `""`                       |
+| `global.config.postgresql.external.enabled`            | Use an external PostgreSQL database                           | `false`                    |
+| `global.config.postgresql.external.host`               | PostgreSQL host                                               | `""`                       |
+| `global.config.postgresql.external.port`               | PostgreSQL port                                               | `5432`                     |
+| `global.config.postgresql.external.database`           | PostgreSQL database                                           | `""`                       |
+| `global.config.postgresql.external.user`               | PostgreSQL user                                               | `""`                       |
+| `global.config.postgresql.external.password`           | PostgreSQL password                                           | `""`                       |
+| `global.config.postgresql.external.existingSecretName` | Name of the existing secret to use for PostgreSQL credentials | `""`                       |
+| `global.config.mongodb.external.enabled`               | Use an external MongoDB database                              | `false`                    |
+| `global.config.mongodb.external.host`                  | MongoDB host                                                  | `""`                       |
+| `global.config.mongodb.external.port`                  | MongoDB port                                                  | `27017`                    |
+| `global.config.mongodb.external.user`                  | MongoDB user                                                  | `""`                       |
+| `global.config.mongodb.external.password`              | MongoDB password                                              | `""`                       |
+| `global.config.mongodb.external.existingSecretName`    | Name of the existing secret to use for MongoDB credentials    | `""`                       |
+| `global.config.rabbitmq.external.enabled`              | Use an external RabbitMQ instance                             | `false`                    |
+| `global.config.rabbitmq.external.scheme`               | RabbitMQ scheme                                               | `amqp`                     |
+| `global.config.rabbitmq.external.host`                 | RabbitMQ host                                                 | `""`                       |
+| `global.config.rabbitmq.external.port`                 | RabbitMQ port                                                 | `5672`                     |
+| `global.config.rabbitmq.external.user`                 | RabbitMQ user                                                 | `""`                       |
+| `global.config.rabbitmq.external.password`             | RabbitMQ password                                             | `""`                       |
+| `global.config.rabbitmq.external.existingSecretName`   | Name of the existing secret to use for RabbitMQ credentials   | `""`                       |
+| `global.config.redis.external.enabled`                 | Use an external Redis instance                                | `false`                    |
+| `global.config.redis.external.host`                    | Redis host                                                    | `""`                       |
+| `global.config.redis.external.port`                    | Redis port                                                    | `6379`                     |
+| `global.config.redis.external.existingSecretName`      | Name of the existing secret to use for Redis credentials      | `""`                       |
 
 ### Overrides and Common Configuration
 

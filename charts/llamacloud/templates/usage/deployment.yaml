@@ -79,34 +79,23 @@ spec:
                 name: {{ include "llamacloud.fullname" . }}-license-key
                 {{- end }}
                 key: llamacloud-license-key
-          {{- if .Values.mongodb.enabled }}
-          - name: MONGODB_HOST
-            value: {{ printf "%s-%s" .Release.Name (default "mongodb" .Values.mongodb.nameOverride) | quote }}
-          - name: MONGODB_PORT
-            value: {{ .Values.mongodb.service.port | default "27017" | quote }}
-          - name: MONGODB_USER
-            value: {{ .Values.mongodb.auth.rootUser | quote }}
-          - name: MONGODB_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: {{ printf "%s-%s" .Release.Name (default "mongodb" .Values.mongodb.nameOverride) | quote }}
-                key: mongodb-root-password
-          {{- end }}
-          {{- if .Values.redis.enabled }}
-          - name: REDIS_HOST
-            value: {{ printf "%s-%s-master" (include "llamacloud.fullname" .) (default "redis" .Values.redis.nameOverride) | quote }}
-          - name: REDIS_PORT
-            value: {{ .Values.redis.master.service.ports.redis | default "6379" | quote }}
-          {{- end }}
+          {{- include "common.mongodb.envVars" . | nindent 10 }}
+          {{- include "common.redis.envVars" . | nindent 10 }}
           {{- with .Values.usage.extraEnvVariables }}
           {{- toYaml . | nindent 10 }}
           {{- end }}
-          {{- if .Values.usage.externalSecrets.enabled }}
           envFrom:
+          {{- if and (not .Values.mongodb.enabled) .Values.global.config.mongodb.external.enabled .Values.global.config.mongodb.external.existingSecretName }}
+          - secretRef:
+              name: {{ .Values.global.config.mongodb.external.existingSecretName }}
+          {{- end }}
+          {{- if and (not .Values.redis.enabled) .Values.global.config.redis.external.enabled .Values.global.config.redis.external.existingSecretName }}
+          - secretRef:
+              name: {{ .Values.global.config.redis.external.existingSecretName }}
+          {{- end }}
           {{- range .Values.usage.externalSecrets.secrets }}
           - secretRef:
               name: {{ . }}
-          {{- end }}
           {{- end }}
           {{- with .Values.usage.volumeMounts }}
           volumeMounts:

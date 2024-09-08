@@ -71,45 +71,10 @@ spec:
                 name: {{ include "llamacloud.fullname" . }}-license-key
                 {{- end }}
                 key: llamacloud-license-key
-          {{- if .Values.postgresql.enabled }}
-          - name: DATABASE_HOST
-            value: {{ printf "%s-%s" .Release.Name "postgresql" | quote}}
-          - name: DATABASE_PORT
-            value: "5432"
-          - name: DATABASE_NAME
-            value: {{ .Values.postgresql.auth.database | quote }}
-          - name: DATABASE_USER
-            value: {{ .Values.postgresql.auth.username | quote }}
-          - name: DATABASE_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: {{ printf "%s-%s" .Release.Name "postgresql" }}
-                key: postgres-password
-          {{- end }}
-          {{- if .Values.mongodb.enabled }}
-          - name: MONGODB_HOST
-            value: {{ printf "%s-%s" .Release.Name (default "mongodb" .Values.mongodb.nameOverride) | quote }}
-          - name: MONGODB_PORT
-            value: {{ .Values.mongodb.service.port | default "27017" | quote }}
-          - name: MONGODB_USER
-            value: {{ .Values.mongodb.auth.rootUser | quote }}
-          - name: MONGODB_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: {{ printf "%s-%s" .Release.Name (default "mongodb" .Values.mongodb.nameOverride) | quote }}
-                key: mongodb-root-password
-          {{- end }}
-          {{- if .Values.rabbitmq.enabled }}
-          - name: JOB_QUEUE_ENDPOINT
-            value: {{ printf "amqp://%s-%s:5672" (include "llamacloud.fullname" .) (default "rabbitmq" .Values.rabbitmq.nameOverride) | quote }}
-          - name: JOB_QUEUE_USERNAME
-            value: {{ .Values.rabbitmq.auth.username | default "user" | quote }}
-          - name: JOB_QUEUE_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: {{ printf "%s-%s" (include "llamacloud.fullname" .) (default "rabbitmq" .Values.rabbitmq.nameOverride) | quote }}
-                key: rabbitmq-password
-          {{- end }}
+          {{- include "common.postgresql.envVars" . | nindent 10 -}}
+          {{- include "common.mongodb.envVars" . | nindent 10 -}}
+          {{- include "common.rabbitmq.envVars" . | nindent 10 -}}
+          {{- include "common.redis.envVars" . | nindent 10 -}}
           {{- with .Values.jobsService.extraEnvVariables }}
           {{- toYaml . | nindent 10 }}
           {{- end }}
@@ -127,6 +92,22 @@ spec:
           {{- if and .Values.backend.config.azureOpenAi.enabled .Values.backend.config.azureOpenAi.existingSecret }}
           - secretRef:
               name: {{ .Values.backend.config.azureOpenAi.existingSecret }}
+          {{- end }}
+          {{- if and (not .Values.postgresql.enabled) .Values.global.config.postgresql.external.enabled .Values.global.config.postgresql.external.existingSecretName }}
+          - secretRef:
+              name: {{ .Values.global.config.postgresql.external.existingSecretName }}
+          {{- end }}
+          {{- if and (not .Values.mongodb.enabled) .Values.global.config.mongodb.external.enabled .Values.global.config.mongodb.external.existingSecretName }}
+          - secretRef:
+              name: {{ .Values.global.config.mongodb.external.existingSecretName }}
+          {{- end }}
+          {{- if and (not .Values.rabbitmq.enabled) .Values.global.config.rabbitmq.external.enabled .Values.global.config.rabbitmq.external.existingSecretName }}
+          - secretRef:
+              name: {{ .Values.global.config.rabbitmq.external.existingSecretName }}
+          {{- end }}
+          {{- if and (not .Values.redis.enabled) .Values.global.config.redis.external.enabled .Values.global.config.redis.external.existingSecretName }}
+          - secretRef:
+              name: {{ .Values.global.config.redis.external.existingSecretName }}
           {{- end }}
           {{- if not .Values.jobsService.externalSecrets.enabled }}
           - secretRef:

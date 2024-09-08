@@ -25,7 +25,7 @@ jobs:
 
       - uses: actions/setup-python@v4
         with:
-          python-version: '3.9'
+          python-version: '3.11.8'
           check-latest: true
 
       - name: Set up chart-testing
@@ -66,4 +66,5 @@ jobs:
             --set=backend.config.oidc.clientId=$OIDC_CLIENT_ID \
             --set=backend.config.oidc.clientSecret=$OIDC_CLIENT_SECRET \
             --set=backend.config.openAiApiKey=$OPENAI_API_KEY \
-            --set=llamaParse.config.openAiApiKey=$OPENAI_API_KEY"
+            --set=llamaParse.config.openAiApiKey=$OPENAI_API_KEY \
+            --timeout 900s"

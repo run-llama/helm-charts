@@ -132,3 +132,96 @@ Service Accounts Names
     {{ default "default" .Values.s3proxy.serviceAccount.name }}
 {{- end -}}
 {{- end -}}
+
+{{- define "common.postgresql.envVars" -}}
+{{- if .Values.postgresql.enabled -}}
+- name: DATABASE_HOST
+  value: {{ printf "%s-%s" .Release.Name "postgresql" | quote}}
+- name: DATABASE_PORT
+  value: "5432"
+- name: DATABASE_NAME
+  value: {{ .Values.postgresql.auth.database | quote }}
+- name: DATABASE_USER
+  value: {{ .Values.postgresql.auth.username | quote }}
+- name: DATABASE_PASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: {{ printf "%s-%s" .Release.Name "postgresql" }}
+      key: password
+{{- end -}}
+{{- if and (not .Values.postgresql.enabled) (.Values.global.config.postgresql.external.enabled) (not .Values.global.config.postgresql.external.existingSecretName) -}}
+- name: DATABASE_HOST
+  value: {{ .Values.global.config.postgresql.external.host | quote }}
+- name: DATABASE_PORT
+  value: {{ .Values.global.config.postgresql.external.port | quote }}
+- name: DATABASE_NAME
+  value: {{ .Values.global.config.postgresql.external.database | quote }}
+- name: DATABASE_USER
+  value: {{ .Values.global.config.postgresql.external.username | quote }}
+- name: DATABASE_PASSWORD
+  value: {{ .Values.global.config.postgresql.external.password | quote }}
+{{- end -}}
+{{- end -}}
+
+{{- define "common.mongodb.envVars" -}}
+{{- if .Values.mongodb.enabled -}}
+- name: MONGODB_HOST
+  value: {{ printf "%s-%s" .Release.Name (default "mongodb" .Values.mongodb.nameOverride) | quote }}
+- name: MONGODB_PORT
+  value: {{ .Values.mongodb.service.port | default "27017" | quote }}
+- name: MONGODB_USER
+  value: {{ .Values.mongodb.auth.rootUser | quote }}
+- name: MONGODB_PASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: {{ printf "%s-%s" .Release.Name (default "mongodb" .Values.mongodb.nameOverride) | quote }}
+      key: mongodb-root-password
+{{- end -}}
+{{- if and (not .Values.mongodb.enabled) (.Values.global.config.mongodb.external.enabled) (not .Values.global.config.mongodb.external.existingSecretName) -}}
+- name: MONGODB_HOST
+  value: {{ .Values.global.config.mongodb.external.host | quote }}
+- name: MONGODB_PORT
+  value: {{ .Values.global.config.mongodb.external.port | quote }}
+- name: MONGODB_USER
+  value: {{ .Values.global.config.mongodb.external.username | quote }}
+- name: MONGODB_PASSWORD
+  value: {{ .Values.global.config.mongodb.external.password | quote }}
+{{- end -}}
+{{- end -}}
+
+{{- define "common.rabbitmq.envVars" -}}
+{{- if .Values.rabbitmq.enabled -}}
+- name: JOB_QUEUE_ENDPOINT
+  value: {{ printf "amqp://%s-%s:5672" (include "llamacloud.fullname" .) (default "rabbitmq" .Values.rabbitmq.nameOverride) | quote }}
+- name: JOB_QUEUE_USERNAME
+  value: {{ .Values.rabbitmq.auth.username | default "user" | quote }}
+- name: JOB_QUEUE_PASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: {{ printf "%s-%s" (include "llamacloud.fullname" .) (default "rabbitmq" .Values.rabbitmq.nameOverride) | quote }}
+      key: rabbitmq-password
+{{- end -}}
+{{- if and (not .Values.rabbitmq.enabled) (.Values.global.config.rabbitmq.external.enabled) (not .Values.global.config.rabbitmq.external.existingSecretName) -}}
+- name: JOB_QUEUE_ENDPOINT
+  value: {{ printf "%s://%s:%s" .Values.global.config.rabbitmq.external.scheme .Values.global.config.rabbitmq.external.host .Values.global.config.rabbitmq.external.port | quote }}
+- name: JOB_QUEUE_USERNAME
+  value: {{ .Values.global.config.rabbitmq.external.username | quote }}
+- name: JOB_QUEUE_PASSWORD
+  value: {{ .Values.global.config.rabbitmq.external.password | quote }}
+{{- end -}}
+{{- end -}}
+
+{{- define "common.redis.envVars" -}}
+{{- if .Values.redis.enabled -}}
+- name: REDIS_HOST
+  value: {{ printf "%s-%s-master" (include "llamacloud.fullname" .) (default "redis" .Values.redis.nameOverride) | quote }}
+- name: REDIS_PORT
+  value: {{ .Values.redis.master.service.ports.redis | default "6379" | quote }}
+{{- end -}}
+{{- if and (not .Values.redis.enabled) (.Values.global.config.redis.external.enabled) (not .Values.global.config.redis.external.existingSecretName) -}}
+- name: REDIS_HOST
+  value: {{ .Values.global.config.redis.external.host | quote }}
+- name: REDIS_PORT
+  value: {{ .Values.global.config.redis.external.port | quote }}
+{{- end -}}
+{{- end -}}
