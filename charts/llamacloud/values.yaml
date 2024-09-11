@@ -136,7 +136,7 @@ frontend:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-frontend
-    tag: 0.1.13
+    tag: 0.1.14
     pullPolicy: IfNotPresent
 
   ## @param frontend.service.type Frontend Service type
@@ -297,7 +297,7 @@ backend:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-backend
-    tag: 0.1.13
+    tag: 0.1.14
     pullPolicy: IfNotPresent
 
   ## Backend Service information
@@ -484,7 +484,7 @@ jobsService:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-jobs-service
-    tag: 0.1.13
+    tag: 0.1.14
     pullPolicy: IfNotPresent
 
   ## JobsService Service information\
@@ -641,7 +641,7 @@ jobsWorker:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-jobs-worker
-    tag: 0.1.13
+    tag: 0.1.14
     pullPolicy: IfNotPresent
 
   ## JobsWorker Service information
@@ -855,7 +855,7 @@ llamaParse:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-llamaparse
-    tag: 0.1.13
+    tag: 0.1.14
     pullPolicy: IfNotPresent
 
   ## ServiceAccount configuration
@@ -986,7 +986,7 @@ llamaParseOcr:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-llamaparse-ocr
-    tag: 0.1.13
+    tag: 0.1.14
     pullPolicy: IfNotPresent
 
   ## LlamaParseOcr Service information
@@ -1142,7 +1142,7 @@ usage:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-usage
-    tag: 0.1.13
+    tag: 0.1.14
     pullPolicy: IfNotPresent
 
   ## Usage Service information
@@ -1444,6 +1444,20 @@ postgresql:
     enabled: true
     database: llamacloud
     username: llamacloud
+
+  ## Ref: https://github.com/bitnami/charts/blob/main/bitnami/postgresql/values.yaml#L481
+  primary:
+    ## @param postgresql.primary.resources.requests.cpu CPU requests
+    ## @param postgresql.primary.resources.requests.memory Memory requests
+    ## @param postgresql.primary.resources.limits.cpu CPU limits
+    ## @param postgresql.primary.resources.limits.memory Memory limits
+    resources:
+      requests:
+        cpu: 1
+        memory: 1Gi
+      limits:
+        cpu: 2
+        memory: 2Gi
 
 mongodb:
   ## @param mongodb.enabled Enable MongoDB
