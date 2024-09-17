@@ -1,4 +1,4 @@
-name: Lint and Test Charts
+name: Lint, Test, Install Charts
 
 on:
   push:
@@ -12,9 +12,10 @@ jobs:
     name: "Lint and Test Helm Charts"
     runs-on:
       labels: helm-charts-runner
+
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -31,27 +32,46 @@ jobs:
       - name: Set up chart-testing
         uses: helm/chart-testing-action@v2.6.1
 
-      - name: List changed helm charts
-        id: list-changed
-        run: |
-          changed=$(ct list-changed --target-branch ${{ github.event.repository.default_branch }})
-          echo $changed
-          if [[ -n "$changed" ]]; then
-            echo "changed=true" >> "$GITHUB_OUTPUT"
-          fi
-
       - name: Lint
         id: lint-charts
-        if: steps.list-changed.outputs.changed == 'true'
-        run: ct lint --target-branch ${{ github.event.repository.default_branch }} --all --validate-maintainers=false
+        run: |
+          ct lint \
+            --target-branch ${{ github.event.repository.default_branch }} \
+            --validate-maintainers=false \
+            --check-version-increment=false
+
+  install-test:
+    name: "Install Helm Charts"
+
+    needs: [lint-test]
+
+    runs-on:
+      labels: helm-charts-runner
+
+    strategy:
+      matrix:
+        k8s-version:
+          # Limit testing because tests can take a while to run
+          # Ref: https://hub.docker.com/r/kindest/node/tags
+          - v1.28.13
+          - v1.30.4
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Create kind cluster
-        if: steps.list-changed.outputs.changed == 'true'
         uses: helm/kind-action@v1.10.0
-    
+        with:
+          node_image: kindest/node:${{ matrix.k8s-version }}
+
+      - name: Set up chart-testing
+        uses: helm/chart-testing-action@v2.6.1
+
       - name: Test
         id: test-charts
-        if: steps.list-changed.outputs.changed == 'true'
         env:
           LLAMACLOUD_LICENSE_KEY: ${{ secrets.LLAMACLOUD_LICENSE_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
@@ -59,7 +79,7 @@ jobs:
           OIDC_CLIENT_ID: ${{ secrets.OIDC_CLIENT_ID }}
           OIDC_CLIENT_SECRET: ${{ secrets.OIDC_CLIENT_SECRET }}
         run: |
-          ct install --target-branch ${{ github.event.repository.default_branch }} --all \
+          ct install --target-branch ${{ github.event.repository.default_branch }} \
             --helm-extra-set-args \
             "--set=global.config.licenseKey=$LLAMACLOUD_LICENSE_KEY \
             --set=backend.config.oidc.discoveryUrl=$OIDC_DISCOVERY_URL \
