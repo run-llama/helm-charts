@@ -44,7 +44,7 @@ global:
         host: ""
         port: "5432"
         database: ""
-        user: ""
+        username: ""
         password: ""
         existingSecretName: ""
 
@@ -59,7 +59,7 @@ global:
         enabled: false
         host: ""
         port: "27017"
-        user: ""
+        username: ""
         password: ""
         existingSecretName: ""
 
@@ -76,7 +76,7 @@ global:
         scheme: "amqp"
         host: ""
         port: "5672"
-        user: ""
+        username: ""
         password: ""
         existingSecretName: ""
 

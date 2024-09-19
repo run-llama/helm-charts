@@ -1,0 +1,33 @@
+suite: basic-backend-deployment
+
+templates:
+- ../templates/backend/deployment.yaml
+
+tests:
+- it: should be a Deployment
+  set:
+    backend.image.tag: latest
+  asserts:
+    - isKind:
+        of: Deployment
+    - equal:
+        path: .spec.template.spec.containers[0].image
+        value: llamaindex/llamacloud-backend:latest
+
+- it: env vars should match snapshot for default values with subcharts enabled
+  asserts:
+    - matchSnapshot:
+        path: .spec.template.spec.containers[0].env
+
+- it: postgres env vars should use custom config if is subchart is not enabled and external config is provided
+  set:
+    postgresql.enabled: false
+    global.config.postgresql.external.enabled: true
+    global.config.postgresql.external.database: test-db
+    global.config.postgresql.external.username: test-user
+    global.config.postgresql.external.password: test-password
+    global.config.postgresql.external.host: test-host
+    global.config.postgresql.external.port: 5432
+  asserts:
+    - matchSnapshot:
+        path: .spec.template.spec.containers[0].env
