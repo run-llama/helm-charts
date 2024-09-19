@@ -14,10 +14,36 @@ tests:
         path: .spec.template.spec.containers[0].image
         value: llamaindex/llamacloud-backend:latest
 
+- it: should use an external secret name for the license key if it is set
+  set:
+    global.config.existingLicenseKeySecret: existing-license-key
+  asserts:
+    - equal:
+        path: .spec.template.spec.containers[0].env[?(@.name == "LLAMACLOUD_LICENSE_KEY")].valueFrom.secretKeyRef.name
+        value: existing-license-key
+
+- it: should use the custom service account if it is set
+  set:
+    backend.serviceAccount.name: test-service-account
+  asserts:
+    - equal:
+        path: .spec.template.spec.serviceAccountName
+        value: test-service-account
+
 - it: env vars should match snapshot for default values with subcharts enabled
   asserts:
-    - matchSnapshot:
-        path: .spec.template.spec.containers[0].env
+    - equal:
+        path: .spec.template.spec.containers[0].env[?(@.name == "DATABASE_HOST")].value
+        value: RELEASE-NAME-postgresql
+    - equal:
+        path: .spec.template.spec.containers[0].env[?(@.name == "DATABASE_PORT")].value
+        value: "5432"
+    - equal:
+        path: .spec.template.spec.containers[0].env[?(@.name == "DATABASE_NAME")].value
+        value: llamacloud
+    - equal:
+        path: .spec.template.spec.containers[0].env[?(@.name == "DATABASE_USER")].value
+        value: llamacloud
 
 - it: postgres env vars should use custom config if is subchart is not enabled and external config is provided
   set:
@@ -29,5 +55,18 @@ tests:
     global.config.postgresql.external.host: test-host
     global.config.postgresql.external.port: 5432
   asserts:
-    - matchSnapshot:
-        path: .spec.template.spec.containers[0].env
+    - equal:
+        path: .spec.template.spec.containers[0].env[?(@.name == "DATABASE_HOST")].value
+        value: test-host
+    - equal:
+        path: .spec.template.spec.containers[0].env[?(@.name == "DATABASE_PORT")].value
+        value: "5432"
+    - equal:
+        path: .spec.template.spec.containers[0].env[?(@.name == "DATABASE_NAME")].value
+        value: test-db
+    - equal:
+        path: .spec.template.spec.containers[0].env[?(@.name == "DATABASE_USER")].value
+        value: test-user
+    - equal:
+        path: .spec.template.spec.containers[0].env[?(@.name == "DATABASE_PASSWORD")].value
+        value: test-password
