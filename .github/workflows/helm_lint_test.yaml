@@ -40,6 +40,15 @@ jobs:
             --validate-maintainers=false \
             --check-version-increment=false
 
+      - name: Setup helm unittest
+        id: setup-helm-unittest
+        run: helm plugin install https://github.com/helm-unittest/helm-unittest
+
+      - name: Run Unit Test
+        id: unit-test-charts
+        run: |
+          helm unittest ./charts/llamacloud
+
   install-test:
     name: "Install Helm Charts"
 
