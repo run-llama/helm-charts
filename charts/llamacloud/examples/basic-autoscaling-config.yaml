@@ -1,0 +1,84 @@
+# This example shows how to configure autoscaling for the LlamaCloud platform.
+# It is used in the `values.yaml` file for each component.
+
+# Autoscaling is enabled by default for llamaParse and llamaParseOcr given the nature of their workloads.
+# To disable autoscaling for a component, set `autoscaling.enabled` to `false`.
+
+global:
+  config:
+    licenseKey: "<REPLACE-WITH-LLAMACLOUD-LICENSE-KEY>"
+    # existingLicenseKeySecret: "<uncomment-if-using-existing-secret>"
+
+backend:
+  autoscaling:
+    enabled: true
+    # below are the default values if not specified
+    # change them as needed :)
+    minReplicas: 1
+    maxReplicas: 8
+    targetCPUUtilizationPercentage: 80
+    targetMemoryUtilizationPercentage: 80
+
+  config:
+    openAiApiKey: "<REPLACE-WITH-OPENAI-API-KEY>"
+    # existingOpenAiApiKeySecret: "<uncomment-if-using-existing-secret>"
+
+    oidc:
+      discoveryUrl: "https://login.microsoftonline.com/your-tenant-id/oauth2/v2.0/token"
+      clientId: "your-client-id"
+      clientSecret: "your-client-secret"
+      # existingSecretName: "oidc-secret"
+
+jobsService:
+  autoscaling:
+    enabled: true
+    # below are the default values if not specified
+    # change them as needed :)
+    minReplicas: 1
+    maxReplicas: 4
+    targetCPUUtilizationPercentage: 80
+    targetMemoryUtilizationPercentage: 80
+
+jobsWorker:
+  autoscaling:
+    enabled: true
+    # below are the default values if not specified
+    # change them as needed :)
+    minReplicas: 1
+    maxReplicas: 4
+    targetCPUUtilizationPercentage: 80
+    targetMemoryUtilizationPercentage: 80
+
+llamaParse:
+  config:
+    openaiApiKey: "<REPLACE-WITH-OPENAI-API-KEY>"
+    # existingOpenAiApiKeySecret: "<uncomment-if-using-existing-secret>"
+
+  autoscaling:
+    enabled: true
+    # below are the default values if not specified
+    # change them as needed :)
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 80
+    targetMemoryUtilizationPercentage: 80
+
+llamaParseOcr:
+  autoscaling:
+    enabled: true
+    # below are the default values if not specified
+    # change them as needed :)
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 80
+    targetMemoryUtilizationPercentage: 80
+
+usage:
+  autoscaling:
+    enabled: true
+    # below are the default values if not specified
+    # change them as needed :)
+    minReplicas: 1
+    maxReplicas: 4
+    targetCPUUtilizationPercentage: 80
+    targetMemoryUtilizationPercentage: 80

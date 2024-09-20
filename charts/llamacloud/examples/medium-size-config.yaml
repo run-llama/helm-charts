@@ -1,0 +1,110 @@
+# This is an example of a medium-size configuration for the LlamaCloud platform.
+# It is designed to be a good starting point for a production environment.
+# Our platform was designed to be horizontally scalable, so you can adjust the number of replicas for each component to fit your needs.
+# For larger workloads (both large files and large number of files/jobs), you may need to increase the number of replicas and resources for each component.
+# We also recommend using managed services for PostgreSQL, MongoDB, RabbitMQ, and Redis for production workloads, instead of self-hosted deployments.
+
+global:
+  config:
+    licenseKey: "<REPLACE-WITH-LLAMACLOUD-LICENSE-KEY>"
+    # existingLicenseKeySecret: "<uncomment-if-using-existing-secret>"
+
+backend:
+  autoscaling:
+    enabled: true
+    minReplicas: 4
+    maxReplicas: 8
+    targetCPUUtilizationPercentage: 80
+    targetMemoryUtilizationPercentage: 80
+
+  resources:
+    requests:
+      cpu: 1
+      memory: 2Gi
+    limits:
+      cpu: 2
+      memory: 4Gi
+
+  config:
+    openAiApiKey: "<REPLACE-WITH-OPENAI-API-KEY>"
+    # existingOpenAiApiKeySecret: "<uncomment-if-using-existing-secret>"
+
+    oidc:
+      discoveryUrl: "https://login.microsoftonline.com/your-tenant-id/oauth2/v2.0/token"
+      clientId: "your-client-id"
+      clientSecret: "your-client-secret"
+      # existingSecretName: "oidc-secret"
+
+jobsService:
+  autoscaling:
+    enabled: true
+    minReplicas: 4
+    maxReplicas: 8
+    targetCPUUtilizationPercentage: 80
+    targetMemoryUtilizationPercentage: 80
+
+  resources:
+    requests:
+      cpu: 1
+      memory: 500Mi
+    limits:
+      cpu: 2
+      memory: 2Gi
+
+jobsWorker:
+  autoscaling:
+    enabled: true
+    minReplicas: 4
+    maxReplicas: 8
+    targetCPUUtilizationPercentage: 80
+    targetMemoryUtilizationPercentage: 80
+
+  resources:
+    requests:
+      cpu: 1
+      memory: 2Gi
+    limits:
+      cpu: 2
+      memory: 4Gi
+
+llamaParse:
+  config:
+    openaiApiKey: "<REPLACE-WITH-OPENAI-API-KEY>"
+    # existingOpenAiApiKeySecret: "<uncomment-if-using-existing-secret>"
+
+  autoscaling:
+    enabled: true
+    minReplicas: 5
+    maxReplicas: 20
+    targetCPUUtilizationPercentage: 80
+    targetMemoryUtilizationPercentage: 80
+
+llamaParseOcr:
+  autoscaling:
+    enabled: true
+    minReplicas: 5
+    maxReplicas: 20
+    targetCPUUtilizationPercentage: 80
+    targetMemoryUtilizationPercentage: 80
+
+usage:
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 8
+    targetCPUUtilizationPercentage: 80
+    targetMemoryUtilizationPercentage: 80
+
+# (recommended) Disable all dependencies to use external services for production workloads
+
+postgresql:
+  enabled: false
+
+mongodb:
+  enabled: false
+
+rabbitmq:
+  enabled: false
+
+redis:
+  enabled: false
