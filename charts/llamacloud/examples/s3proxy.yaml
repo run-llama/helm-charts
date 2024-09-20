@@ -1,6 +1,0 @@
-global:
-  config:
-    licenseKey: "<REPLACE-WITH-LLAMACLOUD-LICENSE-KEY>"
-
-s3proxy:
-  enabled: true

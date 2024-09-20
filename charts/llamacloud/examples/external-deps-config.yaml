@@ -1,0 +1,58 @@
+# This example shows how to configure the LlamaCloud platform to use external dependencies.
+# If an external dependency is enabled, the platform will not deploy self-hosted dependency.
+# Instead, it will use the values below to connect to the external dependency.
+# You can find the env vars to set in the platform's Helm chart here:
+# https://github.com/run-llama/helm-charts/blob/main/charts/llamacloud/templates/_helpers.tpl
+
+global:
+  config:
+    licenseKey: "<input-license-key-here>"
+    # existingLicenseKeySecret: ""
+
+    postgresql:
+      external:
+        enabled: true
+        host: "my-postgresql-host"
+        port: "5432"
+        database: "my-database"
+        username: "my-user"
+        password: "my-password"
+        # existingSecretName: "my-existing-secret"
+
+    mongodb:
+      external:
+        enabled: true
+        host: "my-mongodb-host"
+        port: "27017"
+        username: "my-user"
+        password: "my-password"
+        # existingSecretName: "my-existing-secret"
+
+    rabbitmq:
+      external:
+        enabled: true
+        scheme: "amqp"
+        host: "my-rabbitmq-host"
+        port: "5672"
+        username: "my-user"
+        password: "my-password"
+        # existingSecretName: "my-existing-secret"
+
+    redis:
+      external:
+        enabled: true
+        host: "my-redis-host"
+        port: "6379"
+        # existingSecretName: "my-existing-secret
+
+postgresql:
+  enabled: false
+
+mongodb:
+  enabled: false
+
+rabbitmq:
+  enabled: false
+
+redis:
+  enabled: false

@@ -1,0 +1,12 @@
+global:
+  config:
+    licenseKey: "<input-license-key-here>"
+    # existingLicenseKeySecret: ""
+
+    parsedDocumentsCloudBucketName: "<your-bucket-name>"
+    parsedEtlCloudBucketName: "<your-bucket-name>"
+    parsedExternalComponentsCloudBucketName: "<your-bucket-name>"
+    parsedFileParsingCloudBucketName: "<your-bucket-name>"
+    parsedRawFileCloudBucketName: "<your-bucket-name>"
+    parsedLlamaCloudParseOutputCloudBucketName: "<your-bucket-name>"
+    parsedFileScreenshotCloudBucketName: "<your-bucket-name>"

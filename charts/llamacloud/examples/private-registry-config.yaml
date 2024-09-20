@@ -1,0 +1,16 @@
+# This is an example of how to configure the LlamaCloud platform to use a private image registry.
+# Simply add a secret to the list of .Values.imagePullSecrets in the global section.
+
+global:
+  config:
+    licenseKey: "<contact-support-for-key>"
+    # existingLicenseKeySecret: "<existing-secret-name>"
+
+    imagePullSecrets:
+      - name: "<your-pull-secret-name>"
+
+backend:
+  # You can also attach your own IAM role annotations to the service account if needed.
+  # serviceAccount:
+  #   annotations:
+  #     eks.amazonaws.com/role-arn: "<your-role-arn>"

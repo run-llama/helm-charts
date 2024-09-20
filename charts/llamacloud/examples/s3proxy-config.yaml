@@ -1,0 +1,23 @@
+# This example shows how to configure the LlamaCloud platform to use Azure OpenAI and Azure Blob Storage (using s3proxy).
+# We currently do not have native support for non-S3 filestores in LlamaCloud at the moment.
+
+global:
+  config:
+    licenseKey: "<REPLACE-WITH-LLAMACLOUD-LICENSE-KEY>"
+
+# For more information on S3Proxy configuration, see:
+# https://github.com/gaul/s3proxy
+
+s3proxy:
+  enabled: true
+
+  config:
+    # Fillout with your own values
+    # https://github.com/gaul/s3proxy/wiki/Storage-backend-examples
+    # S3PROXY_ENDPOINT: "http://0.0.0.0:80"
+    # S3PROXY_AUTHORIZATION: "none"
+    # JCLOUDS_PROVIDER: "azureblob"
+    # JCLOUDS_AZUREBLOB_AUTH: "azureKey"
+    # JCLOUDS_IDENTITY: "<azure-storage-account-name>"
+    # JCLOUDS_CREDENTIAL: "<azure-storage-account-key>"
+    # JCLOUDS_ENDPOINT: "<azure-storage-account-endpoint>"

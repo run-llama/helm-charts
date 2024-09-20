@@ -1,0 +1,20 @@
+global:
+  config:
+    licenseKey: "<REPLACE-WITH-LLAMACLOUD-LICENSE-KEY>"
+    # existingLicenseKeySecret: "<uncomment-if-using-existing-secret>"
+
+backend:
+  config:
+    openAiApiKey: "<REPLACE-WITH-OPENAI-API-KEY>"
+    # existingOpenAiApiKeySecret: "<uncomment-if-using-existing-secret>"
+
+    oidc:
+      discoveryUrl: "https://login.microsoftonline.com/your-tenant-id/oauth2/v2.0/token"
+      clientId: "your-client-id"
+      clientSecret: "your-client-secret"
+      # existingSecretName: "oidc-secret"
+
+llamaParse:
+  config:
+    openaiApiKey: "<REPLACE-WITH-OPENAI-API-KEY>"
+    # existingOpenAiApiKeySecret: "<uncomment-if-using-existing-secret>"
