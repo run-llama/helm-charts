@@ -73,20 +73,20 @@ For more information about using this chart, feel free to visit the [Official Ll
 | `global.config.postgresql.external.host`               | PostgreSQL host                                               | `""`                       |
 | `global.config.postgresql.external.port`               | PostgreSQL port                                               | `5432`                     |
 | `global.config.postgresql.external.database`           | PostgreSQL database                                           | `""`                       |
-| `global.config.postgresql.external.user`               | PostgreSQL user                                               | `""`                       |
+| `global.config.postgresql.external.username`           | PostgreSQL user                                               | `""`                       |
 | `global.config.postgresql.external.password`           | PostgreSQL password                                           | `""`                       |
 | `global.config.postgresql.external.existingSecretName` | Name of the existing secret to use for PostgreSQL credentials | `""`                       |
 | `global.config.mongodb.external.enabled`               | Use an external MongoDB database                              | `false`                    |
 | `global.config.mongodb.external.host`                  | MongoDB host                                                  | `""`                       |
 | `global.config.mongodb.external.port`                  | MongoDB port                                                  | `27017`                    |
-| `global.config.mongodb.external.user`                  | MongoDB user                                                  | `""`                       |
+| `global.config.mongodb.external.username`              | MongoDB user                                                  | `""`                       |
 | `global.config.mongodb.external.password`              | MongoDB password                                              | `""`                       |
 | `global.config.mongodb.external.existingSecretName`    | Name of the existing secret to use for MongoDB credentials    | `""`                       |
 | `global.config.rabbitmq.external.enabled`              | Use an external RabbitMQ instance                             | `false`                    |
 | `global.config.rabbitmq.external.scheme`               | RabbitMQ scheme                                               | `amqp`                     |
 | `global.config.rabbitmq.external.host`                 | RabbitMQ host                                                 | `""`                       |
 | `global.config.rabbitmq.external.port`                 | RabbitMQ port                                                 | `5672`                     |
-| `global.config.rabbitmq.external.user`                 | RabbitMQ user                                                 | `""`                       |
+| `global.config.rabbitmq.external.username`             | RabbitMQ user                                                 | `""`                       |
 | `global.config.rabbitmq.external.password`             | RabbitMQ password                                             | `""`                       |
 | `global.config.rabbitmq.external.existingSecretName`   | Name of the existing secret to use for RabbitMQ credentials   | `""`                       |
 | `global.config.redis.external.enabled`                 | Use an external Redis instance                                | `false`                    |
@@ -197,10 +197,9 @@ For more information about using this chart, feel free to visit the [Official Ll
 | `backend.readinessProbe.failureThreshold`            | Minimum consecutive failures for the probe to be considered failed after having succeeded                         | `5`                             |
 | `backend.startupProbe.httpGet.path`                  | Path to hit for the startup probe                                                                                 | `/api/health`                   |
 | `backend.startupProbe.httpGet.port`                  | Port to hit for the startup probe                                                                                 | `8000`                          |
-| `backend.startupProbe.initialDelaySeconds`           | Number of seconds after the container has started before liveness probes are initiated                            | `30`                            |
 | `backend.startupProbe.periodSeconds`                 | How often (in seconds) to perform the probe                                                                       | `10`                            |
-| `backend.startupProbe.timeoutSeconds`                | Number of seconds after which the probe times out                                                                 | `30`                            |
-| `backend.startupProbe.failureThreshold`              | Minimum consecutive failures for the probe to be considered failed after having succeeded                         | `5`                             |
+| `backend.startupProbe.timeoutSeconds`                | Number of seconds after which the probe times out                                                                 | `5`                             |
+| `backend.startupProbe.failureThreshold`              | Minimum consecutive failures for the probe to be considered failed after having succeeded                         | `15`                            |
 | `backend.autoscaling.enabled`                        | Enable autoscaling for the Backend Deployment                                                                     | `false`                         |
 | `backend.autoscaling.minReplicas`                    | Minimum number of replicas for the Backend Deployment                                                             | `1`                             |
 | `backend.autoscaling.maxReplicas`                    | Maximum number of replicas for the Backend Deployment                                                             | `8`                             |
@@ -307,8 +306,8 @@ For more information about using this chart, feel free to visit the [Official Ll
 | `jobsWorker.startupProbe.httpGet.port`                  | Port to hit for the liveness probe                                                                                | `8001`                              |
 | `jobsWorker.startupProbe.initialDelaySeconds`           | Number of seconds after the container has started before liveness probes are initiated                            | `30`                                |
 | `jobsWorker.startupProbe.periodSeconds`                 | How often (in seconds) to perform the probe                                                                       | `10`                                |
-| `jobsWorker.startupProbe.timeoutSeconds`                | Number of seconds after which the probe times out                                                                 | `30`                                |
-| `jobsWorker.startupProbe.failureThreshold`              | Minimum consecutive failures for the probe to be considered failed after having succeeded                         | `5`                                 |
+| `jobsWorker.startupProbe.timeoutSeconds`                | Number of seconds after which the probe times out                                                                 | `5`                                 |
+| `jobsWorker.startupProbe.failureThreshold`              | Minimum consecutive failures for the probe to be considered failed after having succeeded                         | `10`                                |
 | `jobsWorker.autoscaling.enabled`                        | Enable autoscaling for the JobsWorker Deployment                                                                  | `false`                             |
 | `jobsWorker.autoscaling.minReplicas`                    | Minimum number of replicas for the JobsWorker Deployment                                                          | `1`                                 |
 | `jobsWorker.autoscaling.maxReplicas`                    | Maximum number of replicas for the JobsWorker Deployment                                                          | `4`                                 |
