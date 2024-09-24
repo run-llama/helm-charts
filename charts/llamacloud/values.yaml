@@ -35,7 +35,7 @@ global:
     ## @param global.config.postgresql.external.host PostgreSQL host
     ## @param global.config.postgresql.external.port PostgreSQL port
     ## @param global.config.postgresql.external.database PostgreSQL database
-    ## @param global.config.postgresql.external.user PostgreSQL user
+    ## @param global.config.postgresql.external.username PostgreSQL user
     ## @param global.config.postgresql.external.password PostgreSQL password
     ## @param global.config.postgresql.external.existingSecretName Name of the existing secret to use for PostgreSQL credentials
     postgresql:
@@ -44,14 +44,14 @@ global:
         host: ""
         port: "5432"
         database: ""
-        user: ""
+        username: ""
         password: ""
         existingSecretName: ""
 
     ## @param global.config.mongodb.external.enabled Use an external MongoDB database
     ## @param global.config.mongodb.external.host MongoDB host
     ## @param global.config.mongodb.external.port MongoDB port
-    ## @param global.config.mongodb.external.user MongoDB user
+    ## @param global.config.mongodb.external.username MongoDB user
     ## @param global.config.mongodb.external.password MongoDB password
     ## @param global.config.mongodb.external.existingSecretName Name of the existing secret to use for MongoDB credentials
     mongodb:
@@ -59,7 +59,7 @@ global:
         enabled: false
         host: ""
         port: "27017"
-        user: ""
+        username: ""
         password: ""
         existingSecretName: ""
 
@@ -67,7 +67,7 @@ global:
     ## @param global.config.rabbitmq.external.scheme RabbitMQ scheme
     ## @param global.config.rabbitmq.external.host RabbitMQ host
     ## @param global.config.rabbitmq.external.port RabbitMQ port
-    ## @param global.config.rabbitmq.external.user RabbitMQ user
+    ## @param global.config.rabbitmq.external.username RabbitMQ user
     ## @param global.config.rabbitmq.external.password RabbitMQ password
     ## @param global.config.rabbitmq.external.existingSecretName Name of the existing secret to use for RabbitMQ credentials
     rabbitmq:
@@ -76,7 +76,7 @@ global:
         scheme: "amqp"
         host: ""
         port: "5672"
-        user: ""
+        username: ""
         password: ""
         existingSecretName: ""
 
@@ -136,7 +136,7 @@ frontend:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-frontend
-    tag: 0.1.15
+    tag: 0.1.16
     pullPolicy: IfNotPresent
 
   ## @param frontend.service.type Frontend Service type
@@ -297,7 +297,7 @@ backend:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-backend
-    tag: 0.1.15
+    tag: 0.1.16
     pullPolicy: IfNotPresent
 
   ## Backend Service information
@@ -410,17 +410,15 @@ backend:
   startupProbe:
     ## @param backend.startupProbe.httpGet.path Path to hit for the startup probe
     ## @param backend.startupProbe.httpGet.port Port to hit for the startup probe
-    ## @param backend.startupProbe.initialDelaySeconds Number of seconds after the container has started before liveness probes are initiated
     ## @param backend.startupProbe.periodSeconds How often (in seconds) to perform the probe
     ## @param backend.startupProbe.timeoutSeconds Number of seconds after which the probe times out
     ## @param backend.startupProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
-    failureThreshold: 5
+    failureThreshold: 15
     httpGet:
       path: /api/health
       port: 8000
-    initialDelaySeconds: 30
     periodSeconds: 10
-    timeoutSeconds: 30
+    timeoutSeconds: 5
 
   ## Backend HorizontalPodAutoScaler configuration
   ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/
@@ -484,7 +482,7 @@ jobsService:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-jobs-service
-    tag: 0.1.15
+    tag: 0.1.16
     pullPolicy: IfNotPresent
 
   ## JobsService Service information\
@@ -641,7 +639,7 @@ jobsWorker:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-jobs-worker
-    tag: 0.1.15
+    tag: 0.1.16
     pullPolicy: IfNotPresent
 
   ## JobsWorker Service information
@@ -762,13 +760,13 @@ jobsWorker:
     ## @param jobsWorker.startupProbe.periodSeconds How often (in seconds) to perform the probe
     ## @param jobsWorker.startupProbe.timeoutSeconds Number of seconds after which the probe times out
     ## @param jobsWorker.startupProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
-    failureThreshold: 5
+    failureThreshold: 10
     httpGet:
       path: /api/health
       port: 8001
     initialDelaySeconds: 30
     periodSeconds: 10
-    timeoutSeconds: 30
+    timeoutSeconds: 5
 
   ## Jobs Worker HorizontalPodAutoScaler configuration
   ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/
@@ -855,7 +853,7 @@ llamaParse:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-llamaparse
-    tag: 0.1.15
+    tag: 0.1.16
     pullPolicy: IfNotPresent
 
   ## ServiceAccount configuration
@@ -986,7 +984,7 @@ llamaParseOcr:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-llamaparse-ocr
-    tag: 0.1.15
+    tag: 0.1.16
     pullPolicy: IfNotPresent
 
   ## LlamaParseOcr Service information
@@ -1142,7 +1140,7 @@ usage:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-usage
-    tag: 0.1.15
+    tag: 0.1.16
     pullPolicy: IfNotPresent
 
   ## Usage Service information

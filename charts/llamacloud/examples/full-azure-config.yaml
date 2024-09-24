@@ -1,3 +1,7 @@
+# This example shows a full configuration for the LlamaCloud platform on Azure.
+# It shows how to configure the platform to use Azure OpenAI and Azure Blob Storage (using s3proxy).
+# We currently do not have native support for non-S3 filestores in LlamaCloud at the moment.
+
 global:
   cloudProvider: azure
 
