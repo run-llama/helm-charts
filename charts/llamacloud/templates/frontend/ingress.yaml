@@ -1,8 +1,13 @@
 {{- if .Values.frontend.ingress.enabled -}}
+{{ $fullname := include "llamacloud.fullname" . }}
+{{ $frontendName := .Values.frontend.name }}
+{{ $backendName := .Values.backend.name }}
+{{ $frontendPort := .Values.frontend.service.port }}
+{{ $backendPort := .Values.backend.service.port }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{ include "llamacloud.fullname" . }}-frontend-ingress
+  name: {{ $fullname }}-{{ $frontendName }}-ingress
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "llamacloud.labels" . | nindent 4 }}
@@ -25,32 +30,32 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: {{ include "llamacloud.fullname" . }}-{{ .Values.frontend.name }}
-                port: {{ .Values.frontend.service.port }}
+                name: {{ $fullname }}-{{ $frontendName }}
+                port: {{ $frontendPort }}
           - path: "/api"
             pathType: Prefix
             backend:
               service:
-                name: {{ include "llamacloud.fullname" . }}-{{ .Values.backend.name }}
-                port: {{ .Values.backend.service.port }}
+                name: {{ $fullname }}-{{ $backendName }}
+                port: {{ $backendPort }}
     {{- range .Values.frontend.ingress.extraHosts }}
-    - host: {{ .name | quote }}
+    - host: {{ .host | quote }}
       http:
         paths:
           - path: "/"
             pathType: Prefix
             backend:
               service:
-                name: {{ include "llamacloud.fullname" . }}-{{ .Values.frontend.name }}
+                name: {{ $fullname }}-{{ $frontendName }}
                 port:
-                  number: {{ .Values.frontend.service.port }}
+                  number: {{ $frontendPort }}
           - path: "/api"
             pathType: Prefix
             backend:
               service:
-                name: {{ include "llamacloud.fullname" . }}-{{ .Values.backend.name }}
+                name: {{ $fullname }}-{{ $backendName }}
                 port:
-                  number: {{ .Values.backend.service.port }}
+                  number: {{ $backendPort }}
     {{- end }}
   {{- with .Values.frontend.ingress.tls }}
   tls:

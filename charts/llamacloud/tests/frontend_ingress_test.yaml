@@ -1,0 +1,86 @@
+suite: frontend-ingress
+
+templates:
+- ../templates/frontend/ingress.yaml
+
+tests:
+- it: should be an Ingress
+  set:
+    frontend.ingress.enabled: true
+  asserts:
+    - isKind:
+        of: Ingress
+
+- it: should have the correct host name
+  set:
+    frontend.ingress.enabled: true
+    frontend.ingress.hostName: test.host.com
+  asserts:
+    - equal:
+        path: .spec.rules[0].host
+        value: test.host.com
+
+- it: should have the correct service names and ports
+  set:
+    frontend.ingress.enabled: true
+    frontend.name: frontend
+    frontend.service.port: 3000
+    backend.name: backend
+    backend.service.port: 8000
+  asserts:
+    - equal:
+        path: .spec.rules[0].http.paths[0].backend.service.name
+        value: RELEASE-NAME-llamacloud-frontend
+    - equal:
+        path: .spec.rules[0].http.paths[0].backend.service.port
+        value: 3000
+    - equal:
+        path: .spec.rules[0].http.paths[1].backend.service.name
+        value: RELEASE-NAME-llamacloud-backend
+    - equal:
+        path: .spec.rules[0].http.paths[1].backend.service.port
+        value: 8000
+
+- it: should have the correct ingress class name
+  set:
+    frontend.ingress.enabled: true
+    frontend.ingress.ingressClassName: nginx
+  asserts:
+    - equal:
+        path: .spec.ingressClassName
+        value: nginx
+
+- it: should have the correct TLS configuration
+  set:
+    frontend.ingress.enabled: true
+    frontend.ingress.tls:
+      - hosts:
+        - test.host.com
+        secretName: test-tls-secret
+  asserts:
+    - equal:
+        path: .spec.tls[0].hosts[0]
+        value: test.host.com
+    - equal:
+        path: .spec.tls[0].secretName
+        value: test-tls-secret
+
+- it: should have the correct extra hosts
+  set:
+    frontend.ingress.enabled: true
+    frontend.ingress.hostName: test.host.com
+    frontend.ingress.extraHosts:
+      - host: example.com
+        paths:
+          - path: /
+            pathType: Prefix
+  asserts:
+    - equal:
+        path: .spec.rules[1].host
+        value: example.com
+    - equal:
+        path: .spec.rules[1].http.paths[0].path
+        value: /
+    - equal:
+        path: .spec.rules[1].http.paths[0].pathType
+        value: Prefix
