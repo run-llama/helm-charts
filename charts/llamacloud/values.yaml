@@ -145,6 +145,33 @@ frontend:
     type: ClusterIP
     port: 3000
 
+  ## @param frontend.ingress.enabled Enable ingress for the Frontend Deployment
+  ## @param frontend.ingress.labels Labels to add to the ingress
+  ## @param frontend.ingress.annotations Annotations to add to the ingress
+  ## @param frontend.ingress.ingressClassName Ingress class name
+  ## @param frontend.ingress.hostName Ingress host name
+  ## @param frontend.ingress.extraHosts Additional hosts to add to the ingress
+  ## @param frontend.ingress.tls Ingress TLS configuration
+  ingress:
+    enabled: false
+    labels: {}
+    annotations: {}
+    ingressClassName: ""
+    hostName: ""
+    ## Example:
+    ## extraHosts:
+    ##   - host: ""
+    ##     paths:
+    ##       - path: /
+    ##         pathType: Prefix
+    extraHosts: []
+    ## Example:
+    ## tls:
+    ##   - hosts:
+    ##     - ""
+    ##     secretName: ""
+    tls: []
+
   ## @param frontend.serviceAccount.create Whether or not to create a new service account
   ## @param frontend.serviceAccount.name Name of the service account
   ## @param frontend.serviceAccount.labels Labels to add to the service account

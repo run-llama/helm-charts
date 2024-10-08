@@ -1,0 +1,59 @@
+{{- if .Values.frontend.ingress.enabled -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "llamacloud.fullname" . }}-frontend-ingress
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "llamacloud.labels" . | nindent 4 }}
+    {{- with .Values.frontend.ingress.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with .Values.frontend.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- with .Values.frontend.ingress.ingressClassName }}
+  ingressClassName: {{ . }}
+  {{- end }}
+  rules:
+    - host: {{ .Values.frontend.ingress.hostName }}
+      http:
+        paths:
+          - path: "/"
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "llamacloud.fullname" . }}-{{ .Values.frontend.name }}
+                port: {{ .Values.frontend.service.port }}
+          - path: "/api"
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "llamacloud.fullname" . }}-{{ .Values.backend.name }}
+                port: {{ .Values.backend.service.port }}
+    {{- range .Values.frontend.ingress.extraHosts }}
+    - host: {{ .name | quote }}
+      http:
+        paths:
+          - path: "/"
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "llamacloud.fullname" . }}-{{ .Values.frontend.name }}
+                port:
+                  number: {{ .Values.frontend.service.port }}
+          - path: "/api"
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "llamacloud.fullname" . }}-{{ .Values.backend.name }}
+                port:
+                  number: {{ .Values.backend.service.port }}
+    {{- end }}
+  {{- with .Values.frontend.ingress.tls }}
+  tls:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+{{- end }}
