@@ -76,7 +76,7 @@ spec:
             value: 0.0.0.0
           - name: NEXT_PUBLIC_BACKEND_URL
             value: {{ printf "http://%s-%s:%d" (include "llamacloud.fullname" .) .Values.backend.name (.Values.backend.service.port | int) | quote }}
-          {{- with .Values.jobsWorker.extraEnvVariables }}
+          {{- with .Values.frontend.extraEnvVariables }}
           {{- toYaml . | nindent 10 }}
           {{- end }}
           {{- with .Values.frontend.volumeMounts }}
