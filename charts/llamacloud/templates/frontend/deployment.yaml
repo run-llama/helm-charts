@@ -74,7 +74,7 @@ spec:
                 key: llamacloud-license-key
           - name: HOSTNAME
             value: 0.0.0.0
-          - name: NEXT_PUBLIC_BACKEND_URL
+          - name: BACKEND_URL
             value: {{ printf "http://%s-%s:%d" (include "llamacloud.fullname" .) .Values.backend.name (.Values.backend.service.port | int) | quote }}
           {{- with .Values.frontend.extraEnvVariables }}
           {{- toYaml . | nindent 10 }}
