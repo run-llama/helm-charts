@@ -78,8 +78,8 @@ tests:
     backend.config.qdrant.apiKey: "test-api-key"
   asserts:
     - equal:
-        path: .spec.template.spec.containers[0].env[?(@.name == "QDRANT_URL")].valueFrom.secretKeyRef.key
-        value: QDRANT_URL
+        path: .spec.template.spec.containers[0].env[?(@.name == "QDRANT_URL")].value
+        value: http://test-host-qdrant:6333
     - equal:
-        path: .spec.template.spec.containers[0].env[?(@.name == "QDRANT_API_KEY")].valueFrom.secretKeyRef.key
-        value: QDRANT_API_KEY
+        path: .spec.template.spec.containers[0].env[?(@.name == "QDRANT_API_KEY")].value
+        value: test-api-key
