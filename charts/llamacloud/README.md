@@ -77,6 +77,7 @@ For more information about using this chart, feel free to visit the [Official Ll
 | `global.config.postgresql.external.password`           | PostgreSQL password                                           | `""`                       |
 | `global.config.postgresql.external.existingSecretName` | Name of the existing secret to use for PostgreSQL credentials | `""`                       |
 | `global.config.mongodb.external.enabled`               | Use an external MongoDB database                              | `false`                    |
+| `global.config.mongodb.external.url`                   | MongoDB URL                                                   | `""`                       |
 | `global.config.mongodb.external.host`                  | MongoDB host                                                  | `""`                       |
 | `global.config.mongodb.external.port`                  | MongoDB port                                                  | `27017`                    |
 | `global.config.mongodb.external.username`              | MongoDB user                                                  | `""`                       |
