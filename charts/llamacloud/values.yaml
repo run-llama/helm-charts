@@ -286,6 +286,18 @@ backend:
       clientId: ""
       clientSecret: ""
 
+    ## Backend QDRANT Data-Sink configuration
+    ## @param backend.config.qdrant.enabled Enable QDRANT Data-Sink for backend
+    ## @param backend.config.qdrant.existingSecret Name of the existing secret to use for the QDRANT Data-Sink
+    ## @param backend.config.qdrant.host QDRANT Data-Sink host
+    ## @param backend.config.qdrant.port QDRANT Data-Sink port
+    ## @param backend.config.qdrant.apiKey QDRANT Data-Sink API key
+    qdrant:
+      enabled: false
+      existingSecret: ""
+      host: ""
+      apiKey: ""
+
   ## @param backend.replicas Number of replicas of Backend Deployment
   replicas: 1
 

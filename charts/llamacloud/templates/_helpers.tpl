@@ -163,6 +163,18 @@ Service Accounts Names
 {{- end -}}
 {{- end -}}
 
+{{- define "common.qdrant.envVars" -}}
+{{- if .Values.qdrant.enabled -}}
+- name: QDRANT_SERVER_URL
+  value: {{ .Values.qdrant.host | default (printf "http://%s-qdrant:6333" .Release.Name) | quote }}
+- name: QDRANT_PRIVATE_KEY
+  valueFrom:
+    secretKeyRef:
+      name: {{ printf "%s-qdrant" .Release.Name | quote }}
+      key: qdrant-private-key
+{{- end -}}
+{{- end -}}
+
 {{- define "common.mongodb.envVars" -}}
 {{- if .Values.mongodb.enabled -}}
 - name: MONGODB_HOST

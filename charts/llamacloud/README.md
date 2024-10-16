@@ -161,6 +161,10 @@ For more information about using this chart, feel free to visit the [Official Ll
 | `backend.config.oidc.discoveryUrl`                   | OIDC discovery URL                                                                                                | `""`                            |
 | `backend.config.oidc.clientId`                       | OIDC client ID                                                                                                    | `""`                            |
 | `backend.config.oidc.clientSecret`                   | OIDC client secret                                                                                                | `""`                            |
+| `backend.config.qdrant.enabled`                      | Enable QDRANT Data-Sink for backend                                                                               | `false`                         |
+| `backend.config.qdrant.existingSecret`               | Name of the existing secret to use for the QDRANT Data-Sink                                                       | `""`                            |
+| `backend.config.qdrant.host`                         | QDRANT Data-Sink host                                                                                             | `""`                            |
+| `backend.config.qdrant.apiKey`                       | QDRANT Data-Sink API key                                                                                          | `""`                            |
 | `backend.replicas`                                   | Number of replicas of Backend Deployment                                                                          | `1`                             |
 | `backend.image.registry`                             | Backend Image registry                                                                                            | `docker.io`                     |
 | `backend.image.repository`                           | Backend Image repository                                                                                          | `llamaindex/llamacloud-backend` |
