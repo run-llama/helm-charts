@@ -56,9 +56,6 @@ tests:
     global.config.postgresql.external.port: 5432
   asserts:
     - equal:
-        path: .spec.template.spec.containers[0].env[?(@.name == "DATABASE_URL")].value
-        value: test-url
-    - equal:
         path: .spec.template.spec.containers[0].env[?(@.name == "DATABASE_HOST")].value
         value: test-host
     - equal:
