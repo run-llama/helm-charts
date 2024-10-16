@@ -295,7 +295,7 @@ backend:
     qdrant:
       enabled: false
       existingSecret: ""
-      host: ""
+      url: ""
       apiKey: ""
 
   ## @param backend.replicas Number of replicas of Backend Deployment
