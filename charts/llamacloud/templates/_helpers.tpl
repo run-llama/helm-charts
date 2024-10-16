@@ -166,7 +166,7 @@ Service Accounts Names
 {{- define "common.qdrant.envVars" -}}
 {{- if .Values.qdrant.enabled -}}
 - name: QDRANT_SERVER_URL
-  value: {{ .Values.qdrant.host | default (printf "http://%s-qdrant:6333" .Release.Name) | quote }}
+  value: {{ .Values.qdrant.url | default (printf "http://%s-qdrant:6333" .Release.Name) | quote }}
 - name: QDRANT_PRIVATE_KEY
   valueFrom:
     secretKeyRef:

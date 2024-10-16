@@ -70,3 +70,18 @@ tests:
     - equal:
         path: .spec.template.spec.containers[0].env[?(@.name == "DATABASE_PASSWORD")].value
         value: test-password
+
+- it: qdrant env vars should use custom config if is subchart is not enabled and external config is provided
+  set:
+    qdrant.enabled: false
+    global.config.qdrant.external.enabled: true
+    global.config.qdrant.external.host: test-host
+    global.config.qdrant.external.privateKey: test-private-key
+  asserts:
+    - equal:
+        path: .spec.template.spec.containers[0].env[?(@.name == "QDRANT_SERVER_URL")].value
+        value: http://test-host-qdrant:6333
+    - equal:
+        path: .spec.template.spec.containers[0].env[?(@.name == "QDRANT_PRIVATE_KEY")].value
+        value: test-private-key
+  
