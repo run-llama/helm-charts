@@ -163,24 +163,6 @@ Service Accounts Names
 {{- end -}}
 {{- end -}}
 
-{{- define "common.qdrant.envVars" -}}
-{{- if .Values.backend.config.qdrant.enabled -}}
-- name: QDRANT_URL
-  value: {{ .Values.backend.config.qdrant.url | quote }}
-- name: QDRANT_API_KEY
-  valueFrom:
-    secretKeyRef:
-      name: {{ include "llamacloud.fullname" . }}-{{ .Values.backend.name }}-secret
-      key: qdrant-api-key
-{{- end -}}
-{{- if and (not .Values.backend.config.qdrant.enabled) (.Values.backend.config.qdrant.enabled) (not .Values.backend.config.qdrant.existingSecretName) -}}
-- name: QDRANT_URL
-  value: {{ .Values.backend.config.qdrant.url | quote }}
-- name: QDRANT_API_KEY
-  value: {{ .Values.backend.config.qdrant.apiKey | quote }}
-{{- end -}}
-{{- end -}}
-
 {{- define "common.mongodb.envVars" -}}
 {{- if .Values.mongodb.enabled -}}
 - name: MONGODB_HOST

@@ -71,19 +71,6 @@ tests:
         path: .spec.template.spec.containers[0].env[?(@.name == "DATABASE_PASSWORD")].value
         value: test-password
 
-- it: qdrant env vars should use custom config if qdrant is enabled
-  set:
-    backend.config.qdrant.enabled: true
-    backend.config.qdrant.url: "http://test-host-qdrant:6333"
-    backend.config.qdrant.apiKey: "test-api-key"
-  asserts:
-    - equal:
-        path: .spec.template.spec.containers[0].env[?(@.name == "QDRANT_URL")].value
-        value: http://test-host-qdrant:6333
-    - equal:
-        path: .spec.template.spec.containers[0].env[?(@.name == "QDRANT_API_KEY")].value
-        value: test-api-key
-
 - it: should use an external secret name for the license key if it is set
   set:
     global.config.existingLicenseKeySecret: existing-license-key
