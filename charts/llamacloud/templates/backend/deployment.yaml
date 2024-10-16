@@ -77,7 +77,6 @@ spec:
           {{- include "common.mongodb.envVars" . | nindent 10 -}}
           {{- include "common.rabbitmq.envVars" . | nindent 10 -}}
           {{- include "common.redis.envVars" . | nindent 10 -}}
-          {{- include "common.qdrant.envVars" . | nindent 10 -}}
           {{- with .Values.backend.extraEnvVariables }}
           {{- toYaml . | nindent 10 }}
           {{- end }}
