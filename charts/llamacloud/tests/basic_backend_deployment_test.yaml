@@ -75,13 +75,12 @@ tests:
   set:
     qdrant.enabled: false
     global.config.qdrant.external.enabled: true
-    global.config.qdrant.external.host: test-host
-    global.config.qdrant.external.privateKey: test-private-key
+    global.config.qdrant.external.url: http://test-host-qdrant:6333
+    global.config.qdrant.external.apiKey: test-api-key
   asserts:
     - equal:
         path: .spec.template.spec.containers[0].env[?(@.name == "QDRANT_URL")].value
         value: http://test-host-qdrant:6333
     - equal:
         path: .spec.template.spec.containers[0].env[?(@.name == "QDRANT_API_KEY")].value
-        value: test-private-key
-  
+        value: test-api-key
