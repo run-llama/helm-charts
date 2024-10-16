@@ -70,6 +70,7 @@ For more information about using this chart, feel free to visit the [Official Ll
 | `global.config.awsSecretAccessKey`                     | AWS Secret Access Key                                         | `""`                       |
 | `global.config.existingAwsSecretName`                  | Name of the existing secret to use for AWS credentials        | `""`                       |
 | `global.config.postgresql.external.enabled`            | Use an external PostgreSQL database                           | `false`                    |
+| `global.config.postgresql.external.url`                | PostgreSQL URL                                                | `""`                       |
 | `global.config.postgresql.external.host`               | PostgreSQL host                                               | `""`                       |
 | `global.config.postgresql.external.port`               | PostgreSQL port                                               | `5432`                     |
 | `global.config.postgresql.external.database`           | PostgreSQL database                                           | `""`                       |

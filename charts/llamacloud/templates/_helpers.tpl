@@ -150,6 +150,8 @@ Service Accounts Names
       key: password
 {{- end -}}
 {{- if and (not .Values.postgresql.enabled) (.Values.global.config.postgresql.external.enabled) (not .Values.global.config.postgresql.external.existingSecretName) -}}
+- name: DATABASE_URL
+  value: {{ .Values.global.config.postgresql.external.url | quote }}
 - name: DATABASE_HOST
   value: {{ .Values.global.config.postgresql.external.host | quote }}
 - name: DATABASE_PORT

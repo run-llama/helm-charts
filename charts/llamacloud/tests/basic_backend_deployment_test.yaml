@@ -49,12 +49,16 @@ tests:
   set:
     postgresql.enabled: false
     global.config.postgresql.external.enabled: true
+    global.config.postgresql.external.url: test-url
     global.config.postgresql.external.database: test-db
     global.config.postgresql.external.username: test-user
     global.config.postgresql.external.password: test-password
     global.config.postgresql.external.host: test-host
     global.config.postgresql.external.port: 5432
   asserts:
+    - equal:
+        path: .spec.template.spec.containers[0].env[?(@.name == "DATABASE_URL")].value
+        value: test-url
     - equal:
         path: .spec.template.spec.containers[0].env[?(@.name == "DATABASE_HOST")].value
         value: test-host
