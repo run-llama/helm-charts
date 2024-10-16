@@ -79,9 +79,9 @@ tests:
     global.config.qdrant.external.privateKey: test-private-key
   asserts:
     - equal:
-        path: .spec.template.spec.containers[0].env[?(@.name == "QDRANT_SERVER_URL")].value
+        path: .spec.template.spec.containers[0].env[?(@.name == "QDRANT_URL")].value
         value: http://test-host-qdrant:6333
     - equal:
-        path: .spec.template.spec.containers[0].env[?(@.name == "QDRANT_PRIVATE_KEY")].value
+        path: .spec.template.spec.containers[0].env[?(@.name == "QDRANT_API_KEY")].value
         value: test-private-key
   
