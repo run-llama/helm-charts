@@ -171,7 +171,7 @@ Service Accounts Names
   valueFrom:
     secretKeyRef:
       name: {{ include "llamacloud.fullname" . }}-{{ .Values.backend.name }}-secret
-      key: QDRANT_API_KEY
+      key: qdrant-api-key
 {{- end -}}
 {{- if and (not .Values.backend.config.qdrant.enabled) (.Values.backend.config.qdrant.enabled) (not .Values.backend.config.qdrant.existingSecretName) -}}
 - name: QDRANT_URL

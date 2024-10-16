@@ -83,3 +83,11 @@ tests:
     - equal:
         path: .spec.template.spec.containers[0].env[?(@.name == "QDRANT_API_KEY")].value
         value: test-api-key
+
+- it: should use an external secret name for the license key if it is set
+  set:
+    global.config.existingLicenseKeySecret: existing-license-key
+  asserts:
+    - equal:
+        path: .spec.template.spec.containers[0].env[?(@.name == "LLAMACLOUD_LICENSE_KEY")].valueFrom.secretKeyRef.name
+        value: existing-license-key
