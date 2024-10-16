@@ -77,6 +77,7 @@ spec:
           {{- include "common.mongodb.envVars" . | nindent 10 -}}
           {{- include "common.rabbitmq.envVars" . | nindent 10 -}}
           {{- include "common.redis.envVars" . | nindent 10 -}}
+          {{- include "common.qdrant.envVars" . | nindent 10 -}}
           {{- with .Values.backend.extraEnvVariables }}
           {{- toYaml . | nindent 10 }}
           {{- end }}
@@ -86,6 +87,10 @@ spec:
           {{- if .Values.backend.config.oidc.existingSecretName }}
           - secretRef:
               name: {{ .Values.backend.config.oidc.existingSecretName }}
+          {{- end }}
+          {{- if .Values.backend.config.qdrant.enabled }}
+          - secretRef:
+              name: {{ .Values.backend.config.qdrant.existingSecret }}
           {{- end }}
           {{- if .Values.global.config.existingAwsSecretName }}
           - secretRef:
