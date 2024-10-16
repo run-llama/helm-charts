@@ -164,14 +164,20 @@ Service Accounts Names
 {{- end -}}
 
 {{- define "common.qdrant.envVars" -}}
-{{- if .Values.qdrant.enabled -}}
+{{- if .Values.backend.config.qdrant.enabled -}}
 - name: QDRANT_URL
-  value: {{ .Values.qdrant.url | default (printf "http://%s-qdrant:6333" .Release.Name) | quote }}
+  value: {{ .Values.backend.config.qdrant.url | quote }}
 - name: QDRANT_API_KEY
   valueFrom:
     secretKeyRef:
-      name: {{ printf "%s-qdrant" .Release.Name | quote }}
-      key: qdrant-private-key
+      name: {{ include "llamacloud.fullname" . }}-{{ .Values.backend.name }}-secret
+      key: QDRANT_API_KEY
+{{- end -}}
+{{- if and (not .Values.backend.config.qdrant.enabled) (.Values.backend.config.qdrant.enabled) (not .Values.backend.config.qdrant.existingSecretName) -}}
+- name: QDRANT_URL
+  value: {{ .Values.backend.config.qdrant.url | quote }}
+- name: QDRANT_API_KEY
+  value: {{ .Values.backend.config.qdrant.apiKey | quote }}
 {{- end -}}
 {{- end -}}
 
