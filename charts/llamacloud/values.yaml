@@ -32,7 +32,6 @@ global:
     existingAwsSecretName: ""
 
     ## @param global.config.postgresql.external.enabled Use an external PostgreSQL database
-    ## @param global.config.postgresql.external.url PostgreSQL connection URL
     ## @param global.config.postgresql.external.host PostgreSQL host
     ## @param global.config.postgresql.external.port PostgreSQL port
     ## @param global.config.postgresql.external.database PostgreSQL database
@@ -42,7 +41,6 @@ global:
     postgresql:
       external:
         enabled: false
-        url: ""
         host: ""
         port: "5432"
         database: ""
@@ -51,6 +49,7 @@ global:
         existingSecretName: ""
 
     ## @param global.config.mongodb.external.enabled Use an external MongoDB database
+    ## @param global.config.mongodb.external.url MongoDB connection URL
     ## @param global.config.mongodb.external.host MongoDB host
     ## @param global.config.mongodb.external.port MongoDB port
     ## @param global.config.mongodb.external.username MongoDB user
@@ -59,6 +58,7 @@ global:
     mongodb:
       external:
         enabled: false
+        url: ""
         host: ""
         port: "27017"
         username: ""

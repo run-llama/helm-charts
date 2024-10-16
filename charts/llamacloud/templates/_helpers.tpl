@@ -150,8 +150,6 @@ Service Accounts Names
       key: password
 {{- end -}}
 {{- if and (not .Values.postgresql.enabled) (.Values.global.config.postgresql.external.enabled) (not .Values.global.config.postgresql.external.existingSecretName) -}}
-- name: DATABASE_URL
-  value: {{ .Values.global.config.postgresql.external.url | quote }}
 - name: DATABASE_HOST
   value: {{ .Values.global.config.postgresql.external.host | quote }}
 - name: DATABASE_PORT
@@ -180,6 +178,8 @@ Service Accounts Names
       key: mongodb-root-password
 {{- end -}}
 {{- if and (not .Values.mongodb.enabled) (.Values.global.config.mongodb.external.enabled) (not .Values.global.config.mongodb.external.existingSecretName) -}}
+- name: MONGODB_URL
+  value: {{ .Values.global.config.mongodb.external.url | quote }}
 - name: MONGODB_HOST
   value: {{ .Values.global.config.mongodb.external.host | quote }}
 - name: MONGODB_PORT

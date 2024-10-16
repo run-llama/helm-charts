@@ -49,7 +49,6 @@ tests:
   set:
     postgresql.enabled: false
     global.config.postgresql.external.enabled: true
-    global.config.postgresql.external.url: test-url
     global.config.postgresql.external.database: test-db
     global.config.postgresql.external.username: test-user
     global.config.postgresql.external.password: test-password
