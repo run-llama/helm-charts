@@ -178,6 +178,8 @@ Service Accounts Names
       key: mongodb-root-password
 {{- end -}}
 {{- if and (not .Values.mongodb.enabled) (.Values.global.config.mongodb.external.enabled) (not .Values.global.config.mongodb.external.existingSecretName) -}}
+- name: MONGODB_URL
+  value: {{ .Values.global.config.mongodb.external.url | quote }}
 - name: MONGODB_HOST
   value: {{ .Values.global.config.mongodb.external.host | quote }}
 - name: MONGODB_PORT

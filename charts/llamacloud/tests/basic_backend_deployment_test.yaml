@@ -70,3 +70,29 @@ tests:
     - equal:
         path: .spec.template.spec.containers[0].env[?(@.name == "DATABASE_PASSWORD")].value
         value: test-password
+
+- it: mongodb env vars should use custom config if subchart is not enabled and external config is provided
+  set:
+    mongodb.enabled: false
+    global.config.mongodb.external.enabled: true
+    global.config.mongodb.external.url: test-mongo-url
+    global.config.mongodb.external.host: test-mongo-host
+    global.config.mongodb.external.port: 27017
+    global.config.mongodb.external.username: test-mongo-user
+    global.config.mongodb.external.password: test-mongo-password
+  asserts:
+    - equal:
+        path: .spec.template.spec.containers[0].env[?(@.name == "MONGODB_URL")].value
+        value: test-mongo-url
+    - equal:
+        path: .spec.template.spec.containers[0].env[?(@.name == "MONGODB_HOST")].value
+        value: test-mongo-host
+    - equal:
+        path: .spec.template.spec.containers[0].env[?(@.name == "MONGODB_PORT")].value
+        value: "27017"
+    - equal:
+        path: .spec.template.spec.containers[0].env[?(@.name == "MONGODB_USER")].value
+        value: test-mongo-user
+    - equal:
+        path: .spec.template.spec.containers[0].env[?(@.name == "MONGODB_PASSWORD")].value
+        value: test-mongo-password
