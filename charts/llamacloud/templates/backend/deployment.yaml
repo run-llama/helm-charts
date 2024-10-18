@@ -87,7 +87,7 @@ spec:
           - secretRef:
               name: {{ .Values.backend.config.oidc.existingSecretName }}
           {{- end }}
-          {{- if .Values.backend.config.qdrant.enabled }}
+          {{- if .Values.backend.config.qdrant.existingSecret }}
           - secretRef:
               name: {{ .Values.backend.config.qdrant.existingSecret }}
           {{- end }}
