@@ -87,6 +87,10 @@ spec:
           - secretRef:
               name: {{ .Values.backend.config.oidc.existingSecretName }}
           {{- end }}
+          {{- if .Values.backend.config.qdrant.existingSecret }}
+          - secretRef:
+              name: {{ .Values.backend.config.qdrant.existingSecret }}
+          {{- end }}
           {{- if .Values.global.config.existingAwsSecretName }}
           - secretRef:
               name: {{ .Values.global.config.existingAwsSecretName }}
@@ -103,6 +107,7 @@ spec:
           - secretRef:
               name: {{ .Values.global.config.postgresql.external.existingSecretName }}
           {{- end }}
+
           {{- if and (not .Values.mongodb.enabled) .Values.global.config.mongodb.external.enabled .Values.global.config.mongodb.external.existingSecretName }}
           - secretRef:
               name: {{ .Values.global.config.mongodb.external.existingSecretName }}

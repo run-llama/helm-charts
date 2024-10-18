@@ -76,6 +76,10 @@ spec:
             value: 0.0.0.0
           - name: BACKEND_URL
             value: {{ printf "http://%s-%s:%d" (include "llamacloud.fullname" .) .Values.backend.name (.Values.backend.service.port | int) | quote }}
+          {{- if .Values.backend.config.qdrant.enabled }}
+          - name: NEXT_PUBLIC_BYOC_HAS_MANAGED_QDRANT
+            value: "true"
+          {{- end}}
           {{- with .Values.frontend.extraEnvVariables }}
           {{- toYaml . | nindent 10 }}
           {{- end }}

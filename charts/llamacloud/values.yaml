@@ -49,6 +49,7 @@ global:
         existingSecretName: ""
 
     ## @param global.config.mongodb.external.enabled Use an external MongoDB database
+    ## @param global.config.mongodb.external.url MongoDB connection URL
     ## @param global.config.mongodb.external.host MongoDB host
     ## @param global.config.mongodb.external.port MongoDB port
     ## @param global.config.mongodb.external.username MongoDB user
@@ -57,6 +58,7 @@ global:
     mongodb:
       external:
         enabled: false
+        url: ""
         host: ""
         port: "27017"
         username: ""
@@ -136,7 +138,7 @@ frontend:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-frontend
-    tag: 0.1.23
+    tag: 0.1.24
     pullPolicy: IfNotPresent
 
   ## @param frontend.service.type Frontend Service type
@@ -286,6 +288,18 @@ backend:
       clientId: ""
       clientSecret: ""
 
+    ## Backend QDRANT Data-Sink configuration
+    ## @param backend.config.qdrant.enabled Enable QDRANT Data-Sink for backend
+    ## @param backend.config.qdrant.existingSecret Name of the existing secret to use for the QDRANT Data-Sink
+    ## @param backend.config.qdrant.url QDRANT Data-Sink host
+    ## @param backend.config.qdrant.port QDRANT Data-Sink port
+    ## @param backend.config.qdrant.apiKey QDRANT Data-Sink API key
+    qdrant:
+      enabled: false
+      existingSecret: ""
+      url: ""
+      apiKey: ""
+
   ## @param backend.replicas Number of replicas of Backend Deployment
   replicas: 1
 
@@ -297,7 +311,7 @@ backend:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-backend
-    tag: 0.1.23
+    tag: 0.1.24
     pullPolicy: IfNotPresent
 
   ## Backend Service information
@@ -482,7 +496,7 @@ jobsService:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-jobs-service
-    tag: 0.1.23
+    tag: 0.1.24
     pullPolicy: IfNotPresent
 
   ## JobsService Service information\
@@ -639,7 +653,7 @@ jobsWorker:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-jobs-worker
-    tag: 0.1.23
+    tag: 0.1.24
     pullPolicy: IfNotPresent
 
   ## JobsWorker Service information
@@ -853,7 +867,7 @@ llamaParse:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-llamaparse
-    tag: 0.1.23
+    tag: 0.1.24
     pullPolicy: IfNotPresent
 
   ## ServiceAccount configuration
@@ -984,7 +998,7 @@ llamaParseOcr:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-llamaparse-ocr
-    tag: 0.1.23
+    tag: 0.1.24
     pullPolicy: IfNotPresent
 
   ## LlamaParseOcr Service information
@@ -1140,7 +1154,7 @@ usage:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-usage
-    tag: 0.1.23
+    tag: 0.1.24
     pullPolicy: IfNotPresent
 
   ## Usage Service information
