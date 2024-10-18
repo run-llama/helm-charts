@@ -2,6 +2,53 @@ apiVersion: v1
 entries:
   llamacloud:
   - apiVersion: v2
+    appVersion: 0.1.24
+    created: "2024-10-18T19:47:06.551322087Z"
+    dependencies:
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: oci://registry-1.docker.io/bitnamicharts
+      version: 15.5.17
+    - condition: mongodb.enabled
+      name: mongodb
+      repository: oci://registry-1.docker.io/bitnamicharts
+      version: 15.6.13
+    - condition: rabbitmq.enabled
+      name: rabbitmq
+      repository: oci://registry-1.docker.io/bitnamicharts
+      version: 14.5.0
+    - condition: redis.enabled
+      name: redis
+      repository: oci://registry-1.docker.io/bitnamicharts
+      version: 19.6.2
+    description: A Helm chart to deploy LlamaCloud and all of its necessary services.
+    digest: 9b8ecfbc10ea75784b39813d10617bbf91cce4fe4f28140b52a521efdee9d0d9
+    home: https://github.com/run-llama/helm-charts
+    keywords:
+    - llamaindex
+    - llamacloud
+    - rag
+    maintainers:
+    - email: jerry@runllama.ai
+      name: Jerry Liu
+      url: https://github.com/jerryjliu
+    - email: simon@runllama.ai
+      name: Simon Suo
+      url: https://github.com/Disiok
+    - email: luke@runllam.ai
+      name: Luke Chui
+      url: https://github.com/epicchewy
+    name: llamacloud
+    sources:
+    - https://github.com/run-llama/helm-charts
+    - https://github.com/bitnami/charts/tree/main/bitnami/postgresql
+    - https://github.com/bitnami/charts/tree/main/bitnami/mongodb
+    - https://github.com/bitnami/charts/tree/main/bitnami/rabbitmq
+    - https://github.com/bitnami/charts/tree/main/bitnami/redis
+    urls:
+    - https://github.com/run-llama/helm-charts/releases/download/llamacloud-0.1.24/llamacloud-0.1.24.tgz
+    version: 0.1.24
+  - apiVersion: v2
     appVersion: 0.1.23
     created: "2024-10-14T19:19:12.64618991Z"
     dependencies:
@@ -1082,4 +1129,4 @@ entries:
     urls:
     - https://github.com/run-llama/helm-charts/releases/download/llamacloud-0.1.1/llamacloud-0.1.1.tgz
     version: 0.1.1
-generated: "2024-10-14T19:19:12.646339268Z"
+generated: "2024-10-18T19:47:06.55146839Z"
