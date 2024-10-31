@@ -56,13 +56,15 @@ spec:
               protocol: TCP
           command:
             - "uvicorn"
-            - "app.main:app"
+            - "usage.main:app"
             - "--host"
             - "0.0.0.0"
             - "--port"
             - {{ .Values.usage.containerPort | quote }}
             - "--workers"
             - "1"
+            - "--timeout-keep-alive"
+            - "300"
           livenessProbe:
             {{- toYaml .Values.usage.livenessProbe | nindent 12 }}
           readinessProbe:
