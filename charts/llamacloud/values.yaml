@@ -138,7 +138,7 @@ frontend:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-frontend
-    tag: 0.1.26
+    tag: 0.1.27
     pullPolicy: IfNotPresent
 
   ## @param frontend.service.type Frontend Service type
@@ -292,7 +292,6 @@ backend:
     ## @param backend.config.qdrant.enabled Enable QDRANT Data-Sink for backend
     ## @param backend.config.qdrant.existingSecret Name of the existing secret to use for the QDRANT Data-Sink
     ## @param backend.config.qdrant.url QDRANT Data-Sink host
-    ## @param backend.config.qdrant.port QDRANT Data-Sink port
     ## @param backend.config.qdrant.apiKey QDRANT Data-Sink API key
     qdrant:
       enabled: false
@@ -311,7 +310,7 @@ backend:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-backend
-    tag: 0.1.26
+    tag: 0.1.27
     pullPolicy: IfNotPresent
 
   ## Backend Service information
@@ -496,7 +495,7 @@ jobsService:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-jobs-service
-    tag: 0.1.26
+    tag: 0.1.27
     pullPolicy: IfNotPresent
 
   ## JobsService Service information\
@@ -653,7 +652,7 @@ jobsWorker:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-jobs-worker
-    tag: 0.1.26
+    tag: 0.1.27
     pullPolicy: IfNotPresent
 
   ## JobsWorker Service information
@@ -867,7 +866,7 @@ llamaParse:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-llamaparse
-    tag: 0.1.26
+    tag: 0.1.27
     pullPolicy: IfNotPresent
 
   ## ServiceAccount configuration
@@ -998,7 +997,7 @@ llamaParseOcr:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-llamaparse-ocr
-    tag: 0.1.26
+    tag: 0.1.27
     pullPolicy: IfNotPresent
 
   ## LlamaParseOcr Service information
@@ -1154,7 +1153,7 @@ usage:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-usage
-    tag: 0.1.26
+    tag: 0.1.27
     pullPolicy: IfNotPresent
 
   ## Usage Service information
