@@ -82,6 +82,7 @@ spec:
                 {{- end }}
                 key: llamacloud-license-key
           {{- include "common.mongodb.envVars" . | nindent 10 }}
+          {{- include "common.postgresql.envVars" . | nindent 10 -}}
           {{- include "common.redis.envVars" . | nindent 10 }}
           {{- with .Values.usage.extraEnvVariables }}
           {{- toYaml . | nindent 10 }}
@@ -90,6 +91,10 @@ spec:
           {{- if and (not .Values.mongodb.enabled) .Values.global.config.mongodb.external.enabled .Values.global.config.mongodb.external.existingSecretName }}
           - secretRef:
               name: {{ .Values.global.config.mongodb.external.existingSecretName }}
+          {{- end }}
+          {{- if and (not .Values.postgresql.enabled) .Values.global.config.postgresql.external.enabled .Values.global.config.postgresql.external.existingSecretName }}
+          - secretRef:
+              name: {{ .Values.global.config.postgresql.external.existingSecretName }}
           {{- end }}
           {{- if and (not .Values.redis.enabled) .Values.global.config.redis.external.enabled .Values.global.config.redis.external.existingSecretName }}
           - secretRef:
