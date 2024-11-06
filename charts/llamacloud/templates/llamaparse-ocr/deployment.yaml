@@ -71,6 +71,9 @@ spec:
                 name: {{ include "llamacloud.fullname" . }}-license-key
                 {{- end }}
                 key: llamacloud-license-key
+          {{- with .Values.llamaParseOcr.extraEnvVariables }}
+          {{- toYaml . | nindent 10 }}
+          {{- end }}
           {{- with .Values.llamaParseOcr.volumeMounts }}
           volumeMounts:
             {{- toYaml . | nindent 12 }}
