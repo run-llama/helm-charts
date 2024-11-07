@@ -42,7 +42,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       serviceAccountName: {{ include "llamaParseOcr.serviceAccountName" . }}
-      securityContext:
+      securityContext:r
         {{- toYaml .Values.llamaParseOcr.podSecurityContext | nindent 8 }}
       containers:
         - name: {{ .Values.llamaParseOcr.name }}
@@ -60,7 +60,11 @@ spec:
           readinessProbe:
             {{- toYaml .Values.llamaParseOcr.readinessProbe | nindent 12 }}
           resources:
+            {{- if .Values.llamaParseOcr.useGpu }}
+            {{- toYaml .Values.llamaParseOcr.gpuResources | nindent 12 }}
+            {{- else }}
             {{- toYaml .Values.llamaParseOcr.resources | nindent 12 }}
+            {{- end }}
           env:
           - name: LLAMACLOUD_LICENSE_KEY
             valueFrom:
