@@ -1058,7 +1058,7 @@ llamaParseOcr:
     limits:
       cpu: 2
       memory: 10Gi
-  
+
   gpu_resources:
     requests:
       cpu: 1
