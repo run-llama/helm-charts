@@ -363,10 +363,10 @@ For more information about using this chart, feel free to visit the [Official Ll
 | `llamaParse.podLabels`                                  | Labels to add to the resulting Pods of the Deployment.                      | `{}`                               |
 | `llamaParse.podSecurityContext`                         | Pod security context                                                        | `{}`                               |
 | `llamaParse.securityContext`                            | Security context for the container                                          | `{}`                               |
-| `llamaParse.resources.requests.memory`                  | Memory request for the LlamaParse container                                 | `16Gi`                             |
-| `llamaParse.resources.requests.cpu`                     | CPU request for the LlamaParse container                                    | `2`                                |
-| `llamaParse.resources.limits.memory`                    | Memory limit for the LlamaParse container                                   | `20Gi`                             |
-| `llamaParse.resources.limits.cpu`                       | CPU limit for the LlamaParse container                                      | `10`                               |
+| `llamaParse.resources.requests.memory`                  | Memory request for the LlamaParse container                                 | `13Gi`                             |
+| `llamaParse.resources.requests.cpu`                     | CPU request for the LlamaParse container                                    | `7`                                |
+| `llamaParse.resources.limits.memory`                    | Memory limit for the LlamaParse container                                   | `13Gi`                             |
+| `llamaParse.resources.limits.cpu`                       | CPU limit for the LlamaParse container                                      | `7`                                |
 | `llamaParse.autoscaling.enabled`                        | Enable autoscaling for the LlamaParse Deployment                            | `true`                             |
 | `llamaParse.autoscaling.minReplicas`                    | Minimum number of replicas for the LlamaParse Deployment                    | `2`                                |
 | `llamaParse.autoscaling.maxReplicas`                    | Maximum number of replicas for the LlamaParse Deployment                    | `10`                               |
@@ -402,10 +402,11 @@ For more information about using this chart, feel free to visit the [Official Ll
 | `llamaParseOcr.podLabels`                                  | Labels to add to the resulting Pods of the Deployment.                                      | `{}`                                   |
 | `llamaParseOcr.podSecurityContext`                         | Pod security context                                                                        | `{}`                                   |
 | `llamaParseOcr.securityContext`                            | Security context for the container                                                          | `{}`                                   |
-| `llamaParseOcr.resources.requests.memory`                  | Memory request for the LlamaParse container                                                 | `2Gi`                                  |
-| `llamaParseOcr.resources.requests.cpu`                     | CPU request for the LlamaParse container                                                    | `1`                                    |
-| `llamaParseOcr.resources.limits.memory`                    | Memory limit for the LlamaParse container                                                   | `10Gi`                                 |
-| `llamaParseOcr.resources.limits.cpu`                       | CPU limit for the LlamaParse container                                                      | `2`                                    |
+| `llamaParseOcr.extraEnvVariables`                          | Extra environment variables to add to llamaParseOcr pods                                    | `[]`                                   |
+| `llamaParseOcr.resources.requests.memory`                  | Memory request for the LlamaParse container                                                 | `12Gi`                                 |
+| `llamaParseOcr.resources.requests.cpu`                     | CPU request for the LlamaParse container                                                    | `2`                                    |
+| `llamaParseOcr.resources.limits.memory`                    | Memory limit for the LlamaParse container                                                   | `16Gi`                                 |
+| `llamaParseOcr.resources.limits.cpu`                       | CPU limit for the LlamaParse container                                                      | `4`                                    |
 | `llamaParseOcr.livenessProbe.httpGet.path`                 | Path to hit for the liveness probe                                                          | `/health_check`                        |
 | `llamaParseOcr.livenessProbe.httpGet.port`                 | Port to hit for the liveness probe                                                          | `8080`                                 |
 | `llamaParseOcr.livenessProbe.httpGet.scheme`               | Scheme to use for the liveness probe                                                        | `HTTP`                                 |

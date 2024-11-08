@@ -934,11 +934,11 @@ llamaParse:
     ## @param llamaParse.resources.limits.memory Memory limit for the LlamaParse container
     ## @param llamaParse.resources.limits.cpu CPU limit for the LlamaParse container
     requests:
-      memory: 16Gi
-      cpu: 2
+      memory: 13Gi
+      cpu: 7
     limits:
-      memory: 20Gi
-      cpu: 10
+      memory: 13Gi
+      cpu: 7
 
   ## LlamaParse HorizontalPodAutoScaler configuration
   ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/
@@ -1044,6 +1044,13 @@ llamaParseOcr:
   #  runAsUser: 1000
   #  runAsGroup: 1000
 
+  ## @param llamaParseOcr.extraEnvVariables Extra environment variables to add to llamaParseOcr pods
+  ## Example:
+  ## extraEnvVariables:
+  ##   - name: FOO
+  ##     value: BAR
+  extraEnvVariables: []
+
   ## LlamaParseOcr Resources: Set container requests and limits for different resources like CPU or memory (essential for production workloads)
   ## Ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
   ## Below are the recommended settings for a basic deployment. Adjust according to your needs.
@@ -1053,11 +1060,11 @@ llamaParseOcr:
     ## @param llamaParseOcr.resources.limits.memory Memory limit for the LlamaParse container
     ## @param llamaParseOcr.resources.limits.cpu CPU limit for the LlamaParse container
     requests:
-      cpu: 1
-      memory: 2Gi
-    limits:
       cpu: 2
-      memory: 10Gi
+      memory: 12Gi
+    limits:
+      cpu: 4
+      memory: 16Gi
 
   ## LlamaParseOcr GPU Resources: Set container requests and limits for GPU resources
   ## Ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/

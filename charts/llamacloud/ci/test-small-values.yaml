@@ -34,7 +34,7 @@ llamaParse:
   resources:
     requests:
       cpu: 1
-      memory: 16Gi
+      memory: 13Gi
 
 llamaParseOcr:
   replicas: 1
