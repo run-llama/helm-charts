@@ -42,7 +42,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       serviceAccountName: {{ include "llamaParseOcr.serviceAccountName" . }}
-      securityContext:r
+      securityContext:
         {{- toYaml .Values.llamaParseOcr.podSecurityContext | nindent 8 }}
       containers:
         - name: {{ .Values.llamaParseOcr.name }}
