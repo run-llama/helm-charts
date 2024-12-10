@@ -79,6 +79,8 @@ spec:
           {{- if .Values.backend.config.qdrant.enabled }}
           - name: NEXT_PUBLIC_BYOC_HAS_MANAGED_QDRANT
             value: "true"
+          - name: NEXT_PUBLIC_INTEGRATIONS_ENABLED
+            value: "true"
           {{- end}}
           {{- with .Values.frontend.extraEnvVariables }}
           {{- toYaml . | nindent 10 }}
