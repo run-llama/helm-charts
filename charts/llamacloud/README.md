@@ -113,7 +113,7 @@ For more information about using this chart, feel free to visit the [Official Ll
 | `frontend.replicas`                                   | Number of replicas of Frontend Deployment                                                                         | `1`                              |
 | `frontend.image.registry`                             | Frontend Image registry                                                                                           | `docker.io`                      |
 | `frontend.image.repository`                           | Frontend Image repository                                                                                         | `llamaindex/llamacloud-frontend` |
-| `frontend.image.tag`                                  | Frontend Image tag                                                                                                | `0.1.38`                         |
+| `frontend.image.tag`                                  | Frontend Image tag                                                                                                | `0.1.39`                         |
 | `frontend.image.pullPolicy`                           | Frontend Image pull policy                                                                                        | `IfNotPresent`                   |
 | `frontend.service.type`                               | Frontend Service type                                                                                             | `ClusterIP`                      |
 | `frontend.service.port`                               | Frontend Service port                                                                                             | `3000`                           |
@@ -169,7 +169,7 @@ For more information about using this chart, feel free to visit the [Official Ll
 | `backend.replicas`                                   | Number of replicas of Backend Deployment                                                                          | `1`                             |
 | `backend.image.registry`                             | Backend Image registry                                                                                            | `docker.io`                     |
 | `backend.image.repository`                           | Backend Image repository                                                                                          | `llamaindex/llamacloud-backend` |
-| `backend.image.tag`                                  | Backend Image tag                                                                                                 | `0.1.38`                        |
+| `backend.image.tag`                                  | Backend Image tag                                                                                                 | `0.1.39`                        |
 | `backend.image.pullPolicy`                           | Backend Image pull policy                                                                                         | `IfNotPresent`                  |
 | `backend.service.type`                               | Backend Service type                                                                                              | `ClusterIP`                     |
 | `backend.service.port`                               | Backend Service port                                                                                              | `8000`                          |
@@ -226,7 +226,7 @@ For more information about using this chart, feel free to visit the [Official Ll
 | `jobsService.replicas`                                   | Number of replicas of JobsService Deployment                                                                      | `1`                                  |
 | `jobsService.image.registry`                             | JobsService Image registry                                                                                        | `docker.io`                          |
 | `jobsService.image.repository`                           | JobsService Image repository                                                                                      | `llamaindex/llamacloud-jobs-service` |
-| `jobsService.image.tag`                                  | JobsService Image tag                                                                                             | `0.1.38`                             |
+| `jobsService.image.tag`                                  | JobsService Image tag                                                                                             | `0.1.39`                             |
 | `jobsService.image.pullPolicy`                           | JobsService Image pull policy                                                                                     | `IfNotPresent`                       |
 | `jobsService.service.type`                               | JobsService Service type                                                                                          | `ClusterIP`                          |
 | `jobsService.service.port`                               | JobsService Service port                                                                                          | `8002`                               |
@@ -274,7 +274,7 @@ For more information about using this chart, feel free to visit the [Official Ll
 | `jobsWorker.replicas`                                   | Number of replicas of JobsWorker Deployment                                                                       | `1`                                 |
 | `jobsWorker.image.registry`                             | JobsWorker Image registry                                                                                         | `docker.io`                         |
 | `jobsWorker.image.repository`                           | JobsWorker Image repository                                                                                       | `llamaindex/llamacloud-jobs-worker` |
-| `jobsWorker.image.tag`                                  | JobsWorker Image tag                                                                                              | `0.1.38`                            |
+| `jobsWorker.image.tag`                                  | JobsWorker Image tag                                                                                              | `0.1.39`                            |
 | `jobsWorker.image.pullPolicy`                           | JobsWorker Image pull policy                                                                                      | `IfNotPresent`                      |
 | `jobsWorker.service.type`                               | JobsWorker Service type                                                                                           | `ClusterIP`                         |
 | `jobsWorker.service.port`                               | JobsWorker Service port                                                                                           | `8001`                              |
@@ -345,7 +345,7 @@ For more information about using this chart, feel free to visit the [Official Ll
 | `llamaParse.replicas`                                   | Number of replicas of LlamaParse Deployment                                 | `2`                                |
 | `llamaParse.image.registry`                             | LlamaParse Image registry                                                   | `docker.io`                        |
 | `llamaParse.image.repository`                           | LlamaParse Image repository                                                 | `llamaindex/llamacloud-llamaparse` |
-| `llamaParse.image.tag`                                  | LlamaParse Image tag                                                        | `0.1.38`                           |
+| `llamaParse.image.tag`                                  | LlamaParse Image tag                                                        | `0.1.39`                           |
 | `llamaParse.image.pullPolicy`                           | LlamaParse Image pull policy                                                | `IfNotPresent`                     |
 | `llamaParse.serviceAccount.create`                      | Whether or not to create a new service account                              | `true`                             |
 | `llamaParse.serviceAccount.name`                        | Name of the service account                                                 | `""`                               |
@@ -387,7 +387,7 @@ For more information about using this chart, feel free to visit the [Official Ll
 | `llamaParseOcr.replicas`                                   | Number of replicas of LlamaParseOcr Deployment                                              | `2`                                    |
 | `llamaParseOcr.image.registry`                             | LlamaParseOcr Image registry                                                                | `docker.io`                            |
 | `llamaParseOcr.image.repository`                           | LlamaParseOcr Image repository                                                              | `llamaindex/llamacloud-llamaparse-ocr` |
-| `llamaParseOcr.image.tag`                                  | LlamaParseOcr Image tag                                                                     | `0.1.38`                               |
+| `llamaParseOcr.image.tag`                                  | LlamaParseOcr Image tag                                                                     | `0.1.39`                               |
 | `llamaParseOcr.image.pullPolicy`                           | LlamaParseOcr Image pull policy                                                             | `IfNotPresent`                         |
 | `llamaParseOcr.service.type`                               | LlamaParseOcr Service type                                                                  | `ClusterIP`                            |
 | `llamaParseOcr.service.port`                               | LlamaParseOcr Service port                                                                  | `8080`                                 |
@@ -443,7 +443,7 @@ For more information about using this chart, feel free to visit the [Official Ll
 | `usage.replicas`                                   | Number of replicas of usage Deployment                                                                            | `1`                           |
 | `usage.image.registry`                             | Usage Image registry                                                                                              | `docker.io`                   |
 | `usage.image.repository`                           | Usage Image repository                                                                                            | `llamaindex/llamacloud-usage` |
-| `usage.image.tag`                                  | Usage Image tag                                                                                                   | `0.1.38`                      |
+| `usage.image.tag`                                  | Usage Image tag                                                                                                   | `0.1.39`                      |
 | `usage.image.pullPolicy`                           | Usage Image pull policy                                                                                           | `IfNotPresent`                |
 | `usage.service.type`                               | Usage Service type                                                                                                | `ClusterIP`                   |
 | `usage.service.port`                               | Usage Service port                                                                                                | `8005`                        |
