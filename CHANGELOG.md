@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## [0.1.40] - 2024-12-19
+
+- One more frontend login bug fix
+
 ## [0.1.39] - 2024-12-18
 
 - One more frontend login bug fix
