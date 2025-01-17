@@ -378,11 +378,11 @@ backend:
   ## Ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
   resources: {}
     # requests:
-    #   memory: 2Gi
-    #   cpu: 1
-    # limits:
     #   memory: 8Gi
-    #   cpu: 4
+    #   cpu: 2
+    # limits:
+    #   memory: 10Gi
+    #   cpu: 3
 
   ## Backend Liveness probe configuration
   ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
@@ -393,11 +393,10 @@ backend:
     ## @param backend.livenessProbe.periodSeconds How often (in seconds) to perform the probe
     ## @param backend.livenessProbe.timeoutSeconds Number of seconds after which the probe times out
     ## @param backend.livenessProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
-    failureThreshold: 5
+    failureThreshold: 3
     httpGet:
       path: /api/health
       port: 8000
-    initialDelaySeconds: 30
     periodSeconds: 10
     timeoutSeconds: 30
 
@@ -414,9 +413,8 @@ backend:
     httpGet:
       path: /api/health
       port: 8000
-    initialDelaySeconds: 30
     periodSeconds: 10
-    timeoutSeconds: 30
+    timeoutSeconds: 5
 
   ## Backend Startup probe configuration
   ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
@@ -426,11 +424,12 @@ backend:
     ## @param backend.startupProbe.periodSeconds How often (in seconds) to perform the probe
     ## @param backend.startupProbe.timeoutSeconds Number of seconds after which the probe times out
     ## @param backend.startupProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
-    failureThreshold: 15
+    failureThreshold: 30
     httpGet:
       path: /api/health
       port: 8000
-    periodSeconds: 10
+    initialDelaySeconds: 30
+    periodSeconds: 15
     timeoutSeconds: 5
 
   ## Backend HorizontalPodAutoScaler configuration
@@ -559,28 +558,27 @@ jobsService:
   resources: {}
     # To use the recommended values, uncomment the following lines and remove the curly braces after 'resources:'
     # requests:
-    #   memory: 500Mi
-    #   cpu: 1
+    #   memory: 6Gi
+    #   cpu: 2
     # limits:
-    #   memory: 4Gi
-    #   cpu: 4
+    #   memory: 8Gi
+    #   cpu: 3
 
   ## Job Service Liveness probe configuration
   ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
   livenessProbe:
     ## @param jobsService.livenessProbe.httpGet.path Path to hit for the liveness probe
-    ## @param jobsService.livenessProbe.httpGet.port Port to hit for the liveness probe
+    ## @param jobsService.livenessProbe.httpGet.port Port to hit for the liveness prob
     ## @param jobsService.livenessProbe.initialDelaySeconds Number of seconds after the container has started before liveness probes are initiated
     ## @param jobsService.livenessProbe.periodSeconds How often (in seconds) to perform the probe
     ## @param jobsService.livenessProbe.timeoutSeconds Number of seconds after which the probe times out
     ## @param jobsService.livenessProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
+    failureThreshold: 5
     httpGet:
       path: /api/health
       port: 8002
-    initialDelaySeconds: 30
-    periodSeconds: 5
-    timeoutSeconds: 30
-    failureThreshold: 5
+    periodSeconds: 10
+    timeoutSeconds: 5
 
   ## Job Service Readiness probe configuration
   ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
@@ -591,13 +589,23 @@ jobsService:
     ## @param jobsService.readinessProbe.periodSeconds How often (in seconds) to perform the probe
     ## @param jobsService.readinessProbe.timeoutSeconds Number of seconds after which the probe times out
     ## @param jobsService.readinessProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
+    failureThreshold: 5
+    httpGet:
+      path: /api/health
+      port: 8002
+    periodSeconds: 10
+    timeoutSeconds: 5
+
+  ## Job Service Startup probe configuration
+  ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+  startupProbe:
+    failureThreshold: 30
     httpGet:
       path: /api/health
       port: 8002
     initialDelaySeconds: 30
-    periodSeconds: 5
-    timeoutSeconds: 30
-    failureThreshold: 5
+    periodSeconds: 15
+    timeoutSeconds: 5
 
   ## Job Service HorizontalPodAutoScaler configuration
   ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/
@@ -724,11 +732,11 @@ jobsWorker:
     # To use the recommended values, uncomment the following lines and remove the curly braces after 'resources:'
     # resources:
     #   requests:
-    #     memory: 500Mi
-    #     cpu: 1
-    #   limits:
     #     memory: 4Gi
-    #     cpu: 4
+    #     cpu: 2
+    #   limits:
+    #     memory: 6Gi
+    #     cpu: 3
 
   ## Jobs Worker Liveness probe configuration
   ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
@@ -743,9 +751,8 @@ jobsWorker:
     httpGet:
       path: /api/health
       port: 8001
-    initialDelaySeconds: 30
-    periodSeconds: 10
-    timeoutSeconds: 30
+    periodSeconds: 15
+    timeoutSeconds: 5
 
   ## Jobs Worker Readiness probe configuration
   ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
@@ -760,9 +767,8 @@ jobsWorker:
     httpGet:
       path: /api/health
       port: 8001
-    initialDelaySeconds: 30
-    periodSeconds: 10
-    timeoutSeconds: 30
+    periodSeconds: 15
+    timeoutSeconds: 5
 
   ## Jobs Worker Startup probe configuration
   ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
@@ -773,12 +779,12 @@ jobsWorker:
     ## @param jobsWorker.startupProbe.periodSeconds How often (in seconds) to perform the probe
     ## @param jobsWorker.startupProbe.timeoutSeconds Number of seconds after which the probe times out
     ## @param jobsWorker.startupProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
-    failureThreshold: 10
+    failureThreshold: 30
     httpGet:
       path: /api/health
       port: 8001
     initialDelaySeconds: 30
-    periodSeconds: 10
+    periodSeconds: 15
     timeoutSeconds: 5
 
   ## Jobs Worker HorizontalPodAutoScaler configuration
@@ -939,6 +945,38 @@ llamaParse:
     limits:
       memory: 13Gi
       cpu: 7
+
+  ## LlamaParse Liveness probe configuration
+  livenessProbe:
+    ## @param llamaParse.livenessProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
+    ## @param llamaParse.livenessProbe.httpGet.path Path to hit for the liveness probe
+    ## @param llamaParse.livenessProbe.httpGet.port Port to hit for the liveness probe
+    ## @param llamaParse.livenessProbe.initialDelaySeconds Number of seconds after the container has started before liveness probes are initiated
+    ## @param llamaParse.livenessProbe.periodSeconds How often (in seconds) to perform the probe
+    ## @param llamaParse.livenessProbe.timeoutSeconds Number of seconds after which the probe times out
+    failureThreshold: 10
+    httpGet:
+      path: /livez
+      port: 8004
+    initialDelaySeconds: 30
+    periodSeconds: 30
+    timeoutSeconds: 5
+
+  ## LlamaParse Readiness probe configuration
+  readinessProbe:
+    ## @param llamaParse.readinessProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
+    ## @param llamaParse.readinessProbe.httpGet.path Path to hit for the readiness probe
+    ## @param llamaParse.readinessProbe.httpGet.port Port to hit for the readiness probe
+    ## @param llamaParse.readinessProbe.initialDelaySeconds Number of seconds after the container has started before readiness probes are initiated
+    ## @param llamaParse.readinessProbe.periodSeconds How often (in seconds) to perform the probe
+    ## @param llamaParse.readinessProbe.timeoutSeconds Number of seconds after which the probe times out
+    failureThreshold: 10
+    httpGet:
+      path: /readyz
+      port: 8004
+    initialDelaySeconds: 30
+    periodSeconds: 30
+    timeoutSeconds: 5
 
   ## LlamaParse HorizontalPodAutoScaler configuration
   ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/
@@ -1229,11 +1267,11 @@ usage:
   resources: {}
     ## To use the recommended values, uncomment the following lines and remove the curly braces after 'resources:'
     # requests:
-    #   cpu: 4
-    #   memory: 2Gi
+    #   cpu: 1
+    #   memory: 1Gi
     # limits:
-    #   cpu: 8
-    #   memory: 30Gi
+    #   cpu: 2
+    #   memory: 2Gi
 
   ## Usage Service Liveness probe configuration
   livenessProbe:
@@ -1245,15 +1283,15 @@ usage:
     ## @param usage.livenessProbe.timeoutSeconds Number of seconds after which the probe times out
     ## @param usage.livenessProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
     ## @param usage.livenessProbe.successThreshold Minimum consecutive successes for the probe to be considered successful after having failed
-    failureThreshold: 3
+    failureThreshold: 5
     httpGet:
       path: /health_check
       port: 8005
       scheme: HTTP
-    initialDelaySeconds: 15
+    initialDelaySeconds: 30
     periodSeconds: 15
     successThreshold: 1
-    timeoutSeconds: 60
+    timeoutSeconds: 5
 
   ## Usage Service Readiness probe configuration
   readinessProbe:
@@ -1265,15 +1303,15 @@ usage:
     ## @param usage.readinessProbe.timeoutSeconds Number of seconds after which the probe times out
     ## @param usage.readinessProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
     ## @param usage.readinessProbe.successThreshold Minimum consecutive successes for the probe to be considered successful after having failed
-    failureThreshold: 3
+    failureThreshold: 5
     httpGet:
       path: /health_check
       port: 8005
       scheme: HTTP
-    initialDelaySeconds: 15
+    initialDelaySeconds: 30
     periodSeconds: 15
     successThreshold: 1
-    timeoutSeconds: 60
+    timeoutSeconds: 5
 
   ## Usage HorizontalPodAutoScaler configuration
   ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/
