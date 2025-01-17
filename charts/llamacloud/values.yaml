@@ -389,7 +389,6 @@ backend:
   livenessProbe:
     ## @param backend.livenessProbe.httpGet.path Path to hit for the liveness probe
     ## @param backend.livenessProbe.httpGet.port Port to hit for the liveness probe
-    ## @param backend.livenessProbe.initialDelaySeconds Number of seconds after the container has started before liveness probes are initiated
     ## @param backend.livenessProbe.periodSeconds How often (in seconds) to perform the probe
     ## @param backend.livenessProbe.timeoutSeconds Number of seconds after which the probe times out
     ## @param backend.livenessProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
@@ -405,7 +404,6 @@ backend:
   readinessProbe:
     ## @param backend.readinessProbe.httpGet.path Path to hit for the readiness probe
     ## @param backend.readinessProbe.httpGet.port Port to hit for the readiness probe
-    ## @param backend.readinessProbe.initialDelaySeconds Number of seconds after the container has started before readiness probes are initiated
     ## @param backend.readinessProbe.periodSeconds How often (in seconds) to perform the probe
     ## @param backend.readinessProbe.timeoutSeconds Number of seconds after which the probe times out
     ## @param backend.readinessProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
@@ -421,6 +419,7 @@ backend:
   startupProbe:
     ## @param backend.startupProbe.httpGet.path Path to hit for the startup probe
     ## @param backend.startupProbe.httpGet.port Port to hit for the startup probe
+    ## @param backend.startupProbe.initialDelaySeconds Number of seconds after the container has started before startup probes are initiated
     ## @param backend.startupProbe.periodSeconds How often (in seconds) to perform the probe
     ## @param backend.startupProbe.timeoutSeconds Number of seconds after which the probe times out
     ## @param backend.startupProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
@@ -569,7 +568,6 @@ jobsService:
   livenessProbe:
     ## @param jobsService.livenessProbe.httpGet.path Path to hit for the liveness probe
     ## @param jobsService.livenessProbe.httpGet.port Port to hit for the liveness prob
-    ## @param jobsService.livenessProbe.initialDelaySeconds Number of seconds after the container has started before liveness probes are initiated
     ## @param jobsService.livenessProbe.periodSeconds How often (in seconds) to perform the probe
     ## @param jobsService.livenessProbe.timeoutSeconds Number of seconds after which the probe times out
     ## @param jobsService.livenessProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
@@ -585,7 +583,6 @@ jobsService:
   readinessProbe:
     ## @param jobsService.readinessProbe.httpGet.path Path to hit for the liveness probe
     ## @param jobsService.readinessProbe.httpGet.port Port to hit for the liveness probe
-    ## @param jobsService.readinessProbe.initialDelaySeconds Number of seconds after the container has started before liveness probes are initiated
     ## @param jobsService.readinessProbe.periodSeconds How often (in seconds) to perform the probe
     ## @param jobsService.readinessProbe.timeoutSeconds Number of seconds after which the probe times out
     ## @param jobsService.readinessProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
@@ -599,6 +596,12 @@ jobsService:
   ## Job Service Startup probe configuration
   ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
   startupProbe:
+    ## @param jobsService.startupProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
+    ## @param jobsService.startupProbe.httpGet.path Path to hit for the readiness probe
+    ## @param jobsService.startupProbe.httpGet.port Port to hit for the readiness probe
+    ## @param jobsService.startupProbe.initialDelaySeconds Number of seconds after the container has started before readiness probes are initiated
+    ## @param jobsService.startupProbe.periodSeconds How often (in seconds) to perform the probe
+    ## @param jobsService.startupProbe.timeoutSeconds Number of seconds after which the probe times out
     failureThreshold: 30
     httpGet:
       path: /api/health
@@ -743,7 +746,6 @@ jobsWorker:
   livenessProbe:
     ## @param jobsWorker.livenessProbe.httpGet.path Path to hit for the liveness probe
     ## @param jobsWorker.livenessProbe.httpGet.port Port to hit for the liveness probe
-    ## @param jobsWorker.livenessProbe.initialDelaySeconds Number of seconds after the container has started before liveness probes are initiated
     ## @param jobsWorker.livenessProbe.periodSeconds How often (in seconds) to perform the probe
     ## @param jobsWorker.livenessProbe.timeoutSeconds Number of seconds after which the probe times out
     ## @param jobsWorker.livenessProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
@@ -759,7 +761,6 @@ jobsWorker:
   readinessProbe:
     ## @param jobsWorker.readinessProbe.httpGet.path Path to hit for the liveness probe
     ## @param jobsWorker.readinessProbe.httpGet.port Port to hit for the liveness probe
-    ## @param jobsWorker.readinessProbe.initialDelaySeconds Number of seconds after the container has started before liveness probes are initiated
     ## @param jobsWorker.readinessProbe.periodSeconds How often (in seconds) to perform the probe
     ## @param jobsWorker.readinessProbe.timeoutSeconds Number of seconds after which the probe times out
     ## @param jobsWorker.readinessProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded

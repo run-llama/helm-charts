@@ -190,21 +190,20 @@ For more information about using this chart, feel free to visit the [Official Ll
 | `backend.resources`                                  | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | `{}`                            |
 | `backend.livenessProbe.httpGet.path`                 | Path to hit for the liveness probe                                                                                | `/api/health`                   |
 | `backend.livenessProbe.httpGet.port`                 | Port to hit for the liveness probe                                                                                | `8000`                          |
-| `backend.livenessProbe.initialDelaySeconds`          | Number of seconds after the container has started before liveness probes are initiated                            | `30`                            |
 | `backend.livenessProbe.periodSeconds`                | How often (in seconds) to perform the probe                                                                       | `10`                            |
 | `backend.livenessProbe.timeoutSeconds`               | Number of seconds after which the probe times out                                                                 | `30`                            |
-| `backend.livenessProbe.failureThreshold`             | Minimum consecutive failures for the probe to be considered failed after having succeeded                         | `5`                             |
+| `backend.livenessProbe.failureThreshold`             | Minimum consecutive failures for the probe to be considered failed after having succeeded                         | `3`                             |
 | `backend.readinessProbe.httpGet.path`                | Path to hit for the readiness probe                                                                               | `/api/health`                   |
 | `backend.readinessProbe.httpGet.port`                | Port to hit for the readiness probe                                                                               | `8000`                          |
-| `backend.readinessProbe.initialDelaySeconds`         | Number of seconds after the container has started before readiness probes are initiated                           | `30`                            |
 | `backend.readinessProbe.periodSeconds`               | How often (in seconds) to perform the probe                                                                       | `10`                            |
-| `backend.readinessProbe.timeoutSeconds`              | Number of seconds after which the probe times out                                                                 | `30`                            |
+| `backend.readinessProbe.timeoutSeconds`              | Number of seconds after which the probe times out                                                                 | `5`                             |
 | `backend.readinessProbe.failureThreshold`            | Minimum consecutive failures for the probe to be considered failed after having succeeded                         | `5`                             |
 | `backend.startupProbe.httpGet.path`                  | Path to hit for the startup probe                                                                                 | `/api/health`                   |
 | `backend.startupProbe.httpGet.port`                  | Port to hit for the startup probe                                                                                 | `8000`                          |
-| `backend.startupProbe.periodSeconds`                 | How often (in seconds) to perform the probe                                                                       | `10`                            |
+| `backend.startupProbe.initialDelaySeconds`           | Number of seconds after the container has started before startup probes are initiated                             | `30`                            |
+| `backend.startupProbe.periodSeconds`                 | How often (in seconds) to perform the probe                                                                       | `15`                            |
 | `backend.startupProbe.timeoutSeconds`                | Number of seconds after which the probe times out                                                                 | `5`                             |
-| `backend.startupProbe.failureThreshold`              | Minimum consecutive failures for the probe to be considered failed after having succeeded                         | `15`                            |
+| `backend.startupProbe.failureThreshold`              | Minimum consecutive failures for the probe to be considered failed after having succeeded                         | `30`                            |
 | `backend.autoscaling.enabled`                        | Enable autoscaling for the Backend Deployment                                                                     | `false`                         |
 | `backend.autoscaling.minReplicas`                    | Minimum number of replicas for the Backend Deployment                                                             | `1`                             |
 | `backend.autoscaling.maxReplicas`                    | Maximum number of replicas for the Backend Deployment                                                             | `8`                             |
@@ -244,17 +243,21 @@ For more information about using this chart, feel free to visit the [Official Ll
 | `jobsService.securityContext`                            | Security context for the container                                                                                | `{}`                                 |
 | `jobsService.resources`                                  | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | `{}`                                 |
 | `jobsService.livenessProbe.httpGet.path`                 | Path to hit for the liveness probe                                                                                | `/api/health`                        |
-| `jobsService.livenessProbe.httpGet.port`                 | Port to hit for the liveness probe                                                                                | `8002`                               |
-| `jobsService.livenessProbe.initialDelaySeconds`          | Number of seconds after the container has started before liveness probes are initiated                            | `30`                                 |
-| `jobsService.livenessProbe.periodSeconds`                | How often (in seconds) to perform the probe                                                                       | `5`                                  |
-| `jobsService.livenessProbe.timeoutSeconds`               | Number of seconds after which the probe times out                                                                 | `30`                                 |
+| `jobsService.livenessProbe.httpGet.port`                 | Port to hit for the liveness prob                                                                                 | `8002`                               |
+| `jobsService.livenessProbe.periodSeconds`                | How often (in seconds) to perform the probe                                                                       | `10`                                 |
+| `jobsService.livenessProbe.timeoutSeconds`               | Number of seconds after which the probe times out                                                                 | `5`                                  |
 | `jobsService.livenessProbe.failureThreshold`             | Minimum consecutive failures for the probe to be considered failed after having succeeded                         | `5`                                  |
 | `jobsService.readinessProbe.httpGet.path`                | Path to hit for the liveness probe                                                                                | `/api/health`                        |
 | `jobsService.readinessProbe.httpGet.port`                | Port to hit for the liveness probe                                                                                | `8002`                               |
-| `jobsService.readinessProbe.initialDelaySeconds`         | Number of seconds after the container has started before liveness probes are initiated                            | `30`                                 |
-| `jobsService.readinessProbe.periodSeconds`               | How often (in seconds) to perform the probe                                                                       | `5`                                  |
-| `jobsService.readinessProbe.timeoutSeconds`              | Number of seconds after which the probe times out                                                                 | `30`                                 |
+| `jobsService.readinessProbe.periodSeconds`               | How often (in seconds) to perform the probe                                                                       | `10`                                 |
+| `jobsService.readinessProbe.timeoutSeconds`              | Number of seconds after which the probe times out                                                                 | `5`                                  |
 | `jobsService.readinessProbe.failureThreshold`            | Minimum consecutive failures for the probe to be considered failed after having succeeded                         | `5`                                  |
+| `jobsService.startupProbe.failureThreshold`              | Minimum consecutive failures for the probe to be considered failed after having succeeded                         | `30`                                 |
+| `jobsService.startupProbe.httpGet.path`                  | Path to hit for the readiness probe                                                                               | `/api/health`                        |
+| `jobsService.startupProbe.httpGet.port`                  | Port to hit for the readiness probe                                                                               | `8002`                               |
+| `jobsService.startupProbe.initialDelaySeconds`           | Number of seconds after the container has started before readiness probes are initiated                           | `30`                                 |
+| `jobsService.startupProbe.periodSeconds`                 | How often (in seconds) to perform the probe                                                                       | `15`                                 |
+| `jobsService.startupProbe.timeoutSeconds`                | Number of seconds after which the probe times out                                                                 | `5`                                  |
 | `jobsService.autoscaling.enabled`                        | Enable autoscaling for the JobsService Deployment                                                                 | `false`                              |
 | `jobsService.autoscaling.minReplicas`                    | Minimum number of replicas for the JobsService Deployment                                                         | `1`                                  |
 | `jobsService.autoscaling.maxReplicas`                    | Maximum number of replicas for the JobsService Deployment                                                         | `4`                                  |
@@ -297,22 +300,20 @@ For more information about using this chart, feel free to visit the [Official Ll
 | `jobsWorker.resources`                                  | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | `{}`                                |
 | `jobsWorker.livenessProbe.httpGet.path`                 | Path to hit for the liveness probe                                                                                | `/api/health`                       |
 | `jobsWorker.livenessProbe.httpGet.port`                 | Port to hit for the liveness probe                                                                                | `8001`                              |
-| `jobsWorker.livenessProbe.initialDelaySeconds`          | Number of seconds after the container has started before liveness probes are initiated                            | `30`                                |
-| `jobsWorker.livenessProbe.periodSeconds`                | How often (in seconds) to perform the probe                                                                       | `10`                                |
-| `jobsWorker.livenessProbe.timeoutSeconds`               | Number of seconds after which the probe times out                                                                 | `30`                                |
+| `jobsWorker.livenessProbe.periodSeconds`                | How often (in seconds) to perform the probe                                                                       | `15`                                |
+| `jobsWorker.livenessProbe.timeoutSeconds`               | Number of seconds after which the probe times out                                                                 | `5`                                 |
 | `jobsWorker.livenessProbe.failureThreshold`             | Minimum consecutive failures for the probe to be considered failed after having succeeded                         | `5`                                 |
 | `jobsWorker.readinessProbe.httpGet.path`                | Path to hit for the liveness probe                                                                                | `/api/health`                       |
 | `jobsWorker.readinessProbe.httpGet.port`                | Port to hit for the liveness probe                                                                                | `8001`                              |
-| `jobsWorker.readinessProbe.initialDelaySeconds`         | Number of seconds after the container has started before liveness probes are initiated                            | `30`                                |
-| `jobsWorker.readinessProbe.periodSeconds`               | How often (in seconds) to perform the probe                                                                       | `10`                                |
-| `jobsWorker.readinessProbe.timeoutSeconds`              | Number of seconds after which the probe times out                                                                 | `30`                                |
+| `jobsWorker.readinessProbe.periodSeconds`               | How often (in seconds) to perform the probe                                                                       | `15`                                |
+| `jobsWorker.readinessProbe.timeoutSeconds`              | Number of seconds after which the probe times out                                                                 | `5`                                 |
 | `jobsWorker.readinessProbe.failureThreshold`            | Minimum consecutive failures for the probe to be considered failed after having succeeded                         | `5`                                 |
 | `jobsWorker.startupProbe.httpGet.path`                  | Path to hit for the liveness probe                                                                                | `/api/health`                       |
 | `jobsWorker.startupProbe.httpGet.port`                  | Port to hit for the liveness probe                                                                                | `8001`                              |
 | `jobsWorker.startupProbe.initialDelaySeconds`           | Number of seconds after the container has started before liveness probes are initiated                            | `30`                                |
-| `jobsWorker.startupProbe.periodSeconds`                 | How often (in seconds) to perform the probe                                                                       | `10`                                |
+| `jobsWorker.startupProbe.periodSeconds`                 | How often (in seconds) to perform the probe                                                                       | `15`                                |
 | `jobsWorker.startupProbe.timeoutSeconds`                | Number of seconds after which the probe times out                                                                 | `5`                                 |
-| `jobsWorker.startupProbe.failureThreshold`              | Minimum consecutive failures for the probe to be considered failed after having succeeded                         | `10`                                |
+| `jobsWorker.startupProbe.failureThreshold`              | Minimum consecutive failures for the probe to be considered failed after having succeeded                         | `30`                                |
 | `jobsWorker.autoscaling.enabled`                        | Enable autoscaling for the JobsWorker Deployment                                                                  | `false`                             |
 | `jobsWorker.autoscaling.minReplicas`                    | Minimum number of replicas for the JobsWorker Deployment                                                          | `1`                                 |
 | `jobsWorker.autoscaling.maxReplicas`                    | Maximum number of replicas for the JobsWorker Deployment                                                          | `4`                                 |
@@ -325,59 +326,71 @@ For more information about using this chart, feel free to visit the [Official Ll
 
 ### LlamaParse Configuration
 
-| Name                                                    | Description                                                                 | Value                              |
-| ------------------------------------------------------- | --------------------------------------------------------------------------- | ---------------------------------- |
-| `llamaParse.name`                                       | Name suffix of the LlamaParse related resources                             | `llamaparse`                       |
-| `llamaParse.config.maxPdfPages`                         | Maximum number of pages to parse in a PDF                                   | `1200`                             |
-| `llamaParse.config.openAiApiKey`                        | OpenAI API key                                                              | `""`                               |
-| `llamaParse.config.existingOpenAiApiKeySecret`          | Name of the existing secret to use for the OpenAI API key                   | `""`                               |
-| `llamaParse.config.azureOpenAi.enabled`                 | Enable Azure OpenAI for LlamaParse                                          | `false`                            |
-| `llamaParse.config.azureOpenAi.existingSecret`          | Name of the existing secret to use for the Azure OpenAI API key             | `""`                               |
-| `llamaParse.config.azureOpenAi.key`                     | Azure OpenAI API key                                                        | `""`                               |
-| `llamaParse.config.azureOpenAi.endpoint`                | Azure OpenAI endpoint                                                       | `""`                               |
-| `llamaParse.config.azureOpenAi.deploymentName`          | Azure OpenAI deployment                                                     | `""`                               |
-| `llamaParse.config.azureOpenAi.apiVersion`              | Azure OpenAI API version                                                    | `""`                               |
-| `llamaParse.config.anthropicApiKey`                     | Anthropic API key                                                           | `""`                               |
-| `llamaParse.config.existingAnthropicApiKeySecret`       | Name of the existing secret to use for the Anthropic API key                | `""`                               |
-| `llamaParse.config.s3UploadBucket`                      | S3 bucket to upload files to                                                | `llama-platform-file-parsing`      |
-| `llamaParse.config.s3OutputBucket`                      | S3 bucket to output files to                                                | `llama-platform-file-parsing`      |
-| `llamaParse.config.s3OutputBucketTemp`                  | S3 bucket to output temporary files to                                      | `llama-platform-file-parsing`      |
-| `llamaParse.replicas`                                   | Number of replicas of LlamaParse Deployment                                 | `2`                                |
-| `llamaParse.image.registry`                             | LlamaParse Image registry                                                   | `docker.io`                        |
-| `llamaParse.image.repository`                           | LlamaParse Image repository                                                 | `llamaindex/llamacloud-llamaparse` |
-| `llamaParse.image.tag`                                  | LlamaParse Image tag                                                        | `0.1.41`                           |
-| `llamaParse.image.pullPolicy`                           | LlamaParse Image pull policy                                                | `IfNotPresent`                     |
-| `llamaParse.serviceAccount.create`                      | Whether or not to create a new service account                              | `true`                             |
-| `llamaParse.serviceAccount.name`                        | Name of the service account                                                 | `""`                               |
-| `llamaParse.serviceAccount.labels`                      | Labels to add to the service account                                        | `{}`                               |
-| `llamaParse.serviceAccount.annotations`                 | Annotations to add to the service account                                   | `{}`                               |
-| `llamaParse.labels`                                     | Labels added to the LlamaParse Deployment.                                  | `{}`                               |
-| `llamaParse.annotations`                                | Annotations added to the LlamaParse Deployment.                             | `{}`                               |
-| `llamaParse.containerPort`                              | Port to expose on the LlamaParse container                                  | `8000`                             |
-| `llamaParse.extraEnvVariables`                          | Extra environment variables to add to llamaParse pods                       | `[]`                               |
-| `llamaParse.externalSecrets.enabled`                    | Enable external secrets for the LlamaParse Deployment                       | `false`                            |
-| `llamaParse.externalSecrets.secrets`                    | List of external secrets to load environment variables from                 | `[]`                               |
-| `llamaParse.externalSecrets.enabled`                    | Enable external secrets for the LlamaParse Deployment                       | `false`                            |
-| `llamaParse.externalSecrets.secrets`                    | List of external secrets to load environment variables from                 | `[]`                               |
-| `llamaParse.podAnnotations`                             | Annotations to add to the resulting Pods of the Deployment.                 | `{}`                               |
-| `llamaParse.podLabels`                                  | Labels to add to the resulting Pods of the Deployment.                      | `{}`                               |
-| `llamaParse.podSecurityContext`                         | Pod security context                                                        | `{}`                               |
-| `llamaParse.securityContext`                            | Security context for the container                                          | `{}`                               |
-| `llamaParse.resources.requests.memory`                  | Memory request for the LlamaParse container                                 | `13Gi`                             |
-| `llamaParse.resources.requests.cpu`                     | CPU request for the LlamaParse container                                    | `7`                                |
-| `llamaParse.resources.limits.memory`                    | Memory limit for the LlamaParse container                                   | `13Gi`                             |
-| `llamaParse.resources.limits.cpu`                       | CPU limit for the LlamaParse container                                      | `7`                                |
-| `llamaParse.autoscaling.enabled`                        | Enable autoscaling for the LlamaParse Deployment                            | `true`                             |
-| `llamaParse.autoscaling.minReplicas`                    | Minimum number of replicas for the LlamaParse Deployment                    | `2`                                |
-| `llamaParse.autoscaling.maxReplicas`                    | Maximum number of replicas for the LlamaParse Deployment                    | `10`                               |
-| `llamaParse.autoscaling.targetCPUUtilizationPercentage` | Target CPU utilization percentage for the LlamaParse Deployment             | `80`                               |
-| `llamaParse.podDisruptionBudget.enabled`                | Enable PodDisruptionBudget for the LlamaParse Deployment                    | `true`                             |
-| `llamaParse.podDisruptionBudget.maxUnavailable`         | Maximum number of unavailable pods                                          | `1`                                |
-| `llamaParse.volumes`                                    | List of volumes that can be mounted by containers belonging to the pod      | `[]`                               |
-| `llamaParse.volumeMounts`                               | List of volumeMounts that can be mounted by containers belonging to the pod | `[]`                               |
-| `llamaParse.nodeSelector`                               | Node labels for pod assignment                                              | `{}`                               |
-| `llamaParse.tolerations`                                | Taints to tolerate on node assignment:                                      | `[]`                               |
-| `llamaParse.affinity`                                   | Pod scheduling constraints                                                  | `{}`                               |
+| Name                                                    | Description                                                                               | Value                              |
+| ------------------------------------------------------- | ----------------------------------------------------------------------------------------- | ---------------------------------- |
+| `llamaParse.name`                                       | Name suffix of the LlamaParse related resources                                           | `llamaparse`                       |
+| `llamaParse.config.maxPdfPages`                         | Maximum number of pages to parse in a PDF                                                 | `1200`                             |
+| `llamaParse.config.openAiApiKey`                        | OpenAI API key                                                                            | `""`                               |
+| `llamaParse.config.existingOpenAiApiKeySecret`          | Name of the existing secret to use for the OpenAI API key                                 | `""`                               |
+| `llamaParse.config.azureOpenAi.enabled`                 | Enable Azure OpenAI for LlamaParse                                                        | `false`                            |
+| `llamaParse.config.azureOpenAi.existingSecret`          | Name of the existing secret to use for the Azure OpenAI API key                           | `""`                               |
+| `llamaParse.config.azureOpenAi.key`                     | Azure OpenAI API key                                                                      | `""`                               |
+| `llamaParse.config.azureOpenAi.endpoint`                | Azure OpenAI endpoint                                                                     | `""`                               |
+| `llamaParse.config.azureOpenAi.deploymentName`          | Azure OpenAI deployment                                                                   | `""`                               |
+| `llamaParse.config.azureOpenAi.apiVersion`              | Azure OpenAI API version                                                                  | `""`                               |
+| `llamaParse.config.anthropicApiKey`                     | Anthropic API key                                                                         | `""`                               |
+| `llamaParse.config.existingAnthropicApiKeySecret`       | Name of the existing secret to use for the Anthropic API key                              | `""`                               |
+| `llamaParse.config.s3UploadBucket`                      | S3 bucket to upload files to                                                              | `llama-platform-file-parsing`      |
+| `llamaParse.config.s3OutputBucket`                      | S3 bucket to output files to                                                              | `llama-platform-file-parsing`      |
+| `llamaParse.config.s3OutputBucketTemp`                  | S3 bucket to output temporary files to                                                    | `llama-platform-file-parsing`      |
+| `llamaParse.replicas`                                   | Number of replicas of LlamaParse Deployment                                               | `2`                                |
+| `llamaParse.image.registry`                             | LlamaParse Image registry                                                                 | `docker.io`                        |
+| `llamaParse.image.repository`                           | LlamaParse Image repository                                                               | `llamaindex/llamacloud-llamaparse` |
+| `llamaParse.image.tag`                                  | LlamaParse Image tag                                                                      | `0.1.41`                           |
+| `llamaParse.image.pullPolicy`                           | LlamaParse Image pull policy                                                              | `IfNotPresent`                     |
+| `llamaParse.serviceAccount.create`                      | Whether or not to create a new service account                                            | `true`                             |
+| `llamaParse.serviceAccount.name`                        | Name of the service account                                                               | `""`                               |
+| `llamaParse.serviceAccount.labels`                      | Labels to add to the service account                                                      | `{}`                               |
+| `llamaParse.serviceAccount.annotations`                 | Annotations to add to the service account                                                 | `{}`                               |
+| `llamaParse.labels`                                     | Labels added to the LlamaParse Deployment.                                                | `{}`                               |
+| `llamaParse.annotations`                                | Annotations added to the LlamaParse Deployment.                                           | `{}`                               |
+| `llamaParse.containerPort`                              | Port to expose on the LlamaParse container                                                | `8000`                             |
+| `llamaParse.extraEnvVariables`                          | Extra environment variables to add to llamaParse pods                                     | `[]`                               |
+| `llamaParse.externalSecrets.enabled`                    | Enable external secrets for the LlamaParse Deployment                                     | `false`                            |
+| `llamaParse.externalSecrets.secrets`                    | List of external secrets to load environment variables from                               | `[]`                               |
+| `llamaParse.externalSecrets.enabled`                    | Enable external secrets for the LlamaParse Deployment                                     | `false`                            |
+| `llamaParse.externalSecrets.secrets`                    | List of external secrets to load environment variables from                               | `[]`                               |
+| `llamaParse.podAnnotations`                             | Annotations to add to the resulting Pods of the Deployment.                               | `{}`                               |
+| `llamaParse.podLabels`                                  | Labels to add to the resulting Pods of the Deployment.                                    | `{}`                               |
+| `llamaParse.podSecurityContext`                         | Pod security context                                                                      | `{}`                               |
+| `llamaParse.securityContext`                            | Security context for the container                                                        | `{}`                               |
+| `llamaParse.resources.requests.memory`                  | Memory request for the LlamaParse container                                               | `13Gi`                             |
+| `llamaParse.resources.requests.cpu`                     | CPU request for the LlamaParse container                                                  | `7`                                |
+| `llamaParse.resources.limits.memory`                    | Memory limit for the LlamaParse container                                                 | `13Gi`                             |
+| `llamaParse.resources.limits.cpu`                       | CPU limit for the LlamaParse container                                                    | `7`                                |
+| `llamaParse.livenessProbe.failureThreshold`             | Minimum consecutive failures for the probe to be considered failed after having succeeded | `10`                               |
+| `llamaParse.livenessProbe.httpGet.path`                 | Path to hit for the liveness probe                                                        | `/livez`                           |
+| `llamaParse.livenessProbe.httpGet.port`                 | Port to hit for the liveness probe                                                        | `8004`                             |
+| `llamaParse.livenessProbe.initialDelaySeconds`          | Number of seconds after the container has started before liveness probes are initiated    | `30`                               |
+| `llamaParse.livenessProbe.periodSeconds`                | How often (in seconds) to perform the probe                                               | `30`                               |
+| `llamaParse.livenessProbe.timeoutSeconds`               | Number of seconds after which the probe times out                                         | `5`                                |
+| `llamaParse.readinessProbe.failureThreshold`            | Minimum consecutive failures for the probe to be considered failed after having succeeded | `10`                               |
+| `llamaParse.readinessProbe.httpGet.path`                | Path to hit for the readiness probe                                                       | `/readyz`                          |
+| `llamaParse.readinessProbe.httpGet.port`                | Port to hit for the readiness probe                                                       | `8004`                             |
+| `llamaParse.readinessProbe.initialDelaySeconds`         | Number of seconds after the container has started before readiness probes are initiated   | `30`                               |
+| `llamaParse.readinessProbe.periodSeconds`               | How often (in seconds) to perform the probe                                               | `30`                               |
+| `llamaParse.readinessProbe.timeoutSeconds`              | Number of seconds after which the probe times out                                         | `5`                                |
+| `llamaParse.autoscaling.enabled`                        | Enable autoscaling for the LlamaParse Deployment                                          | `true`                             |
+| `llamaParse.autoscaling.minReplicas`                    | Minimum number of replicas for the LlamaParse Deployment                                  | `2`                                |
+| `llamaParse.autoscaling.maxReplicas`                    | Maximum number of replicas for the LlamaParse Deployment                                  | `10`                               |
+| `llamaParse.autoscaling.targetCPUUtilizationPercentage` | Target CPU utilization percentage for the LlamaParse Deployment                           | `80`                               |
+| `llamaParse.podDisruptionBudget.enabled`                | Enable PodDisruptionBudget for the LlamaParse Deployment                                  | `true`                             |
+| `llamaParse.podDisruptionBudget.maxUnavailable`         | Maximum number of unavailable pods                                                        | `1`                                |
+| `llamaParse.volumes`                                    | List of volumes that can be mounted by containers belonging to the pod                    | `[]`                               |
+| `llamaParse.volumeMounts`                               | List of volumeMounts that can be mounted by containers belonging to the pod               | `[]`                               |
+| `llamaParse.nodeSelector`                               | Node labels for pod assignment                                                            | `{}`                               |
+| `llamaParse.tolerations`                                | Taints to tolerate on node assignment:                                                    | `[]`                               |
+| `llamaParse.affinity`                                   | Pod scheduling constraints                                                                | `{}`                               |
 
 ### LlamaParseOcr Configuration
 
@@ -465,18 +478,18 @@ For more information about using this chart, feel free to visit the [Official Ll
 | `usage.livenessProbe.httpGet.path`                 | Path to hit for the liveness probe                                                                                | `/health_check`               |
 | `usage.livenessProbe.httpGet.port`                 | Port to hit for the liveness probe                                                                                | `8005`                        |
 | `usage.livenessProbe.httpGet.scheme`               | Scheme to use for the liveness probe                                                                              | `HTTP`                        |
-| `usage.livenessProbe.initialDelaySeconds`          | Number of seconds after the container has started before liveness probes are initiated                            | `15`                          |
+| `usage.livenessProbe.initialDelaySeconds`          | Number of seconds after the container has started before liveness probes are initiated                            | `30`                          |
 | `usage.livenessProbe.periodSeconds`                | How often (in seconds) to perform the probe                                                                       | `15`                          |
-| `usage.livenessProbe.timeoutSeconds`               | Number of seconds after which the probe times out                                                                 | `60`                          |
-| `usage.livenessProbe.failureThreshold`             | Minimum consecutive failures for the probe to be considered failed after having succeeded                         | `3`                           |
+| `usage.livenessProbe.timeoutSeconds`               | Number of seconds after which the probe times out                                                                 | `5`                           |
+| `usage.livenessProbe.failureThreshold`             | Minimum consecutive failures for the probe to be considered failed after having succeeded                         | `5`                           |
 | `usage.livenessProbe.successThreshold`             | Minimum consecutive successes for the probe to be considered successful after having failed                       | `1`                           |
 | `usage.readinessProbe.httpGet.path`                | Path to hit for the liveness probe                                                                                | `/health_check`               |
 | `usage.readinessProbe.httpGet.port`                | Port to hit for the liveness probe                                                                                | `8005`                        |
 | `usage.readinessProbe.httpGet.scheme`              | Scheme to use for the liveness probe                                                                              | `HTTP`                        |
-| `usage.readinessProbe.initialDelaySeconds`         | Number of seconds after the container has started before liveness probes are initiated                            | `15`                          |
+| `usage.readinessProbe.initialDelaySeconds`         | Number of seconds after the container has started before liveness probes are initiated                            | `30`                          |
 | `usage.readinessProbe.periodSeconds`               | How often (in seconds) to perform the probe                                                                       | `15`                          |
-| `usage.readinessProbe.timeoutSeconds`              | Number of seconds after which the probe times out                                                                 | `60`                          |
-| `usage.readinessProbe.failureThreshold`            | Minimum consecutive failures for the probe to be considered failed after having succeeded                         | `3`                           |
+| `usage.readinessProbe.timeoutSeconds`              | Number of seconds after which the probe times out                                                                 | `5`                           |
+| `usage.readinessProbe.failureThreshold`            | Minimum consecutive failures for the probe to be considered failed after having succeeded                         | `5`                           |
 | `usage.readinessProbe.successThreshold`            | Minimum consecutive successes for the probe to be considered successful after having failed                       | `1`                           |
 | `usage.autoscaling.enabled`                        | Enable autoscaling for the Usage Deployment                                                                       | `false`                       |
 | `usage.autoscaling.minReplicas`                    | Minimum number of replicas for the Usage Deployment                                                               | `1`                           |
