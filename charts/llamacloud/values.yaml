@@ -427,7 +427,6 @@ backend:
     httpGet:
       path: /api/health
       port: 8000
-    initialDelaySeconds: 30
     periodSeconds: 15
     timeoutSeconds: 5
 
@@ -606,7 +605,6 @@ jobsService:
     httpGet:
       path: /api/health
       port: 8002
-    initialDelaySeconds: 30
     periodSeconds: 15
     timeoutSeconds: 5
 
@@ -784,7 +782,6 @@ jobsWorker:
     httpGet:
       path: /api/health
       port: 8001
-    initialDelaySeconds: 30
     periodSeconds: 15
     timeoutSeconds: 5
 
@@ -1112,15 +1109,15 @@ llamaParseOcr:
     ## @param llamaParseOcr.livenessProbe.timeoutSeconds Number of seconds after which the probe times out
     ## @param llamaParseOcr.livenessProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
     ## @param llamaParseOcr.livenessProbe.successThreshold Minimum consecutive successes for the probe to be considered successful after having failed
-    failureThreshold: 3
+    failureThreshold: 5
     httpGet:
       path: /health_check
       port: 8080
       scheme: HTTP
-    initialDelaySeconds: 30
+    initialDelaySeconds: 10
     periodSeconds: 15
     successThreshold: 1
-    timeoutSeconds: 120
+    timeoutSeconds: 5
 
   ## LlamaParse Ocr Readiness probe configuration
   readinessProbe:
@@ -1132,15 +1129,15 @@ llamaParseOcr:
     ## @param llamaParseOcr.readinessProbe.timeoutSeconds Number of seconds after which the probe times out
     ## @param llamaParseOcr.readinessProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
     ## @param llamaParseOcr.readinessProbe.successThreshold Minimum consecutive successes for the probe to be considered successful after having failed
-    failureThreshold: 3
+    failureThreshold: 5
     httpGet:
       path: /health_check
       port: 8080
       scheme: HTTP
-    initialDelaySeconds: 30
+    initialDelaySeconds: 10
     periodSeconds: 15
     successThreshold: 1
-    timeoutSeconds: 120
+    timeoutSeconds: 5
 
   ## HorizontalPodAutoScaler configuration
   ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/
@@ -1289,7 +1286,7 @@ usage:
       path: /health_check
       port: 8005
       scheme: HTTP
-    initialDelaySeconds: 30
+    initialDelaySeconds: 15
     periodSeconds: 15
     successThreshold: 1
     timeoutSeconds: 5
@@ -1309,7 +1306,7 @@ usage:
       path: /health_check
       port: 8005
       scheme: HTTP
-    initialDelaySeconds: 30
+    initialDelaySeconds: 15
     periodSeconds: 15
     successThreshold: 1
     timeoutSeconds: 5
