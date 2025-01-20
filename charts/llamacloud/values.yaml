@@ -574,8 +574,8 @@ jobsService:
     httpGet:
       path: /api/health
       port: 8002
-    periodSeconds: 10
-    timeoutSeconds: 5
+    periodSeconds: 15
+    timeoutSeconds: 10
 
   ## Job Service Readiness probe configuration
   ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
@@ -589,8 +589,8 @@ jobsService:
     httpGet:
       path: /api/health
       port: 8002
-    periodSeconds: 10
-    timeoutSeconds: 5
+    periodSeconds: 15
+    timeoutSeconds: 10
 
   ## Job Service Startup probe configuration
   ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
@@ -606,7 +606,7 @@ jobsService:
       path: /api/health
       port: 8002
     periodSeconds: 15
-    timeoutSeconds: 5
+    timeoutSeconds: 10
 
   ## Job Service HorizontalPodAutoScaler configuration
   ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/
