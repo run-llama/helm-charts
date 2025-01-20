@@ -4,6 +4,10 @@ on:
   pull_request:
   workflow_dispatch:
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   lint-test:
     name: "Lint and Test Helm Charts"
@@ -59,8 +63,8 @@ jobs:
         k8s-version:
           # Limit testing because tests can take a while to run
           # Ref: https://hub.docker.com/r/kindest/node/tags
-          - v1.28.13
-          - v1.30.4
+          - v1.29.12
+          - v1.31.4
 
     steps:
       - name: Checkout
