@@ -100,6 +100,10 @@ spec:
           - secretRef:
               name: {{ .Values.llamaParse.config.existingAnthropicApiKeySecret }}
           {{- end }}
+          {{- if and .Values.llamaParse.config.awsBedrock.enabled .Values.llamaParse.config.awsBedrock.existingSecret }}
+          - secretRef:
+              name: {{ .Values.llamaParse.config.awsBedrock.existingSecret }}
+          {{- end }}
           {{- if and (not .Values.rabbitmq.enabled) .Values.global.config.rabbitmq.external.enabled .Values.global.config.rabbitmq.external.existingSecretName }}
           - secretRef:
               name: {{ .Values.global.config.rabbitmq.external.existingSecretName }}

@@ -138,7 +138,7 @@ frontend:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-frontend
-    tag: 0.1.43
+    tag: 0.1.44
     pullPolicy: IfNotPresent
 
   ## @param frontend.service.type Frontend Service type
@@ -310,7 +310,7 @@ backend:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-backend
-    tag: 0.1.43
+    tag: 0.1.44
     pullPolicy: IfNotPresent
 
   ## Backend Service information
@@ -492,7 +492,7 @@ jobsService:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-jobs-service
-    tag: 0.1.43
+    tag: 0.1.44
     pullPolicy: IfNotPresent
 
   ## JobsService Service information\
@@ -661,7 +661,7 @@ jobsWorker:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-jobs-worker
-    tag: 0.1.43
+    tag: 0.1.44
     pullPolicy: IfNotPresent
 
   ## JobsWorker Service information
@@ -852,6 +852,18 @@ llamaParse:
     anthropicApiKey: ""
     existingAnthropicApiKeySecret: ""
 
+    ## @param llamaParse.config.awsBedrock.enabled Enable AWS Bedrock for LlamaParse
+    ## @param llamaParse.config.awsBedrock.existingSecret Name of the existing secret to use for the AWS Bedrock API key
+    ## @param llamaParse.config.awsBedrock.region AWS Bedrock region
+    ## @param llamaParse.config.awsBedrock.accessKeyId AWS Bedrock access key ID
+    ## @param llamaParse.config.awsBedrock.secretAccessKey AWS Bedrock secret access key
+    awsBedrock:
+      enabled: false
+      existingSecret: ""
+      region: ""
+      accessKeyId: ""
+      secretAccessKey: ""
+
     ## @param llamaParse.config.s3UploadBucket S3 bucket to upload files to
     ## @param llamaParse.config.s3OutputBucket S3 bucket to output files to
     ## @param llamaParse.config.s3OutputBucketTemp S3 bucket to output temporary files to
@@ -870,7 +882,7 @@ llamaParse:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-llamaparse
-    tag: 0.1.43
+    tag: 0.1.44
     pullPolicy: IfNotPresent
 
   ## ServiceAccount configuration
@@ -1033,7 +1045,7 @@ llamaParseOcr:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-llamaparse-ocr
-    tag: 0.1.43
+    tag: 0.1.44
     pullPolicy: IfNotPresent
 
   ## LlamaParseOcr Service information
@@ -1196,7 +1208,7 @@ usage:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-usage
-    tag: 0.1.43
+    tag: 0.1.44
     pullPolicy: IfNotPresent
 
   ## Usage Service information
