@@ -50,17 +50,7 @@ spec:
             {{- toYaml .Values.llamaParse.securityContext | nindent 12 }}
           image: "{{ .Values.llamaParse.image.repository }}:{{ .Values.llamaParse.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.llamaParse.image.pullPolicy }}
-          command: ["pm2", "start"]
-          args:
-            [
-              "--name",
-              "worker",
-              "--node-args='--max-old-space-size=14240'",
-              "--no-daemon",
-              "npm",
-              "--",
-              "start",
-            ]
+          command: ["pnpm", "start", "2>&1"]
           livenessProbe:
             {{- toYaml .Values.llamaParse.livenessProbe | nindent 12 }}
           readinessProbe:
