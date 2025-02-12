@@ -1,0 +1,291 @@
+services:
+  frontend:
+    image: llamaindex/llamacloud-frontend:${CHART_VERSION}
+    ports:
+      - "3000:3000"
+    container_name: frontend
+    environment:
+      HOSTNAME: 0.0.0.0
+      BACKEND_URL: http://backend:8000
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://0.0.0.0:3000/api/healthz || exit 1"]
+      interval: 10s
+      timeout: 2s
+      retries: 10
+      start_period: 15s
+    depends_on:
+      - backend
+    networks:
+      - llamacloud_network
+
+  backend:
+    image: llamaindex/llamacloud-backend:${CHART_VERSION}
+    ports:
+      - "8000:8000"
+    container_name: backend
+    command: ["python", "-m", "app.main"]
+    environment:
+      - PORT=8000
+    env_file:
+      - .env.llamacloud
+      - .env.secrets
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 10s
+      timeout: 2s
+      retries: 10
+      start_period: 15s
+    extra_hosts:
+      - "backend:127.0.0.1"
+    depends_on:
+      - rabbitmq
+      - postgresql
+      - mongodb
+      - redis
+      - s3proxy
+      - keycloak
+      - usage
+      - jobs-service
+    networks:
+      - llamacloud_network
+
+  jobs-service:
+    image: llamaindex/llamacloud-jobs-service:${CHART_VERSION}
+    ports:
+      - "8002:8002"
+    container_name: jobs-service
+    command: ["python", "-m", "jobs.service_main"]
+    environment:
+      JOB_API_SERVICE_PORT: 8002
+    env_file:
+      - .env.llamacloud
+      - .env.secrets
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8002/api/health"]
+      interval: 10s
+      timeout: 2s
+      retries: 10
+      start_period: 15s
+    depends_on:
+      - postgresql
+      - rabbitmq
+    networks:
+      - llamacloud_network
+
+  jobs-worker:
+    image: llamaindex/llamacloud-jobs-worker:${CHART_VERSION}
+    ports:
+      - "8001:8001"
+    container_name: jobs-worker
+    command: ["python", "-m", "jobs.consumer_main"]
+    environment:
+      JOB_CONSUMER_PORT: 8001
+    env_file:
+      - .env.llamacloud
+      - .env.secrets
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/api/health"]
+      interval: 10s
+      timeout: 2s
+      retries: 10
+      start_period: 15s
+    depends_on:
+      - postgresql
+      - rabbitmq
+    networks:
+      - llamacloud_network
+
+  llamaparse:
+    image: llamaindex/llamacloud-llamaparse:${CHART_VERSION}
+    container_name: llamaparse
+    ports:
+      - "8004:8004"
+    env_file:
+      - .env.llamaparse
+      - .env.secrets
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8004/livez"]
+      interval: 15s
+      timeout: 60s
+      retries: 30
+      start_period: 20s
+    networks:
+      - llamacloud_network
+
+  llamaparse-ocr:
+    image: llamaindex/llamacloud-llamaparse-ocr:${CHART_VERSION}
+    container_name: llamaparse-ocr
+    ports:
+      - "8080:8080"
+    command: serve
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health_check"]
+      interval: 30s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+    env_file:
+      - .env.llamaparse
+      - .env.secrets
+    networks:
+      - llamacloud_network
+
+  usage:
+    image: llamaindex/llamacloud-usage:${CHART_VERSION}
+    container_name: usage
+    ports:
+      - "8005:8005"
+    env_file:
+      - .env.secrets
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8005/health_check"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+    command:
+      - "uvicorn"
+      - "usage.main:app"
+      - "--host"
+      - "0.0.0.0"
+      - "--port"
+      - "8005"
+      - "--workers"
+      - "1"
+    networks:
+      - llamacloud_network
+
+  postgresql:
+    image: bitnami/postgresql:15.5.0
+    ports:
+      - "5432:5432"
+    container_name: postgresql
+    environment:
+      POSTGRESQL_DATABASE: llamacloud
+      POSTGRESQL_USERNAME: llamacloud
+      POSTGRESQL_PASSWORD: llamacloud
+    volumes:
+      - postgresql_data:/bitnami/postgresql
+    networks:
+      - llamacloud_network
+
+  mongodb:
+    image: mongo:5.0
+    restart: always
+    ports:
+      - "127.0.0.1:27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: mongodb
+    networks:
+      - llamacloud_network
+    volumes:
+      - mongodb_data:/data/db
+    container_name: mongo
+    healthcheck:
+      test: mongosh
+        -u $${MONGO_INITDB_ROOT_USERNAME}
+        -p $${MONGO_INITDB_ROOT_PASSWORD}
+        --eval "try { rs.status() } catch (err) { rs.initiate({_id:'rs0',members:[{_id:0,host:'mongo:27017',priority:1}]}) }" | mongosh --port 27017 --quiet
+      interval: 10s
+      start_period: 30s
+    entrypoint: /bin/bash -c '
+      openssl rand -base64 756 > /data/keyfile.key &&
+      chmod 400 /data/keyfile.key &&
+      chown mongodb:mongodb /data/keyfile.key &&
+      /usr/local/bin/docker-entrypoint.sh mongod --replSet rs0 --keyFile /data/keyfile.key --bind_ip_all'
+
+  rabbitmq:
+    image: rabbitmq:4.0-management-alpine
+    ports:
+      # management UI is at http://localhost:15672/ (username & password is both "guest")
+      - "5672:5672"
+      - "15672:15672"
+    container_name: rabbitmq
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 5s
+      timeout: 2s
+      retries: 3
+      start_period: 3s
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - llamacloud_network
+
+  redis:
+    image: bitnami/redis:7.2.4
+    ports:
+      - "6379:6379"
+    container_name: redis
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    volumes:
+      - redis_data:/bitnami/redis
+    networks:
+      - llamacloud_network
+  
+  s3proxy:
+    image: andrewgaul/s3proxy:sha-0effb4b
+    ports:
+      - "8092:8092"
+    container_name: s3proxy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8092/"]
+      interval: 5s
+      timeout: 2s
+      retries: 3
+      start_period: 3s
+    environment:
+      S3PROXY_AUTHORIZATION: none
+      S3PROXY_ENDPOINT: http://0.0.0.0:8092
+      S3PROXY_CORS_ALLOW_ALL: true
+      S3PROXY_LOG_LEVEL: debug
+      S3PROXY_IGNORE_UNKNOWN_HEADERS: true
+      JCLOUDS_FILESYSTEM_PROVIDER: file
+      JCLOUDS_FILESYSTEM_BASEDIR: tmp/data
+    networks:
+      - llamacloud_network
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    environment:
+      - KC_BOOTSTRAP_ADMIN_USERNAME=admin
+      - KC_BOOTSTRAP_ADMIN_PASSWORD=admin_password
+    ports:
+      - "8093:8093"
+      - "9000:9000"
+    container_name: keycloak
+    command:
+      - start-dev
+      - --http-port=8093
+      - --health-enabled=true
+    healthcheck:
+      test: ["CMD", "curl", "--head", "-fsS", "http://localhost:8093/health/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    extra_hosts:
+      - "keycloak:127.0.0.1"
+    networks:
+      llamacloud_network:
+        aliases:
+          - keycloak
+
+networks:
+  llamacloud_network:
+    name: llamacloud_network
+    driver: bridge
+
+volumes:
+  postgresql_data:
+  mongodb_data:
+  rabbitmq_data:
+  redis_data:
