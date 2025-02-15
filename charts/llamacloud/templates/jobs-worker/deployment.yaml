@@ -48,7 +48,7 @@ spec:
         - name: {{ .Values.jobsWorker.name | default "jobs-worker" }}
           securityContext:
             {{- toYaml .Values.jobsWorker.securityContext | nindent 12 }}
-          image: "{{ .Values.jobsWorker.image.repository }}:{{ .Values.jobsWorker.image.tag | default .Chart.AppVersion }}"
+          image: "{{ .Values.jobsWorker.image.registry }}/{{ .Values.jobsWorker.image.repository }}:{{ .Values.jobsWorker.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.jobsWorker.image.pullPolicy }}
           ports:
             - name: http

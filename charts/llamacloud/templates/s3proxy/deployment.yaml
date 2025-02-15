@@ -49,7 +49,7 @@ spec:
         - name: {{ .Values.s3proxy.name }}
           securityContext:
             {{- toYaml .Values.s3proxy.securityContext | nindent 12 }}
-          image: "{{ .Values.s3proxy.image.repository }}:{{ .Values.s3proxy.image.tag | default .Chart.AppVersion }}"
+          image: "{{ .Values.s3proxy.image.registry }}/{{ .Values.s3proxy.image.repository }}:{{ .Values.s3proxy.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.s3proxy.image.pullPolicy }}
           ports:
             - name: {{ .Values.s3proxy.name }}-http

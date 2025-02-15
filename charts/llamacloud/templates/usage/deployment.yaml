@@ -48,7 +48,7 @@ spec:
         - name: {{ .Values.usage.name | default "usage" }}
           securityContext:
             {{- toYaml .Values.usage.securityContext | nindent 12 }}
-          image: "{{ .Values.usage.image.repository }}:{{ .Values.usage.image.tag | default .Chart.AppVersion }}"
+          image: "{{ .Values.usage.image.registry }}/{{ .Values.usage.image.repository }}:{{ .Values.usage.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.usage.image.pullPolicy }}
           ports:
             - name: {{ .Values.usage.name }}-http
