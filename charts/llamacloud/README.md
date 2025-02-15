@@ -107,114 +107,116 @@ For more information about using this chart, feel free to visit the [Official Ll
 
 ### Frontend Configuration
 
-| Name                                                  | Description                                                                                                       | Value                            |
-| ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | -------------------------------- |
-| `frontend.name`                                       | Name suffix of the Frontend related resources                                                                     | `frontend`                       |
-| `frontend.replicas`                                   | Number of replicas of Frontend Deployment                                                                         | `1`                              |
-| `frontend.image.registry`                             | Frontend Image registry                                                                                           | `docker.io`                      |
-| `frontend.image.repository`                           | Frontend Image repository                                                                                         | `llamaindex/llamacloud-frontend` |
-| `frontend.image.tag`                                  | Frontend Image tag                                                                                                | `0.1.43`                         |
-| `frontend.image.pullPolicy`                           | Frontend Image pull policy                                                                                        | `IfNotPresent`                   |
-| `frontend.service.type`                               | Frontend Service type                                                                                             | `ClusterIP`                      |
-| `frontend.service.port`                               | Frontend Service port                                                                                             | `3000`                           |
-| `frontend.serviceAccount.create`                      | Whether or not to create a new service account                                                                    | `true`                           |
-| `frontend.serviceAccount.name`                        | Name of the service account                                                                                       | `""`                             |
-| `frontend.serviceAccount.labels`                      | Labels to add to the service account                                                                              | `{}`                             |
-| `frontend.serviceAccount.annotations`                 | Annotations to add to the service account                                                                         | `{}`                             |
-| `frontend.labels`                                     | Labels added to the Frontend Deployment.                                                                          | `{}`                             |
-| `frontend.annotations`                                | Annotations added to the Frontend Deployment.                                                                     | `{}`                             |
-| `frontend.containerPort`                              | Port to expose on the Frontend container                                                                          | `3000`                           |
-| `frontend.extraEnvVariables`                          | Extra environment variables to add to Frontend pods                                                               | `[]`                             |
-| `frontend.podAnnotations`                             | Annotations to add to the resulting Pods of the Deployment.                                                       | `{}`                             |
-| `frontend.podLabels`                                  | Labels to add to the resulting Pods of the Deployment.                                                            | `{}`                             |
-| `frontend.podSecurityContext`                         | Annotations to add to the resulting Pods of the Deployment.                                                       | `{}`                             |
-| `frontend.securityContext`                            | Security context for the container                                                                                | `{}`                             |
-| `frontend.resources`                                  | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | `{}`                             |
-| `frontend.livenessProbe.httpGet.path`                 | Path to hit for the liveness probe                                                                                | `/api/healthz`                   |
-| `frontend.livenessProbe.httpGet.port`                 | Port to hit for the liveness probe                                                                                | `http`                           |
-| `frontend.readinessProbe.httpGet.path`                | Path to hit for the liveness probe                                                                                | `/api/healthz`                   |
-| `frontend.readinessProbe.httpGet.port`                | Port to hit for the liveness probe                                                                                | `http`                           |
-| `frontend.autoscaling.enabled`                        | Enable autoscaling for the Frontend Deployment                                                                    | `false`                          |
-| `frontend.autoscaling.minReplicas`                    | Minimum number of replicas for the Frontend Deployment                                                            | `1`                              |
-| `frontend.autoscaling.maxReplicas`                    | Maximum number of replicas for the Frontend Deployment                                                            | `4`                              |
-| `frontend.autoscaling.targetCPUUtilizationPercentage` | Target CPU utilization percentage for the Frontend Deployment                                                     | `80`                             |
-| `frontend.volumes`                                    | List of volumes that can be mounted by containers belonging to the pod                                            | `[]`                             |
-| `frontend.volumeMounts`                               | List of volumeMounts that can be mounted by containers belonging to the pod                                       | `[]`                             |
-| `frontend.nodeSelector`                               | Node labels for pod assignment                                                                                    | `{}`                             |
-| `frontend.tolerations`                                | Taints to tolerate on node assignment:                                                                            | `[]`                             |
-| `frontend.affinity`                                   | Pod scheduling constraints                                                                                        | `{}`                             |
+| Name                                                   | Description                                                                                                       | Value                            |
+| ------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------- | -------------------------------- |
+| `frontend.name`                                        | Name suffix of the Frontend related resources                                                                     | `frontend`                       |
+| `frontend.replicas`                                    | Number of replicas of Frontend Deployment                                                                         | `1`                              |
+| `frontend.image.registry`                              | Frontend Image registry                                                                                           | `docker.io`                      |
+| `frontend.image.repository`                            | Frontend Image repository                                                                                         | `llamaindex/llamacloud-frontend` |
+| `frontend.image.tag`                                   | Frontend Image tag                                                                                                | `0.1.43`                         |
+| `frontend.image.pullPolicy`                            | Frontend Image pull policy                                                                                        | `IfNotPresent`                   |
+| `frontend.service.type`                                | Frontend Service type                                                                                             | `ClusterIP`                      |
+| `frontend.service.port`                                | Frontend Service port                                                                                             | `3000`                           |
+| `frontend.serviceAccount.create`                       | Whether or not to create a new service account                                                                    | `true`                           |
+| `frontend.serviceAccount.name`                         | Name of the service account                                                                                       | `""`                             |
+| `frontend.serviceAccount.labels`                       | Labels to add to the service account                                                                              | `{}`                             |
+| `frontend.serviceAccount.annotations`                  | Annotations to add to the service account                                                                         | `{}`                             |
+| `frontend.serviceAccount.automountServiceAccountToken` | Automount token to service account                                                                                | `true`                           |
+| `frontend.labels`                                      | Labels added to the Frontend Deployment.                                                                          | `{}`                             |
+| `frontend.annotations`                                 | Annotations added to the Frontend Deployment.                                                                     | `{}`                             |
+| `frontend.containerPort`                               | Port to expose on the Frontend container                                                                          | `3000`                           |
+| `frontend.extraEnvVariables`                           | Extra environment variables to add to Frontend pods                                                               | `[]`                             |
+| `frontend.podAnnotations`                              | Annotations to add to the resulting Pods of the Deployment.                                                       | `{}`                             |
+| `frontend.podLabels`                                   | Labels to add to the resulting Pods of the Deployment.                                                            | `{}`                             |
+| `frontend.podSecurityContext`                          | Annotations to add to the resulting Pods of the Deployment.                                                       | `{}`                             |
+| `frontend.securityContext`                             | Security context for the container                                                                                | `{}`                             |
+| `frontend.resources`                                   | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | `{}`                             |
+| `frontend.livenessProbe.httpGet.path`                  | Path to hit for the liveness probe                                                                                | `/api/healthz`                   |
+| `frontend.livenessProbe.httpGet.port`                  | Port to hit for the liveness probe                                                                                | `http`                           |
+| `frontend.readinessProbe.httpGet.path`                 | Path to hit for the liveness probe                                                                                | `/api/healthz`                   |
+| `frontend.readinessProbe.httpGet.port`                 | Port to hit for the liveness probe                                                                                | `http`                           |
+| `frontend.autoscaling.enabled`                         | Enable autoscaling for the Frontend Deployment                                                                    | `false`                          |
+| `frontend.autoscaling.minReplicas`                     | Minimum number of replicas for the Frontend Deployment                                                            | `1`                              |
+| `frontend.autoscaling.maxReplicas`                     | Maximum number of replicas for the Frontend Deployment                                                            | `4`                              |
+| `frontend.autoscaling.targetCPUUtilizationPercentage`  | Target CPU utilization percentage for the Frontend Deployment                                                     | `80`                             |
+| `frontend.volumes`                                     | List of volumes that can be mounted by containers belonging to the pod                                            | `[]`                             |
+| `frontend.volumeMounts`                                | List of volumeMounts that can be mounted by containers belonging to the pod                                       | `[]`                             |
+| `frontend.nodeSelector`                                | Node labels for pod assignment                                                                                    | `{}`                             |
+| `frontend.tolerations`                                 | Taints to tolerate on node assignment:                                                                            | `[]`                             |
+| `frontend.affinity`                                    | Pod scheduling constraints                                                                                        | `{}`                             |
 
 ### Backend Configuration
 
-| Name                                                 | Description                                                                                                       | Value                           |
-| ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------------- |
-| `backend.name`                                       | Name suffix of the Backend related resources                                                                      | `backend`                       |
-| `backend.config.logLevel`                            | Log level for the backend                                                                                         | `info`                          |
-| `backend.config.openAiApiKey`                        | (Required) OpenAI API key                                                                                         | `""`                            |
-| `backend.config.existingOpenAiApiKeySecret`          | Name of the existing secret to use for the OpenAI API key                                                         | `""`                            |
-| `backend.config.azureOpenAi.enabled`                 | Enable Azure OpenAI for backend                                                                                   | `false`                         |
-| `backend.config.azureOpenAi.existingSecret`          | Name of the existing secret to use for the Azure OpenAI API key                                                   | `""`                            |
-| `backend.config.azureOpenAi.key`                     | Azure OpenAI API key                                                                                              | `""`                            |
-| `backend.config.azureOpenAi.endpoint`                | Azure OpenAI endpoint                                                                                             | `""`                            |
-| `backend.config.azureOpenAi.deploymentName`          | Azure OpenAI deployment                                                                                           | `""`                            |
-| `backend.config.azureOpenAi.apiVersion`              | Azure OpenAI API version                                                                                          | `""`                            |
-| `backend.config.oidc.existingSecretName`             | Name of the existing secret to use for OIDC configuration                                                         | `""`                            |
-| `backend.config.oidc.discoveryUrl`                   | OIDC discovery URL                                                                                                | `""`                            |
-| `backend.config.oidc.clientId`                       | OIDC client ID                                                                                                    | `""`                            |
-| `backend.config.oidc.clientSecret`                   | OIDC client secret                                                                                                | `""`                            |
-| `backend.config.qdrant.enabled`                      | Enable QDRANT Data-Sink for backend                                                                               | `false`                         |
-| `backend.config.qdrant.existingSecret`               | Name of the existing secret to use for the QDRANT Data-Sink                                                       | `""`                            |
-| `backend.config.qdrant.url`                          | QDRANT Data-Sink host                                                                                             | `""`                            |
-| `backend.config.qdrant.apiKey`                       | QDRANT Data-Sink API key                                                                                          | `""`                            |
-| `backend.replicas`                                   | Number of replicas of Backend Deployment                                                                          | `1`                             |
-| `backend.image.registry`                             | Backend Image registry                                                                                            | `docker.io`                     |
-| `backend.image.repository`                           | Backend Image repository                                                                                          | `llamaindex/llamacloud-backend` |
-| `backend.image.tag`                                  | Backend Image tag                                                                                                 | `0.1.43`                        |
-| `backend.image.pullPolicy`                           | Backend Image pull policy                                                                                         | `IfNotPresent`                  |
-| `backend.service.type`                               | Backend Service type                                                                                              | `ClusterIP`                     |
-| `backend.service.port`                               | Backend Service port                                                                                              | `8000`                          |
-| `backend.serviceAccount.create`                      | Whether or not to create a new service account                                                                    | `true`                          |
-| `backend.serviceAccount.name`                        | Name of the service account                                                                                       | `""`                            |
-| `backend.serviceAccount.labels`                      | Labels to add to the service account                                                                              | `{}`                            |
-| `backend.serviceAccount.annotations`                 | Annotations to add to the service account                                                                         | `{}`                            |
-| `backend.labels`                                     | Labels added to the Backend Deployment.                                                                           | `{}`                            |
-| `backend.annotations`                                | Annotations added to the Backend Deployment.                                                                      | `{}`                            |
-| `backend.containerPort`                              | Port to expose on the Backend container                                                                           | `8000`                          |
-| `backend.extraEnvVariables`                          | Extra environment variables to add to backend pods                                                                | `[]`                            |
-| `backend.externalSecrets.enabled`                    | Enable external secrets for the Backend Deployment                                                                | `false`                         |
-| `backend.externalSecrets.secrets`                    | List of external secrets to load environment variables from                                                       | `[]`                            |
-| `backend.podAnnotations`                             | Annotations to add to the resulting Pods of the Deployment.                                                       | `{}`                            |
-| `backend.podLabels`                                  | Labels to add to the resulting Pods of the Deployment.                                                            | `{}`                            |
-| `backend.podSecurityContext`                         | Pod security context                                                                                              | `{}`                            |
-| `backend.securityContext`                            | Security context for the container                                                                                | `{}`                            |
-| `backend.resources`                                  | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | `{}`                            |
-| `backend.livenessProbe.httpGet.path`                 | Path to hit for the liveness probe                                                                                | `/api/health`                   |
-| `backend.livenessProbe.httpGet.port`                 | Port to hit for the liveness probe                                                                                | `8000`                          |
-| `backend.livenessProbe.periodSeconds`                | How often (in seconds) to perform the probe                                                                       | `10`                            |
-| `backend.livenessProbe.timeoutSeconds`               | Number of seconds after which the probe times out                                                                 | `30`                            |
-| `backend.livenessProbe.failureThreshold`             | Minimum consecutive failures for the probe to be considered failed after having succeeded                         | `3`                             |
-| `backend.readinessProbe.httpGet.path`                | Path to hit for the readiness probe                                                                               | `/api/health`                   |
-| `backend.readinessProbe.httpGet.port`                | Port to hit for the readiness probe                                                                               | `8000`                          |
-| `backend.readinessProbe.periodSeconds`               | How often (in seconds) to perform the probe                                                                       | `10`                            |
-| `backend.readinessProbe.timeoutSeconds`              | Number of seconds after which the probe times out                                                                 | `5`                             |
-| `backend.readinessProbe.failureThreshold`            | Minimum consecutive failures for the probe to be considered failed after having succeeded                         | `5`                             |
-| `backend.startupProbe.httpGet.path`                  | Path to hit for the startup probe                                                                                 | `/api/health`                   |
-| `backend.startupProbe.httpGet.port`                  | Port to hit for the startup probe                                                                                 | `8000`                          |
-| `backend.startupProbe.initialDelaySeconds`           | Number of seconds after the container has started before startup probes are initiated                             | `30`                            |
-| `backend.startupProbe.periodSeconds`                 | How often (in seconds) to perform the probe                                                                       | `15`                            |
-| `backend.startupProbe.timeoutSeconds`                | Number of seconds after which the probe times out                                                                 | `5`                             |
-| `backend.startupProbe.failureThreshold`              | Minimum consecutive failures for the probe to be considered failed after having succeeded                         | `30`                            |
-| `backend.autoscaling.enabled`                        | Enable autoscaling for the Backend Deployment                                                                     | `false`                         |
-| `backend.autoscaling.minReplicas`                    | Minimum number of replicas for the Backend Deployment                                                             | `1`                             |
-| `backend.autoscaling.maxReplicas`                    | Maximum number of replicas for the Backend Deployment                                                             | `8`                             |
-| `backend.autoscaling.targetCPUUtilizationPercentage` | Target CPU utilization percentage for the Backend Deployment                                                      | `80`                            |
-| `backend.podDisruptionBudget.enabled`                | Enable PodDisruptionBudget for the Backend Deployment                                                             | `false`                         |
-| `backend.podDisruptionBudget.maxUnavailable`         | Maximum number of pods that can be unavailable during an update                                                   | `1`                             |
-| `backend.volumes`                                    | List of volumes that can be mounted by containers belonging to the pod                                            | `[]`                            |
-| `backend.volumeMounts`                               | List of volumeMounts that can be mounted by containers belonging to the pod                                       | `[]`                            |
-| `backend.nodeSelector`                               | Node labels for pod assignment                                                                                    | `{}`                            |
-| `backend.tolerations`                                | Taints to tolerate on node assignment:                                                                            | `[]`                            |
-| `backend.affinity`                                   | Pod scheduling constraints                                                                                        | `{}`                            |
+| Name                                                  | Description                                                                                                       | Value                           |
+| ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------------- |
+| `backend.name`                                        | Name suffix of the Backend related resources                                                                      | `backend`                       |
+| `backend.config.logLevel`                             | Log level for the backend                                                                                         | `info`                          |
+| `backend.config.openAiApiKey`                         | (Required) OpenAI API key                                                                                         | `""`                            |
+| `backend.config.existingOpenAiApiKeySecret`           | Name of the existing secret to use for the OpenAI API key                                                         | `""`                            |
+| `backend.config.azureOpenAi.enabled`                  | Enable Azure OpenAI for backend                                                                                   | `false`                         |
+| `backend.config.azureOpenAi.existingSecret`           | Name of the existing secret to use for the Azure OpenAI API key                                                   | `""`                            |
+| `backend.config.azureOpenAi.key`                      | Azure OpenAI API key                                                                                              | `""`                            |
+| `backend.config.azureOpenAi.endpoint`                 | Azure OpenAI endpoint                                                                                             | `""`                            |
+| `backend.config.azureOpenAi.deploymentName`           | Azure OpenAI deployment                                                                                           | `""`                            |
+| `backend.config.azureOpenAi.apiVersion`               | Azure OpenAI API version                                                                                          | `""`                            |
+| `backend.config.oidc.existingSecretName`              | Name of the existing secret to use for OIDC configuration                                                         | `""`                            |
+| `backend.config.oidc.discoveryUrl`                    | OIDC discovery URL                                                                                                | `""`                            |
+| `backend.config.oidc.clientId`                        | OIDC client ID                                                                                                    | `""`                            |
+| `backend.config.oidc.clientSecret`                    | OIDC client secret                                                                                                | `""`                            |
+| `backend.config.qdrant.enabled`                       | Enable QDRANT Data-Sink for backend                                                                               | `false`                         |
+| `backend.config.qdrant.existingSecret`                | Name of the existing secret to use for the QDRANT Data-Sink                                                       | `""`                            |
+| `backend.config.qdrant.url`                           | QDRANT Data-Sink host                                                                                             | `""`                            |
+| `backend.config.qdrant.apiKey`                        | QDRANT Data-Sink API key                                                                                          | `""`                            |
+| `backend.replicas`                                    | Number of replicas of Backend Deployment                                                                          | `1`                             |
+| `backend.image.registry`                              | Backend Image registry                                                                                            | `docker.io`                     |
+| `backend.image.repository`                            | Backend Image repository                                                                                          | `llamaindex/llamacloud-backend` |
+| `backend.image.tag`                                   | Backend Image tag                                                                                                 | `0.1.43`                        |
+| `backend.image.pullPolicy`                            | Backend Image pull policy                                                                                         | `IfNotPresent`                  |
+| `backend.service.type`                                | Backend Service type                                                                                              | `ClusterIP`                     |
+| `backend.service.port`                                | Backend Service port                                                                                              | `8000`                          |
+| `backend.serviceAccount.create`                       | Whether or not to create a new service account                                                                    | `true`                          |
+| `backend.serviceAccount.name`                         | Name of the service account                                                                                       | `""`                            |
+| `backend.serviceAccount.labels`                       | Labels to add to the service account                                                                              | `{}`                            |
+| `backend.serviceAccount.annotations`                  | Annotations to add to the service account                                                                         | `{}`                            |
+| `backend.serviceAccount.automountServiceAccountToken` | Automount token to service account                                                                                | `true`                          |
+| `backend.labels`                                      | Labels added to the Backend Deployment.                                                                           | `{}`                            |
+| `backend.annotations`                                 | Annotations added to the Backend Deployment.                                                                      | `{}`                            |
+| `backend.containerPort`                               | Port to expose on the Backend container                                                                           | `8000`                          |
+| `backend.extraEnvVariables`                           | Extra environment variables to add to backend pods                                                                | `[]`                            |
+| `backend.externalSecrets.enabled`                     | Enable external secrets for the Backend Deployment                                                                | `false`                         |
+| `backend.externalSecrets.secrets`                     | List of external secrets to load environment variables from                                                       | `[]`                            |
+| `backend.podAnnotations`                              | Annotations to add to the resulting Pods of the Deployment.                                                       | `{}`                            |
+| `backend.podLabels`                                   | Labels to add to the resulting Pods of the Deployment.                                                            | `{}`                            |
+| `backend.podSecurityContext`                          | Pod security context                                                                                              | `{}`                            |
+| `backend.securityContext`                             | Security context for the container                                                                                | `{}`                            |
+| `backend.resources`                                   | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | `{}`                            |
+| `backend.livenessProbe.httpGet.path`                  | Path to hit for the liveness probe                                                                                | `/api/health`                   |
+| `backend.livenessProbe.httpGet.port`                  | Port to hit for the liveness probe                                                                                | `8000`                          |
+| `backend.livenessProbe.periodSeconds`                 | How often (in seconds) to perform the probe                                                                       | `10`                            |
+| `backend.livenessProbe.timeoutSeconds`                | Number of seconds after which the probe times out                                                                 | `30`                            |
+| `backend.livenessProbe.failureThreshold`              | Minimum consecutive failures for the probe to be considered failed after having succeeded                         | `3`                             |
+| `backend.readinessProbe.httpGet.path`                 | Path to hit for the readiness probe                                                                               | `/api/health`                   |
+| `backend.readinessProbe.httpGet.port`                 | Port to hit for the readiness probe                                                                               | `8000`                          |
+| `backend.readinessProbe.periodSeconds`                | How often (in seconds) to perform the probe                                                                       | `10`                            |
+| `backend.readinessProbe.timeoutSeconds`               | Number of seconds after which the probe times out                                                                 | `5`                             |
+| `backend.readinessProbe.failureThreshold`             | Minimum consecutive failures for the probe to be considered failed after having succeeded                         | `5`                             |
+| `backend.startupProbe.httpGet.path`                   | Path to hit for the startup probe                                                                                 | `/api/health`                   |
+| `backend.startupProbe.httpGet.port`                   | Port to hit for the startup probe                                                                                 | `8000`                          |
+| `backend.startupProbe.initialDelaySeconds`            | Number of seconds after the container has started before startup probes are initiated                             | `30`                            |
+| `backend.startupProbe.periodSeconds`                  | How often (in seconds) to perform the probe                                                                       | `15`                            |
+| `backend.startupProbe.timeoutSeconds`                 | Number of seconds after which the probe times out                                                                 | `5`                             |
+| `backend.startupProbe.failureThreshold`               | Minimum consecutive failures for the probe to be considered failed after having succeeded                         | `30`                            |
+| `backend.autoscaling.enabled`                         | Enable autoscaling for the Backend Deployment                                                                     | `false`                         |
+| `backend.autoscaling.minReplicas`                     | Minimum number of replicas for the Backend Deployment                                                             | `1`                             |
+| `backend.autoscaling.maxReplicas`                     | Maximum number of replicas for the Backend Deployment                                                             | `8`                             |
+| `backend.autoscaling.targetCPUUtilizationPercentage`  | Target CPU utilization percentage for the Backend Deployment                                                      | `80`                            |
+| `backend.podDisruptionBudget.enabled`                 | Enable PodDisruptionBudget for the Backend Deployment                                                             | `false`                         |
+| `backend.podDisruptionBudget.maxUnavailable`          | Maximum number of pods that can be unavailable during an update                                                   | `1`                             |
+| `backend.volumes`                                     | List of volumes that can be mounted by containers belonging to the pod                                            | `[]`                            |
+| `backend.volumeMounts`                                | List of volumeMounts that can be mounted by containers belonging to the pod                                       | `[]`                            |
+| `backend.nodeSelector`                                | Node labels for pod assignment                                                                                    | `{}`                            |
+| `backend.tolerations`                                 | Taints to tolerate on node assignment:                                                                            | `[]`                            |
+| `backend.affinity`                                    | Pod scheduling constraints                                                                                        | `{}`                            |
 
 ### JobsService Configuration
 
@@ -233,6 +235,7 @@ For more information about using this chart, feel free to visit the [Official Ll
 | `jobsService.serviceAccount.name`                        | Name of the service account                                                                                       | `""`                                 |
 | `jobsService.serviceAccount.labels`                      | Labels to add to the service account                                                                              | `{}`                                 |
 | `jobsService.serviceAccount.annotations`                 | Annotations to add to the service account                                                                         | `{}`                                 |
+| `jobService.serviceAccount.automountServiceAccountToken` | Automount token to service account                                                                                | `true`                               |
 | `jobsService.containerPort`                              | Port to expose on the JobsService container                                                                       | `8002`                               |
 | `jobsService.extraEnvVariables`                          | Extra environment variables to add to jobsService pods                                                            | `[]`                                 |
 | `jobsService.externalSecrets.enabled`                    | Enable external secrets for the JobsService Deployment                                                            | `false`                              |
@@ -285,6 +288,7 @@ For more information about using this chart, feel free to visit the [Official Ll
 | `jobsWorker.serviceAccount.name`                        | Name of the service account                                                                                       | `""`                                |
 | `jobsWorker.serviceAccount.labels`                      | Labels to add to the service account                                                                              | `{}`                                |
 | `jobsWorker.serviceAccount.annotations`                 | Annotations to add to the service account                                                                         | `{}`                                |
+| `jobWorker.serviceAccount.automountServiceAccountToken` | Automount token to service account                                                                                | `true`                              |
 | `jobsWorker.labels`                                     | Labels added to the JobsWorker Deployment.                                                                        | `{}`                                |
 | `jobsWorker.annotations`                                | Annotations added to the JobsWorker Deployment.                                                                   | `{}`                                |
 | `jobsWorker.containerPort`                              | Port to expose on the jobsWorker container                                                                        | `8001`                              |
@@ -326,217 +330,221 @@ For more information about using this chart, feel free to visit the [Official Ll
 
 ### LlamaParse Configuration
 
-| Name                                                    | Description                                                                               | Value                              |
-| ------------------------------------------------------- | ----------------------------------------------------------------------------------------- | ---------------------------------- |
-| `llamaParse.name`                                       | Name suffix of the LlamaParse related resources                                           | `llamaparse`                       |
-| `llamaParse.config.maxPdfPages`                         | Maximum number of pages to parse in a PDF                                                 | `1200`                             |
-| `llamaParse.config.openAiApiKey`                        | OpenAI API key                                                                            | `""`                               |
-| `llamaParse.config.existingOpenAiApiKeySecret`          | Name of the existing secret to use for the OpenAI API key                                 | `""`                               |
-| `llamaParse.config.azureOpenAi.enabled`                 | Enable Azure OpenAI for LlamaParse                                                        | `false`                            |
-| `llamaParse.config.azureOpenAi.existingSecret`          | Name of the existing secret to use for the Azure OpenAI API key                           | `""`                               |
-| `llamaParse.config.azureOpenAi.key`                     | Azure OpenAI API key                                                                      | `""`                               |
-| `llamaParse.config.azureOpenAi.endpoint`                | Azure OpenAI endpoint                                                                     | `""`                               |
-| `llamaParse.config.azureOpenAi.deploymentName`          | Azure OpenAI deployment                                                                   | `""`                               |
-| `llamaParse.config.azureOpenAi.apiVersion`              | Azure OpenAI API version                                                                  | `""`                               |
-| `llamaParse.config.anthropicApiKey`                     | Anthropic API key                                                                         | `""`                               |
-| `llamaParse.config.existingAnthropicApiKeySecret`       | Name of the existing secret to use for the Anthropic API key                              | `""`                               |
-| `llamaParse.config.s3UploadBucket`                      | S3 bucket to upload files to                                                              | `llama-platform-file-parsing`      |
-| `llamaParse.config.s3OutputBucket`                      | S3 bucket to output files to                                                              | `llama-platform-file-parsing`      |
-| `llamaParse.config.s3OutputBucketTemp`                  | S3 bucket to output temporary files to                                                    | `llama-platform-file-parsing`      |
-| `llamaParse.replicas`                                   | Number of replicas of LlamaParse Deployment                                               | `2`                                |
-| `llamaParse.image.registry`                             | LlamaParse Image registry                                                                 | `docker.io`                        |
-| `llamaParse.image.repository`                           | LlamaParse Image repository                                                               | `llamaindex/llamacloud-llamaparse` |
-| `llamaParse.image.tag`                                  | LlamaParse Image tag                                                                      | `0.1.43`                           |
-| `llamaParse.image.pullPolicy`                           | LlamaParse Image pull policy                                                              | `IfNotPresent`                     |
-| `llamaParse.serviceAccount.create`                      | Whether or not to create a new service account                                            | `true`                             |
-| `llamaParse.serviceAccount.name`                        | Name of the service account                                                               | `""`                               |
-| `llamaParse.serviceAccount.labels`                      | Labels to add to the service account                                                      | `{}`                               |
-| `llamaParse.serviceAccount.annotations`                 | Annotations to add to the service account                                                 | `{}`                               |
-| `llamaParse.labels`                                     | Labels added to the LlamaParse Deployment.                                                | `{}`                               |
-| `llamaParse.annotations`                                | Annotations added to the LlamaParse Deployment.                                           | `{}`                               |
-| `llamaParse.containerPort`                              | Port to expose on the LlamaParse container                                                | `8000`                             |
-| `llamaParse.extraEnvVariables`                          | Extra environment variables to add to llamaParse pods                                     | `[]`                               |
-| `llamaParse.externalSecrets.enabled`                    | Enable external secrets for the LlamaParse Deployment                                     | `false`                            |
-| `llamaParse.externalSecrets.secrets`                    | List of external secrets to load environment variables from                               | `[]`                               |
-| `llamaParse.externalSecrets.enabled`                    | Enable external secrets for the LlamaParse Deployment                                     | `false`                            |
-| `llamaParse.externalSecrets.secrets`                    | List of external secrets to load environment variables from                               | `[]`                               |
-| `llamaParse.podAnnotations`                             | Annotations to add to the resulting Pods of the Deployment.                               | `{}`                               |
-| `llamaParse.podLabels`                                  | Labels to add to the resulting Pods of the Deployment.                                    | `{}`                               |
-| `llamaParse.podSecurityContext`                         | Pod security context                                                                      | `{}`                               |
-| `llamaParse.securityContext`                            | Security context for the container                                                        | `{}`                               |
-| `llamaParse.resources.requests.memory`                  | Memory request for the LlamaParse container                                               | `13Gi`                             |
-| `llamaParse.resources.requests.cpu`                     | CPU request for the LlamaParse container                                                  | `7`                                |
-| `llamaParse.resources.limits.memory`                    | Memory limit for the LlamaParse container                                                 | `13Gi`                             |
-| `llamaParse.resources.limits.cpu`                       | CPU limit for the LlamaParse container                                                    | `7`                                |
-| `llamaParse.livenessProbe.failureThreshold`             | Minimum consecutive failures for the probe to be considered failed after having succeeded | `10`                               |
-| `llamaParse.livenessProbe.httpGet.path`                 | Path to hit for the liveness probe                                                        | `/livez`                           |
-| `llamaParse.livenessProbe.httpGet.port`                 | Port to hit for the liveness probe                                                        | `8004`                             |
-| `llamaParse.livenessProbe.initialDelaySeconds`          | Number of seconds after the container has started before liveness probes are initiated    | `30`                               |
-| `llamaParse.livenessProbe.periodSeconds`                | How often (in seconds) to perform the probe                                               | `30`                               |
-| `llamaParse.livenessProbe.timeoutSeconds`               | Number of seconds after which the probe times out                                         | `5`                                |
-| `llamaParse.readinessProbe.failureThreshold`            | Minimum consecutive failures for the probe to be considered failed after having succeeded | `10`                               |
-| `llamaParse.readinessProbe.httpGet.path`                | Path to hit for the readiness probe                                                       | `/readyz`                          |
-| `llamaParse.readinessProbe.httpGet.port`                | Port to hit for the readiness probe                                                       | `8004`                             |
-| `llamaParse.readinessProbe.initialDelaySeconds`         | Number of seconds after the container has started before readiness probes are initiated   | `30`                               |
-| `llamaParse.readinessProbe.periodSeconds`               | How often (in seconds) to perform the probe                                               | `30`                               |
-| `llamaParse.readinessProbe.timeoutSeconds`              | Number of seconds after which the probe times out                                         | `5`                                |
-| `llamaParse.autoscaling.enabled`                        | Enable autoscaling for the LlamaParse Deployment                                          | `true`                             |
-| `llamaParse.autoscaling.minReplicas`                    | Minimum number of replicas for the LlamaParse Deployment                                  | `2`                                |
-| `llamaParse.autoscaling.maxReplicas`                    | Maximum number of replicas for the LlamaParse Deployment                                  | `10`                               |
-| `llamaParse.autoscaling.targetCPUUtilizationPercentage` | Target CPU utilization percentage for the LlamaParse Deployment                           | `80`                               |
-| `llamaParse.podDisruptionBudget.enabled`                | Enable PodDisruptionBudget for the LlamaParse Deployment                                  | `true`                             |
-| `llamaParse.podDisruptionBudget.maxUnavailable`         | Maximum number of unavailable pods                                                        | `1`                                |
-| `llamaParse.volumes`                                    | List of volumes that can be mounted by containers belonging to the pod                    | `[]`                               |
-| `llamaParse.volumeMounts`                               | List of volumeMounts that can be mounted by containers belonging to the pod               | `[]`                               |
-| `llamaParse.nodeSelector`                               | Node labels for pod assignment                                                            | `{}`                               |
-| `llamaParse.tolerations`                                | Taints to tolerate on node assignment:                                                    | `[]`                               |
-| `llamaParse.affinity`                                   | Pod scheduling constraints                                                                | `{}`                               |
+| Name                                                     | Description                                                                               | Value                              |
+| -------------------------------------------------------- | ----------------------------------------------------------------------------------------- | ---------------------------------- |
+| `llamaParse.name`                                        | Name suffix of the LlamaParse related resources                                           | `llamaparse`                       |
+| `llamaParse.config.maxPdfPages`                          | Maximum number of pages to parse in a PDF                                                 | `1200`                             |
+| `llamaParse.config.openAiApiKey`                         | OpenAI API key                                                                            | `""`                               |
+| `llamaParse.config.existingOpenAiApiKeySecret`           | Name of the existing secret to use for the OpenAI API key                                 | `""`                               |
+| `llamaParse.config.azureOpenAi.enabled`                  | Enable Azure OpenAI for LlamaParse                                                        | `false`                            |
+| `llamaParse.config.azureOpenAi.existingSecret`           | Name of the existing secret to use for the Azure OpenAI API key                           | `""`                               |
+| `llamaParse.config.azureOpenAi.key`                      | Azure OpenAI API key                                                                      | `""`                               |
+| `llamaParse.config.azureOpenAi.endpoint`                 | Azure OpenAI endpoint                                                                     | `""`                               |
+| `llamaParse.config.azureOpenAi.deploymentName`           | Azure OpenAI deployment                                                                   | `""`                               |
+| `llamaParse.config.azureOpenAi.apiVersion`               | Azure OpenAI API version                                                                  | `""`                               |
+| `llamaParse.config.anthropicApiKey`                      | Anthropic API key                                                                         | `""`                               |
+| `llamaParse.config.existingAnthropicApiKeySecret`        | Name of the existing secret to use for the Anthropic API key                              | `""`                               |
+| `llamaParse.config.s3UploadBucket`                       | S3 bucket to upload files to                                                              | `llama-platform-file-parsing`      |
+| `llamaParse.config.s3OutputBucket`                       | S3 bucket to output files to                                                              | `llama-platform-file-parsing`      |
+| `llamaParse.config.s3OutputBucketTemp`                   | S3 bucket to output temporary files to                                                    | `llama-platform-file-parsing`      |
+| `llamaParse.replicas`                                    | Number of replicas of LlamaParse Deployment                                               | `2`                                |
+| `llamaParse.image.registry`                              | LlamaParse Image registry                                                                 | `docker.io`                        |
+| `llamaParse.image.repository`                            | LlamaParse Image repository                                                               | `llamaindex/llamacloud-llamaparse` |
+| `llamaParse.image.tag`                                   | LlamaParse Image tag                                                                      | `0.1.43`                           |
+| `llamaParse.image.pullPolicy`                            | LlamaParse Image pull policy                                                              | `IfNotPresent`                     |
+| `llamaParse.serviceAccount.create`                       | Whether or not to create a new service account                                            | `true`                             |
+| `llamaParse.serviceAccount.name`                         | Name of the service account                                                               | `""`                               |
+| `llamaParse.serviceAccount.labels`                       | Labels to add to the service account                                                      | `{}`                               |
+| `llamaParse.serviceAccount.annotations`                  | Annotations to add to the service account                                                 | `{}`                               |
+| `llamaParse.serviceAccount.automountServiceAccountToken` | Automount token to service account                                                        | `true`                             |
+| `llamaParse.labels`                                      | Labels added to the LlamaParse Deployment.                                                | `{}`                               |
+| `llamaParse.annotations`                                 | Annotations added to the LlamaParse Deployment.                                           | `{}`                               |
+| `llamaParse.containerPort`                               | Port to expose on the LlamaParse container                                                | `8000`                             |
+| `llamaParse.extraEnvVariables`                           | Extra environment variables to add to llamaParse pods                                     | `[]`                               |
+| `llamaParse.externalSecrets.enabled`                     | Enable external secrets for the LlamaParse Deployment                                     | `false`                            |
+| `llamaParse.externalSecrets.secrets`                     | List of external secrets to load environment variables from                               | `[]`                               |
+| `llamaParse.externalSecrets.enabled`                     | Enable external secrets for the LlamaParse Deployment                                     | `false`                            |
+| `llamaParse.externalSecrets.secrets`                     | List of external secrets to load environment variables from                               | `[]`                               |
+| `llamaParse.podAnnotations`                              | Annotations to add to the resulting Pods of the Deployment.                               | `{}`                               |
+| `llamaParse.podLabels`                                   | Labels to add to the resulting Pods of the Deployment.                                    | `{}`                               |
+| `llamaParse.podSecurityContext`                          | Pod security context                                                                      | `{}`                               |
+| `llamaParse.securityContext`                             | Security context for the container                                                        | `{}`                               |
+| `llamaParse.resources.requests.memory`                   | Memory request for the LlamaParse container                                               | `13Gi`                             |
+| `llamaParse.resources.requests.cpu`                      | CPU request for the LlamaParse container                                                  | `7`                                |
+| `llamaParse.resources.limits.memory`                     | Memory limit for the LlamaParse container                                                 | `13Gi`                             |
+| `llamaParse.resources.limits.cpu`                        | CPU limit for the LlamaParse container                                                    | `7`                                |
+| `llamaParse.livenessProbe.failureThreshold`              | Minimum consecutive failures for the probe to be considered failed after having succeeded | `10`                               |
+| `llamaParse.livenessProbe.httpGet.path`                  | Path to hit for the liveness probe                                                        | `/livez`                           |
+| `llamaParse.livenessProbe.httpGet.port`                  | Port to hit for the liveness probe                                                        | `8004`                             |
+| `llamaParse.livenessProbe.initialDelaySeconds`           | Number of seconds after the container has started before liveness probes are initiated    | `30`                               |
+| `llamaParse.livenessProbe.periodSeconds`                 | How often (in seconds) to perform the probe                                               | `30`                               |
+| `llamaParse.livenessProbe.timeoutSeconds`                | Number of seconds after which the probe times out                                         | `5`                                |
+| `llamaParse.readinessProbe.failureThreshold`             | Minimum consecutive failures for the probe to be considered failed after having succeeded | `10`                               |
+| `llamaParse.readinessProbe.httpGet.path`                 | Path to hit for the readiness probe                                                       | `/readyz`                          |
+| `llamaParse.readinessProbe.httpGet.port`                 | Port to hit for the readiness probe                                                       | `8004`                             |
+| `llamaParse.readinessProbe.initialDelaySeconds`          | Number of seconds after the container has started before readiness probes are initiated   | `30`                               |
+| `llamaParse.readinessProbe.periodSeconds`                | How often (in seconds) to perform the probe                                               | `30`                               |
+| `llamaParse.readinessProbe.timeoutSeconds`               | Number of seconds after which the probe times out                                         | `5`                                |
+| `llamaParse.autoscaling.enabled`                         | Enable autoscaling for the LlamaParse Deployment                                          | `true`                             |
+| `llamaParse.autoscaling.minReplicas`                     | Minimum number of replicas for the LlamaParse Deployment                                  | `2`                                |
+| `llamaParse.autoscaling.maxReplicas`                     | Maximum number of replicas for the LlamaParse Deployment                                  | `10`                               |
+| `llamaParse.autoscaling.targetCPUUtilizationPercentage`  | Target CPU utilization percentage for the LlamaParse Deployment                           | `80`                               |
+| `llamaParse.podDisruptionBudget.enabled`                 | Enable PodDisruptionBudget for the LlamaParse Deployment                                  | `true`                             |
+| `llamaParse.podDisruptionBudget.maxUnavailable`          | Maximum number of unavailable pods                                                        | `1`                                |
+| `llamaParse.volumes`                                     | List of volumes that can be mounted by containers belonging to the pod                    | `[]`                               |
+| `llamaParse.volumeMounts`                                | List of volumeMounts that can be mounted by containers belonging to the pod               | `[]`                               |
+| `llamaParse.nodeSelector`                                | Node labels for pod assignment                                                            | `{}`                               |
+| `llamaParse.tolerations`                                 | Taints to tolerate on node assignment:                                                    | `[]`                               |
+| `llamaParse.affinity`                                    | Pod scheduling constraints                                                                | `{}`                               |
 
 ### LlamaParseOcr Configuration
 
-| Name                                                       | Description                                                                                 | Value                                  |
-| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------- | -------------------------------------- |
-| `llamaParseOcr.name`                                       | Name suffix of the LlamaParseOcr related resources                                          | `llamaparse-ocr`                       |
-| `llamaParseOcr.replicas`                                   | Number of replicas of LlamaParseOcr Deployment                                              | `2`                                    |
-| `llamaParseOcr.image.registry`                             | LlamaParseOcr Image registry                                                                | `docker.io`                            |
-| `llamaParseOcr.image.repository`                           | LlamaParseOcr Image repository                                                              | `llamaindex/llamacloud-llamaparse-ocr` |
-| `llamaParseOcr.image.tag`                                  | LlamaParseOcr Image tag                                                                     | `0.1.43`                               |
-| `llamaParseOcr.image.pullPolicy`                           | LlamaParseOcr Image pull policy                                                             | `IfNotPresent`                         |
-| `llamaParseOcr.service.type`                               | LlamaParseOcr Service type                                                                  | `ClusterIP`                            |
-| `llamaParseOcr.service.port`                               | LlamaParseOcr Service port                                                                  | `8080`                                 |
-| `llamaParseOcr.serviceAccount.create`                      | Whether or not to create a new service account                                              | `true`                                 |
-| `llamaParseOcr.serviceAccount.name`                        | Name of the service account                                                                 | `""`                                   |
-| `llamaParseOcr.serviceAccount.labels`                      | Labels to add to the service account                                                        | `{}`                                   |
-| `llamaParseOcr.serviceAccount.annotations`                 | Annotations to add to the service account                                                   | `{}`                                   |
-| `llamaParseOcr.containerPort`                              | Port to expose on the LlamaParseOcr container                                               | `8080`                                 |
-| `llamaParseOcr.labels`                                     | Labels added to the LlamaParseOcr Deployment.                                               | `{}`                                   |
-| `llamaParseOcr.annotations`                                | Annotations added to the LlamaParseOcr Deployment.                                          | `{}`                                   |
-| `llamaParseOcr.podAnnotations`                             | Annotations to add to the resulting Pods of the Deployment.                                 | `{}`                                   |
-| `llamaParseOcr.podLabels`                                  | Labels to add to the resulting Pods of the Deployment.                                      | `{}`                                   |
-| `llamaParseOcr.podSecurityContext`                         | Pod security context                                                                        | `{}`                                   |
-| `llamaParseOcr.securityContext`                            | Security context for the container                                                          | `{}`                                   |
-| `llamaParseOcr.extraEnvVariables`                          | Extra environment variables to add to llamaParseOcr pods                                    | `[]`                                   |
-| `llamaParseOcr.resources.requests.memory`                  | Memory request for the LlamaParse container                                                 | `12Gi`                                 |
-| `llamaParseOcr.resources.requests.cpu`                     | CPU request for the LlamaParse container                                                    | `2`                                    |
-| `llamaParseOcr.resources.limits.memory`                    | Memory limit for the LlamaParse container                                                   | `16Gi`                                 |
-| `llamaParseOcr.resources.limits.cpu`                       | CPU limit for the LlamaParse container                                                      | `4`                                    |
-| `llamaParseOcr.livenessProbe.httpGet.path`                 | Path to hit for the liveness probe                                                          | `/health_check`                        |
-| `llamaParseOcr.livenessProbe.httpGet.port`                 | Port to hit for the liveness probe                                                          | `8080`                                 |
-| `llamaParseOcr.livenessProbe.httpGet.scheme`               | Scheme to use for the liveness probe                                                        | `HTTP`                                 |
-| `llamaParseOcr.livenessProbe.initialDelaySeconds`          | Number of seconds after the container has started before liveness probes are initiated      | `30`                                   |
-| `llamaParseOcr.livenessProbe.periodSeconds`                | How often (in seconds) to perform the probe                                                 | `15`                                   |
-| `llamaParseOcr.livenessProbe.timeoutSeconds`               | Number of seconds after which the probe times out                                           | `120`                                  |
-| `llamaParseOcr.livenessProbe.failureThreshold`             | Minimum consecutive failures for the probe to be considered failed after having succeeded   | `3`                                    |
-| `llamaParseOcr.livenessProbe.successThreshold`             | Minimum consecutive successes for the probe to be considered successful after having failed | `1`                                    |
-| `llamaParseOcr.readinessProbe.httpGet.path`                | Path to hit for the readiness probe                                                         | `/health_check`                        |
-| `llamaParseOcr.readinessProbe.httpGet.port`                | Port to hit for the readiness probe                                                         | `8080`                                 |
-| `llamaParseOcr.readinessProbe.httpGet.scheme`              | Scheme to use for the readiness probe                                                       | `HTTP`                                 |
-| `llamaParseOcr.readinessProbe.initialDelaySeconds`         | Number of seconds after the container has started before readiness probes are initiated     | `30`                                   |
-| `llamaParseOcr.readinessProbe.periodSeconds`               | How often (in seconds) to perform the probe                                                 | `15`                                   |
-| `llamaParseOcr.readinessProbe.timeoutSeconds`              | Number of seconds after which the probe times out                                           | `120`                                  |
-| `llamaParseOcr.readinessProbe.failureThreshold`            | Minimum consecutive failures for the probe to be considered failed after having succeeded   | `3`                                    |
-| `llamaParseOcr.readinessProbe.successThreshold`            | Minimum consecutive successes for the probe to be considered successful after having failed | `1`                                    |
-| `llamaParseOcr.autoscaling.enabled`                        | Enable autoscaling for the LlamaParseOcr Deployment                                         | `true`                                 |
-| `llamaParseOcr.autoscaling.minReplicas`                    | Minimum number of replicas for the LlamaParseOcr Deployment                                 | `2`                                    |
-| `llamaParseOcr.autoscaling.maxReplicas`                    | Maximum number of replicas for the LlamaParseOcr Deployment                                 | `10`                                   |
-| `llamaParseOcr.autoscaling.targetCPUUtilizationPercentage` | Target CPU utilization percentage for the LlamaParseOcr Deployment                          | `80`                                   |
-| `llamaParseOcr.podDisruptionBudget.enabled`                | Enable PodDisruptionBudget for the LlamaParseOcr Deployment                                 | `true`                                 |
-| `llamaParseOcr.podDisruptionBudget.maxUnavailable`         | Maximum number of unavailable pods                                                          | `1`                                    |
-| `llamaParseOcr.volumes`                                    | List of volumes that can be mounted by containers belonging to the pod                      | `[]`                                   |
-| `llamaParseOcr.volumeMounts`                               | List of volumeMounts that can be mounted by containers belonging to the pod                 | `[]`                                   |
-| `llamaParseOcr.nodeSelector`                               | Node labels for pod assignment                                                              | `{}`                                   |
-| `llamaParseOcr.tolerations`                                | Taints to tolerate on node assignment:                                                      | `[]`                                   |
-| `llamaParseOcr.affinity`                                   | Pod scheduling constraints                                                                  | `{}`                                   |
+| Name                                                        | Description                                                                                 | Value                                  |
+| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------- | -------------------------------------- |
+| `llamaParseOcr.name`                                        | Name suffix of the LlamaParseOcr related resources                                          | `llamaparse-ocr`                       |
+| `llamaParseOcr.replicas`                                    | Number of replicas of LlamaParseOcr Deployment                                              | `2`                                    |
+| `llamaParseOcr.image.registry`                              | LlamaParseOcr Image registry                                                                | `docker.io`                            |
+| `llamaParseOcr.image.repository`                            | LlamaParseOcr Image repository                                                              | `llamaindex/llamacloud-llamaparse-ocr` |
+| `llamaParseOcr.image.tag`                                   | LlamaParseOcr Image tag                                                                     | `0.1.43`                               |
+| `llamaParseOcr.image.pullPolicy`                            | LlamaParseOcr Image pull policy                                                             | `IfNotPresent`                         |
+| `llamaParseOcr.service.type`                                | LlamaParseOcr Service type                                                                  | `ClusterIP`                            |
+| `llamaParseOcr.service.port`                                | LlamaParseOcr Service port                                                                  | `8080`                                 |
+| `llamaParseOcr.serviceAccount.create`                       | Whether or not to create a new service account                                              | `true`                                 |
+| `llamaParseOcr.serviceAccount.name`                         | Name of the service account                                                                 | `""`                                   |
+| `llamaParseOcr.serviceAccount.labels`                       | Labels to add to the service account                                                        | `{}`                                   |
+| `llamaParseOcr.serviceAccount.annotations`                  | Annotations to add to the service account                                                   | `{}`                                   |
+| `llamaParseOcr.serviceAccount.automountServiceAccountToken` | Automount token to service account                                                          | `true`                                 |
+| `llamaParseOcr.containerPort`                               | Port to expose on the LlamaParseOcr container                                               | `8080`                                 |
+| `llamaParseOcr.labels`                                      | Labels added to the LlamaParseOcr Deployment.                                               | `{}`                                   |
+| `llamaParseOcr.annotations`                                 | Annotations added to the LlamaParseOcr Deployment.                                          | `{}`                                   |
+| `llamaParseOcr.podAnnotations`                              | Annotations to add to the resulting Pods of the Deployment.                                 | `{}`                                   |
+| `llamaParseOcr.podLabels`                                   | Labels to add to the resulting Pods of the Deployment.                                      | `{}`                                   |
+| `llamaParseOcr.podSecurityContext`                          | Pod security context                                                                        | `{}`                                   |
+| `llamaParseOcr.securityContext`                             | Security context for the container                                                          | `{}`                                   |
+| `llamaParseOcr.extraEnvVariables`                           | Extra environment variables to add to llamaParseOcr pods                                    | `[]`                                   |
+| `llamaParseOcr.resources.requests.memory`                   | Memory request for the LlamaParse container                                                 | `12Gi`                                 |
+| `llamaParseOcr.resources.requests.cpu`                      | CPU request for the LlamaParse container                                                    | `2`                                    |
+| `llamaParseOcr.resources.limits.memory`                     | Memory limit for the LlamaParse container                                                   | `16Gi`                                 |
+| `llamaParseOcr.resources.limits.cpu`                        | CPU limit for the LlamaParse container                                                      | `4`                                    |
+| `llamaParseOcr.livenessProbe.httpGet.path`                  | Path to hit for the liveness probe                                                          | `/health_check`                        |
+| `llamaParseOcr.livenessProbe.httpGet.port`                  | Port to hit for the liveness probe                                                          | `8080`                                 |
+| `llamaParseOcr.livenessProbe.httpGet.scheme`                | Scheme to use for the liveness probe                                                        | `HTTP`                                 |
+| `llamaParseOcr.livenessProbe.initialDelaySeconds`           | Number of seconds after the container has started before liveness probes are initiated      | `30`                                   |
+| `llamaParseOcr.livenessProbe.periodSeconds`                 | How often (in seconds) to perform the probe                                                 | `15`                                   |
+| `llamaParseOcr.livenessProbe.timeoutSeconds`                | Number of seconds after which the probe times out                                           | `120`                                  |
+| `llamaParseOcr.livenessProbe.failureThreshold`              | Minimum consecutive failures for the probe to be considered failed after having succeeded   | `3`                                    |
+| `llamaParseOcr.livenessProbe.successThreshold`              | Minimum consecutive successes for the probe to be considered successful after having failed | `1`                                    |
+| `llamaParseOcr.readinessProbe.httpGet.path`                 | Path to hit for the readiness probe                                                         | `/health_check`                        |
+| `llamaParseOcr.readinessProbe.httpGet.port`                 | Port to hit for the readiness probe                                                         | `8080`                                 |
+| `llamaParseOcr.readinessProbe.httpGet.scheme`               | Scheme to use for the readiness probe                                                       | `HTTP`                                 |
+| `llamaParseOcr.readinessProbe.initialDelaySeconds`          | Number of seconds after the container has started before readiness probes are initiated     | `30`                                   |
+| `llamaParseOcr.readinessProbe.periodSeconds`                | How often (in seconds) to perform the probe                                                 | `15`                                   |
+| `llamaParseOcr.readinessProbe.timeoutSeconds`               | Number of seconds after which the probe times out                                           | `120`                                  |
+| `llamaParseOcr.readinessProbe.failureThreshold`             | Minimum consecutive failures for the probe to be considered failed after having succeeded   | `3`                                    |
+| `llamaParseOcr.readinessProbe.successThreshold`             | Minimum consecutive successes for the probe to be considered successful after having failed | `1`                                    |
+| `llamaParseOcr.autoscaling.enabled`                         | Enable autoscaling for the LlamaParseOcr Deployment                                         | `true`                                 |
+| `llamaParseOcr.autoscaling.minReplicas`                     | Minimum number of replicas for the LlamaParseOcr Deployment                                 | `2`                                    |
+| `llamaParseOcr.autoscaling.maxReplicas`                     | Maximum number of replicas for the LlamaParseOcr Deployment                                 | `10`                                   |
+| `llamaParseOcr.autoscaling.targetCPUUtilizationPercentage`  | Target CPU utilization percentage for the LlamaParseOcr Deployment                          | `80`                                   |
+| `llamaParseOcr.podDisruptionBudget.enabled`                 | Enable PodDisruptionBudget for the LlamaParseOcr Deployment                                 | `true`                                 |
+| `llamaParseOcr.podDisruptionBudget.maxUnavailable`          | Maximum number of unavailable pods                                                          | `1`                                    |
+| `llamaParseOcr.volumes`                                     | List of volumes that can be mounted by containers belonging to the pod                      | `[]`                                   |
+| `llamaParseOcr.volumeMounts`                                | List of volumeMounts that can be mounted by containers belonging to the pod                 | `[]`                                   |
+| `llamaParseOcr.nodeSelector`                                | Node labels for pod assignment                                                              | `{}`                                   |
+| `llamaParseOcr.tolerations`                                 | Taints to tolerate on node assignment:                                                      | `[]`                                   |
+| `llamaParseOcr.affinity`                                    | Pod scheduling constraints                                                                  | `{}`                                   |
 
 ### LlamaParsePdf Configuration
 
-| Name                                               | Description                                                                                                       | Value                         |
-| -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ----------------------------- |
-| `usage.name`                                       | Name suffix of the usage related resources                                                                        | `usage`                       |
-| `usage.replicas`                                   | Number of replicas of usage Deployment                                                                            | `1`                           |
-| `usage.image.registry`                             | Usage Image registry                                                                                              | `docker.io`                   |
-| `usage.image.repository`                           | Usage Image repository                                                                                            | `llamaindex/llamacloud-usage` |
-| `usage.image.tag`                                  | Usage Image tag                                                                                                   | `0.1.43`                      |
-| `usage.image.pullPolicy`                           | Usage Image pull policy                                                                                           | `IfNotPresent`                |
-| `usage.service.type`                               | Usage Service type                                                                                                | `ClusterIP`                   |
-| `usage.service.port`                               | Usage Service port                                                                                                | `8005`                        |
-| `usage.serviceAccount.create`                      | Whether or not to create a new service account                                                                    | `true`                        |
-| `usage.serviceAccount.name`                        | Name of the service account                                                                                       | `""`                          |
-| `usage.serviceAccount.labels`                      | Labels to add to the service account                                                                              | `{}`                          |
-| `usage.serviceAccount.annotations`                 | Annotations to add to the service account                                                                         | `{}`                          |
-| `usage.containerPort`                              | Port to expose on the usage container                                                                             | `8005`                        |
-| `usage.labels`                                     | Labels added to the usage Deployment.                                                                             | `{}`                          |
-| `usage.annotations`                                | Annotations added to the usage Deployment.                                                                        | `{}`                          |
-| `usage.extraEnvVariables`                          | Extra environment variables to add to usage pods                                                                  | `[]`                          |
-| `usage.externalSecrets.enabled`                    | Enable external secrets for the Usage Deployment                                                                  | `false`                       |
-| `usage.externalSecrets.secrets`                    | List of external secrets to load environment variables from                                                       | `[]`                          |
-| `usage.podAnnotations`                             | Annotations to add to the resulting Pods of the Deployment.                                                       | `{}`                          |
-| `usage.podLabels`                                  | Labels to add to the resulting Pods of the Deployment.                                                            | `{}`                          |
-| `usage.podSecurityContext`                         | Pod security context                                                                                              | `{}`                          |
-| `usage.securityContext`                            | Security context for the container                                                                                | `{}`                          |
-| `usage.resources`                                  | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | `{}`                          |
-| `usage.livenessProbe.httpGet.path`                 | Path to hit for the liveness probe                                                                                | `/health_check`               |
-| `usage.livenessProbe.httpGet.port`                 | Port to hit for the liveness probe                                                                                | `8005`                        |
-| `usage.livenessProbe.httpGet.scheme`               | Scheme to use for the liveness probe                                                                              | `HTTP`                        |
-| `usage.livenessProbe.initialDelaySeconds`          | Number of seconds after the container has started before liveness probes are initiated                            | `30`                          |
-| `usage.livenessProbe.periodSeconds`                | How often (in seconds) to perform the probe                                                                       | `15`                          |
-| `usage.livenessProbe.timeoutSeconds`               | Number of seconds after which the probe times out                                                                 | `5`                           |
-| `usage.livenessProbe.failureThreshold`             | Minimum consecutive failures for the probe to be considered failed after having succeeded                         | `5`                           |
-| `usage.livenessProbe.successThreshold`             | Minimum consecutive successes for the probe to be considered successful after having failed                       | `1`                           |
-| `usage.readinessProbe.httpGet.path`                | Path to hit for the liveness probe                                                                                | `/health_check`               |
-| `usage.readinessProbe.httpGet.port`                | Port to hit for the liveness probe                                                                                | `8005`                        |
-| `usage.readinessProbe.httpGet.scheme`              | Scheme to use for the liveness probe                                                                              | `HTTP`                        |
-| `usage.readinessProbe.initialDelaySeconds`         | Number of seconds after the container has started before liveness probes are initiated                            | `30`                          |
-| `usage.readinessProbe.periodSeconds`               | How often (in seconds) to perform the probe                                                                       | `15`                          |
-| `usage.readinessProbe.timeoutSeconds`              | Number of seconds after which the probe times out                                                                 | `5`                           |
-| `usage.readinessProbe.failureThreshold`            | Minimum consecutive failures for the probe to be considered failed after having succeeded                         | `5`                           |
-| `usage.readinessProbe.successThreshold`            | Minimum consecutive successes for the probe to be considered successful after having failed                       | `1`                           |
-| `usage.autoscaling.enabled`                        | Enable autoscaling for the Usage Deployment                                                                       | `false`                       |
-| `usage.autoscaling.minReplicas`                    | Minimum number of replicas for the Usage Deployment                                                               | `1`                           |
-| `usage.autoscaling.maxReplicas`                    | Maximum number of replicas for the Usage Deployment                                                               | `4`                           |
-| `usage.autoscaling.targetCPUUtilizationPercentage` | Target CPU utilization percentage for the Usage Deployment                                                        | `80`                          |
-| `usage.volumes`                                    | List of volumes that can be mounted by containers belonging to the pod                                            | `[]`                          |
-| `usage.volumeMounts`                               | List of volumeMounts that can be mounted by containers belonging to the pod                                       | `[]`                          |
-| `usage.nodeSelector`                               | Node labels for pod assignment                                                                                    | `{}`                          |
-| `usage.tolerations`                                | Taints to tolerate on node assignment:                                                                            | `[]`                          |
-| `usage.affinity`                                   | Pod scheduling constraints                                                                                        | `{}`                          |
+| Name                                                | Description                                                                                                       | Value                         |
+| --------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ----------------------------- |
+| `usage.name`                                        | Name suffix of the usage related resources                                                                        | `usage`                       |
+| `usage.replicas`                                    | Number of replicas of usage Deployment                                                                            | `1`                           |
+| `usage.image.registry`                              | Usage Image registry                                                                                              | `docker.io`                   |
+| `usage.image.repository`                            | Usage Image repository                                                                                            | `llamaindex/llamacloud-usage` |
+| `usage.image.tag`                                   | Usage Image tag                                                                                                   | `0.1.43`                      |
+| `usage.image.pullPolicy`                            | Usage Image pull policy                                                                                           | `IfNotPresent`                |
+| `usage.service.type`                                | Usage Service type                                                                                                | `ClusterIP`                   |
+| `usage.service.port`                                | Usage Service port                                                                                                | `8005`                        |
+| `usage.serviceAccount.create`                       | Whether or not to create a new service account                                                                    | `true`                        |
+| `usage.serviceAccount.name`                         | Name of the service account                                                                                       | `""`                          |
+| `usage.serviceAccount.labels`                       | Labels to add to the service account                                                                              | `{}`                          |
+| `usage.serviceAccount.annotations`                  | Annotations to add to the service account                                                                         | `{}`                          |
+| `usage.serviceAccount.automountServiceAccountToken` | Automount token to service account                                                                                | `true`                        |
+| `usage.containerPort`                               | Port to expose on the usage container                                                                             | `8005`                        |
+| `usage.labels`                                      | Labels added to the usage Deployment.                                                                             | `{}`                          |
+| `usage.annotations`                                 | Annotations added to the usage Deployment.                                                                        | `{}`                          |
+| `usage.extraEnvVariables`                           | Extra environment variables to add to usage pods                                                                  | `[]`                          |
+| `usage.externalSecrets.enabled`                     | Enable external secrets for the Usage Deployment                                                                  | `false`                       |
+| `usage.externalSecrets.secrets`                     | List of external secrets to load environment variables from                                                       | `[]`                          |
+| `usage.podAnnotations`                              | Annotations to add to the resulting Pods of the Deployment.                                                       | `{}`                          |
+| `usage.podLabels`                                   | Labels to add to the resulting Pods of the Deployment.                                                            | `{}`                          |
+| `usage.podSecurityContext`                          | Pod security context                                                                                              | `{}`                          |
+| `usage.securityContext`                             | Security context for the container                                                                                | `{}`                          |
+| `usage.resources`                                   | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | `{}`                          |
+| `usage.livenessProbe.httpGet.path`                  | Path to hit for the liveness probe                                                                                | `/health_check`               |
+| `usage.livenessProbe.httpGet.port`                  | Port to hit for the liveness probe                                                                                | `8005`                        |
+| `usage.livenessProbe.httpGet.scheme`                | Scheme to use for the liveness probe                                                                              | `HTTP`                        |
+| `usage.livenessProbe.initialDelaySeconds`           | Number of seconds after the container has started before liveness probes are initiated                            | `30`                          |
+| `usage.livenessProbe.periodSeconds`                 | How often (in seconds) to perform the probe                                                                       | `15`                          |
+| `usage.livenessProbe.timeoutSeconds`                | Number of seconds after which the probe times out                                                                 | `5`                           |
+| `usage.livenessProbe.failureThreshold`              | Minimum consecutive failures for the probe to be considered failed after having succeeded                         | `5`                           |
+| `usage.livenessProbe.successThreshold`              | Minimum consecutive successes for the probe to be considered successful after having failed                       | `1`                           |
+| `usage.readinessProbe.httpGet.path`                 | Path to hit for the liveness probe                                                                                | `/health_check`               |
+| `usage.readinessProbe.httpGet.port`                 | Port to hit for the liveness probe                                                                                | `8005`                        |
+| `usage.readinessProbe.httpGet.scheme`               | Scheme to use for the liveness probe                                                                              | `HTTP`                        |
+| `usage.readinessProbe.initialDelaySeconds`          | Number of seconds after the container has started before liveness probes are initiated                            | `30`                          |
+| `usage.readinessProbe.periodSeconds`                | How often (in seconds) to perform the probe                                                                       | `15`                          |
+| `usage.readinessProbe.timeoutSeconds`               | Number of seconds after which the probe times out                                                                 | `5`                           |
+| `usage.readinessProbe.failureThreshold`             | Minimum consecutive failures for the probe to be considered failed after having succeeded                         | `5`                           |
+| `usage.readinessProbe.successThreshold`             | Minimum consecutive successes for the probe to be considered successful after having failed                       | `1`                           |
+| `usage.autoscaling.enabled`                         | Enable autoscaling for the Usage Deployment                                                                       | `false`                       |
+| `usage.autoscaling.minReplicas`                     | Minimum number of replicas for the Usage Deployment                                                               | `1`                           |
+| `usage.autoscaling.maxReplicas`                     | Maximum number of replicas for the Usage Deployment                                                               | `4`                           |
+| `usage.autoscaling.targetCPUUtilizationPercentage`  | Target CPU utilization percentage for the Usage Deployment                                                        | `80`                          |
+| `usage.volumes`                                     | List of volumes that can be mounted by containers belonging to the pod                                            | `[]`                          |
+| `usage.volumeMounts`                                | List of volumeMounts that can be mounted by containers belonging to the pod                                       | `[]`                          |
+| `usage.nodeSelector`                                | Node labels for pod assignment                                                                                    | `{}`                          |
+| `usage.tolerations`                                 | Taints to tolerate on node assignment:                                                                            | `[]`                          |
+| `usage.affinity`                                    | Pod scheduling constraints                                                                                        | `{}`                          |
 
 ### S3Proxy Configuration
 
-| Name                                                 | Description                                                                                                       | Value                |
-| ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | -------------------- |
-| `s3proxy.enabled`                                    | Enable s3proxy Deployment                                                                                         | `true`               |
-| `s3proxy.name`                                       | Name suffix of the s3proxy related resources                                                                      | `s3proxy`            |
-| `s3proxy.config`                                     | s3proxy configuration to enable s3proxy features                                                                  | `{}`                 |
-| `s3proxy.replicas`                                   | Number of replicas of s3proxy Deployment                                                                          | `1`                  |
-| `s3proxy.image.registry`                             | s3proxy Image registry                                                                                            | `docker.io`          |
-| `s3proxy.image.repository`                           | s3proxy Image repository                                                                                          | `andrewgaul/s3proxy` |
-| `s3proxy.image.tag`                                  | s3proxy Image tag                                                                                                 | `sha-82e50ee`        |
-| `s3proxy.image.pullPolicy`                           | s3proxy Image pull policy                                                                                         | `IfNotPresent`       |
-| `s3proxy.service.type`                               | s3proxy Service type                                                                                              | `ClusterIP`          |
-| `s3proxy.service.port`                               | s3proxy Service port                                                                                              | `80`                 |
-| `s3proxy.serviceAccount.create`                      | Whether or not to create a new service account                                                                    | `true`               |
-| `s3proxy.serviceAccount.name`                        | Name of the service account                                                                                       | `""`                 |
-| `s3proxy.serviceAccount.labels`                      | Labels to add to the service account                                                                              | `{}`                 |
-| `s3proxy.serviceAccount.annotations`                 | Annotations to add to the service account                                                                         | `{}`                 |
-| `s3proxy.containerPort`                              | Port to expose on the s3proxy container                                                                           | `80`                 |
-| `s3proxy.labels`                                     | Labels added to the s3proxy Deployment.                                                                           | `{}`                 |
-| `s3proxy.annotations`                                | Annotations added to the s3proxy Deployment.                                                                      | `{}`                 |
-| `s3proxy.extraEnvVariables`                          | Extra environment variables to add to s3proxy pods                                                                | `[]`                 |
-| `s3proxy.envFromSecretName`                          | Name of the secret to use for environment variables                                                               | `""`                 |
-| `s3proxy.envFromConfigMapName`                       | Name of the config map to use for environment variables                                                           | `""`                 |
-| `s3proxy.podAnnotations`                             | Annotations to add to the resulting Pods of the Deployment.                                                       | `{}`                 |
-| `s3proxy.podLabels`                                  | Labels to add to the resulting Pods of the Deployment.                                                            | `{}`                 |
-| `s3proxy.podSecurityContext`                         | Pod security context                                                                                              | `{}`                 |
-| `s3proxy.securityContext`                            | Security context for the container                                                                                | `{}`                 |
-| `s3proxy.resources`                                  | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | `{}`                 |
-| `s3proxy.autoscaling.enabled`                        | Enable autoscaling for the s3proxy Deployment                                                                     | `false`              |
-| `s3proxy.autoscaling.minReplicas`                    | Minimum number of replicas for the s3proxy Deployment                                                             | `1`                  |
-| `s3proxy.autoscaling.maxReplicas`                    | Maximum number of replicas for the s3proxy Deployment                                                             | `4`                  |
-| `s3proxy.autoscaling.targetCPUUtilizationPercentage` | Target CPU utilization percentage for the s3proxy Deployment                                                      | `80`                 |
-| `s3proxy.nodeSelector`                               | Node labels for pod assignment                                                                                    | `{}`                 |
-| `s3proxy.tolerations`                                | Taints to tolerate on node assignment:                                                                            | `[]`                 |
-| `s3proxy.affinity`                                   | Pod scheduling constraints                                                                                        | `{}`                 |
+| Name                                                  | Description                                                                                                       | Value                |
+| ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | -------------------- |
+| `s3proxy.enabled`                                     | Enable s3proxy Deployment                                                                                         | `true`               |
+| `s3proxy.name`                                        | Name suffix of the s3proxy related resources                                                                      | `s3proxy`            |
+| `s3proxy.config`                                      | s3proxy configuration to enable s3proxy features                                                                  | `{}`                 |
+| `s3proxy.replicas`                                    | Number of replicas of s3proxy Deployment                                                                          | `1`                  |
+| `s3proxy.image.registry`                              | s3proxy Image registry                                                                                            | `docker.io`          |
+| `s3proxy.image.repository`                            | s3proxy Image repository                                                                                          | `andrewgaul/s3proxy` |
+| `s3proxy.image.tag`                                   | s3proxy Image tag                                                                                                 | `sha-82e50ee`        |
+| `s3proxy.image.pullPolicy`                            | s3proxy Image pull policy                                                                                         | `IfNotPresent`       |
+| `s3proxy.service.type`                                | s3proxy Service type                                                                                              | `ClusterIP`          |
+| `s3proxy.service.port`                                | s3proxy Service port                                                                                              | `80`                 |
+| `s3proxy.serviceAccount.create`                       | Whether or not to create a new service account                                                                    | `true`               |
+| `s3proxy.serviceAccount.name`                         | Name of the service account                                                                                       | `""`                 |
+| `s3proxy.serviceAccount.labels`                       | Labels to add to the service account                                                                              | `{}`                 |
+| `s3proxy.serviceAccount.annotations`                  | Annotations to add to the service account                                                                         | `{}`                 |
+| `s3proxy.serviceAccount.automountServiceAccountToken` | Automount token to service account                                                                                | `{}`                 |
+| `s3proxy.containerPort`                               | Port to expose on the s3proxy container                                                                           | `80`                 |
+| `s3proxy.labels`                                      | Labels added to the s3proxy Deployment.                                                                           | `{}`                 |
+| `s3proxy.annotations`                                 | Annotations added to the s3proxy Deployment.                                                                      | `{}`                 |
+| `s3proxy.extraEnvVariables`                           | Extra environment variables to add to s3proxy pods                                                                | `[]`                 |
+| `s3proxy.envFromSecretName`                           | Name of the secret to use for environment variables                                                               | `""`                 |
+| `s3proxy.envFromConfigMapName`                        | Name of the config map to use for environment variables                                                           | `""`                 |
+| `s3proxy.podAnnotations`                              | Annotations to add to the resulting Pods of the Deployment.                                                       | `{}`                 |
+| `s3proxy.podLabels`                                   | Labels to add to the resulting Pods of the Deployment.                                                            | `{}`                 |
+| `s3proxy.podSecurityContext`                          | Pod security context                                                                                              | `{}`                 |
+| `s3proxy.securityContext`                             | Security context for the container                                                                                | `{}`                 |
+| `s3proxy.resources`                                   | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | `{}`                 |
+| `s3proxy.autoscaling.enabled`                         | Enable autoscaling for the s3proxy Deployment                                                                     | `false`              |
+| `s3proxy.autoscaling.minReplicas`                     | Minimum number of replicas for the s3proxy Deployment                                                             | `1`                  |
+| `s3proxy.autoscaling.maxReplicas`                     | Maximum number of replicas for the s3proxy Deployment                                                             | `4`                  |
+| `s3proxy.autoscaling.targetCPUUtilizationPercentage`  | Target CPU utilization percentage for the s3proxy Deployment                                                      | `80`                 |
+| `s3proxy.nodeSelector`                                | Node labels for pod assignment                                                                                    | `{}`                 |
+| `s3proxy.tolerations`                                 | Taints to tolerate on node assignment:                                                                            | `[]`                 |
+| `s3proxy.affinity`                                    | Pod scheduling constraints                                                                                        | `{}`                 |
 
 ### Dependencies Configuration
 
@@ -556,4 +564,3 @@ For more information about using this chart, feel free to visit the [Official Ll
 | `redis.enabled`                                | Enable Redis                           | `true`       |
 | `redis.auth.enabled`                           | Enable Redis Auth (DO NOT SET TO TRUE) | `false`      |
 | `rabbitmq.enabled`                             | Enable RabbitMQ                        | `true`       |
-
