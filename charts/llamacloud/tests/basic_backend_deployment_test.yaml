@@ -12,7 +12,7 @@ tests:
         of: Deployment
     - equal:
         path: .spec.template.spec.containers[0].image
-        value: llamaindex/llamacloud-backend:latest
+        value: docker.io/llamaindex/llamacloud-backend:latest
 
 - it: should use an external secret name for the license key if it is set
   set:
