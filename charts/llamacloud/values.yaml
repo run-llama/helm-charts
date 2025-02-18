@@ -1037,6 +1037,8 @@ llamaParse:
 
 ## @section LlamaParseOcr Configuration
 llamaParseOcr:
+  ## @param llamaParseOcr.enabled Enable LlamaParseOcr
+  enabled: true
   ## @param llamaParseOcr.name Name suffix of the LlamaParseOcr related resources
   name: llamaparse-ocr
 

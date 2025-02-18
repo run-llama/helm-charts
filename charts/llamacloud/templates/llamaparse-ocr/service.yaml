@@ -1,3 +1,4 @@
+{{- if .Values.llamaParseOcr.enabled }}
 apiVersion: v1
 kind: Service
 metadata:
@@ -22,3 +23,4 @@ spec:
   selector:
     {{- include "llamacloud.selectorLabels" . | nindent 4 }}
     app.kubernetes.io/component: {{ include "llamacloud.fullname" . }}-{{ .Values.llamaParseOcr.name }}
+{{- end }}
