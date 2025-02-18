@@ -48,7 +48,7 @@ spec:
         - name: {{ .Values.llamaParse.name }}
           securityContext:
             {{- toYaml .Values.llamaParse.securityContext | nindent 12 }}
-          image: "{{ .Values.llamaParse.image.repository }}:{{ .Values.llamaParse.image.tag | default .Chart.AppVersion }}"
+          image: "{{ .Values.llamaParse.image.registry }}/{{ .Values.llamaParse.image.repository }}:{{ .Values.llamaParse.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.llamaParse.image.pullPolicy }}
           command: ["pnpm", "start", "2>&1"]
           livenessProbe:
