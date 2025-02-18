@@ -48,7 +48,7 @@ Common annotations
 {{- define "llamacloud.annotations" -}}
 {{- if .Values.commonAnnotations }}
 {{ toYaml .Values.commonAnnotations }}
-{{- end }}
+{{- end -}}
 helm.sh/chart: {{ include "llamacloud.chart" . }}
 {{ include "llamacloud.selectorLabels" . }}
 {{- if .Chart.AppVersion }}

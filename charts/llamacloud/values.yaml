@@ -157,6 +157,7 @@ frontend:
     name: ""
     labels: {}
     annotations: {}
+    automountServiceAccountToken: true
 
   ## @param frontend.labels Labels added to the Frontend Deployment.
   labels: {}
@@ -330,6 +331,7 @@ backend:
     name: ""
     labels: {}
     annotations: {}
+    automountServiceAccountToken: true
 
   ## @param backend.labels Labels added to the Backend Deployment.
   labels: {}
@@ -513,6 +515,7 @@ jobsService:
     name: ""
     labels: {}
     annotations: {}
+    automountServiceAccountToken: true
 
   ## @param jobsService.containerPort Port to expose on the JobsService container
   ## Ref: https://kubernetes.io/docs/tutorials/services/connect-applications-service/#exposing-pods-to-the-cluster
@@ -682,6 +685,7 @@ jobsWorker:
     name: ""
     labels: {}
     annotations: {}
+    automountServiceAccountToken: true
 
   ## @param jobsWorker.labels Labels added to the JobsWorker Deployment.
   labels: {}
@@ -896,6 +900,7 @@ llamaParse:
     name: ""
     labels: {}
     annotations: {}
+    automountServiceAccountToken: true
 
   ## @param llamaParse.labels Labels added to the LlamaParse Deployment.
   labels: {}
@@ -1066,6 +1071,7 @@ llamaParseOcr:
     name: ""
     labels: {}
     annotations: {}
+    automountServiceAccountToken: true
 
   ## @param llamaParseOcr.containerPort Port to expose on the LlamaParseOcr container
   ## Ref: https://kubernetes.io/docs/tutorials/services/connect-applications-service/#exposing-pods-to-the-cluster
@@ -1229,6 +1235,7 @@ usage:
     name: ""
     labels: {}
     annotations: {}
+    automountServiceAccountToken: true
 
   ## @param usage.containerPort Port to expose on the usage container
   ## Ref: https://kubernetes.io/docs/tutorials/services/connect-applications-service/#exposing-pods-to-the-cluster
@@ -1412,6 +1419,7 @@ s3proxy:
     name: ""
     labels: {}
     annotations: {}
+    automountServiceAccountToken: true
 
   ## @param s3proxy.containerPort Port to expose on the s3proxy container
   ## Ref: https://kubernetes.io/docs/tutorials/services/connect-applications-service/#exposing-pods-to-the-cluster
