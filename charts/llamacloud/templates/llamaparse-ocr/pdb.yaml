@@ -1,3 +1,4 @@
+{{- if .Values.llamaParseOcr.enabled }}
 {{- if .Values.llamaParseOcr.podDisruptionBudget.enabled }}
 apiVersion: policy/v1
 kind: PodDisruptionBudget
@@ -10,4 +11,5 @@ spec:
   selector:
     matchLabels:
       app.kubernetes.io/component: {{ include "llamacloud.fullname" . }}-{{ .Values.llamaParseOcr.name }}
+{{- end }}
 {{- end }}

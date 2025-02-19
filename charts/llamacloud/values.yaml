@@ -152,6 +152,7 @@ frontend:
   ## @param frontend.serviceAccount.name Name of the service account
   ## @param frontend.serviceAccount.labels Labels to add to the service account
   ## @param frontend.serviceAccount.annotations Annotations to add to the service account
+  ## @param frontend.serviceAccount.automountServiceAccountToken Whether or not to automount the service account token
   serviceAccount:
     create: true
     name: ""
@@ -327,6 +328,7 @@ backend:
     ## @param backend.serviceAccount.name Name of the service account
     ## @param backend.serviceAccount.labels Labels to add to the service account
     ## @param backend.serviceAccount.annotations Annotations to add to the service account
+    ## @param backend.serviceAccount.automountServiceAccountToken Whether or not to automount the service account token
     create: true
     name: ""
     labels: {}
@@ -422,7 +424,6 @@ backend:
   startupProbe:
     ## @param backend.startupProbe.httpGet.path Path to hit for the startup probe
     ## @param backend.startupProbe.httpGet.port Port to hit for the startup probe
-    ## @param backend.startupProbe.initialDelaySeconds Number of seconds after the container has started before startup probes are initiated
     ## @param backend.startupProbe.periodSeconds How often (in seconds) to perform the probe
     ## @param backend.startupProbe.timeoutSeconds Number of seconds after which the probe times out
     ## @param backend.startupProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
@@ -510,6 +511,7 @@ jobsService:
   ## @param jobsService.serviceAccount.name Name of the service account
   ## @param jobsService.serviceAccount.labels Labels to add to the service account
   ## @param jobsService.serviceAccount.annotations Annotations to add to the service account
+  ## @param jobsService.serviceAccount.automountServiceAccountToken Whether or not to automount the service account token
   serviceAccount:
     create: true
     name: ""
@@ -602,7 +604,6 @@ jobsService:
     ## @param jobsService.startupProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
     ## @param jobsService.startupProbe.httpGet.path Path to hit for the readiness probe
     ## @param jobsService.startupProbe.httpGet.port Port to hit for the readiness probe
-    ## @param jobsService.startupProbe.initialDelaySeconds Number of seconds after the container has started before readiness probes are initiated
     ## @param jobsService.startupProbe.periodSeconds How often (in seconds) to perform the probe
     ## @param jobsService.startupProbe.timeoutSeconds Number of seconds after which the probe times out
     failureThreshold: 30
@@ -680,6 +681,7 @@ jobsWorker:
   ## @param jobsWorker.serviceAccount.name Name of the service account
   ## @param jobsWorker.serviceAccount.labels Labels to add to the service account
   ## @param jobsWorker.serviceAccount.annotations Annotations to add to the service account
+  ## @param jobsWorker.serviceAccount.automountServiceAccountToken Whether or not to automount the service account token
   serviceAccount:
     create: true
     name: ""
@@ -779,7 +781,6 @@ jobsWorker:
   startupProbe:
     ## @param jobsWorker.startupProbe.httpGet.path Path to hit for the liveness probe
     ## @param jobsWorker.startupProbe.httpGet.port Port to hit for the liveness probe
-    ## @param jobsWorker.startupProbe.initialDelaySeconds Number of seconds after the container has started before liveness probes are initiated
     ## @param jobsWorker.startupProbe.periodSeconds How often (in seconds) to perform the probe
     ## @param jobsWorker.startupProbe.timeoutSeconds Number of seconds after which the probe times out
     ## @param jobsWorker.startupProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
@@ -895,6 +896,7 @@ llamaParse:
   ## @param llamaParse.serviceAccount.name Name of the service account
   ## @param llamaParse.serviceAccount.labels Labels to add to the service account
   ## @param llamaParse.serviceAccount.annotations Annotations to add to the service account
+  ## @param llamaParse.serviceAccount.automountServiceAccountToken Whether or not to automount the service account token
   serviceAccount:
     create: true
     name: ""
@@ -1037,6 +1039,8 @@ llamaParse:
 
 ## @section LlamaParseOcr Configuration
 llamaParseOcr:
+  ## @param llamaParseOcr.enabled Enable LlamaParseOcr
+  enabled: true
   ## @param llamaParseOcr.name Name suffix of the LlamaParseOcr related resources
   name: llamaparse-ocr
 
@@ -1066,6 +1070,7 @@ llamaParseOcr:
   ## @param llamaParseOcr.serviceAccount.name Name of the service account
   ## @param llamaParseOcr.serviceAccount.labels Labels to add to the service account
   ## @param llamaParseOcr.serviceAccount.annotations Annotations to add to the service account
+  ## @param llamaParseOcr.serviceAccount.automountServiceAccountToken Whether or not to automount the service account token
   serviceAccount:
     create: true
     name: ""
@@ -1230,6 +1235,7 @@ usage:
   ## @param usage.serviceAccount.name Name of the service account
   ## @param usage.serviceAccount.labels Labels to add to the service account
   ## @param usage.serviceAccount.annotations Annotations to add to the service account
+  ## @param usage.serviceAccount.automountServiceAccountToken Whether or not to automount the service account token
   serviceAccount:
     create: true
     name: ""
@@ -1414,6 +1420,7 @@ s3proxy:
   ## @param s3proxy.serviceAccount.name Name of the service account
   ## @param s3proxy.serviceAccount.labels Labels to add to the service account
   ## @param s3proxy.serviceAccount.annotations Annotations to add to the service account
+  ## @param s3proxy.serviceAccount.automountServiceAccountToken Whether or not to automount the service account token
   serviceAccount:
     create: true
     name: ""
