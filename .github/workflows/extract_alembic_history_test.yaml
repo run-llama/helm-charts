@@ -31,5 +31,6 @@ jobs:
 
       - name: Run Extract Alembic History Script
         run: |
+          echo "Testing Extract Alembic History Script for chart version $CHART_VERSION"
           chmod +x scripts/extract_alembic_history.sh
           ./scripts/extract_alembic_history.sh $CHART_VERSION

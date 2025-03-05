@@ -33,6 +33,7 @@ fi
 printf "\n\n\n"
 if [ -z "$LATEST_VERSION" ] || [ -z "$(echo $LATEST_VERSION | xargs)" ]; then
   echo "Error: Alembic version extraction didn't work. You may want to debug by checking the above output from the script."
+  exit 1
 else
   echo "Latest alembic version for helm chart version $HELM_CHART_VERSION: $LATEST_VERSION"
 fi
