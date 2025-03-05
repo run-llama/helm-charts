@@ -12,6 +12,7 @@ IMAGE_NAME="llamaindex/llamacloud-backend:$HELM_CHART_VERSION"
 # Pull the Docker image and capture the output
 echo "Pulling Docker image: $IMAGE_NAME"
 PULL_OUTPUT=$(docker pull $IMAGE_NAME)
+echo "$PULL_OUTPUT"  # for debugging
 
 # Run the script inside the Docker container and capture the output
 LATEST_VERSION=$(docker run --rm \
