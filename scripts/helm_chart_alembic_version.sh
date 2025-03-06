@@ -1,18 +1,48 @@
 #!/bin/bash
 
-# Check if a version argument is provided
-if [ -z "$1" ]; then
-  echo "Usage: $0 <helm-chart-version>"
+# Function to display usage information
+usage() {
+  echo "Usage: $0 <helm-chart-version> [--image <image-name>]"
   exit 1
+}
+
+# Check if at least one argument is provided
+if [ $# -eq 0 ]; then
+  usage
 fi
 
-HELM_CHART_VERSION=$1
-IMAGE_NAME="llamaindex/llamacloud-backend:$HELM_CHART_VERSION"
+# Initialize variables
+HELM_CHART_VERSION=""
+IMAGE_NAME=""
+
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --image)
+      IMAGE_NAME="$2"
+      shift 2
+      ;;
+    *)
+      if [ -z "$HELM_CHART_VERSION" ]; then
+        HELM_CHART_VERSION="$1"
+        IMAGE_NAME="llamaindex/llamacloud-backend:$HELM_CHART_VERSION"
+      else
+        usage
+      fi
+      shift
+      ;;
+  esac
+done
+
+# Ensure IMAGE_NAME is set
+if [ -z "$IMAGE_NAME" ]; then
+  echo "Error: No image name provided."
+  usage
+fi
 
 # Pull the Docker image and capture the output
 echo "Pulling Docker image: $IMAGE_NAME"
 PULL_OUTPUT=$(docker pull $IMAGE_NAME)
-echo "$PULL_OUTPUT"  # for debugging
 
 # Run the script inside the Docker container and capture the output
 LATEST_VERSION=$(docker run --rm \
