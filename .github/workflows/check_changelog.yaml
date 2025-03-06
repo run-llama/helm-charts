@@ -8,7 +8,7 @@ on:
 
 jobs:
   check-changelog:
-    name: "Check if Helm Chart version is logged in CHANGELOG.md"
+    name: "Check Changelog"
     runs-on: ubuntu-latest
 
     steps:

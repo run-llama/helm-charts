@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## [0.1.46] - 2025-02-05
+
+- TEST
+
 ## [0.1.41] - 2025-01-02
 
 - Allow configurability of Mongo Connection limits via `MONGODB_CONNECTION_MAX_POOL_SIZE` environment variable.
