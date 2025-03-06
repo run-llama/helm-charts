@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## [0.1.47] - 2025-01-02
+
+- Scalability improvements for specific API based data-sources
+- Bug fixes
+
 ## [0.1.41] - 2025-01-02
 
 - Allow configurability of Mongo Connection limits via `MONGODB_CONNECTION_MAX_POOL_SIZE` environment variable.
