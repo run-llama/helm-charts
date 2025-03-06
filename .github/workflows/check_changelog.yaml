@@ -1,0 +1,38 @@
+name: Check Changelog
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  check-changelog:
+    name: "Check Changelog"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract Helm Chart Version
+        id: extract-version
+        run: |
+          # Extract the version from Chart.yaml
+          version=$(grep '^version:' charts/llamacloud/Chart.yaml | awk '{print $2}')
+          echo "Helm Chart version: $version"
+          echo "::set-output name=version::$version"
+
+      - name: Check CHANGELOG.md
+        id: check-changelog
+        run: |
+          # Check if the version exists in CHANGELOG.md
+          version=${{ steps.extract-version.outputs.version }}
+          if ! grep -q "## \[$version\]" CHANGELOG.md; then
+            echo "Version $version not found in CHANGELOG.md"
+            exit 1
+          else
+            echo "Version $version is logged in CHANGELOG.md"
+          fi
