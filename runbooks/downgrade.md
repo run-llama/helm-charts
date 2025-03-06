@@ -20,8 +20,9 @@ This script will simply print out this alembic migration version for a given hel
 1. Run the downgrade command on the backend pod
     - Assuming the helm chart is deployed in a namespace named `llamacloud`, here are some commands for doing this:
         - List the pods: `kubectl get po -n llamacloud`
-        - Copy a single pod name with the name prefix of `llamacloud-backend-`
+        - In the list of pods, find a pod whose name starts with `llamacloud-backend-` and copy its name
         - Run the downgrade command: `kubectl exec -n llamacloud -it <copied pod name> -- alembic downgrade <alembic version copied in prior step>`
+            - e.g. `kubectl exec -n llamacloud -it llamacloud-backend-58b75b89c6-74847 -- alembic downgrade f43d21f9cdb8`
             - **NOTE:** This command will have the likely outcome of causing a partial loss of functionality in your LlamaCloud deployment and data-loss for any tables/columns that are dropped as part of this DB schema downgrade.
 1. Downgrade the helm-chart to the your target helm chart version: `helm -n <namespace> upgrade llamacloud llamaindex/llamacloud -f values.yaml --version <chart-version>`
 
