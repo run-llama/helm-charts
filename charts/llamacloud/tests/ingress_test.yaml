@@ -1,0 +1,40 @@
+suite: basic-ingress-config
+
+templates:
+- ../templates/ingress.yaml
+- ../templates/frontend/deployment.yaml
+
+tests:
+- it: should be a Ingress
+  set:
+    ingress.enabled: true
+    ingress.host: "llamacloud.example.com"
+    ingress.tlsSecretName: "llamacloud-example-tls-secret"
+    ingress.ingressClassName: "default-ingress-class"
+  template: ../templates/ingress.yaml
+  asserts:
+    - isKind:
+        of: Ingress
+    - equal:
+        path: .spec.rules[0].host
+        value: "llamacloud.example.com"
+    - equal:
+        path: .spec.tls[0].hosts[0]
+        value: "llamacloud.example.com"
+    - equal:
+        path: .spec.tls[0].secretName
+        value: "llamacloud-example-tls-secret"
+    - equal:
+        path: .spec.ingressClassName
+        value: "default-ingress-class"
+
+- it: should make the frontend BACKEND_URL the ingress host
+  set:
+    ingress.enabled: true
+    ingress.ingressClassName: "default-ingress-class"
+    ingress.host: "llamacloud.example.com"
+  template: ../templates/frontend/deployment.yaml
+  asserts:
+    - equal:
+        path: .spec.template.spec.containers[0].env[?(@.name == "BACKEND_URL")].value
+        value: "https://llamacloud.example.com"

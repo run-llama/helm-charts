@@ -8,6 +8,8 @@ tests:
 - it: should be a Deployment
   set:
     llamaParse.image.tag: latest
+    rabbitmq.enabled: true
+    rabbitmq.auth.username: test-username
   template: ../templates/llamaparse/deployment.yaml
   asserts:
     - isKind:
@@ -19,6 +21,8 @@ tests:
 - it: should use an external secret name for the license key if it is set
   set:
     global.config.existingLicenseKeySecret: existing-license-key
+    rabbitmq.enabled: true
+    rabbitmq.auth.username: test-username
   template: ../templates/llamaparse/deployment.yaml
   asserts:
     - equal:
@@ -29,6 +33,8 @@ tests:
   set:
     llamaParse.config.awsBedrock.enabled: true
     llamaParse.config.awsBedrock.existingSecret: existing-aws-bedrock-secret
+    rabbitmq.enabled: true
+    rabbitmq.auth.username: test-username
   template: ../templates/llamaparse/deployment.yaml
   asserts:
     - equal:
@@ -41,6 +47,8 @@ tests:
     llamaParse.config.awsBedrock.region: us-east-1
     llamaParse.config.awsBedrock.accessKeyId: test-access-key-id
     llamaParse.config.awsBedrock.secretAccessKey: test-secret-access-key
+    rabbitmq.enabled: true
+    rabbitmq.auth.username: test-username
   template: ../templates/llamaparse/secret.yaml
   asserts:
     - equal:

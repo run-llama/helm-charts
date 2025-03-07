@@ -75,7 +75,11 @@ spec:
           - name: HOSTNAME
             value: 0.0.0.0
           - name: BACKEND_URL
+            {{- if .Values.ingress.enabled }}
+            value: {{ printf "%s://%s" .Values.ingress.scheme .Values.ingress.host | quote }}
+            {{- else }}
             value: {{ printf "http://%s-%s:%d" (include "llamacloud.fullname" .) .Values.backend.name (.Values.backend.service.port | int) | quote }}
+            {{- end }}
           {{- if .Values.backend.config.qdrant.enabled }}
           - name: NEXT_PUBLIC_BYOC_HAS_MANAGED_QDRANT
             value: "true"

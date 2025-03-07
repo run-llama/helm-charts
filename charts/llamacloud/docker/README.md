@@ -21,6 +21,3 @@
     - You can find the available versions in the [releases page](https://github.com/llamacloud/llamacloud/releases).
 5. Navigate to http://localhost:3000 to access the LlamaCloud UI
     - Login with the default credentials: `local / local_password`. You can find these and other credentials in the `setup-keycloak.sh` script.
-
-## Runbooks
-A collection of runbooks for common scenarios can be found in the runbooks directory of this repo.

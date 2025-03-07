@@ -149,7 +149,7 @@ Service Accounts Names
       name: {{ printf "%s-%s" .Release.Name "postgresql" }}
       key: password
 {{- end -}}
-{{- if and (not .Values.postgresql.enabled) (.Values.global.config.postgresql.external.enabled) (not .Values.global.config.postgresql.external.existingSecretName) -}}
+{{- if and (.Values.global.config.postgresql.external.enabled) (not .Values.global.config.postgresql.external.existingSecretName) -}}
 - name: DATABASE_HOST
   value: {{ .Values.global.config.postgresql.external.host | quote }}
 - name: DATABASE_PORT
@@ -177,7 +177,7 @@ Service Accounts Names
       name: {{ printf "%s-%s" .Release.Name (default "mongodb" .Values.mongodb.nameOverride) | quote }}
       key: mongodb-root-password
 {{- end -}}
-{{- if and (not .Values.mongodb.enabled) (.Values.global.config.mongodb.external.enabled) (not .Values.global.config.mongodb.external.existingSecretName) -}}
+{{- if and (.Values.global.config.mongodb.external.enabled) (not .Values.global.config.mongodb.external.existingSecretName) -}}
 - name: MONGODB_URL
   value: {{ .Values.global.config.mongodb.external.url | quote }}
 - name: MONGODB_HOST
@@ -194,16 +194,16 @@ Service Accounts Names
 {{- define "common.rabbitmq.envVars" -}}
 {{- if .Values.rabbitmq.enabled -}}
 - name: JOB_QUEUE_ENDPOINT
-  value: {{ printf "amqp://%s-%s:5672" (include "llamacloud.fullname" .) (default "rabbitmq" .Values.rabbitmq.nameOverride) | quote }}
+  value: {{ printf "amqp://%s-%s:5672" .Release.Name (default "rabbitmq" .Values.rabbitmq.nameOverride) | quote }}
 - name: JOB_QUEUE_USERNAME
   value: {{ .Values.rabbitmq.auth.username | default "user" | quote }}
 - name: JOB_QUEUE_PASSWORD
   valueFrom:
     secretKeyRef:
-      name: {{ printf "%s-%s" (include "llamacloud.fullname" .) (default "rabbitmq" .Values.rabbitmq.nameOverride) | quote }}
+      name: {{ printf "%s-%s" .Release.Name (default "rabbitmq" .Values.rabbitmq.nameOverride) | quote }}
       key: rabbitmq-password
 {{- end -}}
-{{- if and (not .Values.rabbitmq.enabled) (.Values.global.config.rabbitmq.external.enabled) (not .Values.global.config.rabbitmq.external.existingSecretName) -}}
+{{- if and (.Values.global.config.rabbitmq.external.enabled) (not .Values.global.config.rabbitmq.external.existingSecretName) -}}
 - name: JOB_QUEUE_ENDPOINT
   value: {{ printf "%s://%s:%s" .Values.global.config.rabbitmq.external.scheme .Values.global.config.rabbitmq.external.host .Values.global.config.rabbitmq.external.port | quote }}
 - name: JOB_QUEUE_USERNAME
@@ -216,11 +216,11 @@ Service Accounts Names
 {{- define "common.redis.envVars" -}}
 {{- if .Values.redis.enabled -}}
 - name: REDIS_HOST
-  value: {{ printf "%s-%s-master" (include "llamacloud.fullname" .) (default "redis" .Values.redis.nameOverride) | quote }}
+  value: {{ printf "%s-%s-master" .Release.Name (default "redis" .Values.redis.nameOverride) | quote }}
 - name: REDIS_PORT
   value: {{ .Values.redis.master.service.ports.redis | default "6379" | quote }}
 {{- end -}}
-{{- if and (not .Values.redis.enabled) (.Values.global.config.redis.external.enabled) (not .Values.global.config.redis.external.existingSecretName) -}}
+{{- if and (.Values.global.config.redis.external.enabled) (not .Values.global.config.redis.external.existingSecretName) -}}
 - name: REDIS_HOST
   value: {{ .Values.global.config.redis.external.host | quote }}
 - name: REDIS_PORT

@@ -97,13 +97,20 @@ For more information about using this chart, feel free to visit the [Official Ll
 
 ### Overrides and Common Configuration
 
-| Name                | Description                                    | Value |
-| ------------------- | ---------------------------------------------- | ----- |
-| `nameOverride`      | String to fully override llamacloud.name       | `""`  |
-| `fullnameOverride`  | String to fully override llamaecloud.fullname  | `""`  |
-| `namespaceOverride` | String to fully override llamaecloud.namespace | `""`  |
-| `commonLabels`      | Labels to add to all deployed objects          | `{}`  |
-| `commonAnnotations` | Annotations to add to all deployed objects     | `{}`  |
+| Name                       | Description                                    | Value   |
+| -------------------------- | ---------------------------------------------- | ------- |
+| `nameOverride`             | String to fully override llamacloud.name       | `""`    |
+| `fullnameOverride`         | String to fully override llamaecloud.fullname  | `""`    |
+| `namespaceOverride`        | String to fully override llamaecloud.namespace | `""`    |
+| `commonLabels`             | Labels to add to all deployed objects          | `{}`    |
+| `commonAnnotations`        | Annotations to add to all deployed objects     | `{}`    |
+| `ingress.enabled`          | Whether to enable the ingress                  | `false` |
+| `ingress.labels`           | Labels to add to the ingress                   | `{}`    |
+| `ingress.annotations`      | Annotations to add to the ingress              | `{}`    |
+| `ingress.host`             | Hostname to use for the ingress                | `nil`   |
+| `ingress.scheme`           | Scheme to use for the ingress                  | `https` |
+| `ingress.tlsSecretName`    | TLS secret name to use for the ingress         | `nil`   |
+| `ingress.ingressClassName` | Ingress class name to use for the ingress      | `nil`   |
 
 ### Frontend Configuration
 
@@ -152,7 +159,7 @@ For more information about using this chart, feel free to visit the [Official Ll
 | `backend.name`                                        | Name suffix of the Backend related resources                                                                      | `backend`                       |
 | `backend.config.logLevel`                             | Log level for the backend                                                                                         | `info`                          |
 | `backend.config.openAiApiKey`                         | (Required) OpenAI API key                                                                                         | `""`                            |
-| `backend.config.existingOpenAiApiKeySecret`           | Name of the existing secret to use for the OpenAI API key                                                         | `""`                            |
+| `backend.config.existingOpenAiApiKeySecretName`       | Name of the existing secret to use for the OpenAI API key                                                         | `""`                            |
 | `backend.config.azureOpenAi.enabled`                  | Enable Azure OpenAI for backend                                                                                   | `false`                         |
 | `backend.config.azureOpenAi.existingSecret`           | Name of the existing secret to use for the Azure OpenAI API key                                                   | `""`                            |
 | `backend.config.azureOpenAi.key`                      | Azure OpenAI API key                                                                                              | `""`                            |
@@ -332,7 +339,7 @@ For more information about using this chart, feel free to visit the [Official Ll
 | `llamaParse.name`                                        | Name suffix of the LlamaParse related resources                                           | `llamaparse`                       |
 | `llamaParse.config.maxPdfPages`                          | Maximum number of pages to parse in a PDF                                                 | `1200`                             |
 | `llamaParse.config.openAiApiKey`                         | OpenAI API key                                                                            | `""`                               |
-| `llamaParse.config.existingOpenAiApiKeySecret`           | Name of the existing secret to use for the OpenAI API key                                 | `""`                               |
+| `llamaParse.config.existingOpenAiApiKeySecretName`       | Name of the existing secret to use for the OpenAI API key                                 | `""`                               |
 | `llamaParse.config.azureOpenAi.enabled`                  | Enable Azure OpenAI for LlamaParse                                                        | `false`                            |
 | `llamaParse.config.azureOpenAi.existingSecret`           | Name of the existing secret to use for the Azure OpenAI API key                           | `""`                               |
 | `llamaParse.config.azureOpenAi.key`                      | Azure OpenAI API key                                                                      | `""`                               |

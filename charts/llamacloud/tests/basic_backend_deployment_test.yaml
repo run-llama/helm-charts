@@ -7,6 +7,16 @@ tests:
 - it: should be a Deployment
   set:
     backend.image.tag: latest
+    mongodb.enabled: true
+    mongodb.service.port: "27017"
+    mongodb.auth.rootUser: test-user
+    postgresql.enabled: true
+    postgresql.auth.database: test-db
+    postgresql.auth.username: test-user
+    rabbitmq.enabled: true
+    rabbitmq.auth.username: test-username
+    redis.enabled: true
+    redis.master.service.ports.redis: "6379"
   asserts:
     - isKind:
         of: Deployment
@@ -17,6 +27,16 @@ tests:
 - it: should use an external secret name for the license key if it is set
   set:
     global.config.existingLicenseKeySecret: existing-license-key
+    mongodb.enabled: true
+    mongodb.service.port: "27017"
+    mongodb.auth.rootUser: test-user
+    postgresql.enabled: true
+    postgresql.auth.database: test-db
+    postgresql.auth.username: test-user
+    rabbitmq.enabled: true
+    rabbitmq.auth.username: test-username
+    redis.enabled: true
+    redis.master.service.ports.redis: "6379"
   asserts:
     - equal:
         path: .spec.template.spec.containers[0].env[?(@.name == "LLAMACLOUD_LICENSE_KEY")].valueFrom.secretKeyRef.name
@@ -25,12 +45,51 @@ tests:
 - it: should use the custom service account if it is set
   set:
     backend.serviceAccount.name: test-service-account
+    mongodb.enabled: true
+    mongodb.service.port: "27017"
+    mongodb.auth.rootUser: test-user
+    postgresql.enabled: true
+    postgresql.auth.database: test-db
+    postgresql.auth.username: test-user
+    rabbitmq.enabled: true
+    rabbitmq.auth.username: test-username
+    redis.enabled: true
+    redis.master.service.ports.redis: "6379"
   asserts:
     - equal:
         path: .spec.template.spec.serviceAccountName
         value: test-service-account
 
+- it: should use an external secret name for the OpenAI API key if it is set
+  set:
+    backend.config.existingOpenAiApiKeySecretName: existing-openai-api-key
+    mongodb.enabled: true
+    mongodb.service.port: "27017"
+    mongodb.auth.rootUser: test-user
+    postgresql.enabled: true
+    postgresql.auth.database: test-db
+    postgresql.auth.username: test-user
+    rabbitmq.enabled: true
+    rabbitmq.auth.username: test-username
+    redis.enabled: true
+    redis.master.service.ports.redis: "6379"
+  asserts:
+    - equal:
+        path: .spec.template.spec.containers[0].envFrom[?(@.secretRef.name == "existing-openai-api-key")].secretRef.name
+        value: existing-openai-api-key
+
 - it: env vars should match snapshot for default values with subcharts enabled
+  set:
+    mongodb.enabled: true
+    mongodb.service.port: "27017"
+    mongodb.auth.rootUser: test-user
+    postgresql.enabled: true
+    postgresql.auth.database: llamacloud
+    postgresql.auth.username: llamacloud
+    rabbitmq.enabled: true
+    rabbitmq.auth.username: test-username
+    redis.enabled: true
+    redis.master.service.ports.redis: "6379"
   asserts:
     - equal:
         path: .spec.template.spec.containers[0].env[?(@.name == "DATABASE_HOST")].value
@@ -54,6 +113,13 @@ tests:
     global.config.postgresql.external.password: test-password
     global.config.postgresql.external.host: test-host
     global.config.postgresql.external.port: 5432
+    mongodb.enabled: true
+    mongodb.service.port: "27017"
+    mongodb.auth.rootUser: test-user
+    rabbitmq.enabled: true
+    rabbitmq.auth.username: test-username
+    redis.enabled: true
+    redis.master.service.ports.redis: "6379"
   asserts:
     - equal:
         path: .spec.template.spec.containers[0].env[?(@.name == "DATABASE_HOST")].value
@@ -80,6 +146,13 @@ tests:
     global.config.mongodb.external.port: 27017
     global.config.mongodb.external.username: test-mongo-user
     global.config.mongodb.external.password: test-mongo-password
+    postgresql.enabled: true
+    postgresql.auth.database: test-db
+    postgresql.auth.username: test-user
+    rabbitmq.enabled: true
+    rabbitmq.auth.username: test-username
+    redis.enabled: true
+    redis.master.service.ports.redis: "6379"
   asserts:
     - equal:
         path: .spec.template.spec.containers[0].env[?(@.name == "MONGODB_URL")].value
