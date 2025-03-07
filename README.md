@@ -24,6 +24,9 @@ helm repo update
 helm search repo llamaindex
 ```
 
+## Runbooks
+A collection of runbooks for common scenarios can be found in the [runbooks directory](./runbooks/) of this repo.
+
 ## License
 
 Copyright © 2024 LlamaIndex Inc.

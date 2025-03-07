@@ -107,7 +107,6 @@ spec:
           - secretRef:
               name: {{ .Values.global.config.postgresql.external.existingSecretName }}
           {{- end }}
-
           {{- if and (not .Values.mongodb.enabled) .Values.global.config.mongodb.external.enabled .Values.global.config.mongodb.external.existingSecretName }}
           - secretRef:
               name: {{ .Values.global.config.mongodb.external.existingSecretName }}

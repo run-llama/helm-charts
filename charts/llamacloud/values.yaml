@@ -27,8 +27,8 @@ global:
     ## @param global.config.awsSecretAccessKey AWS Secret Access Key
     ## @param global.config.existingAwsSecretName Name of the existing secret to use for AWS credentials
     ## If global.cloudProvider is set to "aws", these values are required
-    awsAccessKeyId: ""
-    awsSecretAccessKey: ""
+    awsAccessKeyId:
+    awsSecretAccessKey:
     existingAwsSecretName: ""
 
     ## @param global.config.postgresql.external.enabled Use an external PostgreSQL database
@@ -124,6 +124,29 @@ commonLabels: {}
 commonAnnotations: {}
 
 
+ingress:
+  ## @param ingress.enabled Whether to enable the ingress
+  enabled: false
+
+  ## @param ingress.labels Labels to add to the ingress
+  labels: {}
+
+  ## @param ingress.annotations Annotations to add to the ingress
+  annotations: {}
+
+  ## @param ingress.host Hostname to use for the ingress
+  host:
+
+  ## @param ingress.scheme Scheme to use for the ingress
+  scheme: https
+
+  ## @param ingress.tlsSecretName TLS secret name to use for the ingress
+  tlsSecretName:
+
+  ## @param ingress.ingressClassName Ingress class name to use for the ingress
+  ingressClassName:
+
+
 ## @section Frontend Configuration
 frontend:
   ## @param frontend.name Name suffix of the Frontend related resources
@@ -139,7 +162,7 @@ frontend:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-frontend
-    tag: 0.1.46
+    tag: 0.1.47
     pullPolicy: IfNotPresent
 
   ## @param frontend.service.type Frontend Service type
@@ -261,9 +284,9 @@ backend:
     logLevel: info
 
     ## @param backend.config.openAiApiKey (Required) OpenAI API key
-    ## @param backend.config.existingOpenAiApiKeySecret Name of the existing secret to use for the OpenAI API key
+    ## @param backend.config.existingOpenAiApiKeySecretName Name of the existing secret to use for the OpenAI API key
     openAiApiKey: ""
-    existingOpenAiApiKeySecret: ""
+    existingOpenAiApiKeySecretName: ""
 
     ## Backend Azure OpenAI configuration
     ## @param backend.config.azureOpenAi.enabled Enable Azure OpenAI for backend
@@ -313,7 +336,7 @@ backend:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-backend
-    tag: 0.1.46
+    tag: 0.1.47
     pullPolicy: IfNotPresent
 
   ## Backend Service information
@@ -496,7 +519,7 @@ jobsService:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-jobs-service
-    tag: 0.1.46
+    tag: 0.1.47
     pullPolicy: IfNotPresent
 
   ## JobsService Service information\
@@ -666,7 +689,7 @@ jobsWorker:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-jobs-worker
-    tag: 0.1.46
+    tag: 0.1.47
     pullPolicy: IfNotPresent
 
   ## JobsWorker Service information
@@ -835,9 +858,9 @@ llamaParse:
     maxPdfPages: 1200
 
     ## @param llamaParse.config.openAiApiKey OpenAI API key
-    ## @param llamaParse.config.existingOpenAiApiKeySecret Name of the existing secret to use for the OpenAI API key
+    ## @param llamaParse.config.existingOpenAiApiKeySecretName Name of the existing secret to use for the OpenAI API key
     openAiApiKey: ""
-    existingOpenAiApiKeySecret: ""
+    existingOpenAiApiKeySecretName: ""
 
     ## @param llamaParse.config.azureOpenAi.enabled Enable Azure OpenAI for LlamaParse
     ## @param llamaParse.config.azureOpenAi.existingSecret Name of the existing secret to use for the Azure OpenAI API key
@@ -888,7 +911,7 @@ llamaParse:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-llamaparse
-    tag: 0.1.46
+    tag: 0.1.47
     pullPolicy: IfNotPresent
 
   ## ServiceAccount configuration
@@ -1055,7 +1078,7 @@ llamaParseOcr:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-llamaparse-ocr
-    tag: 0.1.46
+    tag: 0.1.47
     pullPolicy: IfNotPresent
 
   ## LlamaParseOcr Service information
@@ -1220,7 +1243,7 @@ usage:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-usage
-    tag: 0.1.46
+    tag: 0.1.47
     pullPolicy: IfNotPresent
 
   ## Usage Service information
