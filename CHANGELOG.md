@@ -1,6 +1,11 @@
 # CHANGELOG
 
-## [0.1.47] - 2025-01-02
+## [0.1.48] - 2025-03-07
+
+- Enable more API data sources
+- Minor UI fixes
+
+## [0.1.47] - 2025-03-06
 
 - Scalability improvements for specific API based data-sources
 - Bug fixes
