@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## [0.1.49] - 2025-03-08
+
+- Minor bug fixes
+
 ## [0.1.48] - 2025-03-07
 
 - Enable more API data sources
