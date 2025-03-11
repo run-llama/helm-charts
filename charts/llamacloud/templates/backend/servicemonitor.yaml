@@ -1,0 +1,44 @@
+{{- if and (.Capabilities.APIVersions.Has "monitoring.coreos.com/v1") .Values.backend.metrics.enabled .Values.backend.metrics.serviceMonitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "llamacloud.fullname" . }}-{{ .Values.backend.name }}
+  labels:
+    {{- include "llamacloud.labels" . | nindent 4 }}
+    {{- with .Values.backend.metrics.serviceMonitor.selector }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- with .Values.backend.metrics.serviceMonitor.additionalLabels }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with .Values.backend.metrics.serviceMonitor.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  endpoints:
+    - port: http
+      interval: {{ .Values.backend.metrics.serviceMonitor.interval }}
+      scrapeTimeout: {{ .Values.backend.metrics.serviceMonitor.scrapeTimeout }}
+      path: /metrics
+      scheme: {{ .Values.backend.metrics.serviceMonitor.scheme }}
+      {{- with .Values.backend.metrics.serviceMonitor.relabelings }}
+      relabelings:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.backend.metrics.serviceMonitor.metricRelabelings }}
+      metricRelabelings:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.backend.metrics.serviceMonitor.tlsConfig }}
+      tlsConfig:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+  namespaceSelector:
+    matchNames:
+      - {{ .Release.Namespace }}
+  selector:
+    matchLabels:
+      {{- include "llamacloud.selectorLabels" . | nindent 4 }}
+      app.kubernetes.io/component: {{ include "llamacloud.fullname" . }}-{{ .Values.backend.name }}
+{{- end }}

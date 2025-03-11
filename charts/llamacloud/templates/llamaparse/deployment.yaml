@@ -51,6 +51,10 @@ spec:
           image: "{{ .Values.llamaParse.image.registry }}/{{ .Values.llamaParse.image.repository }}:{{ .Values.llamaParse.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.llamaParse.image.pullPolicy }}
           command: ["pnpm", "start", "2>&1"]
+          ports:
+            - name: http
+              containerPort: {{ .Values.llamaParse.containerPort }}
+              protocol: TCP
           livenessProbe:
             {{- toYaml .Values.llamaParse.livenessProbe | nindent 12 }}
           readinessProbe:

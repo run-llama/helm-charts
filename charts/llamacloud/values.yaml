@@ -162,7 +162,7 @@ frontend:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-frontend
-    tag: 0.1.49
+    tag: 0.1.50
     pullPolicy: IfNotPresent
 
   ## @param frontend.service.type Frontend Service type
@@ -336,7 +336,7 @@ backend:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-backend
-    tag: 0.1.49
+    tag: 0.1.50
     pullPolicy: IfNotPresent
 
   ## Backend Service information
@@ -421,6 +421,7 @@ backend:
     ## @param backend.livenessProbe.timeoutSeconds Number of seconds after which the probe times out
     ## @param backend.livenessProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
     failureThreshold: 3
+    initialDelaySeconds: 30
     httpGet:
       path: /api/health
       port: 8000
@@ -436,6 +437,7 @@ backend:
     ## @param backend.readinessProbe.timeoutSeconds Number of seconds after which the probe times out
     ## @param backend.readinessProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
     failureThreshold: 5
+    initialDelaySeconds: 30
     httpGet:
       path: /api/health
       port: 8000
@@ -451,6 +453,7 @@ backend:
     ## @param backend.startupProbe.timeoutSeconds Number of seconds after which the probe times out
     ## @param backend.startupProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
     failureThreshold: 30
+    initialDelaySeconds: 30
     httpGet:
       path: /api/health
       port: 8000
@@ -498,6 +501,31 @@ backend:
   ## Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
   affinity: {}
 
+  metrics:
+    ## @param backend.metrics.enabled Enable metrics for the backend
+    enabled: false
+    serviceMonitor:
+      ## @param backend.metrics.serviceMonitor.enabled Enable service monitor for the backend
+      enabled: false
+      ## @param backend.metrics.serviceMonitor.selector Selector for the service monitor
+      selector: {}
+      ## @param backend.metrics.serviceMonitor.additionalLabels Additional labels for the service monitor
+      additionalLabels: {}
+      ## @param backend.metrics.serviceMonitor.annotations Annotations for the service monitor
+      annotations: {}
+      ## @param backend.metrics.serviceMonitor.interval Interval for the service monitor
+      interval: 30s
+      ## @param backend.metrics.serviceMonitor.scrapeTimeout Timeout for the service monitor
+      scrapeTimeout: 15s
+      ## @param backend.metrics.serviceMonitor.relabelings Relabelings for the service monitor
+      relabelings: []
+      ## @param backend.metrics.serviceMonitor.metricRelabelings Metric relabelings for the service monitor
+      metricRelabelings: []
+      ## @param backend.metrics.serviceMonitor.scheme Scheme for the service monitor
+      scheme: http
+      ## @param backend.metrics.serviceMonitor.tlsConfig TLS configuration for the service monitor
+      tlsConfig: {}
+
 
 ## @section JobsService Configuration
 jobsService:
@@ -519,7 +547,7 @@ jobsService:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-jobs-service
-    tag: 0.1.49
+    tag: 0.1.50
     pullPolicy: IfNotPresent
 
   ## JobsService Service information\
@@ -669,6 +697,31 @@ jobsService:
   ## Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
   affinity: {}
 
+  metrics:
+    ## @param jobsService.metrics.enabled Enable metrics for the jobsService
+    enabled: false
+    serviceMonitor:
+      ## @param jobsService.metrics.serviceMonitor.enabled Enable service monitor for the jobsService
+      enabled: false
+      ## @param jobsService.metrics.serviceMonitor.selector Selector for the service monitor
+      selector: {}
+      ## @param jobsService.metrics.serviceMonitor.additionalLabels Additional labels for the service monitor
+      additionalLabels: {}
+      ## @param jobsService.metrics.serviceMonitor.annotations Annotations for the service monitor
+      annotations: {}
+      ## @param jobsService.metrics.serviceMonitor.interval Interval for the service monitor
+      interval: 30s
+      ## @param jobsService.metrics.serviceMonitor.scrapeTimeout Timeout for the service monitor
+      scrapeTimeout: 15s
+      ## @param jobsService.metrics.serviceMonitor.relabelings Relabelings for the service monitor
+      relabelings: []
+      ## @param jobsService.metrics.serviceMonitor.metricRelabelings Metric relabelings for the service monitor
+      metricRelabelings: []
+      ## @param jobsService.metrics.serviceMonitor.scheme Scheme for the service monitor
+      scheme: http
+      ## @param jobsService.metrics.serviceMonitor.tlsConfig TLS configuration for the service monitor
+      tlsConfig: {}
+
 ## @section JobsWorker Configuration
 jobsWorker:
   ## @param jobsWorker.name Name suffix of the JobsWorker related resources
@@ -689,7 +742,7 @@ jobsWorker:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-jobs-worker
-    tag: 0.1.49
+    tag: 0.1.50
     pullPolicy: IfNotPresent
 
   ## JobsWorker Service information
@@ -778,6 +831,7 @@ jobsWorker:
     ## @param jobsWorker.livenessProbe.timeoutSeconds Number of seconds after which the probe times out
     ## @param jobsWorker.livenessProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
     failureThreshold: 5
+    initialDelaySeconds: 30
     httpGet:
       path: /api/health
       port: 8001
@@ -793,6 +847,7 @@ jobsWorker:
     ## @param jobsWorker.readinessProbe.timeoutSeconds Number of seconds after which the probe times out
     ## @param jobsWorker.readinessProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
     failureThreshold: 5
+    initialDelaySeconds: 30
     httpGet:
       path: /api/health
       port: 8001
@@ -808,6 +863,7 @@ jobsWorker:
     ## @param jobsWorker.startupProbe.timeoutSeconds Number of seconds after which the probe times out
     ## @param jobsWorker.startupProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
     failureThreshold: 30
+    initialDelaySeconds: 30
     httpGet:
       path: /api/health
       port: 8001
@@ -847,6 +903,30 @@ jobsWorker:
   ## Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
   affinity: {}
 
+  metrics:
+    ## @param jobsWorker.metrics.enabled Enable metrics for the jobsWorker
+    enabled: false
+    serviceMonitor:
+      ## @param jobsWorker.metrics.serviceMonitor.enabled Enable service monitor for the jobsWorker
+      enabled: false
+      ## @param jobsWorker.metrics.serviceMonitor.selector Selector for the service monitor
+      selector: {}
+      ## @param jobsWorker.metrics.serviceMonitor.additionalLabels Additional labels for the service monitor
+      additionalLabels: {}
+      ## @param jobsWorker.metrics.serviceMonitor.annotations Annotations for the service monitor
+      annotations: {}
+      ## @param jobsWorker.metrics.serviceMonitor.interval Interval for the service monitor
+      interval: 30s
+      ## @param jobsWorker.metrics.serviceMonitor.scrapeTimeout Timeout for the service monitor
+      scrapeTimeout: 15s
+      ## @param jobsWorker.metrics.serviceMonitor.relabelings Relabelings for the service monitor
+      relabelings: []
+      ## @param jobsWorker.metrics.serviceMonitor.metricRelabelings Metric relabelings for the service monitor
+      metricRelabelings: []
+      ## @param jobsWorker.metrics.serviceMonitor.scheme Scheme for the service monitor
+      scheme: http
+      ## @param jobsWorker.metrics.serviceMonitor.tlsConfig TLS configuration for the service monitor
+      tlsConfig: {}
 
 ## @section LlamaParse Configuration
 llamaParse:
@@ -911,7 +991,7 @@ llamaParse:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-llamaparse
-    tag: 0.1.49
+    tag: 0.1.50
     pullPolicy: IfNotPresent
 
   ## ServiceAccount configuration
@@ -934,7 +1014,13 @@ llamaParse:
 
   ## @param llamaParse.containerPort Port to expose on the LlamaParse container
   ## Ref: https://kubernetes.io/docs/tutorials/services/connect-applications-service/#exposing-pods-to-the-cluster
-  containerPort: 8000
+  containerPort: 8004
+
+  ## @param llamaParse.service.type LlamaParse Service type
+  ## @param llamaParse.service.port LlamaParse Service port
+  service:
+    type: ClusterIP
+    port: 8004
 
   ## @param llamaParse.extraEnvVariables Extra environment variables to add to llamaParse pods
   ## Example:
@@ -1060,6 +1146,31 @@ llamaParse:
   ## Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
   affinity: {}
 
+  metrics:
+    ## @param llamaParse.metrics.enabled Enable metrics for the llamaParse
+    enabled: false
+    serviceMonitor:
+      ## @param llamaParse.metrics.serviceMonitor.enabled Enable service monitor for the llamaParse
+      enabled: false
+      ## @param llamaParse.metrics.serviceMonitor.selector Selector for the service monitor
+      selector: {}
+      ## @param llamaParse.metrics.serviceMonitor.additionalLabels Additional labels for the service monitor
+      additionalLabels: {}
+      ## @param llamaParse.metrics.serviceMonitor.annotations Annotations for the service monitor
+      annotations: {}
+      ## @param llamaParse.metrics.serviceMonitor.interval Interval for the service monitor
+      interval: 30s
+      ## @param llamaParse.metrics.serviceMonitor.scrapeTimeout Timeout for the service monitor
+      scrapeTimeout: 15s
+      ## @param llamaParse.metrics.serviceMonitor.relabelings Relabelings for the service monitor
+      relabelings: []
+      ## @param llamaParse.metrics.serviceMonitor.metricRelabelings Metric relabelings for the service monitor
+      metricRelabelings: []
+      ## @param llamaParse.metrics.serviceMonitor.scheme Scheme for the service monitor
+      scheme: http
+      ## @param llamaParse.metrics.serviceMonitor.tlsConfig TLS configuration for the service monitor
+      tlsConfig: {}
+
 ## @section LlamaParseOcr Configuration
 llamaParseOcr:
   ## @param llamaParseOcr.enabled Enable LlamaParseOcr
@@ -1078,7 +1189,7 @@ llamaParseOcr:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-llamaparse-ocr
-    tag: 0.1.49
+    tag: 0.1.50
     pullPolicy: IfNotPresent
 
   ## LlamaParseOcr Service information
@@ -1227,6 +1338,31 @@ llamaParseOcr:
   ## Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
   affinity: {}
 
+  metrics:
+    ## @param llamaParseOcr.metrics.enabled Enable metrics for the llamaParseOcr
+    enabled: false
+    serviceMonitor:
+      ## @param llamaParseOcr.metrics.serviceMonitor.enabled Enable service monitor for the llamaParseOcr
+      enabled: false
+      ## @param llamaParseOcr.metrics.serviceMonitor.selector Selector for the service monitor
+      selector: {}
+      ## @param llamaParseOcr.metrics.serviceMonitor.additionalLabels Additional labels for the service monitor
+      additionalLabels: {}
+      ## @param llamaParseOcr.metrics.serviceMonitor.annotations Annotations for the service monitor
+      annotations: {}
+      ## @param llamaParseOcr.metrics.serviceMonitor.interval Interval for the service monitor
+      interval: 30s
+      ## @param llamaParseOcr.metrics.serviceMonitor.scrapeTimeout Timeout for the service monitor
+      scrapeTimeout: 15s
+      ## @param llamaParseOcr.metrics.serviceMonitor.relabelings Relabelings for the service monitor
+      relabelings: []
+      ## @param llamaParseOcr.metrics.serviceMonitor.metricRelabelings Metric relabelings for the service monitor
+      metricRelabelings: []
+      ## @param llamaParseOcr.metrics.serviceMonitor.scheme Scheme for the service monitor
+      scheme: http
+      ## @param llamaParseOcr.metrics.serviceMonitor.tlsConfig TLS configuration for the service monitor
+      tlsConfig: {}
+
 ## @section LlamaParsePdf Configuration
 usage:
   ## @param usage.name Name suffix of the usage related resources
@@ -1243,7 +1379,7 @@ usage:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-usage
-    tag: 0.1.49
+    tag: 0.1.50
     pullPolicy: IfNotPresent
 
   ## Usage Service information
@@ -1392,6 +1528,31 @@ usage:
   ## @param usage.affinity Pod scheduling constraints
   ## Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
   affinity: {}
+
+  metrics:
+    ## @param usage.metrics.enabled Enable metrics for the usage
+    enabled: false
+    serviceMonitor:
+      ## @param usage.metrics.serviceMonitor.enabled Enable service monitor for the usage
+      enabled: false
+      ## @param usage.metrics.serviceMonitor.selector Selector for the service monitor
+      selector: {}
+      ## @param usage.metrics.serviceMonitor.additionalLabels Additional labels for the service monitor
+      additionalLabels: {}
+      ## @param usage.metrics.serviceMonitor.annotations Annotations for the service monitor
+      annotations: {}
+      ## @param usage.metrics.serviceMonitor.interval Interval for the service monitor
+      interval: 30s
+      ## @param usage.metrics.serviceMonitor.scrapeTimeout Timeout for the service monitor
+      scrapeTimeout: 15s
+      ## @param usage.metrics.serviceMonitor.relabelings Relabelings for the service monitor
+      relabelings: []
+      ## @param usage.metrics.serviceMonitor.metricRelabelings Metric relabelings for the service monitor
+      metricRelabelings: []
+      ## @param usage.metrics.serviceMonitor.scheme Scheme for the service monitor
+      scheme: http
+      ## @param usage.metrics.serviceMonitor.tlsConfig TLS configuration for the service monitor
+      tlsConfig: {}
 
 
 ## @section S3Proxy Configuration
