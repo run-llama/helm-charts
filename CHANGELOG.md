@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## [0.1.51] - 2025-03-11
+
+- Connector bug fixes
+
 ## [0.1.50] - 2025-03-11
 
 - Improved connector support for API data sources
