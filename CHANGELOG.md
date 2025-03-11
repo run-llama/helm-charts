@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## [0.1.50] - 2025-03-11
+
+- Improved connector support for API data sources
+- Parsing related fonts fixes
+
 ## [0.1.49] - 2025-03-08
 
 - Minor bug fixes
