@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## [0.1.52] - 2025-03-11
+
+- Minor connector bug fix
+
 ## [0.1.51] - 2025-03-11
 
 - Connector bug fixes
