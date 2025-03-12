@@ -3,6 +3,7 @@
 ## [0.1.54] - 2025-03-12
 
 - Parse logs cleanup
+- Frontend fix for Copy Pipeline button
 
 ## [0.1.52] - 2025-03-11
 
