@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## [0.1.53] - 2025-03-12
+
+- Parse logs cleanup
+- Frontend fix for Copy Pipeline button
+
 ## [0.1.52] - 2025-03-11
 
 - Minor connector bug fix
