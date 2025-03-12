@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## [0.1.54] - 2025-03-12
+## [0.1.53] - 2025-03-12
 
 - Parse logs cleanup
 - Frontend fix for Copy Pipeline button
