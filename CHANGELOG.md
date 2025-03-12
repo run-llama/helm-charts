@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## [0.1.54] - 2025-03-12
+
+- Parse logs cleanup
+
 ## [0.1.52] - 2025-03-11
 
 - Minor connector bug fix
