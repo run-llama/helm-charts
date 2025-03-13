@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## [0.1.54] - 2025-03-13
+
+- Connector UI fixes
+
 ## [0.1.53] - 2025-03-12
 
 - Parse logs cleanup
