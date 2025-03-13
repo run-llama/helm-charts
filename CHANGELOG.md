@@ -2,7 +2,7 @@
 
 ## [0.1.54] - 2025-03-13
 
-- TODO
+- Add support for custom metadata fields for data source
 
 ## [0.1.53] - 2025-03-12
 
