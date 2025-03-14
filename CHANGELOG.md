@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## [0.1.55] - 2025-03-14
+
+- Azure OpenAI environment variable fixes
+
 ## [0.1.54] - 2025-03-13
 
 - Connector UI fixes
