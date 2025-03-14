@@ -1,0 +1,46 @@
+suite: backend-deployment-azure-openai
+
+templates:
+- ../templates/backend/deployment.yaml
+- ../templates/backend/secret.yaml
+
+tests:
+- it: should include the Azure OpenAI API key in the environment variables
+  template: ../templates/backend/secret.yaml
+  set:
+    backend.config.azureOpenAi.enabled: true
+    backend.config.azureOpenAi.key: test-key
+    backend.config.azureOpenAi.endpoint: test-endpoint
+    backend.config.azureOpenAi.deploymentName: test-deployment-name
+    backend.config.azureOpenAi.apiVersion: test-api-version
+    mongodb.enabled: false
+    postgresql.enabled: false
+    rabbitmq.enabled: false
+    redis.enabled: false
+  asserts:
+    - equal:
+        path: .data.AZURE_OPENAI_API_KEY
+        value: dGVzdC1rZXk=
+    - equal:
+        path: .data.AZURE_OPENAI_BASE_URL
+        value: dGVzdC1lbmRwb2ludA==
+    - equal:
+        path: .data.AZURE_OPENAI_GPT_4O_DEPLOYMENT_NAME
+        value: dGVzdC1kZXBsb3ltZW50LW5hbWU=
+    - equal:
+        path: .data.AZURE_OPENAI_API_VERSION
+        value: dGVzdC1hcGktdmVyc2lvbg==
+
+- it: should use an external secret name for the Azure OpenAI API key if it is set
+  template: ../templates/backend/deployment.yaml
+  set:
+    backend.config.azureOpenAi.enabled: true
+    backend.config.azureOpenAi.existingSecret: existing-azure-openai-api-key
+    mongodb.enabled: false
+    postgresql.enabled: false
+    rabbitmq.enabled: false
+    redis.enabled: false
+  asserts:
+    - equal:
+        path: .spec.template.spec.containers[0].envFrom[?(@.secretRef.name == "existing-azure-openai-api-key")].secretRef.name
+        value: existing-azure-openai-api-key
