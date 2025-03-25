@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## [0.1.57] - 2025-03-25
+
+- Enhancements and bug fixes
+
 ## [0.1.56] - 2025-03-18
 
 - Azure OpenAI Composite Retrieval support
