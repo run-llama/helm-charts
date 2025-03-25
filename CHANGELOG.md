@@ -2,7 +2,9 @@
 
 ## [0.1.57] - 2025-03-25
 
-- Enhancements and bug fixes
+- Added a new disposable composite retrieval endpoint.
+- Introduced `AZURE_OPENAI_GPT_4O_DEPLOYMENT_NAME` (for playground) and `AZURE_OPENAI_GPT_4O_MINI_DEPLOYMENT_NAME` (for llamaparse) environment variables.
+- Made Confluence requests per minute configurable via `DEFAULT_CONFLUENCE_REQUESTS_PER_MINUTE`, defaulting to 60.
 
 ## [0.1.56] - 2025-03-18
 
