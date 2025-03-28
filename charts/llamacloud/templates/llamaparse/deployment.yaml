@@ -94,6 +94,10 @@ spec:
           - secretRef:
               name: {{ .Values.llamaParse.config.existingAnthropicApiKeySecret }}
           {{- end }}
+          {{- if .Values.llamaParse.config.existingGeminiApiKeySecret }}
+          - secretRef:
+              name: {{ .Values.llamaParse.config.existingGeminiApiKeySecret }}
+          {{- end }}
           {{- if and .Values.llamaParse.config.awsBedrock.enabled .Values.llamaParse.config.awsBedrock.existingSecret }}
           - secretRef:
               name: {{ .Values.llamaParse.config.awsBedrock.existingSecret }}

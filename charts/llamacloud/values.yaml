@@ -162,7 +162,7 @@ frontend:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-frontend
-    tag: 0.1.57
+    tag: 0.1.58
     pullPolicy: IfNotPresent
 
   ## @param frontend.service.type Frontend Service type
@@ -336,7 +336,7 @@ backend:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-backend
-    tag: 0.1.57
+    tag: 0.1.58
     pullPolicy: IfNotPresent
 
   ## Backend Service information
@@ -529,6 +529,20 @@ backend:
       ## @param backend.metrics.serviceMonitor.tlsConfig TLS configuration for the service monitor
       tlsConfig: {}
 
+    rules:
+      ## @param backend.metrics.rules.enabled Enable prometheus rules for the backend services
+      enabled: false
+      ## @param backend.metrics.rules.namespace Namespace for the rules
+      namespace: ""
+      ## @param backend.metrics.rules.selector Selector for the rules
+      selector: {}
+      ## @param backend.metrics.rules.additionalLabels Additional labels for the rules
+      additionalLabels: {}
+      ## @param backend.metrics.rules.annotations Annotations for the rules
+      annotations: {}
+      ## @param backend.metrics.rules.spec Rules for the backend
+      spec: []
+
 
 ## @section JobsService Configuration
 jobsService:
@@ -550,7 +564,7 @@ jobsService:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-jobs-service
-    tag: 0.1.57
+    tag: 0.1.58
     pullPolicy: IfNotPresent
 
   ## JobsService Service information\
@@ -745,7 +759,7 @@ jobsWorker:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-jobs-worker
-    tag: 0.1.57
+    tag: 0.1.58
     pullPolicy: IfNotPresent
 
   ## JobsWorker Service information
@@ -967,6 +981,11 @@ llamaParse:
     anthropicApiKey: ""
     existingAnthropicApiKeySecret: ""
 
+    ## @param llamaParse.config.geminiApiKey Google Gemini API key
+    ## @param llamaParse.config.existingGeminiApiKeySecret Name of the existing secret to use for the Google Gemini API key
+    geminiApiKey: ""
+    existingGeminiApiKeySecret: ""
+
     ## @param llamaParse.config.awsBedrock.enabled Enable AWS Bedrock for LlamaParse
     ## @param llamaParse.config.awsBedrock.existingSecret Name of the existing secret to use for the AWS Bedrock API key
     ## @param llamaParse.config.awsBedrock.region AWS Bedrock region
@@ -981,10 +1000,8 @@ llamaParse:
 
     ## @param llamaParse.config.s3UploadBucket S3 bucket to upload files to
     ## @param llamaParse.config.s3OutputBucket S3 bucket to output files to
-    ## @param llamaParse.config.s3OutputBucketTemp S3 bucket to output temporary files to
     s3UploadBucket: "llama-platform-file-parsing"
     s3OutputBucket: "llama-platform-file-parsing"
-    s3OutputBucketTemp: "llama-platform-file-parsing"
 
   ## @param llamaParse.replicas Number of replicas of LlamaParse Deployment
   replicas: 2
@@ -997,7 +1014,7 @@ llamaParse:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-llamaparse
-    tag: 0.1.57
+    tag: 0.1.58
     pullPolicy: IfNotPresent
 
   ## ServiceAccount configuration
@@ -1177,6 +1194,20 @@ llamaParse:
       ## @param llamaParse.metrics.serviceMonitor.tlsConfig TLS configuration for the service monitor
       tlsConfig: {}
 
+    rules:
+      ## @param llamaParse.metrics.rules.enabled Enable rules for the llamaParse
+      enabled: false
+      ## @param llamaParse.metrics.rules.namespace Namespace for the rules
+      namespace: ""
+      ## @param llamaParse.metrics.rules.selector Selector for the rules
+      selector: {}
+      ## @param llamaParse.metrics.rules.additionalLabels Additional labels for the rules
+      additionalLabels: {}
+      ## @param llamaParse.metrics.rules.annotations Annotations for the rules
+      annotations: {}
+      ## @param llamaParse.metrics.rules.spec Rules for the llamaParse
+      spec: []
+
 ## @section LlamaParseOcr Configuration
 llamaParseOcr:
   ## @param llamaParseOcr.enabled Enable LlamaParseOcr
@@ -1195,7 +1226,7 @@ llamaParseOcr:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-llamaparse-ocr
-    tag: 0.1.57
+    tag: 0.1.58
     pullPolicy: IfNotPresent
 
   ## LlamaParseOcr Service information
@@ -1385,7 +1416,7 @@ usage:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-usage
-    tag: 0.1.57
+    tag: 0.1.58
     pullPolicy: IfNotPresent
 
   ## Usage Service information
