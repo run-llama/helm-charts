@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## [0.1.58] - 2025-03-27
+
+- Confluence improvements:
+    - Fix bad caching for Permissions
+    - Upsert should create v2 readers
+    - Page restricted shouldn’t be indexes
+- Reranker Configurability for Composite Retrieval
+- Retries on requests to Cohere reranker
+
 ## [0.1.57] - 2025-03-25
 
 - Added a new disposable composite retrieval endpoint.
