@@ -1,4 +1,4 @@
-{{- if .Values.ingress.enabled -}}
+{{- if and .Values.ingress.enabled .Values.ingress.create -}}
 {{- $ingressClassName := .Values.ingress.ingressClassName | required ".Values.ingress.ingressClassName is required" -}}
 {{- $host := .Values.ingress.host | required ".Values.ingress.host is required" -}}
 apiVersion: networking.k8s.io/v1
