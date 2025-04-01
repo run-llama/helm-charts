@@ -1,5 +1,18 @@
 # CHANGELOG
 
+## [0.2.0] - 2025-04-02
+
+- Add monitoring support for LlamaCloud
+    - Added ServiceMonitor support
+        - Metrics can be scraped for `backend`, `jobsService`, `jobsWorker`, `llamaParse`, and `llamaParseOcr` services
+            - `.Values.<service>.metrics.serviceMonitor.enabled`
+    - Added PrometheusRules support
+        - PrometheusRules can be created for `backend` and `llamaParse` services
+            - `.Values.<service>.metrics.rules.enabled`
+    - Basic Grafana dashboards are available at [./charts/llamacloud/docs/monitoring](./charts/llamacloud/docs/monitoring)
+    - Docs availabe at [./charts/llamacloud/docs/monitoring](./charts/llamacloud/docs/monitoring)
+- Add `.Values.ingress.create` to control the creation of an ingress resource
+
 ## [0.1.58] - 2025-03-27
 
 - Confluence improvements:
