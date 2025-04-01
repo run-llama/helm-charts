@@ -22,4 +22,4 @@ spec:
       targetPort: http
   selector:
     {{- include "llamacloud.selectorLabels" . | nindent 4 }}
-    app.kubernetes.io/component: {{ include "llamacloud.fullname" . }}-{{ .Values.usage.name }}
+    app.kubernetes.io/component: {{ include "llamacloud.fullname" . }}-{{ .Values.llamaParse.name }}
