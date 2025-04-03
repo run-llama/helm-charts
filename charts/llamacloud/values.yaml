@@ -165,7 +165,7 @@ frontend:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-frontend
-    tag: 0.2.0
+    tag: 0.3.0
     pullPolicy: IfNotPresent
 
   ## @param frontend.service.type Frontend Service type
@@ -339,7 +339,7 @@ backend:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-backend
-    tag: 0.2.0
+    tag: 0.3.0
     pullPolicy: IfNotPresent
 
   ## Backend Service information
@@ -577,7 +577,7 @@ jobsService:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-jobs-service
-    tag: 0.2.0
+    tag: 0.3.0
     pullPolicy: IfNotPresent
 
   ## JobsService Service information\
@@ -772,7 +772,7 @@ jobsWorker:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-jobs-worker
-    tag: 0.2.0
+    tag: 0.3.0
     pullPolicy: IfNotPresent
 
   ## JobsWorker Service information
@@ -1027,7 +1027,7 @@ llamaParse:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-llamaparse
-    tag: 0.2.0
+    tag: 0.3.0
     pullPolicy: IfNotPresent
 
   ## ServiceAccount configuration
@@ -1249,7 +1249,7 @@ llamaParseOcr:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-llamaparse-ocr
-    tag: 0.2.0
+    tag: 0.3.0
     pullPolicy: IfNotPresent
 
   ## LlamaParseOcr Service information
@@ -1439,7 +1439,7 @@ usage:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-usage
-    tag: 0.2.0
+    tag: 0.3.0
     pullPolicy: IfNotPresent
 
   ## Usage Service information
@@ -1588,31 +1588,6 @@ usage:
   ## @param usage.affinity Pod scheduling constraints
   ## Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
   affinity: {}
-
-  metrics:
-    ## @param usage.metrics.enabled Enable metrics for the usage
-    enabled: false
-    serviceMonitor:
-      ## @param usage.metrics.serviceMonitor.enabled Enable service monitor for the usage
-      enabled: false
-      ## @param usage.metrics.serviceMonitor.selector Selector for the service monitor
-      selector: {}
-      ## @param usage.metrics.serviceMonitor.additionalLabels Additional labels for the service monitor
-      additionalLabels: {}
-      ## @param usage.metrics.serviceMonitor.annotations Annotations for the service monitor
-      annotations: {}
-      ## @param usage.metrics.serviceMonitor.interval Interval for the service monitor
-      interval: 30s
-      ## @param usage.metrics.serviceMonitor.scrapeTimeout Timeout for the service monitor
-      scrapeTimeout: 15s
-      ## @param usage.metrics.serviceMonitor.relabelings Relabelings for the service monitor
-      relabelings: []
-      ## @param usage.metrics.serviceMonitor.metricRelabelings Metric relabelings for the service monitor
-      metricRelabelings: []
-      ## @param usage.metrics.serviceMonitor.scheme Scheme for the service monitor
-      scheme: http
-      ## @param usage.metrics.serviceMonitor.tlsConfig TLS configuration for the service monitor
-      tlsConfig: {}
 
 
 ## @section S3Proxy Configuration
