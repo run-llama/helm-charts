@@ -19,14 +19,16 @@ jobs:
 
       - name: Extract Helm Chart Version
         id: extract-version
+        working-directory: ./charts/llamacloud
         run: |
           # Extract the version from Chart.yaml
-          version=$(grep '^version:' charts/llamacloud/Chart.yaml | awk '{print $2}')
+          version=$(grep '^version:' Chart.yaml | awk '{print $2}')
           echo "Helm Chart version: $version"
           echo "::set-output name=version::$version"
 
       - name: Check CHANGELOG.md
         id: check-changelog
+        working-directory: ./charts/llamacloud
         run: |
           # Check if the version exists in CHANGELOG.md
           version=${{ steps.extract-version.outputs.version }}

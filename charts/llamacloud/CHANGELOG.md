@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## [0.3.0] - 2025-04-03
+
+- LlamaExtract is now available in BYOC deployments!
+    - For instructions on how to upgrade to this version and enable LlamaExtract, please refer to this [guide](docs/llamaextract.md)
+    - For more information, please visit our [LlamaExtract docs](https://docs.cloud.llamaindex.ai/llamaextract/getting_started)
+
 ## [0.2.0] - 2025-04-02
 
 - Add monitoring support for LlamaCloud
@@ -9,8 +15,8 @@
     - Added PrometheusRules support
         - PrometheusRules can be created for `backend` and `llamaParse` services
             - `.Values.<service>.metrics.rules.enabled`
-    - Basic Grafana dashboards are available at [./charts/llamacloud/docs/monitoring](./charts/llamacloud/docs/monitoring)
-    - Docs availabe at [./charts/llamacloud/docs/monitoring](./charts/llamacloud/docs/monitoring)
+    - Basic Grafana dashboards are available at [./charts/llamacloud/docs/monitoring](docs/monitoring)
+    - Docs availabe at [./charts/llamacloud/docs/monitoring](docs/monitoring)
 - Add `.Values.ingress.create` to control the creation of an ingress resource
 
 ## [0.1.58] - 2025-03-27
