@@ -2,6 +2,53 @@ apiVersion: v1
 entries:
   llamacloud:
   - apiVersion: v2
+    appVersion: 0.3.1
+    created: "2025-04-18T02:57:19.698124473Z"
+    dependencies:
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: oci://registry-1.docker.io/bitnamicharts
+      version: 15.5.17
+    - condition: mongodb.enabled
+      name: mongodb
+      repository: oci://registry-1.docker.io/bitnamicharts
+      version: 15.6.13
+    - condition: rabbitmq.enabled
+      name: rabbitmq
+      repository: oci://registry-1.docker.io/bitnamicharts
+      version: 14.5.0
+    - condition: redis.enabled
+      name: redis
+      repository: oci://registry-1.docker.io/bitnamicharts
+      version: 19.6.2
+    description: A Helm chart to deploy LlamaCloud and all of its necessary services.
+    digest: 0c1d24d30e18bc665c99f24265450faf1a278fad04eed00af0910ab5e9b03f93
+    home: https://github.com/run-llama/helm-charts
+    keywords:
+    - llamaindex
+    - llamacloud
+    - rag
+    maintainers:
+    - email: jerry@runllama.ai
+      name: Jerry Liu
+      url: https://github.com/jerryjliu
+    - email: simon@runllama.ai
+      name: Simon Suo
+      url: https://github.com/Disiok
+    - email: luke@runllam.ai
+      name: Luke Chui
+      url: https://github.com/epicchewy
+    name: llamacloud
+    sources:
+    - https://github.com/run-llama/helm-charts
+    - https://github.com/bitnami/charts/tree/main/bitnami/postgresql
+    - https://github.com/bitnami/charts/tree/main/bitnami/mongodb
+    - https://github.com/bitnami/charts/tree/main/bitnami/rabbitmq
+    - https://github.com/bitnami/charts/tree/main/bitnami/redis
+    urls:
+    - https://github.com/run-llama/helm-charts/releases/download/llamacloud-0.3.1/llamacloud-0.3.1.tgz
+    version: 0.3.1
+  - apiVersion: v2
     appVersion: 0.3.0
     created: "2025-04-03T23:24:04.073276453Z"
     dependencies:
@@ -2821,4 +2868,4 @@ entries:
     urls:
     - https://github.com/run-llama/helm-charts/releases/download/llamacloud-0.1.1/llamacloud-0.1.1.tgz
     version: 0.1.1
-generated: "2025-04-03T23:24:04.073556187Z"
+generated: "2025-04-18T02:57:19.698350334Z"
