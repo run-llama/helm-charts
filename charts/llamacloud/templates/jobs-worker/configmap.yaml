@@ -13,6 +13,9 @@ data:
   LOG_LEVEL: {{ .Values.jobsWorker.config.logLevel | default "info" }}
   JOB_CONSUMER_PORT: {{ .Values.jobsWorker.service.port | default 8001 | quote }}
   PARSE_PREMIUM: "true"
+  MAX_JOBS_IN_EXECUTION_PER_JOB_TYPE: {{ .Values.jobsWorker.config.maxJobsInExecutionPerJobType | default 10 | quote }}
+  MAX_INDEX_JOBS_IN_EXECUTION: {{ .Values.jobsWorker.config.maxIndexJobsInExecution | default 0 | quote }}
+  MAX_DOCUMENT_INGESTION_JOBS_IN_EXECUTION: {{ .Values.jobsWorker.config.maxDocumentIngestionJobsInExecution | default 1 | quote }}
   JOB_SERVICE_URL: {{ printf "http://%s-%s:%d" (include "llamacloud.fullname" .) .Values.jobsService.name (.Values.jobsService.service.port | int) | quote }}
   S3_DOCUMENT_BUCKET_NAME: {{ .Values.global.config.parsedDocumentsCloudBucketName | default "llama-platform-parsed-documents" }}
   S3_ETL_BUCKET_NAME: {{ .Values.global.config.parsedEtlCloudBucketName | default "llama-platform-etl" }}

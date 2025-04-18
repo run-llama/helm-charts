@@ -9,7 +9,7 @@ metadata:
 data:
   CLOUD_PROVIDER: {{ .Values.global.cloudProvider | quote }}
   DEBUG_MODE: {{ .Values.llamaParse.config.debugMode | default false | quote }}
-  MAX_PDF_PAGES: {{ .Values.llamaParse.config.maxPdfPages | default 1200 | quote }}
+  MAX_QUEUE_CONCURRENCY: {{ .Values.llamaParse.config.maxQueueConcurrency | default 1 | quote }}
   JOB_SERVICE_URL: {{ printf "http://%s-%s:%d" (include "llamacloud.fullname" .) .Values.jobsService.name (.Values.jobsService.service.port | int) | quote }}
   OCR_SERVER_URL: {{ printf "http://%s-%s:%d/ocr" (include "llamacloud.fullname" .) .Values.llamaParseOcr.name (.Values.llamaParseOcr.service.port | int) | quote }}
   TRACKING_SERVICE_URL: {{ printf "http://%s-%s:%d" (include "llamacloud.fullname" .) .Values.usage.name (.Values.usage.service.port | int) | quote }}

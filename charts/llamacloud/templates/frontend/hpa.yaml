@@ -1,5 +1,5 @@
 {{- if .Values.frontend.autoscaling.enabled }}
-apiVersion:.frontend autoscaling/v2
+apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
   name: {{ include "llamacloud.fullname" . }}-{{ .Values.frontend.name }}

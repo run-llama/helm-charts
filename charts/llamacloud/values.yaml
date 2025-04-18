@@ -165,7 +165,7 @@ frontend:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-frontend
-    tag: 0.3.0
+    tag: 0.3.1
     pullPolicy: IfNotPresent
 
   ## @param frontend.service.type Frontend Service type
@@ -339,7 +339,7 @@ backend:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-backend
-    tag: 0.3.0
+    tag: 0.3.1
     pullPolicy: IfNotPresent
 
   ## Backend Service information
@@ -409,11 +409,11 @@ backend:
   ## Ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
   resources: {}
     # requests:
-    #   memory: 8Gi
-    #   cpu: 2
+    #   memory: 4Gi
+    #   cpu: 500m
     # limits:
-    #   memory: 10Gi
-    #   cpu: 3
+    #   memory: 6Gi
+    #   cpu: 2
 
   ## Backend Liveness probe configuration
   ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
@@ -577,7 +577,7 @@ jobsService:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-jobs-service
-    tag: 0.3.0
+    tag: 0.3.1
     pullPolicy: IfNotPresent
 
   ## JobsService Service information\
@@ -643,11 +643,11 @@ jobsService:
   resources: {}
     # To use the recommended values, uncomment the following lines and remove the curly braces after 'resources:'
     # requests:
-    #   memory: 6Gi
-    #   cpu: 2
+    #   memory: 4Gi
+    #   cpu: 500m
     # limits:
     #   memory: 8Gi
-    #   cpu: 3
+    #   cpu: 2
 
   ## Job Service Liveness probe configuration
   ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
@@ -761,6 +761,13 @@ jobsWorker:
     ## @param jobsWorker.config.logLevel Log level for the JobsWorker
     logLevel: "info"
 
+    ## @param jobsWorker.config.maxJobsInExecutionPerJobType Maximum number of jobs in execution per job type
+    ## @param jobsWorker.config.maxIndexJobsInExecution Maximum number of index jobs in execution
+    ## @param jobsWorker.config.maxDocumentIngestionJobsInExecution Maximum number of document ingestion jobs in execution
+    maxJobsInExecutionPerJobType: 10
+    maxIndexJobsInExecution: 0
+    maxDocumentIngestionJobsInExecution: 1
+
   ## @param jobsWorker.replicas Number of replicas of JobsWorker Deployment
   replicas: 1
 
@@ -772,7 +779,7 @@ jobsWorker:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-jobs-worker
-    tag: 0.3.0
+    tag: 0.3.1
     pullPolicy: IfNotPresent
 
   ## JobsWorker Service information
@@ -847,10 +854,10 @@ jobsWorker:
     # resources:
     #   requests:
     #     memory: 4Gi
-    #     cpu: 2
+    #     cpu: 500m
     #   limits:
     #     memory: 6Gi
-    #     cpu: 3
+    #     cpu: 2
 
   ## Jobs Worker Liveness probe configuration
   ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
@@ -967,8 +974,10 @@ llamaParse:
   name: llamaparse
 
   config:
-    ## @param llamaParse.config.maxPdfPages Maximum number of pages to parse in a PDF
-    maxPdfPages: 1200
+    ## @param llamaParse.config.debugMode Enable debug mode for LlamaParse
+    debugMode: false
+    ## @param llamaParse.config.maxQueueConcurrency Max number of jobs the worker can process at the same time
+    maxQueueConcurrency: 3
 
     ## @param llamaParse.config.openAiApiKey OpenAI API key
     ## @param llamaParse.config.existingOpenAiApiKeySecretName Name of the existing secret to use for the OpenAI API key
@@ -1027,7 +1036,7 @@ llamaParse:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-llamaparse
-    tag: 0.3.0
+    tag: 0.3.1
     pullPolicy: IfNotPresent
 
   ## ServiceAccount configuration
@@ -1103,8 +1112,8 @@ llamaParse:
     ## @param llamaParse.resources.limits.memory Memory limit for the LlamaParse container
     ## @param llamaParse.resources.limits.cpu CPU limit for the LlamaParse container
     requests:
-      memory: 13Gi
-      cpu: 7
+      memory: 6Gi
+      cpu: 3
     limits:
       memory: 13Gi
       cpu: 7
@@ -1249,7 +1258,7 @@ llamaParseOcr:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-llamaparse-ocr
-    tag: 0.3.0
+    tag: 0.3.1
     pullPolicy: IfNotPresent
 
   ## LlamaParseOcr Service information
@@ -1439,7 +1448,7 @@ usage:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-usage
-    tag: 0.3.0
+    tag: 0.3.1
     pullPolicy: IfNotPresent
 
   ## Usage Service information
