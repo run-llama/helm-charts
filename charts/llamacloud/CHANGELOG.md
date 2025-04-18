@@ -5,6 +5,7 @@
 - Improved Index feature stability
 - Improved Sharepoint data source ingestion scalability and configuration options
 - Improved resource utilization for entire LlamaCloud deployment
+- Fixed regression in sign-in flow when port-forwarding
 - Added ability to configure concurrency settings
     - JobsWorker concurrency settings can be found at `.Values.jobsWorker.config`
     - Global LlamaParse worker throughput can be configured with `.Values.llamaParse.config.maxQueueConcurrency`
