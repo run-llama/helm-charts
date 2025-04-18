@@ -63,8 +63,8 @@ jobs:
         k8s-version:
           # Limit testing because tests can take a while to run
           # Ref: https://hub.docker.com/r/kindest/node/tags
-          - v1.29.12
-          - v1.31.4
+          - v1.30.10
+          - v1.32.3
 
     steps:
       - name: Checkout
