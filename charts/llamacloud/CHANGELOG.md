@@ -13,6 +13,7 @@
     - Added Promtheus metrics for LlamaExtract
     - Added new metrics for LlamaParse
 - Fixed HorizontalPodAutoscaler definition for frontend and backend services
+- Fixed `.Values.llamaParse.config.extistingOpenAiApiKeySecretName` usage in LlamaParse deployment
 
 ## [0.3.0] - 2025-04-03
 
