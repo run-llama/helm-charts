@@ -12,6 +12,7 @@
 - New Metrics
     - Added Promtheus metrics for LlamaExtract
     - Added new metrics for LlamaParse
+- Fixed HorizontalPodAutoscaler definition for frontend and backend services
 
 ## [0.3.0] - 2025-04-03
 
