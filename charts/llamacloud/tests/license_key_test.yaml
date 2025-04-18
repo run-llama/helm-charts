@@ -1,0 +1,22 @@
+suite: license-key-tests
+
+templates:
+- ../templates/license-secret.yaml
+
+tests:
+- it: should create a license key secret
+  set:
+    global.config.licenseKey: test-license-key
+  template: ../templates/license-secret.yaml
+  asserts:
+    - equal:
+        path: .data.llamacloud-license-key
+        value: dGVzdC1saWNlbnNlLWtleQ==
+
+- it: should fail if no license key is provided
+  set:
+    global.config.licenseKey: ""
+  template: ../templates/license-secret.yaml
+  asserts:
+    - failedTemplate:
+        errorMessage: .Value.global.config.licenseKey cannot be empty. Please provide a valid license key

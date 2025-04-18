@@ -1,0 +1,224 @@
+suite: llamaparse-tests
+
+templates:
+- ../templates/llamaparse/configmap.yaml
+- ../templates/llamaparse/deployment.yaml
+- ../templates/llamaparse/secret.yaml
+- ../templates/llamaparse/hpa.yaml
+- ../templates/llamaparse/pdb.yaml
+- ../templates/llamaparse/service.yaml
+- ../templates/llamaparse/serviceaccount.yaml
+- ../templates/llamaparse/servicemonitor.yaml
+- ../templates/llamaparse/prometheusrule.yaml
+
+release:
+  name: test-release
+  namespace: test-namespace
+
+capabilities:
+  majorVersion: 1
+  minorVersion: 30
+  apiVersions:
+    - apps/v1
+    - monitoring.coreos.com/v1
+
+chart:
+  appVersion: 0.0.0
+
+tests:
+- it: should create a Deployment
+  set:
+    rabbitmq.enabled: true
+    rabbitmq.auth.username: test-username
+  template: ../templates/llamaparse/deployment.yaml
+  asserts:
+    - isKind:
+        of: Deployment
+    - equal:
+        path: metadata.name
+        value: test-release-llamacloud-llamaparse
+    - equal:
+        path: spec.selector.matchLabels["app.kubernetes.io/component"]
+        value: test-release-llamacloud-llamaparse
+    - equal:
+        path: spec.template.spec.containers[0].name
+        value: llamaparse
+    - equal:
+        path: .spec.template.spec.containers[0].env[?(@.name == "LLAMACLOUD_LICENSE_KEY")].valueFrom.secretKeyRef.name
+        value: test-release-llamacloud-license-key
+
+- it: should use an external secret name for the license key if it is set
+  set:
+    global.config.existingLicenseKeySecret: existing-license-key
+    rabbitmq.enabled: true
+    rabbitmq.auth.username: test-username
+  template: ../templates/llamaparse/deployment.yaml
+  asserts:
+    - equal:
+        path: .spec.template.spec.containers[0].env[?(@.name == "LLAMACLOUD_LICENSE_KEY")].valueFrom.secretKeyRef.name
+        value: existing-license-key
+
+- it: should set the Anthropic API key env var if it is set
+  set:
+    llamaParse.config.anthropicAPIKey: test-anthropic-api-key
+    rabbitmq.enabled: false
+  template: ../templates/llamaparse/secret.yaml
+  asserts:
+    - equal:
+        path: .data.ANTHROPIC_API_KEY
+        value: dGVzdC1hbnRocm9waWMtYXBpLWtleQ==
+
+- it: should use an external secret name for the Anthropic API key if it is set
+  set:
+    llamaParse.config.existingAnthropicApiKeySecret: existing-anthropic-api-key-secret
+    rabbitmq.enabled: false
+  template: ../templates/llamaparse/deployment.yaml
+  asserts:
+    - equal:
+        path: .spec.template.spec.containers[0].envFrom[1].secretRef.name
+        value: existing-anthropic-api-key-secret
+
+- it: should set the Google Gemini API key env var if it is set
+  set:
+    llamaParse.config.geminiApiKey: test-gemini-api-key
+    rabbitmq.enabled: false
+  template: ../templates/llamaparse/secret.yaml
+  asserts:
+    - equal:
+        path: .data.GOOGLE_GEMINI_API_KEY
+        value: dGVzdC1nZW1pbmktYXBpLWtleQ==
+
+- it: should use an external secret name for the Google Gemini API key if it is set
+  set:
+    llamaParse.config.existingGeminiApiKeySecret: existing-gemini-api-key-secret
+    rabbitmq.enabled: false
+  template: ../templates/llamaparse/deployment.yaml
+  asserts:
+    - equal:
+        path: .spec.template.spec.containers[0].envFrom[1].secretRef.name
+        value: existing-gemini-api-key-secret
+
+- it: should use an external secret name for the AWS Bedrock API key if it is set
+  set:
+    llamaParse.config.awsBedrock.enabled: true
+    llamaParse.config.awsBedrock.existingSecret: existing-aws-bedrock-secret
+    rabbitmq.enabled: true
+    rabbitmq.auth.username: test-username
+  template: ../templates/llamaparse/deployment.yaml
+  asserts:
+    - equal:
+        path: .spec.template.spec.containers[0].envFrom[1].secretRef.name
+        value: existing-aws-bedrock-secret
+
+- it: should set the AWS Bedrock env vars if feature is enabled
+  set:
+    llamaParse.config.awsBedrock.enabled: true
+    llamaParse.config.awsBedrock.region: us-east-1
+    llamaParse.config.awsBedrock.accessKeyId: test-access-key-id
+    llamaParse.config.awsBedrock.secretAccessKey: test-secret-access-key
+    rabbitmq.enabled: true
+    rabbitmq.auth.username: test-username
+  template: ../templates/llamaparse/secret.yaml
+  asserts:
+    - equal:
+        path: .data.AWS_BEDROCK_REGION
+        value: dXMtZWFzdC0x
+    - equal:
+        path: .data.AWS_BEDROCK_ACCESS_KEY
+        value: dGVzdC1hY2Nlc3Mta2V5LWlk
+    - equal:
+        path: .data.AWS_BEDROCK_SECRET_KEY
+        value: dGVzdC1zZWNyZXQtYWNjZXNzLWtleQ==
+
+- it: should create a ConfigMap
+  set:
+    llamaParse.config.maxPdfPages: 1000
+    llamaParse.config.s3UploadBucket: test-s3-upload-bucket
+    llamaParse.config.s3OutputBucket: test-s3-output-bucket
+    rabbitmq.enabled: false
+  template: ../templates/llamaparse/configmap.yaml
+  asserts:
+    - isKind:
+        of: ConfigMap
+    - equal:
+        path: .data.CLOUD_PROVIDER
+        value: aws
+    - equal:
+        path: .data.S3_UPLOAD_BUCKET
+        value: test-s3-upload-bucket
+    - equal:
+        path: .data.S3_OUTPUT_BUCKET
+        value: test-s3-output-bucket
+    - equal:
+        path: .data.JOB_SERVICE_URL
+        value: http://test-release-llamacloud-jobs-service:8002
+    - equal:
+        path: .data.OCR_SERVER_URL
+        value: http://test-release-llamacloud-llamaparse-ocr:8080/ocr
+
+- it: should create a ServiceMonitor if metrics are enabled
+  set:
+    llamaParse.metrics.enabled: true
+    llamaParse.metrics.serviceMonitor.enabled: true
+    llamaParse.metrics.serviceMonitor.interval: 30s
+    llamaParse.metrics.serviceMonitor.scrapeTimeout: 15s
+    llamaParse.metrics.serviceMonitor.relabelings:
+      - sourceLabels: [__meta_kubernetes_service_label_app]
+        action: keep
+        regex: llamacloud-llamaParse
+    llamaParse.metrics.serviceMonitor.scheme: http
+    llamaParse.metrics.serviceMonitor.tlsConfig:
+      insecureSkipVerify: true
+    rabbitmq.enabled: false
+  template: ../templates/llamaparse/servicemonitor.yaml
+  asserts:
+    - isKind:
+        of: ServiceMonitor
+    - equal:
+        path: .spec.endpoints[0].interval
+        value: 30s
+    - equal:
+        path: .spec.endpoints[0].scrapeTimeout
+        value: 15s
+    - equal:
+        path: .spec.endpoints[0].scheme
+        value: http
+    - equal:
+        path: .spec.endpoints[0].tlsConfig.insecureSkipVerify
+        value: true
+    - equal:
+        path: .spec.selector.matchLabels["app.kubernetes.io/component"]
+        value: test-release-llamacloud-llamaparse
+
+- it: should create a PrometheusRule if rules are enabled
+  set:
+    llamaParse.metrics.enabled: true
+    llamaParse.metrics.rules.enabled: true
+    llamaParse.metrics.rules.spec:
+      - expr: llamacloud_llamaParse_request_duration_seconds
+        for: 10m
+        labels:
+          severity: error
+        annotations:
+          summary: LlamaCloud llamaParse Request Duration High
+          description: The request duration is too high.
+    rabbitmq.enabled: false
+  template: ../templates/llamaparse/prometheusrule.yaml
+  asserts:
+    - isKind:
+        of: PrometheusRule
+    - equal:
+        path: .spec.groups[0].rules[0].expr
+        value: llamacloud_llamaParse_request_duration_seconds
+    - equal:
+        path: .spec.groups[0].rules[0].for
+        value: 10m
+    - equal:
+        path: .spec.groups[0].rules[0].labels.severity
+        value: error
+    - equal:
+        path: .spec.groups[0].rules[0].annotations.summary
+        value: LlamaCloud llamaParse Request Duration High
+    - equal:
+        path: .spec.groups[0].rules[0].annotations.description
+        value: The request duration is too high.

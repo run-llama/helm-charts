@@ -1,0 +1,121 @@
+suite: jobs-worker-tests
+
+templates:
+- ../templates/jobs-worker/configmap.yaml
+- ../templates/jobs-worker/deployment.yaml
+- ../templates/jobs-worker/hpa.yaml
+- ../templates/jobs-worker/service.yaml
+- ../templates/jobs-worker/secret.yaml
+- ../templates/jobs-worker/serviceaccount.yaml
+- ../templates/jobs-worker/servicemonitor.yaml
+
+release:
+  name: test-release
+  namespace: test-namespace
+
+capabilities:
+  majorVersion: 1
+  minorVersion: 30
+  apiVersions:
+    - apps/v1
+    - monitoring.coreos.com/v1
+
+chart:
+  appVersion: 0.0.0
+
+tests:
+- it: should be a Deployment
+  set:
+    jobsWorker.image.tag: latest
+    mongodb.enabled: false
+    postgresql.enabled: false
+    rabbitmq.enabled: false
+    redis.enabled: false
+  template: ../templates/jobs-worker/deployment.yaml
+  asserts:
+    - isKind:
+        of: Deployment
+    - equal:
+        path: .spec.template.spec.containers[0].image
+        value: docker.io/llamaindex/llamacloud-jobs-worker:latest
+
+- it: should use an external secret name for the license key if it is set
+  set:
+    global.config.existingLicenseKeySecret: existing-license-key
+    mongodb.enabled: false
+    postgresql.enabled: false
+    rabbitmq.enabled: false
+    redis.enabled: false
+  template: ../templates/jobs-worker/deployment.yaml
+  asserts:
+    - equal:
+        path: .spec.template.spec.containers[0].env[?(@.name == "LLAMACLOUD_LICENSE_KEY")].valueFrom.secretKeyRef.name
+        value: existing-license-key
+
+- it: should use the custom service account if it is set
+  set:
+    jobsWorker.serviceAccount.name: test-service-account
+    mongodb.enabled: false
+    postgresql.enabled: false
+    rabbitmq.enabled: false
+    redis.enabled: false
+  template: ../templates/jobs-worker/deployment.yaml
+  asserts:
+    - equal:
+        path: .spec.template.spec.serviceAccountName
+        value: test-service-account
+
+- it: should create a ConfigMap with the correct values
+  set:
+    global.config.parsedDocumentsCloudBucketName: test-cloud-bucket-name
+    jobsWorker.config.maxJobsInExecutionPerJobType: 5
+    jobsWorker.config.maxIndexJobsInExecution: 5
+    jobsWorker.config.maxDocumentIngestionJobsInExecution: 5
+    mongodb.enabled: false
+    postgresql.enabled: false
+    rabbitmq.enabled: false
+    redis.enabled: false
+  template: ../templates/jobs-worker/configmap.yaml
+  asserts:
+    - equal:
+        path: .data.LOG_LEVEL
+        value: info
+    - equal:
+        path: .data.IS_DEPLOYED
+        value: "true"
+    - equal:
+        path: .data.S3_DOCUMENT_BUCKET_NAME
+        value: test-cloud-bucket-name
+    - equal:
+        path: .data.MAX_JOBS_IN_EXECUTION_PER_JOB_TYPE
+        value: "5"
+    - equal:
+        path: .data.MAX_INDEX_JOBS_IN_EXECUTION
+        value: "5"
+    - equal:
+        path: .data.MAX_DOCUMENT_INGESTION_JOBS_IN_EXECUTION
+        value: "5"
+    - equal:
+        path: .data.JOB_SERVICE_URL
+        value: http://test-release-llamacloud-jobs-service:8002
+    - equal:
+        path: .data.S3_ETL_BUCKET_NAME
+        value: llama-platform-etl
+    - equal:
+        path: .data.S3_EXTERNAL_COMPONENTS_BUCKET_NAME
+        value: llama-platform-external-components
+    - equal:
+        path: .data.S3_FILE_PARSING_BUCKET_NAME
+        value: llama-platform-file-parsing
+    - equal:
+        path: .data.S3_RAW_FILE_BUCKET_NAME
+        value: llama-platform-raw-files
+    - equal:
+        path: .data.S3_LLAMA_CLOUD_PARSE_OUTPUT_BUCKET_NAME
+        value: llama-cloud-parse-output
+    - equal:
+        path: .data.S3_FILE_SCREENSHOT_BUCKET_NAME
+        value: llama-platform-file-screenshots
+    - equal:
+        path: .data.S3_LLAMA_EXTRACT_OUTPUT_BUCKET_NAME
+        value: llama-platform-extract-output

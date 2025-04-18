@@ -1,0 +1,79 @@
+suite: llamaparse-ocr-tests
+
+templates:
+- ../templates/llamaparse-ocr/deployment.yaml
+- ../templates/llamaparse-ocr/hpa.yaml
+- ../templates/llamaparse-ocr/pdb.yaml
+- ../templates/llamaparse-ocr/service.yaml
+- ../templates/llamaparse-ocr/serviceaccount.yaml
+
+release:
+  name: test-release
+  namespace: test-namespace
+
+tests:
+- it: should be a Deployment
+  set:
+    mongodb.enabled: false
+    postgresql.enabled: false
+    rabbitmq.enabled: false
+    redis.enabled: false
+  template: ../templates/llamaparse-ocr/deployment.yaml
+  asserts:
+    - isKind:
+        of: Deployment
+    - equal:
+        path: metadata.name
+        value: test-release-llamacloud-llamaparse-ocr
+    - equal:
+        path: spec.selector.matchLabels["app.kubernetes.io/component"]
+        value: test-release-llamacloud-llamaparse-ocr
+    - equal:
+        path: spec.template.spec.containers[0].name
+        value: llamaparse-ocr
+    - equal:
+        path: .spec.template.spec.containers[0].env[?(@.name == "LLAMACLOUD_LICENSE_KEY")].valueFrom.secretKeyRef.name
+        value: test-release-llamacloud-license-key
+
+- it: should not create a deployment if llamaParseOcr.enabled is false
+  set:
+    llamaParseOcr.enabled: false
+  template: ../templates/llamaparse-ocr/deployment.yaml
+  asserts:
+    - hasDocuments:
+        count: 0
+
+- it: should not create a service if llamaParseOcr.enabled is false
+  set:
+    llamaParseOcr.enabled: false
+  template: ../templates/llamaparse-ocr/service.yaml
+  asserts:
+    - hasDocuments:
+        count: 0
+
+- it: should not create a service account if llamaParseOcr.serviceAccount.create is false
+  set:
+    llamaParseOcr.enabled: true
+    llamaParseOcr.serviceAccount.create: false
+  template: ../templates/llamaparse-ocr/serviceaccount.yaml
+  asserts:
+    - hasDocuments:
+        count: 0
+
+- it: should not create a HPA if llamaParseOcr.autoscaling.enabled is false
+  set:
+    llamaParseOcr.enabled: true
+    llamaParseOcr.autoscaling.enabled: false
+  template: ../templates/llamaparse-ocr/hpa.yaml
+  asserts:
+    - hasDocuments:
+        count: 0
+
+- it: should not create a PDB if llamaParseOcr.podDisruptionBudget.enabled is false
+  set:
+    llamaParseOcr.enabled: true
+    llamaParseOcr.podDisruptionBudget.enabled: false
+  template: ../templates/llamaparse-ocr/pdb.yaml
+  asserts:
+    - hasDocuments:
+        count: 0

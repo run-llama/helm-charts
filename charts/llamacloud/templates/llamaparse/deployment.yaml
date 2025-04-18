@@ -50,7 +50,6 @@ spec:
             {{- toYaml .Values.llamaParse.securityContext | nindent 12 }}
           image: "{{ .Values.llamaParse.image.registry }}/{{ .Values.llamaParse.image.repository }}:{{ .Values.llamaParse.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.llamaParse.image.pullPolicy }}
-          command: ["pnpm", "start", "2>&1"]
           ports:
             - name: http
               containerPort: {{ .Values.llamaParse.containerPort }}
@@ -82,9 +81,9 @@ spec:
           - secretRef:
               name: {{ .Values.global.config.existingAwsSecretName }}
           {{- end }}
-          {{- if .Values.llamaParse.config.existingOpenAiApiKeySecret }}
+          {{- if .Values.llamaParse.config.existingOpenAiApiKeySecretName }}
           - secretRef:
-              name: {{ .Values.llamaParse.config.existingOpenAiApiKeySecret }}
+              name: {{ .Values.llamaParse.config.existingOpenAiApiKeySecretName }}
           {{- end }}
           {{- if and .Values.llamaParse.config.azureOpenAi.enabled .Values.llamaParse.config.azureOpenAi.existingSecret }}
           - secretRef:

@@ -1,0 +1,113 @@
+suite: s3-proxy-tests
+
+templates:
+- ../templates/s3proxy/configmap.yaml
+- ../templates/s3proxy/deployment.yaml
+- ../templates/s3proxy/hpa.yaml
+- ../templates/s3proxy/service.yaml
+- ../templates/s3proxy/serviceaccount.yaml
+
+tests:
+- it: should create a configmap when s3proxy.enabled is true
+  set:
+    s3proxy.enabled: true
+  template: ../templates/s3proxy/configmap.yaml
+  asserts:
+    - isKind:
+        of: ConfigMap
+
+- it: should not create a configmap when s3proxy.enabled is false
+  set:
+    s3proxy.enabled: false
+  template: ../templates/s3proxy/configmap.yaml
+  asserts:
+    - hasDocuments:
+        count: 0
+
+- it: should create a configmap with the correct config from s3proxy.config
+  set:
+    s3proxy.config:
+      S3PROXY_ENDPOINT: "http://0.0.0.0:80"
+  template: ../templates/s3proxy/configmap.yaml
+  asserts:
+    - equal:
+        path: .data.S3PROXY_ENDPOINT
+        value: "http://0.0.0.0:80"
+
+- it: should create a deployment when s3proxy.enabled is true
+  set:
+    s3proxy.enabled: true
+    s3proxy.extraEnvVariables:
+      - name: FOO
+        value: BAR
+  template: ../templates/s3proxy/deployment.yaml
+  asserts:
+    - isKind:
+        of: Deployment
+    - equal:
+        path: .spec.replicas
+        value: 1
+    - equal:
+        path: .spec.template.spec.containers[0].image
+        value: docker.io/andrewgaul/s3proxy:sha-82e50ee
+    - equal:
+        path: .spec.template.spec.containers[0].env[?(@.name == "FOO")].value
+        value: BAR
+    - equal:
+        path: .spec.template.spec.containers[0].envFrom[0].configMapRef.name
+        value: RELEASE-NAME-llamacloud-s3proxy-config
+    - equal:
+        path: .spec.template.spec.containers[0].volumeMounts[0].mountPath
+        value: /tmp
+    - equal:
+        path: .spec.template.spec.containers[0].volumeMounts[0].subPath
+        value: tmp-dir
+    - equal:
+        path: .spec.template.spec.containers[0].volumeMounts[0].name
+        value: empty-dir
+    - equal:
+        path: .spec.template.spec.volumes[0].name
+        value: empty-dir
+
+- it: should not create a deployment when s3proxy.enabled is false
+  set:
+    s3proxy.enabled: false
+  template: ../templates/s3proxy/deployment.yaml
+  asserts:
+    - hasDocuments:
+        count: 0
+
+- it: should create an hpa when s3proxy.enabled is true and autoscaling is enabled
+  set:
+    s3proxy.enabled: true
+    s3proxy.autoscaling.enabled: true
+  template: ../templates/s3proxy/hpa.yaml
+  asserts:
+    - isKind:
+        of: HorizontalPodAutoscaler
+
+- it: should not create an hpa when s3proxy.enabled is true and autoscaling is disabled
+  set:
+    s3proxy.enabled: true
+    s3proxy.autoscaling.enabled: false
+  template: ../templates/s3proxy/hpa.yaml
+  asserts:
+    - hasDocuments:
+        count: 0
+
+- it: should create a service when s3proxy.enabled is true
+  set:
+    s3proxy.enabled: true
+  template: ../templates/s3proxy/service.yaml
+  asserts:
+    - isKind:
+        of: Service
+
+- it: should not create a serviceaccount when s3proxy.enabled is true and serviceAccount.create is false
+  set:
+    s3proxy.enabled: true
+    s3proxy.serviceAccount.create: false
+  template: ../templates/s3proxy/serviceaccount.yaml
+  asserts:
+    - hasDocuments:
+        count: 0

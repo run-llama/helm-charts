@@ -1,4 +1,4 @@
-suite: basic-ingress-config
+suite: ingress-tests
 
 templates:
 - ../templates/ingress.yaml
@@ -38,3 +38,24 @@ tests:
     - equal:
         path: .spec.template.spec.containers[0].env[?(@.name == "BACKEND_URL")].value
         value: "https://llamacloud.example.com"
+
+- it: should set the frontend BACKEND_URL the ingress host even when ingress.create is false
+  set:
+    ingress.enabled: true
+    ingress.ingressClassName: "default-ingress-class"
+    ingress.host: "llamacloud.example.com"
+    ingress.create: false
+  template: ../templates/frontend/deployment.yaml
+  asserts:
+    - equal:
+        path: .spec.template.spec.containers[0].env[?(@.name == "BACKEND_URL")].value
+        value: "https://llamacloud.example.com"
+
+- it: should not create an ingress if ingress.create is false
+  set:
+    ingress.enabled: true
+    ingress.create: false
+  template: ../templates/ingress.yaml
+  asserts:
+    - hasDocuments:
+        count: 0

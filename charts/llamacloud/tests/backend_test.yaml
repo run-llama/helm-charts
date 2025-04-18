@@ -1,0 +1,431 @@
+suite: backend-tests
+
+templates:
+- ../templates/backend/configmap.yaml
+- ../templates/backend/deployment.yaml
+- ../templates/backend/hpa.yaml
+- ../templates/backend/pdb.yaml
+- ../templates/backend/service.yaml
+- ../templates/backend/secret.yaml
+- ../templates/backend/serviceaccount.yaml
+- ../templates/backend/servicemonitor.yaml
+- ../templates/backend/prometheusrule.yaml
+
+release:
+  name: test-release
+  namespace: test-namespace
+
+capabilities:
+  majorVersion: 1
+  minorVersion: 30
+  apiVersions:
+    - apps/v1
+    - monitoring.coreos.com/v1
+
+chart:
+  appVersion: 0.0.0
+
+tests:
+- it: should be a Deployment
+  set:
+    backend.image.tag: latest
+    mongodb.enabled: false
+    postgresql.enabled: false
+    rabbitmq.enabled: false
+    redis.enabled: false
+  template: ../templates/backend/deployment.yaml
+  asserts:
+    - isKind:
+        of: Deployment
+    - equal:
+        path: .spec.template.spec.containers[0].image
+        value: docker.io/llamaindex/llamacloud-backend:latest
+
+- it: should use an external secret name for the license key if it is set
+  set:
+    global.config.existingLicenseKeySecret: existing-license-key
+    mongodb.enabled: false
+    postgresql.enabled: false
+    rabbitmq.enabled: false
+    redis.enabled: false
+  template: ../templates/backend/deployment.yaml
+  asserts:
+    - equal:
+        path: .spec.template.spec.containers[0].env[?(@.name == "LLAMACLOUD_LICENSE_KEY")].valueFrom.secretKeyRef.name
+        value: existing-license-key
+
+- it: should use the custom service account if it is set
+  set:
+    backend.serviceAccount.name: test-service-account
+    mongodb.enabled: false
+    postgresql.enabled: false
+    rabbitmq.enabled: false
+    redis.enabled: false
+  template: ../templates/backend/deployment.yaml
+  asserts:
+    - equal:
+        path: .spec.template.spec.serviceAccountName
+        value: test-service-account
+
+- it: should use an external secret name for the OpenAI API key if it is set
+  set:
+    backend.config.existingOpenAiApiKeySecretName: existing-openai-api-key
+    mongodb.enabled: false
+    postgresql.enabled: false
+    rabbitmq.enabled: false
+    redis.enabled: false
+  template: ../templates/backend/deployment.yaml
+  asserts:
+    - equal:
+        path: .spec.template.spec.containers[0].envFrom[?(@.secretRef.name == "existing-openai-api-key")].secretRef.name
+        value: existing-openai-api-key
+
+- it: env vars should match snapshot for default values with subcharts enabled
+  set:
+    mongodb.enabled: true
+    mongodb.service.port: "27017"
+    mongodb.auth.rootUser: test-user
+    postgresql.enabled: true
+    postgresql.auth.database: llamacloud
+    postgresql.auth.username: llamacloud
+    rabbitmq.enabled: true
+    rabbitmq.auth.username: test-username
+    redis.enabled: true
+    redis.master.service.ports.redis: "6379"
+  template: ../templates/backend/deployment.yaml
+  asserts:
+    - equal:
+        path: .spec.template.spec.containers[0].env[?(@.name == "DATABASE_HOST")].value
+        value: test-release-postgresql
+    - equal:
+        path: .spec.template.spec.containers[0].env[?(@.name == "DATABASE_PORT")].value
+        value: "5432"
+    - equal:
+        path: .spec.template.spec.containers[0].env[?(@.name == "DATABASE_NAME")].value
+        value: llamacloud
+    - equal:
+        path: .spec.template.spec.containers[0].env[?(@.name == "DATABASE_USER")].value
+        value: llamacloud
+
+- it: postgres env vars should use custom config if is subchart is not enabled and external config is provided
+  set:
+    postgresql.enabled: false
+    global.config.postgresql.external.enabled: true
+    global.config.postgresql.external.database: test-db
+    global.config.postgresql.external.username: test-user
+    global.config.postgresql.external.password: test-password
+    global.config.postgresql.external.host: test-host
+    global.config.postgresql.external.port: 5432
+    mongodb.enabled: false
+    rabbitmq.enabled: false
+    redis.enabled: false
+  template: ../templates/backend/deployment.yaml
+  asserts:
+    - equal:
+        path: .spec.template.spec.containers[0].env[?(@.name == "DATABASE_HOST")].value
+        value: test-host
+    - equal:
+        path: .spec.template.spec.containers[0].env[?(@.name == "DATABASE_PORT")].value
+        value: "5432"
+    - equal:
+        path: .spec.template.spec.containers[0].env[?(@.name == "DATABASE_NAME")].value
+        value: test-db
+    - equal:
+        path: .spec.template.spec.containers[0].env[?(@.name == "DATABASE_USER")].value
+        value: test-user
+    - equal:
+        path: .spec.template.spec.containers[0].env[?(@.name == "DATABASE_PASSWORD")].value
+        value: test-password
+
+- it: mongodb env vars should use custom config if subchart is not enabled and external config is provided
+  set:
+    mongodb.enabled: false
+    global.config.mongodb.external.enabled: true
+    global.config.mongodb.external.url: test-mongo-url
+    global.config.mongodb.external.host: test-mongo-host
+    global.config.mongodb.external.port: 27017
+    global.config.mongodb.external.username: test-mongo-user
+    global.config.mongodb.external.password: test-mongo-password
+    postgresql.enabled: false
+    rabbitmq.enabled: false
+    redis.enabled: false
+  template: ../templates/backend/deployment.yaml
+  asserts:
+    - equal:
+        path: .spec.template.spec.containers[0].env[?(@.name == "MONGODB_URL")].value
+        value: test-mongo-url
+    - equal:
+        path: .spec.template.spec.containers[0].env[?(@.name == "MONGODB_HOST")].value
+        value: test-mongo-host
+    - equal:
+        path: .spec.template.spec.containers[0].env[?(@.name == "MONGODB_PORT")].value
+        value: "27017"
+    - equal:
+        path: .spec.template.spec.containers[0].env[?(@.name == "MONGODB_USER")].value
+        value: test-mongo-user
+    - equal:
+        path: .spec.template.spec.containers[0].env[?(@.name == "MONGODB_PASSWORD")].value
+        value: test-mongo-password
+
+- it: should create a ConfigMap with the correct values
+  set:
+    backend.config.logLevel: debug
+    global.config.parsedDocumentsCloudBucketName: test-cloud-bucket-name
+    mongodb.enabled: false
+    postgresql.enabled: false
+    rabbitmq.enabled: false
+    redis.enabled: false
+  template: ../templates/backend/configmap.yaml
+  asserts:
+    - equal:
+        path: .data.LOG_LEVEL
+        value: debug
+    - equal:
+        path: .data.IS_DEPLOYED
+        value: "true"
+    - equal:
+        path: .data.ALLOWED_INDEX
+        value: "true"
+    - equal:
+        path: .data.PARSE_PREMIUM
+        value: "true"
+    - equal:
+        path: .data.S3_DOCUMENT_BUCKET_NAME
+        value: test-cloud-bucket-name
+    - equal:
+        path: .data.S3_ETL_BUCKET_NAME
+        value: llama-platform-etl
+    - equal:
+        path: .data.S3_EXTERNAL_COMPONENTS_BUCKET_NAME
+        value: llama-platform-external-components
+    - equal:
+        path: .data.S3_FILE_PARSING_BUCKET_NAME
+        value: llama-platform-file-parsing
+    - equal:
+        path: .data.S3_RAW_FILE_BUCKET_NAME
+        value: llama-platform-raw-files
+    - equal:
+        path: .data.S3_LLAMA_CLOUD_PARSE_OUTPUT_BUCKET_NAME
+        value: llama-cloud-parse-output
+    - equal:
+        path: .data.S3_FILE_SCREENSHOT_BUCKET_NAME
+        value: llama-platform-file-screenshots
+    - equal:
+        path: .data.S3_LLAMA_EXTRACT_OUTPUT_BUCKET_NAME
+        value: llama-platform-extract-output
+
+- it: should correctly set OIDC configs in the secret
+  template: ../templates/backend/secret.yaml
+  set:
+    backend.config.oidc.clientId: test-client-id
+    backend.config.oidc.clientSecret: test-client-secret
+    backend.config.oidc.discoveryUrl: test-discovery-url
+    mongodb.enabled: false
+    postgresql.enabled: false
+    rabbitmq.enabled: false
+    redis.enabled: false
+  asserts:
+    - equal:
+        path: .data.OIDC_CLIENT_ID
+        value: dGVzdC1jbGllbnQtaWQ=
+    - equal:
+        path: .data.OIDC_CLIENT_SECRET
+        value: dGVzdC1jbGllbnQtc2VjcmV0
+    - equal:
+        path: .data.OIDC_DISCOVERY_URL
+        value: dGVzdC1kaXNjb3ZlcnktdXJs
+
+- it: should correctly set managed qdrant config in the secret
+  template: ../templates/backend/secret.yaml
+  set:
+    backend.config.qdrant.enabled: true
+    backend.config.qdrant.url: test-qdrant-url
+    backend.config.qdrant.apiKey: test-qdrant-api-key
+    mongodb.enabled: false
+    postgresql.enabled: false
+    rabbitmq.enabled: false
+    redis.enabled: false
+  asserts:
+    - equal:
+        path: .data.QDRANT_URL
+        value: dGVzdC1xZHJhbnQtdXJs
+    - equal:
+        path: .data.QDRANT_API_KEY
+        value: dGVzdC1xZHJhbnQtYXBpLWtleQ==
+    - equal:
+        path: .data.BYOC_HAS_MANAGED_QDRANT
+        value: dHJ1ZQ==
+
+- it: should include the Azure OpenAI API key in the environment variables
+  template: ../templates/backend/secret.yaml
+  set:
+    backend.config.azureOpenAi.enabled: true
+    backend.config.azureOpenAi.key: test-key
+    backend.config.azureOpenAi.endpoint: test-endpoint
+    backend.config.azureOpenAi.deploymentName: test-deployment-name
+    backend.config.azureOpenAi.apiVersion: test-api-version
+    mongodb.enabled: false
+    postgresql.enabled: false
+    rabbitmq.enabled: false
+    redis.enabled: false
+  asserts:
+    - equal:
+        path: .data.AZURE_OPENAI_API_KEY
+        value: dGVzdC1rZXk=
+    - equal:
+        path: .data.AZURE_OPENAI_BASE_URL
+        value: dGVzdC1lbmRwb2ludA==
+    - equal:
+        path: .data.AZURE_OPENAI_GPT_4O_DEPLOYMENT_NAME
+        value: dGVzdC1kZXBsb3ltZW50LW5hbWU=
+    - equal:
+        path: .data.AZURE_OPENAI_API_VERSION
+        value: dGVzdC1hcGktdmVyc2lvbg==
+
+- it: should use an external secret name for the Azure OpenAI API key if it is set
+  template: ../templates/backend/deployment.yaml
+  set:
+    backend.config.azureOpenAi.enabled: true
+    backend.config.azureOpenAi.existingSecret: existing-azure-openai-api-key
+    mongodb.enabled: false
+    postgresql.enabled: false
+    rabbitmq.enabled: false
+    redis.enabled: false
+  asserts:
+    - equal:
+        path: .spec.template.spec.containers[0].envFrom[?(@.secretRef.name == "existing-azure-openai-api-key")].secretRef.name
+        value: existing-azure-openai-api-key
+
+- it: should create a HorizontalPodAutoscaler if autoscaling is enabled
+  set:
+    backend.autoscaling.enabled: true
+    mongodb.enabled: false
+    postgresql.enabled: false
+    rabbitmq.enabled: false
+    redis.enabled: false
+  template: ../templates/backend/hpa.yaml
+  asserts:
+    - isKind:
+        of: HorizontalPodAutoscaler
+
+- it: should not create a HorizontalPodAutoscaler if autoscaling is disabled
+  set:
+    backend.autoscaling.enabled: false
+    mongodb.enabled: false
+    postgresql.enabled: false
+    rabbitmq.enabled: false
+    redis.enabled: false
+  template: ../templates/backend/hpa.yaml
+  asserts:
+    - hasDocuments:
+        count: 0
+
+
+- it: should create a PodDisruptionBudget if podDisruptionBudget is enabled
+  set:
+    backend.podDisruptionBudget.enabled: true
+    mongodb.enabled: false
+    postgresql.enabled: false
+    rabbitmq.enabled: false
+    redis.enabled: false
+  template: ../templates/backend/pdb.yaml
+  asserts:
+    - isKind:
+        of: PodDisruptionBudget
+
+- it: should not create a PodDisruptionBudget if podDisruptionBudget is disabled
+  set:
+    backend.podDisruptionBudget.enabled: false
+    mongodb.enabled: false
+    postgresql.enabled: false
+    rabbitmq.enabled: false
+    redis.enabled: false
+  template: ../templates/backend/pdb.yaml
+  asserts:
+    - hasDocuments:
+        count: 0
+
+- it: should not create a service account if create is false
+  set:
+    backend.serviceAccount.create: false
+    mongodb.enabled: false
+    postgresql.enabled: false
+    rabbitmq.enabled: false
+    redis.enabled: false
+  template: ../templates/backend/serviceaccount.yaml
+  asserts:
+    - hasDocuments:
+        count: 0
+
+- it: should create a ServiceMonitor if metrics are enabled
+  set:
+    backend.metrics.enabled: true
+    backend.metrics.serviceMonitor.enabled: true
+    backend.metrics.serviceMonitor.interval: 30s
+    backend.metrics.serviceMonitor.scrapeTimeout: 15s
+    backend.metrics.serviceMonitor.relabelings:
+      - sourceLabels: [__meta_kubernetes_service_label_app]
+        action: keep
+        regex: llamacloud-backend
+    backend.metrics.serviceMonitor.scheme: http
+    backend.metrics.serviceMonitor.tlsConfig:
+      insecureSkipVerify: true
+    mongodb.enabled: false
+    postgresql.enabled: false
+    rabbitmq.enabled: false
+    redis.enabled: false
+  template: ../templates/backend/servicemonitor.yaml
+  asserts:
+    - isKind:
+        of: ServiceMonitor
+    - equal:
+        path: .spec.endpoints[0].interval
+        value: 30s
+    - equal:
+        path: .spec.endpoints[0].scrapeTimeout
+        value: 15s
+    - equal:
+        path: .spec.endpoints[0].scheme
+        value: http
+    - equal:
+        path: .spec.endpoints[0].tlsConfig.insecureSkipVerify
+        value: true
+    - equal:
+        path: .spec.selector.matchLabels["app.kubernetes.io/component"]
+        value: test-release-llamacloud-backend
+
+- it: should create a PrometheusRule if rules are enabled
+  set:
+    backend.metrics.enabled: true
+    backend.metrics.rules.enabled: true
+    backend.metrics.rules.spec:
+      - expr: llamacloud_backend_request_duration_seconds
+        for: 10m
+        labels:
+          severity: error
+        annotations:
+          summary: LlamaCloud Backend Request Duration High
+          description: The request duration is too high.
+    mongodb.enabled: false
+    postgresql.enabled: false
+    rabbitmq.enabled: false
+    redis.enabled: false
+  template: ../templates/backend/prometheusrule.yaml
+  asserts:
+    - isKind:
+        of: PrometheusRule
+    - equal:
+        path: .spec.groups[0].rules[0].expr
+        value: llamacloud_backend_request_duration_seconds
+    - equal:
+        path: .spec.groups[0].rules[0].for
+        value: 10m
+    - equal:
+        path: .spec.groups[0].rules[0].labels.severity
+        value: error
+    - equal:
+        path: .spec.groups[0].rules[0].annotations.summary
+        value: LlamaCloud Backend Request Duration High
+    - equal:
+        path: .spec.groups[0].rules[0].annotations.description
+        value: The request duration is too high.
