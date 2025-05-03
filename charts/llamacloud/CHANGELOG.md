@@ -6,7 +6,6 @@
 - LlamaCloud Index
     - Improvements to Confluence Data Source
     - Postgres Data Sink now supports HNSW by default
-- Fixed `serviceAccounts` for `jobsService` and `jobsWorker`
 
 ## [0.3.1] - 2025-04-17
 

@@ -767,6 +767,7 @@ jobsWorker:
     maxJobsInExecutionPerJobType: 10
     maxIndexJobsInExecution: 0
     maxDocumentIngestionJobsInExecution: 1
+    includeJobErrorDetails: true
 
   ## @param jobsWorker.replicas Number of replicas of JobsWorker Deployment
   replicas: 1
