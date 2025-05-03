@@ -5,6 +5,7 @@
 - Fixes for API usage of Chat API
 - Stability improvements for data ingestion jobs
 - Improved parsing support for CJK encoding across various file types
+- Include all job error details on UI by default
 
 ## [0.3.2] - 2025-04-21
 
