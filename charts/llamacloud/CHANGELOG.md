@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## [0.3.3] - 2025-05-02
+
+- Fixes for API usage of Chat API
+- Stability improvements for data ingestion jobs
+- Improved parsing support for CJK encoding across various file types
+
 ## [0.3.2] - 2025-04-21
 
 - Improved LlamaExtract product capabilities
