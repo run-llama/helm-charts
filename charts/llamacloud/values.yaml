@@ -165,7 +165,7 @@ frontend:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-frontend
-    tag: 0.3.2
+    tag: 0.3.3
     pullPolicy: IfNotPresent
 
   ## @param frontend.service.type Frontend Service type
@@ -339,7 +339,7 @@ backend:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-backend
-    tag: 0.3.2
+    tag: 0.3.3
     pullPolicy: IfNotPresent
 
   ## Backend Service information
@@ -577,7 +577,7 @@ jobsService:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-jobs-service
-    tag: 0.3.2
+    tag: 0.3.3
     pullPolicy: IfNotPresent
 
   ## JobsService Service information\
@@ -764,9 +764,11 @@ jobsWorker:
     ## @param jobsWorker.config.maxJobsInExecutionPerJobType Maximum number of jobs in execution per job type
     ## @param jobsWorker.config.maxIndexJobsInExecution Maximum number of index jobs in execution
     ## @param jobsWorker.config.maxDocumentIngestionJobsInExecution Maximum number of document ingestion jobs in execution
+    ## @param jobsWorker.config.includeJobErrorDetails Whether to always include job error details in API and the UI
     maxJobsInExecutionPerJobType: 10
     maxIndexJobsInExecution: 0
     maxDocumentIngestionJobsInExecution: 1
+    includeJobErrorDetails: true
 
   ## @param jobsWorker.replicas Number of replicas of JobsWorker Deployment
   replicas: 1
@@ -779,7 +781,7 @@ jobsWorker:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-jobs-worker
-    tag: 0.3.2
+    tag: 0.3.3
     pullPolicy: IfNotPresent
 
   ## JobsWorker Service information
@@ -1036,7 +1038,7 @@ llamaParse:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-llamaparse
-    tag: 0.3.2
+    tag: 0.3.3
     pullPolicy: IfNotPresent
 
   ## ServiceAccount configuration
@@ -1258,7 +1260,7 @@ llamaParseOcr:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-llamaparse-ocr
-    tag: 0.3.2
+    tag: 0.3.3
     pullPolicy: IfNotPresent
 
   ## LlamaParseOcr Service information
@@ -1448,7 +1450,7 @@ usage:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-usage
-    tag: 0.3.2
+    tag: 0.3.3
     pullPolicy: IfNotPresent
 
   ## Usage Service information

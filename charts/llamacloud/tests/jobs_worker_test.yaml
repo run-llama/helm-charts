@@ -71,6 +71,7 @@ tests:
     jobsWorker.config.maxJobsInExecutionPerJobType: 5
     jobsWorker.config.maxIndexJobsInExecution: 5
     jobsWorker.config.maxDocumentIngestionJobsInExecution: 5
+    jobsWorker.config.includeJobErrorDetails: "false"
     mongodb.enabled: false
     postgresql.enabled: false
     rabbitmq.enabled: false
@@ -95,6 +96,9 @@ tests:
     - equal:
         path: .data.MAX_DOCUMENT_INGESTION_JOBS_IN_EXECUTION
         value: "5"
+    - equal:
+        path: .data.INCLUDE_JOB_ERROR_DETAILS
+        value: "false"
     - equal:
         path: .data.JOB_SERVICE_URL
         value: http://test-release-llamacloud-jobs-service:8002

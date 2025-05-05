@@ -1,12 +1,23 @@
 # CHANGELOG
 
+## [0.3.3] - 2025-05-02
+
+- LlamaParse:
+    - Improved parsing support for CJK encoding across various file types
+    - Added support for autoModeConfigurationJSON
+    - Support for GPT 4.1
+- Added default rate limits to file upload API
+- Stability improvements for data ingestion jobs
+- Pipeline status resolution improvements
+- Fixes for API usage of Chat API
+- Include all job error details on UI by default
+
 ## [0.3.2] - 2025-04-21
 
 - Improved LlamaExtract product capabilities
 - LlamaCloud Index
     - Improvements to Confluence Data Source
     - Postgres Data Sink now supports HNSW by default
-- Fixed `serviceAccounts` for `jobsService` and `jobsWorker`
 
 ## [0.3.1] - 2025-04-17
 
