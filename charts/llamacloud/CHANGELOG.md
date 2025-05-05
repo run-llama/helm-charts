@@ -6,6 +6,10 @@
 - Stability improvements for data ingestion jobs
 - Improved parsing support for CJK encoding across various file types
 - Include all job error details on UI by default
+- File upload rate limits being checked in [50 qps]
+- Pipeline status resolution improvements
+- autoModeConfigurationJSON being released in parse
+- GPT 4.1 release on frontend
 
 ## [0.3.2] - 2025-04-21
 
