@@ -1,10 +1,11 @@
 from typing import AsyncGenerator
+import asyncio
 from llama_cloud.client import AsyncLlamaCloud
 from httpx import AsyncClient
 from settings import settings
 import pytest
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 async def llama_cloud_client() -> AsyncGenerator[AsyncLlamaCloud, None]:
     """
     Fixture to create a session-scoped LlamaCloud client.

@@ -1,10 +1,10 @@
 from llama_cloud.client import AsyncLlamaCloud
 
-async def delete_file(client: AsyncLlamaCloud, file_id: str):
+async def delete_file(llama_cloud_client: AsyncLlamaCloud, file_id: str):
     """
     Delete a file from LlamaCloud.
     """
-    await client.files.delete_file(file_id=file_id)
+    await llama_cloud_client.files.delete_file(id=file_id)
 
 
 async def test_file_upload(llama_cloud_client: AsyncLlamaCloud):
@@ -14,7 +14,7 @@ async def test_file_upload(llama_cloud_client: AsyncLlamaCloud):
         )
         assert file.id is not None
         assert file.name == "five_pages.pdf"
-        assert file.size > 0
+        assert file.file_size > 0
         # cleanup
         await delete_file(llama_cloud_client, file.id)
 
@@ -26,6 +26,6 @@ async def test_file_upload_from_url(llama_cloud_client: AsyncLlamaCloud):
     )
     assert file.id is not None
     assert file.name == "robots.txt"
-    assert file.size > 0
+    assert file.file_size > 0
     # cleanup
     await delete_file(llama_cloud_client, file.id)

@@ -15,6 +15,12 @@ cp .env.template .env
 
 You will need to fill in the template values with the values from your environment. See the comments for descriptions of how each field should be set.
 
+After you've setup the `.env` with the correct values, you will need to source it to expose the variables to your shell:
+```
+set -a
+source .env
+```
+
 ## Run Tests
 
 Once you've followed the setup instructions, run all tests by running the following command from within this `tests` directory:
