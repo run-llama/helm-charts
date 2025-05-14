@@ -26,3 +26,4 @@ data:
   S3_FILE_SCREENSHOT_BUCKET_NAME: {{ .Values.global.config.parsedFileScreenshotCloudBucketName | default "llama-platform-file-screenshots" }}
   S3_LLAMA_EXTRACT_OUTPUT_BUCKET_NAME: {{ .Values.global.config.llamaExtractOutputCloudBucketName | default "llama-platform-extract-output" }}
   INCLUDE_JOB_ERROR_DETAILS: {{ .Values.jobsWorker.config.includeJobErrorDetails | default "true" | quote }}
+  LLAMA_EXTRACT_MULTIMODAL_MODEL: {{ .Values.backend.config.llamaExtractMultimodalModel | quote }}

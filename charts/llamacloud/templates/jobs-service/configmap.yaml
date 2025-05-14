@@ -23,6 +23,7 @@ data:
   S3_LLAMA_CLOUD_PARSE_OUTPUT_BUCKET_NAME: {{ .Values.global.config.parsedLlamaCloudParseOutputCloudBucketName | default "llama-cloud-parse-output" }}
   S3_FILE_SCREENSHOT_BUCKET_NAME: {{ .Values.global.config.parsedFileScreenshotCloudBucketName | default "llama-platform-file-screenshots" }}
   S3_LLAMA_EXTRACT_OUTPUT_BUCKET_NAME: {{ .Values.global.config.llamaExtractOutputCloudBucketName | default "llama-platform-extract-output" }}
+  LLAMA_EXTRACT_MULTIMODAL_MODEL: {{ .Values.backend.config.llamaExtractMultimodalModel | quote }}
   {{- if .Values.s3proxy.enabled }}
   S3_ENDPOINT_URL: {{ printf "http://%s-%s:%d" (include "llamacloud.fullname" .) .Values.s3proxy.name (.Values.s3proxy.service.port | int) | quote }}
   {{- end }}

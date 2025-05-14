@@ -286,7 +286,7 @@ backend:
     ## @param backend.config.logLevel Log level for the backend
     logLevel: info
 
-    ## @param backend.config.openAiApiKey (Required) OpenAI API key
+    ## @param backend.config.openAiApiKey OpenAI API key
     ## @param backend.config.existingOpenAiApiKeySecretName Name of the existing secret to use for the OpenAI API key
     openAiApiKey: ""
     existingOpenAiApiKeySecretName: ""
@@ -327,6 +327,9 @@ backend:
       existingSecret: ""
       url: ""
       apiKey: ""
+
+    ## @param backend.config.llamaExtractMultimodalModel LlamaExtract multimodal model (gemini-2.0-flash-001, gemini-2.5-pro, openai-gpt-4-1)
+    llamaExtractMultimodalModel: "gemini-2.0-flash-001"
 
   ## @param backend.replicas Number of replicas of Backend Deployment
   replicas: 1
@@ -475,7 +478,7 @@ backend:
     ## @param backend.autoscaling.minReplicas Minimum number of replicas for the Backend Deployment
     ## @param backend.autoscaling.maxReplicas Maximum number of replicas for the Backend Deployment
     ## @param backend.autoscaling.targetCPUUtilizationPercentage Target CPU utilization percentage for the Backend Deployment
-    enabled: false
+    enabled: true
     minReplicas: 1
     maxReplicas: 8
     targetCPUUtilizationPercentage: 80
@@ -565,6 +568,47 @@ jobsService:
   config:
     ## @param jobsService.config.logLevel Log level for the JobsService
     logLevel: "info"
+
+    ## @param jobsService.config.openAiApiKey OpenAI API key
+    ## @param jobsService.config.existingOpenAiApiKeySecretName Name of the existing secret to use for the OpenAI API key
+    openAiApiKey: ""
+    existingOpenAiApiKeySecretName: ""
+
+    ## @param jobsService.config.azureOpenAi.enabled Enable Azure OpenAI for jobsService
+    ## @param jobsService.config.azureOpenAi.existingSecret Name of the existing secret to use for the Azure OpenAI API key
+    ## @param jobsService.config.azureOpenAi.key Azure OpenAI API key
+    ## @param jobsService.config.azureOpenAi.endpoint Azure OpenAI endpoint
+    ## @param jobsService.config.azureOpenAi.deploymentName Azure OpenAI deployment
+    ## @param jobsService.config.azureOpenAi.apiVersion Azure OpenAI API version
+    azureOpenAi:
+      enabled: false
+      existingSecret: ""
+      key: ""
+      endpoint: ""
+      deploymentName: ""
+      apiVersion: ""
+
+    ## @param jobsService.config.anthropicApiKey Anthropic API key
+    ## @param jobsService.config.existingAnthropicApiKeySecret Name of the existing secret to use for the Anthropic API key
+    anthropicApiKey: ""
+    existingAnthropicApiKeySecret: ""
+
+    ## @param jobsService.config.geminiApiKey Google Gemini API key
+    ## @param jobsService.config.existingGeminiApiKeySecret Name of the existing secret to use for the Google Gemini API key
+    geminiApiKey: ""
+    existingGeminiApiKeySecret: ""
+
+    ## @param jobsService.config.awsBedrock.enabled Enable AWS Bedrock for jobsService
+    ## @param jobsService.config.awsBedrock.existingSecret Name of the existing secret to use for the AWS Bedrock API key
+    ## @param jobsService.config.awsBedrock.region AWS Bedrock region
+    ## @param jobsService.config.awsBedrock.accessKeyId AWS Bedrock access key ID
+    ## @param jobsService.config.awsBedrock.secretAccessKey AWS Bedrock secret access key
+    awsBedrock:
+      enabled: false
+      existingSecret: ""
+      region: ""
+      accessKeyId: ""
+      secretAccessKey: ""
 
   ## @param jobsService.replicas Number of replicas of JobsService Deployment
   replicas: 1
@@ -703,7 +747,7 @@ jobsService:
   ## @param jobsService.autoscaling.maxReplicas Maximum number of replicas for the JobsService Deployment
   ## @param jobsService.autoscaling.targetCPUUtilizationPercentage Target CPU utilization percentage for the JobsService Deployment
   autoscaling:
-    enabled: false
+    enabled: true
     minReplicas: 1
     maxReplicas: 4
     targetCPUUtilizationPercentage: 80
@@ -921,7 +965,7 @@ jobsWorker:
     ## @param jobsWorker.autoscaling.minReplicas Minimum number of replicas for the JobsWorker Deployment
     ## @param jobsWorker.autoscaling.maxReplicas Maximum number of replicas for the JobsWorker Deployment
     ## @param jobsWorker.autoscaling.targetCPUUtilizationPercentage Target CPU utilization percentage for the JobsWorker Deployment
-    enabled: false
+    enabled: true
     minReplicas: 1
     maxReplicas: 4
     targetCPUUtilizationPercentage: 80

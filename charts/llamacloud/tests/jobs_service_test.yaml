@@ -1,13 +1,12 @@
-suite: jobs-worker-tests
+suite: jobs-service-tests
 
 templates:
-- ../templates/jobs-worker/configmap.yaml
-- ../templates/jobs-worker/deployment.yaml
-- ../templates/jobs-worker/hpa.yaml
-- ../templates/jobs-worker/service.yaml
-- ../templates/jobs-worker/secret.yaml
-- ../templates/jobs-worker/serviceaccount.yaml
-- ../templates/jobs-worker/servicemonitor.yaml
+- ../templates/jobs-service/configmap.yaml
+- ../templates/jobs-service/deployment.yaml
+- ../templates/jobs-service/service.yaml
+- ../templates/jobs-service/secret.yaml
+- ../templates/jobs-service/serviceaccount.yaml
+- ../templates/jobs-service/servicemonitor.yaml
 
 release:
   name: test-release
@@ -26,18 +25,50 @@ chart:
 tests:
 - it: should be a Deployment
   set:
-    jobsWorker.image.tag: latest
+    jobsService.image.tag: latest
     mongodb.enabled: false
     postgresql.enabled: false
     rabbitmq.enabled: false
     redis.enabled: false
-  template: ../templates/jobs-worker/deployment.yaml
+  template: ../templates/jobs-service/deployment.yaml
   asserts:
     - isKind:
         of: Deployment
     - equal:
         path: .spec.template.spec.containers[0].image
-        value: docker.io/llamaindex/llamacloud-jobs-worker:latest
+        value: docker.io/llamaindex/llamacloud-jobs-service:latest
+
+- it: should create a Deployment with correct llm environment variables
+  set:
+    backend.config.existingOpenAiApiKeySecretName: existing-openai-api-key
+    llamaParse.config.existingAnthropicApiKeySecret: existing-anthropic-api-key
+    llamaParse.config.existingGeminiApiKeySecret: existing-gemini-api-key
+    mongodb.enabled: false
+    postgresql.enabled: false
+    rabbitmq.enabled: false
+    redis.enabled: false
+  template: ../templates/jobs-service/deployment.yaml
+  asserts:
+    - contains:
+        path: .spec.template.spec.containers[0].envFrom
+        content:
+          secretRef:
+            name: existing-anthropic-api-key
+    - contains:
+        path: .spec.template.spec.containers[0].envFrom
+        content:
+          secretRef:
+            name: existing-openai-api-key
+    - contains:
+        path: .spec.template.spec.containers[0].envFrom
+        content:
+          secretRef:
+            name: existing-gemini-api-key
+    - contains:
+        path: .spec.template.spec.containers[0].envFrom
+        content:
+          configMapRef:
+            name: test-release-llamacloud-jobs-service-config
 
 - it: should use an external secret name for the license key if it is set
   set:
@@ -46,7 +77,7 @@ tests:
     postgresql.enabled: false
     rabbitmq.enabled: false
     redis.enabled: false
-  template: ../templates/jobs-worker/deployment.yaml
+  template: ../templates/jobs-service/deployment.yaml
   asserts:
     - equal:
         path: .spec.template.spec.containers[0].env[?(@.name == "LLAMACLOUD_LICENSE_KEY")].valueFrom.secretKeyRef.name
@@ -54,12 +85,12 @@ tests:
 
 - it: should use the custom service account if it is set
   set:
-    jobsWorker.serviceAccount.name: test-service-account
+    jobsService.serviceAccount.name: test-service-account
     mongodb.enabled: false
     postgresql.enabled: false
     rabbitmq.enabled: false
     redis.enabled: false
-  template: ../templates/jobs-worker/deployment.yaml
+  template: ../templates/jobs-service/deployment.yaml
   asserts:
     - equal:
         path: .spec.template.spec.serviceAccountName
@@ -68,15 +99,11 @@ tests:
 - it: should create a ConfigMap with the correct values
   set:
     global.config.parsedDocumentsCloudBucketName: test-cloud-bucket-name
-    jobsWorker.config.maxJobsInExecutionPerJobType: 5
-    jobsWorker.config.maxIndexJobsInExecution: 5
-    jobsWorker.config.maxDocumentIngestionJobsInExecution: 5
-    jobsWorker.config.includeJobErrorDetails: "false"
     mongodb.enabled: false
     postgresql.enabled: false
     rabbitmq.enabled: false
     redis.enabled: false
-  template: ../templates/jobs-worker/configmap.yaml
+  template: ../templates/jobs-service/configmap.yaml
   asserts:
     - equal:
         path: .data.LOG_LEVEL
@@ -88,20 +115,8 @@ tests:
         path: .data.S3_DOCUMENT_BUCKET_NAME
         value: test-cloud-bucket-name
     - equal:
-        path: .data.MAX_JOBS_IN_EXECUTION_PER_JOB_TYPE
-        value: "5"
-    - equal:
-        path: .data.MAX_INDEX_JOBS_IN_EXECUTION
-        value: "5"
-    - equal:
-        path: .data.MAX_DOCUMENT_INGESTION_JOBS_IN_EXECUTION
-        value: "5"
-    - equal:
-        path: .data.INCLUDE_JOB_ERROR_DETAILS
-        value: "false"
-    - equal:
-        path: .data.JOB_SERVICE_URL
-        value: http://test-release-llamacloud-jobs-service:8002
+        path: .data.JOB_API_SERVICE_PORT
+        value: "8002"
     - equal:
         path: .data.S3_ETL_BUCKET_NAME
         value: llama-platform-etl
@@ -127,15 +142,27 @@ tests:
         path: .data.LLAMA_EXTRACT_MULTIMODAL_MODEL
         value: "gemini-2.0-flash-001"
 
+- it: should create a Service
+  set:
+    mongodb.enabled: false
+    postgresql.enabled: false
+    rabbitmq.enabled: false
+    redis.enabled: false
+    jobsService.service.type: ClusterIP
+  template: ../templates/jobs-service/service.yaml
+  asserts:
+    - isKind:
+        of: Service
+
 - it: should create a ServiceMonitor
   set:
     mongodb.enabled: false
     postgresql.enabled: false
     rabbitmq.enabled: false
     redis.enabled: false
-    jobsWorker.metrics.enabled: true
-    jobsWorker.metrics.serviceMonitor.enabled: true
-  template: ../templates/jobs-worker/servicemonitor.yaml
+    jobsService.metrics.enabled: true
+    jobsService.metrics.serviceMonitor.enabled: true
+  template: ../templates/jobs-service/servicemonitor.yaml
   asserts:
     - isKind:
         of: ServiceMonitor
