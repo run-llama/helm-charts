@@ -213,6 +213,9 @@ tests:
     - equal:
         path: .data.S3_LLAMA_EXTRACT_OUTPUT_BUCKET_NAME
         value: llama-platform-extract-output
+    - equal:
+        path: .data.LLAMA_EXTRACT_MULTIMODAL_MODEL
+        value: "gemini-2.0-flash-001"
 
 - it: should correctly set OIDC configs in the secret
   template: ../templates/backend/secret.yaml

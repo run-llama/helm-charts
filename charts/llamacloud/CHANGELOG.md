@@ -1,5 +1,22 @@
 # CHANGELOG
 
+## [0.3.4] - 2025-05-13
+
+- LlamaParse
+    - Improved support for Japanese character encoding
+    - Improved webhook error handling
+    - Added Prometheus metrics (`llamaparse_ocr_done_total`, `llamaparse_ocr_pixels_total`, `llamaparse_pages_parsed_total`, `llamaparse_markdown_length_total`)
+    - Improved spreadsheet parsing capabilities
+- LlamaExtract
+    - Citations! You can learn more about it in our docs [here](https://docs.cloud.llamaindex.ai/llamaextract/features/options)
+    - New UI for extract JSON builer
+    - New `invalidate_cache` option in Advanced Settings to purge the cache
+    - New `.Values.backend.config.llamaExtractMultimodalModel` to configure which multimodal model to use (i.e. `gemini-2.0-flash-001`, `openai-gpt-4-1`, etc.)
+- Improved error handling for high volume file ingestion syncs
+- Improved Index status resolution
+- New Integration UI for data source, data sink, and embedding model configuration
+- (Beta): Batch mode API
+
 ## [0.3.3] - 2025-05-02
 
 - LlamaParse:

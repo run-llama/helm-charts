@@ -85,14 +85,7 @@ spec:
           - secretRef:
               name: {{ .Values.global.config.existingAwsSecretName }}
           {{- end }}
-          {{- if .Values.backend.config.existingOpenAiApiKeySecretName }}
-          - secretRef:
-              name: {{ .Values.backend.config.existingOpenAiApiKeySecretName }}
-          {{- end }}
-          {{- if and .Values.backend.config.azureOpenAi.enabled .Values.backend.config.azureOpenAi.existingSecret }}
-          - secretRef:
-              name: {{ .Values.backend.config.azureOpenAi.existingSecret }}
-          {{- end }}
+          {{- include "common.llmModels.secretRefs" . | nindent 10 }}
           {{- if and (not .Values.postgresql.enabled) .Values.global.config.postgresql.external.enabled .Values.global.config.postgresql.external.existingSecretName }}
           - secretRef:
               name: {{ .Values.global.config.postgresql.external.existingSecretName }}
