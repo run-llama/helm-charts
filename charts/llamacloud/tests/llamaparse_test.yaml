@@ -116,6 +116,8 @@ tests:
     llamaParse.config.awsBedrock.region: us-east-1
     llamaParse.config.awsBedrock.accessKeyId: test-access-key-id
     llamaParse.config.awsBedrock.secretAccessKey: test-secret-access-key
+    llamaParse.config.awsBedrock.sonnet3_5ModelVersionName: test-sonnet-3-5-model-version-name
+    llamaParse.config.awsBedrock.sonnet3_7ModelVersionName: test-sonnet-3-7-model-version-name
     rabbitmq.enabled: true
     rabbitmq.auth.username: test-username
   template: ../templates/llamaparse/secret.yaml
@@ -129,6 +131,12 @@ tests:
     - equal:
         path: .data.AWS_BEDROCK_SECRET_KEY
         value: dGVzdC1zZWNyZXQtYWNjZXNzLWtleQ==
+    - equal:
+        path: .data.BEDROCK_ANTHROPIC_SONNET_3_5_VERSION_NAME
+        value: dGVzdC1zb25uZXQtMy01LW1vZGVsLXZlcnNpb24tbmFtZQ==
+    - equal:
+        path: .data.BEDROCK_ANTHROPIC_SONNET_3_7_VERSION_NAME
+        value: dGVzdC1zb25uZXQtMy03LW1vZGVsLXZlcnNpb24tbmFtZQ==
 
 - it: should create a ConfigMap
   set:

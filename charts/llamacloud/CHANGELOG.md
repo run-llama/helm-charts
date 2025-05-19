@@ -1,5 +1,30 @@
 # CHANGELOG
 
+## [0.3.5] - 2025-05-16
+
+- **Deprecation Warning**: In the near future, we will be deprecating the following in the `values.yaml` file:
+    - `.Values.llamaParse.config.openAiApiKey.*`, `.Values.llamaParse.config.existingOpenAiApiKeySecretName`
+    - `.Values.llamaParse.azureOpenAi.*`
+    - `.Values.llamaParse.config.anthropicApiKey.*`, `.Values.llamaParse.config.existingAnthropicApiKeySecretName`
+    - `.Values.llamaParse.config.geminiApiKey.*`, `.Values.llamaParse.config.existingGeminiApiKeySecretName`
+    - `.Values.llamaParse.config.awsBedrock.*existingSecret*`
+    - LLM configurations will be managed by the `jobsService` and configured at `.Values.llms.*`
+- LlamaParse
+    - Added support for specifying model version for AWS Bedrock
+        - `.Values.llamaParse.config.awsBedrock.sonnet3_5ModelVersionName`
+        - `.Values.llamaParse.config.awsBedrock.sonnet3_7ModelVersionName`
+    - Added support for configuring multiple independency Azure OpenAI deployments. Please refer to the [docs](https://docs.cloud.llamaindex.ai/self_hosting/installation) for more information.
+    - Better support of read-only (password-protected) documents
+    - Improved table support for Anthropic Sonnet 3.7
+- LlamaExtract
+    - Premium mode is available for extraction from documents with complex tables/headers.
+    - Schemas with large number of fields > 100 is supported.
+    - **Note**: As mentioned previously, `.Values.backend.config.llamaExtractMultimodalModel` can be used to specify which multimodal model LlamaParse will use. LlamaExtract will pass the multimodal model name to Llamaparse's `parse_with_agent` (formerly Premium Mode).
+- Fix index status resolution when using scheduled syncs
+- Fix errors when processing screenshots during parsing
+- Various UI bug fixes
+- `autoscaling` is now enabled by default for `backend`, `jobsService`, `jobsWorker`, and `llamaParse` services
+
 ## [0.3.4] - 2025-05-13
 
 - LlamaParse

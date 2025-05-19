@@ -257,12 +257,12 @@ GOOGLE_GEMINI_API_KEY: {{ .Values.llamaParse.config.geminiApiKey | b64enc | quot
 GOOGLE_GEMINI_API_KEY: {{ .Values.jobsService.config.geminiApiKey | b64enc | quote }}
 {{- end }}
 {{- if and .Values.llamaParse.config.awsBedrock.enabled (not .Values.llamaParse.config.awsBedrock.existingSecret) }}
-AWS_BEDROCK_ENABLED: "true"
+AWS_BEDROCK_ENABLED: {{ "true" | b64enc | quote }}
 AWS_BEDROCK_REGION: {{ .Values.llamaParse.config.awsBedrock.region | b64enc | quote }}
 AWS_BEDROCK_ACCESS_KEY: {{ .Values.llamaParse.config.awsBedrock.accessKeyId | b64enc | quote }}
 AWS_BEDROCK_SECRET_KEY: {{ .Values.llamaParse.config.awsBedrock.secretAccessKey | b64enc | quote }}
 {{- else if and .Values.jobsService.config.awsBedrock.enabled (not .Values.jobsService.config.awsBedrock.existingSecret) }}
-AWS_BEDROCK_ENABLED: "true"
+AWS_BEDROCK_ENABLED: {{ "true" | b64enc | quote }}
 AWS_BEDROCK_REGION: {{ .Values.jobsService.config.awsBedrock.region | b64enc | quote }}
 AWS_BEDROCK_ACCESS_KEY: {{ .Values.jobsService.config.awsBedrock.accessKeyId | b64enc | quote }}
 AWS_BEDROCK_SECRET_KEY: {{ .Values.jobsService.config.awsBedrock.secretAccessKey | b64enc | quote }}
