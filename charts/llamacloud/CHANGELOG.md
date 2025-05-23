@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## [0.4.0] - 2025-05-23
+
+- LlamaParse
+    - **New Parse UI v2 is now available!** We've make some updates to the ~look~ of our parse playground UI.
+    - General improvements to parsing ux and performance
+- LlamaExtract
+    - General improvements to extraction performance
+- Project level RBAC: You can now select assign member roles on a per project basis.
+
 ## [0.3.5] - 2025-05-16
 
 - **Deprecation Warning**: In the near future, we will be deprecating the following in the `values.yaml` file:
