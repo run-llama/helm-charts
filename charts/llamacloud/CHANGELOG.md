@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## [0.4.1] - 2025-05-28
+
+- Minor UI bug fixes
+- LlamaParse
+    - Support for Anthropic Sonnet 4.0
+    - General product improvements
+
 ## [0.4.0] - 2025-05-23
 
 - LlamaParse
