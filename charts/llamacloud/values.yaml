@@ -165,7 +165,7 @@ frontend:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-frontend
-    tag: 0.4.1
+    tag: 0.4.2
     pullPolicy: IfNotPresent
 
   ## @param frontend.service.type Frontend Service type
@@ -342,7 +342,7 @@ backend:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-backend
-    tag: 0.4.1
+    tag: 0.4.2
     pullPolicy: IfNotPresent
 
   ## Backend Service information
@@ -569,47 +569,6 @@ jobsService:
     ## @param jobsService.config.logLevel Log level for the JobsService
     logLevel: "info"
 
-    ## @param jobsService.config.openAiApiKey OpenAI API key
-    ## @param jobsService.config.existingOpenAiApiKeySecretName Name of the existing secret to use for the OpenAI API key
-    openAiApiKey: ""
-    existingOpenAiApiKeySecretName: ""
-
-    ## @param jobsService.config.azureOpenAi.enabled Enable Azure OpenAI for jobsService
-    ## @param jobsService.config.azureOpenAi.existingSecret Name of the existing secret to use for the Azure OpenAI API key
-    ## @param jobsService.config.azureOpenAi.key Azure OpenAI API key
-    ## @param jobsService.config.azureOpenAi.endpoint Azure OpenAI endpoint
-    ## @param jobsService.config.azureOpenAi.deploymentName Azure OpenAI deployment
-    ## @param jobsService.config.azureOpenAi.apiVersion Azure OpenAI API version
-    azureOpenAi:
-      enabled: false
-      existingSecret: ""
-      key: ""
-      endpoint: ""
-      deploymentName: ""
-      apiVersion: ""
-
-    ## @param jobsService.config.anthropicApiKey Anthropic API key
-    ## @param jobsService.config.existingAnthropicApiKeySecret Name of the existing secret to use for the Anthropic API key
-    anthropicApiKey: ""
-    existingAnthropicApiKeySecret: ""
-
-    ## @param jobsService.config.geminiApiKey Google Gemini API key
-    ## @param jobsService.config.existingGeminiApiKeySecret Name of the existing secret to use for the Google Gemini API key
-    geminiApiKey: ""
-    existingGeminiApiKeySecret: ""
-
-    ## @param jobsService.config.awsBedrock.enabled Enable AWS Bedrock for jobsService
-    ## @param jobsService.config.awsBedrock.existingSecret Name of the existing secret to use for the AWS Bedrock API key
-    ## @param jobsService.config.awsBedrock.region AWS Bedrock region
-    ## @param jobsService.config.awsBedrock.accessKeyId AWS Bedrock access key ID
-    ## @param jobsService.config.awsBedrock.secretAccessKey AWS Bedrock secret access key
-    awsBedrock:
-      enabled: false
-      existingSecret: ""
-      region: ""
-      accessKeyId: ""
-      secretAccessKey: ""
-
   ## @param jobsService.replicas Number of replicas of JobsService Deployment
   replicas: 1
 
@@ -621,7 +580,7 @@ jobsService:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-jobs-service
-    tag: 0.4.1
+    tag: 0.4.2
     pullPolicy: IfNotPresent
 
   ## JobsService Service information\
@@ -825,7 +784,7 @@ jobsWorker:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-jobs-worker
-    tag: 0.4.1
+    tag: 0.4.2
     pullPolicy: IfNotPresent
 
   ## JobsWorker Service information
@@ -1070,6 +1029,18 @@ llamaParse:
       sonnet3_5ModelVersionName: "anthropic.claude-3-5-sonnet-20240620-v1:0"
       sonnet3_7ModelVersionName: "anthropic.claude-3-7-sonnet-20250219-v1:0"
 
+    ## @param llamaParse.config.googleVertexAi.enabled Enable Google Vertex AI for LlamaParse
+    ## @param llamaParse.config.googleVertexAi.existingSecret Name of the existing secret to use for the Google Vertex AI API key
+    ## @param llamaParse.config.googleVertexAi.projectId Google Vertex AI project id
+    ## @param llamaParse.config.googleVertexAi.location Google Vertex AI location
+    ## @param llamaParse.config.googleVertexAi.credentialsJson Google Vertex AI credentials JSON
+    googleVertexAi:
+      enabled: false
+      existingSecret: ""
+      projectId: ""
+      location: ""
+      credentialsJson: ""
+
     ## @param llamaParse.config.s3UploadBucket S3 bucket to upload files to
     ## @param llamaParse.config.s3OutputBucket S3 bucket to output files to
     s3UploadBucket: "llama-platform-file-parsing"
@@ -1086,7 +1057,7 @@ llamaParse:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-llamaparse
-    tag: 0.4.1
+    tag: 0.4.2
     pullPolicy: IfNotPresent
 
   ## ServiceAccount configuration
@@ -1308,7 +1279,7 @@ llamaParseOcr:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-llamaparse-ocr
-    tag: 0.4.1
+    tag: 0.4.2
     pullPolicy: IfNotPresent
 
   ## LlamaParseOcr Service information
@@ -1498,7 +1469,7 @@ usage:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-usage
-    tag: 0.4.1
+    tag: 0.4.2
     pullPolicy: IfNotPresent
 
   ## Usage Service information
