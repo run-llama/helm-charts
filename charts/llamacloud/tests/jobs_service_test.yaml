@@ -40,7 +40,7 @@ tests:
 
 - it: should create a Deployment with correct llm environment variables
   set:
-    backend.config.existingOpenAiApiKeySecretName: existing-openai-api-key
+    llamaParse.config.existingOpenAiApiKeySecretName: existing-openai-api-key
     llamaParse.config.existingAnthropicApiKeySecret: existing-anthropic-api-key
     llamaParse.config.existingGeminiApiKeySecret: existing-gemini-api-key
     mongodb.enabled: false

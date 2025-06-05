@@ -138,6 +138,29 @@ tests:
         path: .data.BEDROCK_ANTHROPIC_SONNET_3_7_VERSION_NAME
         value: dGVzdC1zb25uZXQtMy03LW1vZGVsLXZlcnNpb24tbmFtZQ==
 
+- it: should set the Google Vertex AI env vars if feature is enabled
+  set:
+    llamaParse.config.googleVertexAi.enabled: true
+    llamaParse.config.googleVertexAi.projectId: test-project-id
+    llamaParse.config.googleVertexAi.location: test-location
+    llamaParse.config.googleVertexAi.credentialsJson: test-credentials-json
+    rabbitmq.enabled: true
+    rabbitmq.auth.username: test-username
+  template: ../templates/llamaparse/secret.yaml
+  asserts:
+    - equal:
+        path: .data.GOOGLE_VERTEX_AI_ENABLED
+        value: "true"
+    - equal:
+        path: .data.GOOGLE_VERTEX_AI_PROJECT_ID
+        value: dGVzdC1wcm9qZWN0LWlk
+    - equal:
+        path: .data.GOOGLE_VERTEX_AI_LOCATION
+        value: dGVzdC1sb2NhdGlvbg==
+    - equal:
+        path: .data.GOOGLE_VERTEX_AI_CREDENTIALS_JSON
+        value: dGVzdC1jcmVkZW50aWFscy1qc29u
+
 - it: should create a ConfigMap
   set:
     llamaParse.config.maxPdfPages: 1000

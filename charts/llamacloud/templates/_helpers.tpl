@@ -230,79 +230,64 @@ Service Accounts Names
 
 
 {{- define "common.llmModels.envVars" -}}
-{{- if and .Values.backend.config.openAiApiKey (not .Values.backend.existingOpenAiApiKeySecretName) }}
-LC_OPENAI_API_KEY: {{ .Values.backend.config.openAiApiKey | b64enc | quote }}
-{{- else if and .Values.jobsService.config.openAiApiKey (not .Values.jobsService.existingOpenAiApiKeySecretName) }}
-LC_OPENAI_API_KEY: {{ .Values.jobsService.config.openAiApiKey | b64enc | quote }}
+{{- if and .Values.llamaParse.config.openAiApiKey (not .Values.llamaParse.existingOpenAiApiKeySecretName) }}
+LC_OPENAI_API_KEY: {{ .Values.llamaParse.config.openAiApiKey | b64enc | quote }}
 {{- end }}
-{{- if and .Values.backend.config.azureOpenAi.enabled (not .Values.backend.config.azureOpenAi.existingSecret) }}
-AZURE_OPENAI_API_KEY: {{ .Values.backend.config.azureOpenAi.key | b64enc | quote }}
-AZURE_OPENAI_BASE_URL: {{ .Values.backend.config.azureOpenAi.endpoint | b64enc | quote }}
-AZURE_OPENAI_GPT_4O_DEPLOYMENT_NAME: {{ .Values.backend.config.azureOpenAi.deploymentName | b64enc | quote }}
-AZURE_OPENAI_API_VERSION: {{ .Values.backend.config.azureOpenAi.apiVersion | b64enc | quote }}
-{{- else if and .Values.jobsService.config.azureOpenAi.enabled (not .Values.jobsService.config.azureOpenAi.existingSecret) }}
-AZURE_OPENAI_API_KEY: {{ .Values.jobsService.config.azureOpenAi.key | b64enc | quote }}
-AZURE_OPENAI_BASE_URL: {{ .Values.jobsService.config.azureOpenAi.endpoint | b64enc | quote }}
-AZURE_OPENAI_GPT_4O_DEPLOYMENT_NAME: {{ .Values.jobsService.config.azureOpenAi.deploymentName | b64enc | quote }}
-AZURE_OPENAI_API_VERSION: {{ .Values.jobsService.config.azureOpenAi.apiVersion | b64enc | quote }}
+{{- if and .Values.llamaParse.config.azureOpenAi.enabled (not .Values.llamaParse.config.azureOpenAi.existingSecret) }}
+AZURE_OPENAI_API_KEY: {{ .Values.llamaParse.config.azureOpenAi.key | b64enc | quote }}
+AZURE_OPENAI_BASE_URL: {{ .Values.llamaParse.config.azureOpenAi.endpoint | b64enc | quote }}
+AZURE_OPENAI_GPT_4O_DEPLOYMENT_NAME: {{ .Values.llamaParse.config.azureOpenAi.deploymentName | b64enc | quote }}
+AZURE_OPENAI_API_VERSION: {{ .Values.llamaParse.config.azureOpenAi.apiVersion | b64enc | quote }}
 {{- end }}
 {{- if and .Values.llamaParse.config.anthropicAPIKey (not .Values.llamaParse.config.existingAnthropicAPIKeySecret) }}
 ANTHROPIC_API_KEY: {{ .Values.llamaParse.config.anthropicAPIKey | default "" | b64enc | quote }}
-{{- else if and .Values.jobsService.config.anthropicAPIKey (not .Values.jobsService.config.existingAnthropicAPIKeySecret) }}
-ANTHROPIC_API_KEY: {{ .Values.jobsService.config.anthropicAPIKey | default "" | b64enc | quote }}
 {{- end }}
 {{- if and .Values.llamaParse.config.geminiApiKey (not .Values.llamaParse.config.existingGeminiApiKeySecret) }}
 GOOGLE_GEMINI_API_KEY: {{ .Values.llamaParse.config.geminiApiKey | b64enc | quote }}
-{{- else if and .Values.jobsService.config.geminiApiKey (not .Values.jobsService.config.existingGeminiApiKeySecret) }}
-GOOGLE_GEMINI_API_KEY: {{ .Values.jobsService.config.geminiApiKey | b64enc | quote }}
 {{- end }}
 {{- if and .Values.llamaParse.config.awsBedrock.enabled (not .Values.llamaParse.config.awsBedrock.existingSecret) }}
 AWS_BEDROCK_ENABLED: {{ "true" | b64enc | quote }}
+{{- end }}
+{{- if .Values.llamaParse.config.awsBedrock.region }}
 AWS_BEDROCK_REGION: {{ .Values.llamaParse.config.awsBedrock.region | b64enc | quote }}
-AWS_BEDROCK_ACCESS_KEY: {{ .Values.llamaParse.config.awsBedrock.accessKeyId | b64enc | quote }}
-AWS_BEDROCK_SECRET_KEY: {{ .Values.llamaParse.config.awsBedrock.secretAccessKey | b64enc | quote }}
-{{- else if and .Values.jobsService.config.awsBedrock.enabled (not .Values.jobsService.config.awsBedrock.existingSecret) }}
-AWS_BEDROCK_ENABLED: {{ "true" | b64enc | quote }}
-AWS_BEDROCK_REGION: {{ .Values.jobsService.config.awsBedrock.region | b64enc | quote }}
-AWS_BEDROCK_ACCESS_KEY: {{ .Values.jobsService.config.awsBedrock.accessKeyId | b64enc | quote }}
-AWS_BEDROCK_SECRET_KEY: {{ .Values.jobsService.config.awsBedrock.secretAccessKey | b64enc | quote }}
+{{- end }}
+{{- if .Values.llamaParse.config.awsBedrock.accessKeyId }}
+AWS_BEDROCK_ACCESS_KEY_ID: {{ .Values.llamaParse.config.awsBedrock.accessKeyId | b64enc | quote }}
+{{- end }}
+{{- if .Values.llamaParse.config.awsBedrock.secretAccessKey }}
+AWS_BEDROCK_SECRET_ACCESS_KEY: {{ .Values.llamaParse.config.awsBedrock.secretAccessKey | b64enc | quote }}
+{{- end }}
+{{- if and .Values.llamaParse.config.googleVertexAi.enabled (not .Values.llamaParse.config.googleVertexAi.existingSecret) }}
+GOOGLE_VERTEX_AI_ENABLED: {{ "true" | b64enc | quote }}
+GOOGLE_VERTEX_AI_PROJECT_ID: {{ .Values.llamaParse.config.googleVertexAi.projectId | b64enc | quote }}
+GOOGLE_VERTEX_AI_LOCATION: {{ .Values.llamaParse.config.googleVertexAi.location | b64enc | quote }}
+GOOGLE_VERTEX_AI_CREDENTIALS_JSON: {{ .Values.llamaParse.config.googleVertexAi.credentialsJson | b64enc | quote }}
 {{- end }}
 {{- end -}}
 
 {{- define "common.llmModels.secretRefs" -}}
-{{- if .Values.backend.config.existingOpenAiApiKeySecretName }}
+{{- if .Values.llamaParse.config.existingOpenAiApiKeySecretName }}
 - secretRef:
-    name: {{ .Values.backend.config.existingOpenAiApiKeySecretName }}
-{{- else if .Values.jobsService.config.existingOpenAiApiKeySecretName }}
-- secretRef:
-    name: {{ .Values.jobsService.config.existingOpenAiApiKeySecretName }}
+    name: {{ .Values.llamaParse.config.existingOpenAiApiKeySecretName }}
 {{- end }}
-{{- if and .Values.backend.config.azureOpenAi.enabled .Values.backend.config.azureOpenAi.existingSecret }}
+{{- if and .Values.llamaParse.config.azureOpenAi.enabled .Values.llamaParse.config.azureOpenAi.existingSecret }}
 - secretRef:
-    name: {{ .Values.backend.config.azureOpenAi.existingSecret }}
-{{- else if and .Values.jobsService.config.azureOpenAi.enabled .Values.jobsService.config.azureOpenAi.existingSecret }}
-- secretRef:
-    name: {{ .Values.jobsService.config.azureOpenAi.existingSecret }}
+    name: {{ .Values.llamaParse.config.azureOpenAi.existingSecret }}
 {{- end }}
 {{- if .Values.llamaParse.config.existingAnthropicApiKeySecret }}
 - secretRef:
     name: {{ .Values.llamaParse.config.existingAnthropicApiKeySecret }}
-{{- else if .Values.jobsService.config.existingAnthropicApiKeySecret }}
-- secretRef:
-    name: {{ .Values.jobsService.config.existingAnthropicApiKeySecret }}
 {{- end }}
 {{- if .Values.llamaParse.config.existingGeminiApiKeySecret }}
 - secretRef:
     name: {{ .Values.llamaParse.config.existingGeminiApiKeySecret }}
-{{- else if .Values.jobsService.config.existingGeminiApiKeySecret }}
-- secretRef:
-    name: {{ .Values.jobsService.config.existingGeminiApiKeySecret }}
 {{- end }}
 {{- if and .Values.llamaParse.config.awsBedrock.enabled .Values.llamaParse.config.awsBedrock.existingSecret }}
 - secretRef:
     name: {{ .Values.llamaParse.config.awsBedrock.existingSecret }}
-{{- else if and .Values.jobsService.config.awsBedrock.enabled .Values.jobsService.config.awsBedrock.existingSecret }}
+{{- end }}
+{{- if and .Values.llamaParse.config.googleVertexAi.enabled .Values.llamaParse.config.googleVertexAi.existingSecret }}
 - secretRef:
-    name: {{ .Values.jobsService.config.awsBedrock.existingSecret }}
+    name: {{ .Values.llamaParse.config.googleVertexAi.existingSecret }}
 {{- end }}
 {{- end -}}

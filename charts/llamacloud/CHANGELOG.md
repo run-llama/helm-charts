@@ -1,5 +1,21 @@
 # CHANGELOG
 
+## [0.4.2] - 2025-06-04
+
+- New `Admin` UI.
+    - In an effort to make it easier to manage your LlamaCloud deployment, we've added a new `Admin` tab on the `Settings` page.
+    - To start, we've added the ability to view your deployment's current LLM configurations and deployment feature availability matrices.
+    - Note: The current implementation assumes that OpenAi and Azure OpenAi configs are the same in `.Values.backend.config.openAi*` and `.Values.llamaParse.config.openAi*`.
+- Chat Playground
+    - Added support for OpenAI 4.1, 4.1-nano, and 4.1-mini models
+- LlamaParse
+    - Added support for Google Vertex AI
+        - `.Values.llamaParse.config.googleVertexAi.*`
+    - General product improvements
+- LlamaExtract
+    - General product improvements
+- Resolve a handful of package vulnerabilities
+
 ## [0.4.1] - 2025-05-28
 
 - Minor UI bug fixes
