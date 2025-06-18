@@ -1,0 +1,26 @@
+{{- if .Values.llamaParseLayoutDetectionApi.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "llamacloud.fullname" . }}-{{ .Values.llamaParseLayoutDetectionApi.name }}
+  labels:
+    {{- include "llamacloud.labels" . | nindent 4 }}
+    {{- with.Values.llamaParseLayoutDetectionApi.service.labels }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- include "llamacloud.annotations" . | nindent 4 }}
+    {{- with.Values.llamaParseLayoutDetectionApi.service.annotations }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  type: {{ .Values.llamaParseLayoutDetectionApi.service.type }}
+  ports:
+    - port: {{ .Values.llamaParseLayoutDetectionApi.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "llamacloud.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: {{ include "llamacloud.fullname" . }}-{{ .Values.llamaParseLayoutDetectionApi.name }}
+{{- end }}

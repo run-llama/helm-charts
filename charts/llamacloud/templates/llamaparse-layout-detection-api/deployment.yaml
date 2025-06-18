@@ -1,0 +1,99 @@
+{{- if .Values.llamaParseLayoutDetectionApi.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "llamacloud.fullname" . }}-{{ .Values.llamaParseLayoutDetectionApi.name }}
+  labels:
+    {{- include "llamacloud.labels" . | nindent 4 }}
+    {{- with.Values.llamaParseLayoutDetectionApi.labels }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- include "llamacloud.annotations" . | nindent 4 }}
+    {{- with.Values.llamaParseLayoutDetectionApi.annotations }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  {{- if not .Values.llamaParseLayoutDetectionApi.autoscaling.enabled }}
+  replicas: {{ .Values.llamaParseLayoutDetectionApi.replicas }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "llamacloud.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: {{ include "llamacloud.fullname" . }}-{{ .Values.llamaParseLayoutDetectionApi.name }}
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      {{- with .Values.llamaParseLayoutDetectionApi.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        app.kubernetes.io/component: {{ include "llamacloud.fullname" . }}-{{ .Values.llamaParseLayoutDetectionApi.name }}
+        {{- include "llamacloud.labels" . | nindent 8 }}
+        {{- with .Values.llamaParseLayoutDetectionApi.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "llamaParseLayoutDetectionApi.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.llamaParseLayoutDetectionApi.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Values.llamaParseLayoutDetectionApi.name }}
+          securityContext:
+            {{- toYaml .Values.llamaParseLayoutDetectionApi.securityContext | nindent 12 }}
+          image: "{{ .Values.llamaParseLayoutDetectionApi.image.registry }}/{{ .Values.llamaParseLayoutDetectionApi.image.repository }}:{{ .Values.llamaParseLayoutDetectionApi.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.llamaParseLayoutDetectionApi.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.llamaParseLayoutDetectionApi.containerPort }}
+              protocol: TCP
+          livenessProbe:
+            {{- toYaml .Values.llamaParseLayoutDetectionApi.livenessProbe | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.llamaParseLayoutDetectionApi.readinessProbe | nindent 12 }}
+          resources:
+            {{- toYaml .Values.llamaParseLayoutDetectionApi.resources | nindent 12 }}
+          env:
+          - name: LLAMACLOUD_LICENSE_KEY
+            valueFrom:
+              secretKeyRef:
+                {{- if .Values.global.config.existingLicenseKeySecret }}
+                name: {{ .Values.global.config.existingLicenseKeySecret }}
+                {{- else }}
+                name: {{ include "llamacloud.fullname" . }}-license-key
+                {{- end }}
+                key: llamacloud-license-key
+          - name: LOG_LEVEL
+            value: {{ .Values.llamaParseLayoutDetectionApi.config.logLevel | default "INFO" }}
+          {{- with .Values.llamaParseLayoutDetectionApi.extraEnvVariables }}
+          {{- toYaml . | nindent 10 }}
+          {{- end }}
+          {{- with .Values.llamaParseLayoutDetectionApi.volumeMounts }}
+          volumeMounts:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- with .Values.llamaParseLayoutDetectionApi.volumes }}
+      volumes:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.llamaParseLayoutDetectionApi.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.llamaParseLayoutDetectionApi.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.llamaParseLayoutDetectionApi.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

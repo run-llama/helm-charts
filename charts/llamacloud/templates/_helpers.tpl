@@ -117,6 +117,14 @@ Service Accounts Names
 {{- end -}}
 {{- end -}}
 
+{{- define "llamaParseLayoutDetectionApi.serviceAccountName" -}}
+{{- if .Values.llamaParseLayoutDetectionApi.serviceAccount.create -}}
+    {{ default (printf "%s-%s" (include "llamacloud.fullname" .) .Values.llamaParseLayoutDetectionApi.name) .Values.llamaParseLayoutDetectionApi.serviceAccount.name | trunc 63 | trimSuffix "-" }}
+{{- else -}}
+    {{ default "default" .Values.llamaParseLayoutDetectionApi.serviceAccount.name }}
+{{- end -}}
+{{- end -}}
+
 {{- define "usage.serviceAccountName" -}}
 {{- if .Values.usage.serviceAccount.create -}}
     {{ default (printf "%s-%s" (include "llamacloud.fullname" .) .Values.usage.name) .Values.usage.serviceAccount.name | trunc 63 | trimSuffix "-" }}
