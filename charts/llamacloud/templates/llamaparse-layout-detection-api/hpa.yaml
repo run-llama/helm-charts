@@ -1,0 +1,34 @@
+{{- if .Values.llamaParseLayoutDetectionApi.enabled }}
+{{- if .Values.llamaParseLayoutDetectionApi.autoscaling.enabled }}
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "llamacloud.fullname" . }}-{{ .Values.llamaParseLayoutDetectionApi.name }}
+  labels:
+    {{- include "llamacloud.labels" . | nindent 4 }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "llamacloud.fullname" . }}-{{ .Values.llamaParseLayoutDetectionApi.name }}
+  minReplicas: {{ .Values.llamaParseLayoutDetectionApi.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.llamaParseLayoutDetectionApi.autoscaling.maxReplicas }}
+  metrics:
+    {{- if .Values.llamaParseLayoutDetectionApi.autoscaling.targetCPUUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.llamaParseLayoutDetectionApi.autoscaling.targetCPUUtilizationPercentage }}
+    {{- end }}
+    {{- if .Values.llamaParseLayoutDetectionApi.autoscaling.targetMemoryUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.llamaParseLayoutDetectionApi.autoscaling.targetMemoryUtilizationPercentage }}
+    {{- end }}
+{{- end }}
+{{- end }}

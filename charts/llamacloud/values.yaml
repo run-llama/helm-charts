@@ -165,7 +165,7 @@ frontend:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-frontend
-    tag: 0.4.2
+    tag: 0.4.3
     pullPolicy: IfNotPresent
 
   ## @param frontend.service.type Frontend Service type
@@ -342,7 +342,7 @@ backend:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-backend
-    tag: 0.4.2
+    tag: 0.4.3
     pullPolicy: IfNotPresent
 
   ## Backend Service information
@@ -580,7 +580,7 @@ jobsService:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-jobs-service
-    tag: 0.4.2
+    tag: 0.4.3
     pullPolicy: IfNotPresent
 
   ## JobsService Service information\
@@ -784,7 +784,7 @@ jobsWorker:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-jobs-worker
-    tag: 0.4.2
+    tag: 0.4.3
     pullPolicy: IfNotPresent
 
   ## JobsWorker Service information
@@ -1057,7 +1057,7 @@ llamaParse:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-llamaparse
-    tag: 0.4.2
+    tag: 0.4.3
     pullPolicy: IfNotPresent
 
   ## ServiceAccount configuration
@@ -1279,7 +1279,7 @@ llamaParseOcr:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-llamaparse-ocr
-    tag: 0.4.2
+    tag: 0.4.3
     pullPolicy: IfNotPresent
 
   ## LlamaParseOcr Service information
@@ -1453,7 +1453,179 @@ llamaParseOcr:
       ## @param llamaParseOcr.metrics.serviceMonitor.tlsConfig TLS configuration for the service monitor
       tlsConfig: {}
 
-## @section LlamaParsePdf Configuration
+## @section LlamaParse Layout Detection API Configuration
+llamaParseLayoutDetectionApi:
+  ## @param llamaParseLayoutDetectionApi.enabled Enable LlamaParseLayoutDetectionApi
+  enabled: false
+
+  ## @param llamaParseLayoutDetectionApi.name Name suffix of the LlamaParse Layout Detectedion Api related resources
+  name: llamaparse-layout-detection-api
+
+  ## @param llamaParseLayoutDetectionApi.replicas Number of replicas of LlamaParse Layout Detectedion Api Deployment
+  replicas: 1
+
+  ## @param llamaParseLayoutDetectionApi.config.logLevel Log level for the LlamaParse Layout Detectedion Api
+  config:
+    logLevel: INFO
+
+  ## LlamaParse Layout Detectedion Api Image information
+  ## @param llamaParseLayoutDetectionApi.image.registry LlamaParse Layout Detectedion Api Image registry
+  ## @param llamaParseLayoutDetectionApi.image.repository LlamaParse Layout Detectedion Api Image repository
+  ## @param llamaParseLayoutDetectionApi.image.tag LlamaParse Layout Detectedion Api Image tag
+  ## @param llamaParseLayoutDetectionApi.image.pullPolicy LlamaParse Layout Detectedion Api Image pull policy
+  image:
+    registry: docker.io
+    repository: llamaindex/llamacloud-layout-detection-api
+    tag: 0.4.3
+    pullPolicy: IfNotPresent
+
+  ## LlamaParse Layout Detectedion Api Service information
+  ## @param llamaParseLayoutDetectionApi.service.type LlamaParse Layout Detectedion Api Service type
+  ## @param llamaParseLayoutDetectionApi.service.port LlamaParse Layout Detectedion Api Service port
+  service:
+    type: ClusterIP
+    port: 8000
+
+  ## ServiceAccount configuration
+  ## @param llamaParseLayoutDetectionApi.serviceAccount.create Whether or not to create a new service account
+  ## @param llamaParseLayoutDetectionApi.serviceAccount.name Name of the service account
+  ## @param llamaParseLayoutDetectionApi.serviceAccount.labels Labels to add to the service account
+  ## @param llamaParseLayoutDetectionApi.serviceAccount.annotations Annotations to add to the service account
+  ## @param llamaParseLayoutDetectionApi.serviceAccount.automountServiceAccountToken Whether or not to automount the service account token
+  serviceAccount:
+    create: true
+    name: ""
+    labels: {}
+    annotations: {}
+    automountServiceAccountToken: true
+
+  ## @param llamaParseLayoutDetectionApi.containerPort Port to expose on the LlamaParse Layout Detectedion Api container
+  ## Ref: https://kubernetes.io/docs/tutorials/services/connect-applications-service/#exposing-pods-to-the-cluster
+  containerPort: 8000
+
+  ## @param llamaParseLayoutDetectionApi.labels Labels added to the LlamaParse Layout Detectedion Api Deployment.
+  labels: {}
+  ## @param llamaParseLayoutDetectionApi.annotations Annotations added to the LlamaParse Layout Detectedion Api Deployment.
+  annotations: {}
+
+  ## @param llamaParseLayoutDetectionApi.podAnnotations Annotations to add to the resulting Pods of the Deployment.
+  podAnnotations: {}
+
+  ## @param llamaParseLayoutDetectionApi.podLabels Labels to add to the resulting Pods of the Deployment.
+  podLabels: {}
+
+  ## @param llamaParseLayoutDetectionApi.podSecurityContext Pod security context
+  podSecurityContext: {}
+
+  ## @param llamaParseLayoutDetectionApi.securityContext Security context for the container
+  securityContext: {}
+  #  runAsUser: 1000
+  #  runAsGroup: 1000
+
+  ## @param llamaParseLayoutDetectionApi.extraEnvVariables Extra environment variables to add to LlamaParse Layout Detectedion Api pods
+  ## Example:
+  ## extraEnvVariables:
+  ##   - name: FOO
+  ##     value: BAR
+  extraEnvVariables: []
+
+  ## LlamaParse Layout Detectedion Api Resources: Set container requests and limits for different resources like CPU or memory (essential for production workloads)
+  ## Ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+  ## Below are the recommended settings for a basic deployment. Adjust according to your needs.
+  resources:
+    ## @param llamaParseLayoutDetectionApi.resources.requests.memory Memory request for the LlamaParse Layout Detection API Container
+    ## @param llamaParseLayoutDetectionApi.resources.requests.cpu CPU request for the LlamaParse Layout Detection API Container
+    ## @param llamaParseLayoutDetectionApi.resources.limits.memory Memory limit for the LlamaParse Layout Detection API Container
+    ## @param llamaParseLayoutDetectionApi.resources.limits.cpu CPU limit for the LlamaParse Layout Detection API Container
+    requests:
+      cpu: 1
+      memory: 6Gi
+    limits:
+      cpu: 2
+      memory: 12Gi
+
+  ## LlamaParse Layout Detection API Liveness probe configuration
+  livenessProbe:
+    ## @param llamaParseLayoutDetectionApi.livenessProbe.httpGet.path Path to hit for the liveness probe
+    ## @param llamaParseLayoutDetectionApi.livenessProbe.httpGet.port Port to hit for the liveness probe
+    ## @param llamaParseLayoutDetectionApi.livenessProbe.httpGet.scheme Scheme to use for the liveness probe
+    ## @param llamaParseLayoutDetectionApi.livenessProbe.initialDelaySeconds Number of seconds after the container has started before liveness probes are initiated
+    ## @param llamaParseLayoutDetectionApi.livenessProbe.periodSeconds How often (in seconds) to perform the probe
+    ## @param llamaParseLayoutDetectionApi.livenessProbe.timeoutSeconds Number of seconds after which the probe times out
+    ## @param llamaParseLayoutDetectionApi.livenessProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
+    ## @param llamaParseLayoutDetectionApi.livenessProbe.successThreshold Minimum consecutive successes for the probe to be considered successful after having failed
+    failureThreshold: 5
+    httpGet:
+      path: /health
+      port: 8000
+      scheme: HTTP
+    initialDelaySeconds: 10
+    periodSeconds: 15
+    successThreshold: 1
+    timeoutSeconds: 5
+
+  ## LlamaParse Layout Detection API Readiness probe configuration
+  readinessProbe:
+    ## @param llamaParseLayoutDetectionApi.readinessProbe.httpGet.path Path to hit for the readiness probe
+    ## @param llamaParseLayoutDetectionApi.readinessProbe.httpGet.port Port to hit for the readiness probe
+    ## @param llamaParseLayoutDetectionApi.readinessProbe.httpGet.scheme Scheme to use for the readiness probe
+    ## @param llamaParseLayoutDetectionApi.readinessProbe.initialDelaySeconds Number of seconds after the container has started before readiness probes are initiated
+    ## @param llamaParseLayoutDetectionApi.readinessProbe.periodSeconds How often (in seconds) to perform the probe
+    ## @param llamaParseLayoutDetectionApi.readinessProbe.timeoutSeconds Number of seconds after which the probe times out
+    ## @param llamaParseLayoutDetectionApi.readinessProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
+    ## @param llamaParseLayoutDetectionApi.readinessProbe.successThreshold Minimum consecutive successes for the probe to be considered successful after having failed
+    failureThreshold: 5
+    httpGet:
+      path: /health
+      port: 8000
+      scheme: HTTP
+    initialDelaySeconds: 10
+    periodSeconds: 15
+    successThreshold: 1
+    timeoutSeconds: 5
+
+  ## HorizontalPodAutoScaler configuration
+  ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/
+  ## The HPA scales by the target CPU utilization percentage by default
+  ## Uncomment the targetMemoryUtilizationPercentage line below to scale by memory utilization
+  autoscaling:
+    ## @param llamaParseLayoutDetectionApi.autoscaling.enabled Enable autoscaling for the LlamaParse Layout Detectedion Api Deployment
+    ## @param llamaParseLayoutDetectionApi.autoscaling.minReplicas Minimum number of replicas for the LlamaParse Layout Detectedion Api Deployment
+    ## @param llamaParseLayoutDetectionApi.autoscaling.maxReplicas Maximum number of replicas for the LlamaParse Layout Detectedion Api Deployment
+    ## @param llamaParseLayoutDetectionApi.autoscaling.targetCPUUtilizationPercentage Target CPU utilization percentage for the LlamaParse Layout Detectedion Api Deployment
+    enabled: false
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 80
+    # targetMemoryUtilizationPercentage: 80
+
+  ## PodDisruptionBudget configuration
+  ## Ref: https://kubernetes.io/docs/tasks/run-application/configure-pdb/
+  podDisruptionBudget:
+    ## @param llamaParseLayoutDetectionApi.podDisruptionBudget.enabled Enable PodDisruptionBudget for the LlamaParse Layout Detectedion Api Deployment
+    ## @param llamaParseLayoutDetectionApi.podDisruptionBudget.maxUnavailable Maximum number of unavailable pods
+    enabled: true
+    maxUnavailable: 1
+
+  ## @param llamaParseLayoutDetectionApi.volumes List of volumes that can be mounted by containers belonging to the pod
+  ## @param llamaParseLayoutDetectionApi.volumeMounts List of volumeMounts that can be mounted by containers belonging to the pod
+  ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-volume-storage/
+  volumes: []
+  volumeMounts: []
+
+  ## @param llamaParseLayoutDetectionApi.nodeSelector Node labels for pod assignment
+  ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
+  nodeSelector: {}
+
+  ## @param llamaParseLayoutDetectionApi.tolerations Taints to tolerate on node assignment:
+  ## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+  tolerations: []
+
+  ## @param llamaParseLayoutDetectionApi.affinity Pod scheduling constraints
+  ## Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
+  affinity: {}
+
+## @section Usage Configuration
 usage:
   ## @param usage.name Name suffix of the usage related resources
   name: usage
@@ -1469,7 +1641,7 @@ usage:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-usage
-    tag: 0.4.2
+    tag: 0.4.3
     pullPolicy: IfNotPresent
 
   ## Usage Service information

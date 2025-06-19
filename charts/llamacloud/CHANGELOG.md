@@ -1,5 +1,21 @@
 # CHANGELOG
 
+## [0.4.3] - 2025-06-18
+
+### LlamaParse
+  - [Beta]: Layout Extraction API is available now for self-hosted LlamaParse!
+    - This is run as a Kubernetes Deployment in your cluster. To enable this, you can set `.Values.llamaParseLayoutExtractionApi.enabled` to `true`.
+    - Please refer to the [docs](https://docs.cloud.llamaindex.ai/llamaparse/features/layout_extraction) for more information
+  - High-Res OCR is now available in the UI and API.
+  - [Breaking Change]: The default LLM used in `parse_page_with_llm` is now `gpt-4.1`.
+### LlamaCloud Platform
+  - [Retrievals]: Page Figure Retrieval is now available. For more information, please refer to the [docs](https://docs.cloud.llamaindex.ai/llamacloud/retrieval/images#retrieving-page-figures)
+  - [Platform]: Added RBAC capability for adding organization and project scoped roles
+  - [Platform]: General usability improvements
+### Infrastructure Changes
+  - As mentioned above, we have updated the `values.yaml` to include the new `.Values.llamaParseLayoutExtractionApi` configuration.
+  - Please reach out to support if you have any questions!
+
 ## [0.4.2] - 2025-06-04
 
 - New `Admin` UI.
