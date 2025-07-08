@@ -54,7 +54,7 @@ spec:
             - name: {{ .Values.backend.name }}-http
               containerPort: {{ .Values.backend.containerPort }}
               protocol: TCP
-          command: ["python", "-m", "app.main"]
+          command: ["python", "-m", "src.app.main"]
           livenessProbe:
             {{- toYaml .Values.backend.livenessProbe | nindent 12 }}
           readinessProbe:
