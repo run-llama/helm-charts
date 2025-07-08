@@ -1,5 +1,18 @@
 # CHANGELOG
 
+## [0.4.4] - 2025-07-02
+
+### LlamaParse
+- Fix LlamaParse header/footer outputs
+### LlamaCloud Platform
+- [Index] Data-source security and reliability enhancements
+- [Index] Improvements to job worker stability when ingesting large data-sources
+- [Retrieval] Fix `files_via_content` retrieval for specific file types (e.g. `.txt` or `.md`)
+### Helpful Notices
+- The Azure OpenAI validations for the Admin UI are based on the new set of configurable enviornment variables.
+    - Check out the [docs](https://docs.cloud.llamaindex.ai/self_hosting/configuration/azure-openai#connecting-to-azure-openai) for more information.
+    - We will be deprecating the old set of [environment variables](https://docs.cloud.llamaindex.ai/self_hosting/configuration/azure-openai#helm-chart-configuration) in the near future.
+
 ## [0.4.3] - 2025-06-18
 
 ### LlamaParse

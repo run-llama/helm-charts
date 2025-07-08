@@ -54,7 +54,7 @@ spec:
             - name: http
               containerPort: {{ .Values.jobsService.containerPort }}
               protocol: TCP
-          command: ["python", "-m", "jobs.service_main"]
+          command: ["python", "-m", "src.jobs.service_main"]
           livenessProbe:
             {{- toYaml .Values.jobsService.livenessProbe | nindent 12 }}
           readinessProbe:

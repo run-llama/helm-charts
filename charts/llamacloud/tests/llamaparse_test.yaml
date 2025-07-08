@@ -118,6 +118,7 @@ tests:
     llamaParse.config.awsBedrock.secretAccessKey: test-secret-access-key
     llamaParse.config.awsBedrock.sonnet3_5ModelVersionName: test-sonnet-3-5-model-version-name
     llamaParse.config.awsBedrock.sonnet3_7ModelVersionName: test-sonnet-3-7-model-version-name
+    llamaParse.config.awsBedrock.sonnet4_0ModelVersionName: test-sonnet-4-0-model-version-name
     rabbitmq.enabled: true
     rabbitmq.auth.username: test-username
   template: ../templates/llamaparse/secret.yaml
@@ -137,6 +138,9 @@ tests:
     - equal:
         path: .data.BEDROCK_ANTHROPIC_SONNET_3_7_VERSION_NAME
         value: dGVzdC1zb25uZXQtMy03LW1vZGVsLXZlcnNpb24tbmFtZQ==
+    - equal:
+        path: .data.BEDROCK_ANTHROPIC_SONNET_4_0_VERSION_NAME
+        value: dGVzdC1zb25uZXQtNC0wLW1vZGVsLXZlcnNpb24tbmFtZQ==
 
 - it: should set the Google Vertex AI env vars if feature is enabled
   set:
