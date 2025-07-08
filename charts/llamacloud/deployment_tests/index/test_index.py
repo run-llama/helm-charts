@@ -13,11 +13,14 @@ from llama_cloud.types import (
     File,
     ManagedIngestionStatus,
     ManagedIngestionStatusResponse,
-    PipelineTransformConfig_Auto,
+    PipelineTransformConfig_Advanced,
+    AdvancedModeTransformConfigChunkingConfig_None,
+    AdvancedModeTransformConfigSegmentationConfig_Page,
     OpenAiEmbedding,
     PipelineCreateEmbeddingConfig_OpenaiEmbedding,
     RetrievalMode,
     DataSink,
+    LlamaParseParameters,
 )
 
 
@@ -98,8 +101,19 @@ async def simple_pipeline(
     pipeline_create = PipelineCreate(
         name=f"test-pipeline-{uuid4()}",
         data_sink_id=str(settings.LLAMACLOUD_DATA_SINK_ID),
-        transform_config=PipelineTransformConfig_Auto(mode="auto"),
+        transform_config=PipelineTransformConfig_Advanced(
+            mode="advanced",
+            chunking_config=AdvancedModeTransformConfigChunkingConfig_None(mode="none"),
+            segmentation_config=AdvancedModeTransformConfigSegmentationConfig_Page(
+                mode="page",
+                page_separator="\n---\n",
+            ),
+        ),
         embedding_config=embedding_config,
+        llama_parse_parameters=LlamaParseParameters(
+            do_not_cache=True,
+            invalidate_cache=True,
+        )
     )
     pipeline = await llama_cloud_client.pipelines.create_pipeline(request=pipeline_create)
     assert pipeline.id is not None
