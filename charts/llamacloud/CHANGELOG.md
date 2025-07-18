@@ -1,5 +1,30 @@
 # CHANGELOG
 
+## [0.4.5] - 2025-07-17
+
+### LlamaParse
+- **Enhanced Table Extraction**: `outline_table_extraction=True` now supports:
+    - Table extraction from DOCX documents directly, even when not outlined
+    - Table extraction from XLSX→PDF conversions without outlines
+    - Better handling of side-by-side tables (recognized as separate tables instead of merged)
+- **Improved Spatial Text Output**: Enhanced spatial text processing for better document understanding
+- **Agent Parsing Improvements**:
+    - `parse_with_agent_sonnet_4`: Better flow chart handling and added Bedrock support
+    - `parse_with_agent_gemini_flash_2`: General performance improvements
+- **Cross-Page Table Merging**: `merge_table_across_page=True` allows tables that continue across pages to be properly merged (works only when tables are extracted correctly)
+
+### LlamaExtract
+- **[Beta]** **Extraction Confidence Scores**: [Now available](https://docs.cloud.llamaindex.ai/llamaextract/features/options#advanced-optionsextensions) in Multimodal/Premium modes for short documents. Feature provides confidence metrics for extracted content.
+    - Available in advanced options
+    - Note: Currently in beta with slower performance; improvements incoming
+- **[New]** **Page Range Support**: Extraction can now be limited to specific page ranges using formats like `1-8,11,13`
+
+### LlamaCloud Platform
+- **Improved SharePoint Processing**: V2 Data Source created by default for more robust and error-resistant SharePoint processing
+- **[Retrieval]** **Unlimited File Retrieval**: Removed the 500 files limit for `files_via_metadata` retrieval - now supports limitless file operations
+- **Enhanced Permissioning Model**: Internal table dependency changes for improved permission management (no external visibility impact)
+    - Supports Create + Remove user permissions with Project/Org and Viewer/Admin scopes
+
 ## [0.4.4] - 2025-07-02
 
 ### LlamaParse
