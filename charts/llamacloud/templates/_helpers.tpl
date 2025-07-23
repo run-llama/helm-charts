@@ -186,8 +186,8 @@ Service Accounts Names
       key: mongodb-root-password
 {{- end -}}
 {{- if and (.Values.global.config.mongodb.external.enabled) (not .Values.global.config.mongodb.external.existingSecretName) -}}
-- name: MONGODB_URL
-  value: {{ .Values.global.config.mongodb.external.url | quote }}
+- name: MONGODB_URL_SCHEME
+  value: {{ .Values.global.config.mongodb.external.scheme | quote }}
 - name: MONGODB_HOST
   value: {{ .Values.global.config.mongodb.external.host | quote }}
 - name: MONGODB_PORT
@@ -247,8 +247,8 @@ AZURE_OPENAI_BASE_URL: {{ .Values.llamaParse.config.azureOpenAi.endpoint | b64en
 AZURE_OPENAI_GPT_4O_DEPLOYMENT_NAME: {{ .Values.llamaParse.config.azureOpenAi.deploymentName | b64enc | quote }}
 AZURE_OPENAI_API_VERSION: {{ .Values.llamaParse.config.azureOpenAi.apiVersion | b64enc | quote }}
 {{- end }}
-{{- if and .Values.llamaParse.config.anthropicAPIKey (not .Values.llamaParse.config.existingAnthropicAPIKeySecret) }}
-ANTHROPIC_API_KEY: {{ .Values.llamaParse.config.anthropicAPIKey | default "" | b64enc | quote }}
+{{- if and .Values.llamaParse.config.anthropicApiKey (not .Values.llamaParse.config.existingAnthropicApiKeySecret) }}
+ANTHROPIC_API_KEY: {{ .Values.llamaParse.config.anthropicApiKey | default "" | b64enc | quote }}
 {{- end }}
 {{- if and .Values.llamaParse.config.geminiApiKey (not .Values.llamaParse.config.existingGeminiApiKeySecret) }}
 GOOGLE_GEMINI_API_KEY: {{ .Values.llamaParse.config.geminiApiKey | b64enc | quote }}
