@@ -1,5 +1,22 @@
 # CHANGELOG
 
+## [0.4.6] - 2025-07-21
+
+### Deprecation Warning
+- `.Values.global.config.mongodb.external.url` is now deprecated. Please use the available fields in `.Values.global.config.mongodb.external.*` to construct your MongoDB connection url.
+
+### Infrastructure Changes
+- This version introduces a new field in the values.yaml — `.Values.global.config.mongodb.external.scheme` — that gives users flexibility in which url scheme to configure.
+    - Default: `mongodb`
+    - Tip: To configure Azure CosmosDB, you can set this field to `mongodb+srv`
+    - For more information, please refer to [the docs](https://docs.cloud.llamaindex.ai/self_hosting/configuration/dependencies#external-dependency-configuration-recommended)
+
+### Jobs Worker
+- **New BYOC Configuration Flags**: Added support for index controls
+    - `defaultTransformDocumentTimeoutSeconds`: Default timeout for document transformation jobs (default: 240 seconds)
+    - `transformEmbeddingCharLimit`: Character limit for transform embedding operations (default: 11,520,000 characters)
+    - These flags are now configurable via Helm chart values and documented in self-hosting guides
+
 ## [0.4.5] - 2025-07-17
 
 ### LlamaParse

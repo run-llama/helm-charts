@@ -72,6 +72,8 @@ tests:
     jobsWorker.config.maxIndexJobsInExecution: 5
     jobsWorker.config.maxDocumentIngestionJobsInExecution: 5
     jobsWorker.config.includeJobErrorDetails: "false"
+    jobsWorker.config.defaultTransformDocumentTimeoutSeconds: "300"
+    jobsWorker.config.transformEmbeddingCharLimit: "5000000"
     mongodb.enabled: false
     postgresql.enabled: false
     rabbitmq.enabled: false
@@ -126,6 +128,27 @@ tests:
     - equal:
         path: .data.LLAMA_EXTRACT_MULTIMODAL_MODEL
         value: "gemini-2.0-flash"
+    - equal:
+        path: .data.DEFAULT_TRANSFORM_DOCUMENT_TIMEOUT_SECONDS
+        value: "300"
+    - equal:
+        path: .data.TRANSFORM_EMBEDDING_CHAR_LIMIT
+        value: "5000000"
+
+- it: should use default values for new BYOC configuration flags when not set
+  set:
+    mongodb.enabled: false
+    postgresql.enabled: false
+    rabbitmq.enabled: false
+    redis.enabled: false
+  template: ../templates/jobs-worker/configmap.yaml
+  asserts:
+    - equal:
+        path: .data.DEFAULT_TRANSFORM_DOCUMENT_TIMEOUT_SECONDS
+        value: "240"
+    - equal:
+        path: .data.TRANSFORM_EMBEDDING_CHAR_LIMIT
+        value: "11520000"
 
 - it: should create a ServiceMonitor
   set:

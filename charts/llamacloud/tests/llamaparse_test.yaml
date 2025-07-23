@@ -60,7 +60,7 @@ tests:
 
 - it: should set the Anthropic API key env var if it is set
   set:
-    llamaParse.config.anthropicAPIKey: test-anthropic-api-key
+    llamaParse.config.anthropicApiKey: test-anthropic-api-key
     rabbitmq.enabled: false
   template: ../templates/llamaparse/secret.yaml
   asserts:

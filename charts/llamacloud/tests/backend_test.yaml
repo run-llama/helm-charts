@@ -141,7 +141,7 @@ tests:
   set:
     mongodb.enabled: false
     global.config.mongodb.external.enabled: true
-    global.config.mongodb.external.url: test-mongo-url
+    global.config.mongodb.external.scheme: mongodb+srv
     global.config.mongodb.external.host: test-mongo-host
     global.config.mongodb.external.port: 27017
     global.config.mongodb.external.username: test-mongo-user
@@ -152,8 +152,8 @@ tests:
   template: ../templates/backend/deployment.yaml
   asserts:
     - equal:
-        path: .spec.template.spec.containers[0].env[?(@.name == "MONGODB_URL")].value
-        value: test-mongo-url
+        path: .spec.template.spec.containers[0].env[?(@.name == "MONGODB_URL_SCHEME")].value
+        value: mongodb+srv
     - equal:
         path: .spec.template.spec.containers[0].env[?(@.name == "MONGODB_HOST")].value
         value: test-mongo-host
