@@ -24,6 +24,10 @@ helm repo update
 helm search repo llamaindex
 ```
 
+## Validate
+
+There is a set of automated tests [here](https://github.com/run-llama/helm-charts/tree/main/charts/llamacloud/deployment_tests) that can be run to validate parts of the functionality of your deployment. It is recommended to run these tests after the initial installation of the helm chart and after every upgrade to the helm chart.
+
 ## Runbooks
 A collection of runbooks for common scenarios can be found in the [runbooks directory](./runbooks/) of this repo.
 
