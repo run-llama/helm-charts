@@ -15,6 +15,8 @@ helm repo update
 helm install my-llamacloud-release llamaindex/llamacloud
 ```
 
+After this, you may run the test suite [here](https://github.com/run-llama/helm-charts/tree/main/charts/llamacloud/deployment_tests) to validate the functionality of your deployment.
+
 ## Prerequisites
 
 - Kubernetes `>=1.28.0`
