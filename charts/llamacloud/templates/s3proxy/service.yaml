@@ -5,12 +5,12 @@ metadata:
   name: {{ include "llamacloud.fullname" . }}-{{ .Values.s3proxy.name }}
   labels:
     {{- include "llamacloud.labels" . | nindent 4 }}
-    {{- with.Values.s3proxy.service.labels }}
+    {{- with .Values.s3proxy.service.labels }}
       {{- toYaml . | nindent 4 }}
     {{- end }}
   annotations:
     {{- include "llamacloud.annotations" . | nindent 4 }}
-    {{- with.Values.s3proxy.service.annotations }}
+    {{- with .Values.s3proxy.service.annotations }}
       {{- toYaml . | nindent 4 }}
     {{- end }}
 spec:

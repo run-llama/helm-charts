@@ -73,6 +73,24 @@ spec:
                 name: {{ include "llamacloud.fullname" . }}-license-key
                 {{- end }}
                 key: llamacloud-license-key
+          {{- if .Values.backend.config.basicAuth.enabled }}
+          - name: BYOC_AUTH_MODE
+            value: basic
+          {{- if .Values.backend.config.basicAuth.validEmailDomain }}
+          - name: BYOC_VALID_EMAIL_DOMAIN
+            value: {{ .Values.backend.config.basicAuth.validEmailDomain }}
+          {{- end }}
+          {{- if .Values.backend.config.basicAuth.existingSecretName }}
+          - name: BYOC_JWT_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.backend.config.basicAuth.existingSecretName }}
+                key: byoc-jwt-secret
+          {{- else }}
+          - name: BYOC_JWT_SECRET
+            value: {{ .Values.backend.config.basicAuth.jwtSecret | default (randAlphaNum 16) | quote }}
+          {{- end }}
+          {{- end }}
           {{- include "common.postgresql.envVars" . | nindent 10 -}}
           {{- include "common.mongodb.envVars" . | nindent 10 -}}
           {{- include "common.rabbitmq.envVars" . | nindent 10 -}}

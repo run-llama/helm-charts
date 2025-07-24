@@ -155,6 +155,19 @@ frontend:
   ## @param frontend.name Name suffix of the Frontend related resources
   name: frontend
 
+  ## @param frontend.config.tls.enabled Whether to enable TLS for the Frontend
+  ## @param frontend.config.tls.caCertSecretName Name of the secret to use for the CA certificate
+  ## @param frontend.config.tls.caCertConfigMapName Name of the config map to use for the CA certificate
+  ## @param frontend.config.tls.caCertMountPath Path to mount the CA certificate
+  ## @param frontend.config.tls.caCertKey Key of the CA certificate
+  config:
+    tls:
+      enabled: false
+      caCertSecretName:
+      caCertConfigMapName:
+      caCertMountPath: "/etc/llamacloud-ssl/certs"
+      caCertKey: "cert.pem"
+
   ## @param frontend.replicas Number of replicas of Frontend Deployment
   replicas: 1
 
@@ -165,7 +178,7 @@ frontend:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-frontend
-    tag: 0.4.6
+    tag: 0.5.0
     pullPolicy: IfNotPresent
 
   ## @param frontend.service.type Frontend Service type
@@ -306,6 +319,17 @@ backend:
       deploymentName: ""
       apiVersion: ""
 
+    ## Backend Basic Auth configuration
+    ## @param backend.config.basicAuth.enabled Enable Basic Auth for the backend
+    ## @param backend.config.basicAuth.validEmailDomain Valid email domain for the application
+    ## @param backend.config.basicAuth.jwtSecret JWT secret for the backend
+    ## @param backend.config.basicAuth.existingSecretName Name of the existing secret to use for the JWT secret
+    basicAuth:
+      enabled: false
+      validEmailDomain:
+      jwtSecret: "documentparsingisfun1!"
+      existingSecretName:
+
     ## Backend OpenID Connect configuration
     ## @param backend.config.oidc.existingSecretName Name of the existing secret to use for OIDC configuration
     ## @param backend.config.oidc.discoveryUrl OIDC discovery URL
@@ -342,7 +366,7 @@ backend:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-backend
-    tag: 0.4.6
+    tag: 0.5.0
     pullPolicy: IfNotPresent
 
   ## Backend Service information
@@ -427,13 +451,13 @@ backend:
     ## @param backend.livenessProbe.timeoutSeconds Number of seconds after which the probe times out
     ## @param backend.livenessProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
     ## @param backend.livenessProbe.initialDelaySeconds Number of seconds after the container has started before the probe is initiated
-    failureThreshold: 3
+    failureThreshold: 30
     initialDelaySeconds: 30
     httpGet:
       path: /api/health
       port: 8000
     periodSeconds: 10
-    timeoutSeconds: 30
+    timeoutSeconds: 5
 
   ## Backend Readiness probe configuration
   ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
@@ -444,7 +468,7 @@ backend:
     ## @param backend.readinessProbe.timeoutSeconds Number of seconds after which the probe times out
     ## @param backend.readinessProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
     ## @param backend.readinessProbe.initialDelaySeconds Number of seconds after the container has started before the probe is initiated
-    failureThreshold: 5
+    failureThreshold: 30
     initialDelaySeconds: 30
     httpGet:
       path: /api/health
@@ -580,7 +604,7 @@ jobsService:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-jobs-service
-    tag: 0.4.6
+    tag: 0.5.0
     pullPolicy: IfNotPresent
 
   ## JobsService Service information\
@@ -660,7 +684,7 @@ jobsService:
     ## @param jobsService.livenessProbe.periodSeconds How often (in seconds) to perform the probe
     ## @param jobsService.livenessProbe.timeoutSeconds Number of seconds after which the probe times out
     ## @param jobsService.livenessProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
-    failureThreshold: 5
+    failureThreshold: 30
     httpGet:
       path: /api/health
       port: 8002
@@ -675,7 +699,7 @@ jobsService:
     ## @param jobsService.readinessProbe.periodSeconds How often (in seconds) to perform the probe
     ## @param jobsService.readinessProbe.timeoutSeconds Number of seconds after which the probe times out
     ## @param jobsService.readinessProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
-    failureThreshold: 5
+    failureThreshold: 30
     httpGet:
       path: /api/health
       port: 8002
@@ -690,7 +714,9 @@ jobsService:
     ## @param jobsService.startupProbe.httpGet.port Port to hit for the readiness probe
     ## @param jobsService.startupProbe.periodSeconds How often (in seconds) to perform the probe
     ## @param jobsService.startupProbe.timeoutSeconds Number of seconds after which the probe times out
+    ## @param jobsService.startupProbe.initialDelaySeconds Number of seconds after the container has started before the probe is initiated
     failureThreshold: 30
+    initialDelaySeconds: 30
     httpGet:
       path: /api/health
       port: 8002
@@ -788,7 +814,7 @@ jobsWorker:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-jobs-worker
-    tag: 0.4.6
+    tag: 0.5.0
     pullPolicy: IfNotPresent
 
   ## JobsWorker Service information
@@ -877,7 +903,7 @@ jobsWorker:
     ## @param jobsWorker.livenessProbe.timeoutSeconds Number of seconds after which the probe times out
     ## @param jobsWorker.livenessProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
     ## @param jobsWorker.livenessProbe.initialDelaySeconds Number of seconds after the container has started before the probe is initiated
-    failureThreshold: 5
+    failureThreshold: 30
     initialDelaySeconds: 30
     httpGet:
       path: /api/health
@@ -894,7 +920,7 @@ jobsWorker:
     ## @param jobsWorker.readinessProbe.timeoutSeconds Number of seconds after which the probe times out
     ## @param jobsWorker.readinessProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
     ## @param jobsWorker.readinessProbe.initialDelaySeconds Number of seconds after the container has started before the probe is initiated
-    failureThreshold: 5
+    failureThreshold: 30
     initialDelaySeconds: 30
     httpGet:
       path: /api/health
@@ -1063,7 +1089,7 @@ llamaParse:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-llamaparse
-    tag: 0.4.6
+    tag: 0.5.0
     pullPolicy: IfNotPresent
 
   ## ServiceAccount configuration
@@ -1285,7 +1311,7 @@ llamaParseOcr:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-llamaparse-ocr
-    tag: 0.4.6
+    tag: 0.5.0
     pullPolicy: IfNotPresent
 
   ## LlamaParseOcr Service information
@@ -1482,7 +1508,7 @@ llamaParseLayoutDetectionApi:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-layout-detection-api
-    tag: 0.4.6
+    tag: 0.5.0
     pullPolicy: IfNotPresent
 
   ## LlamaParse Layout Detectedion Api Service information
@@ -1647,7 +1673,7 @@ usage:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-usage
-    tag: 0.4.6
+    tag: 0.5.0
     pullPolicy: IfNotPresent
 
   ## Usage Service information
@@ -1734,7 +1760,7 @@ usage:
     ## @param usage.livenessProbe.timeoutSeconds Number of seconds after which the probe times out
     ## @param usage.livenessProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
     ## @param usage.livenessProbe.successThreshold Minimum consecutive successes for the probe to be considered successful after having failed
-    failureThreshold: 5
+    failureThreshold: 30
     httpGet:
       path: /health_check
       port: 8005
@@ -1754,7 +1780,7 @@ usage:
     ## @param usage.readinessProbe.timeoutSeconds Number of seconds after which the probe times out
     ## @param usage.readinessProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
     ## @param usage.readinessProbe.successThreshold Minimum consecutive successes for the probe to be considered successful after having failed
-    failureThreshold: 5
+    failureThreshold: 30
     httpGet:
       path: /health_check
       port: 8005

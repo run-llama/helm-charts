@@ -5,12 +5,12 @@ metadata:
   name: {{ include "llamacloud.fullname" . }}-{{ .Values.llamaParseOcr.name }}
   labels:
     {{- include "llamacloud.labels" . | nindent 4 }}
-    {{- with.Values.llamaParseOcr.service.labels }}
+    {{- with .Values.llamaParseOcr.service.labels }}
       {{- toYaml . | nindent 4 }}
     {{- end }}
   annotations:
     {{- include "llamacloud.annotations" . | nindent 4 }}
-    {{- with.Values.llamaParseOcr.service.annotations }}
+    {{- with .Values.llamaParseOcr.service.annotations }}
       {{- toYaml . | nindent 4 }}
     {{- end }}
 spec:

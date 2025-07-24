@@ -4,12 +4,12 @@ metadata:
   name: {{ include "llamacloud.fullname" . }}-{{ .Values.frontend.name }}
   labels:
     {{- include "llamacloud.labels" . | nindent 4 }}
-    {{- with.Values.frontend.service.labels }}
+    {{- with .Values.frontend.service.labels }}
       {{- toYaml . | nindent 4 }}
     {{- end }}
   annotations:
     {{- include "llamacloud.annotations" . | nindent 4 }}
-    {{- with.Values.frontend.service.annotations }}
+    {{- with .Values.frontend.service.annotations }}
       {{- toYaml . | nindent 4 }}
     {{- end }}
 spec:
