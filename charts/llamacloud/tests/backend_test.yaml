@@ -54,6 +54,46 @@ tests:
         path: .spec.template.spec.containers[0].env[?(@.name == "LLAMACLOUD_LICENSE_KEY")].valueFrom.secretKeyRef.name
         value: existing-license-key
 
+- it: BYOC_AUTH_MODE, BYOC_VALID_EMAIL_DOMAIN, and BYOC_JWT_SECRET should be set to the correct values if basic auth is enabled
+  set:
+    backend.config.basicAuth.enabled: true
+    backend.config.basicAuth.validEmailDomain: llamaindex.ai
+    backend.config.basicAuth.jwtSecret: test-jwt-secret
+    mongodb.enabled: false
+    postgresql.enabled: false
+    rabbitmq.enabled: false
+    redis.enabled: false
+  template: ../templates/backend/deployment.yaml
+  asserts:
+    - equal:
+        path: .spec.template.spec.containers[0].env[?(@.name == "BYOC_AUTH_MODE")].value
+        value: basic
+    - equal:
+        path: .spec.template.spec.containers[0].env[?(@.name == "BYOC_VALID_EMAIL_DOMAIN")].value
+        value: llamaindex.ai
+    - equal:
+        path: .spec.template.spec.containers[0].env[?(@.name == "BYOC_JWT_SECRET")].value
+        value: test-jwt-secret
+
+- it: BYOC_JWT_SECRET should be set to the existing secret name if it is set
+  set:
+    backend.config.basicAuth.enabled: true
+    backend.config.basicAuth.existingSecretName: existing-basic-auth-secret
+    mongodb.enabled: false
+    postgresql.enabled: false
+    rabbitmq.enabled: false
+    redis.enabled: false
+  template: ../templates/backend/deployment.yaml
+  asserts:
+    - notExists:
+        path: .spec.template.spec.containers[0].env[?(@.name == "BYOC_VALID_EMAIL_DOMAIN")]
+    - equal:
+        path: .spec.template.spec.containers[0].env[?(@.name == "BYOC_JWT_SECRET")].valueFrom.secretKeyRef.name
+        value: existing-basic-auth-secret
+    - equal:
+        path: .spec.template.spec.containers[0].env[?(@.name == "BYOC_JWT_SECRET")].valueFrom.secretKeyRef.key
+        value: byoc-jwt-secret
+
 - it: should use the custom service account if it is set
   set:
     backend.serviceAccount.name: test-service-account
