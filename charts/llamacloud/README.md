@@ -15,8 +15,6 @@ helm repo update
 helm install my-llamacloud-release llamaindex/llamacloud
 ```
 
-After this, you may run the test suite [here](https://github.com/run-llama/helm-charts/tree/main/charts/llamacloud/deployment_tests) to validate the functionality of your deployment.
-
 ## Prerequisites
 
 - Kubernetes `>=1.28.0`
@@ -125,10 +123,15 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 | Name                                                   | Description                                                                                                       | Value                            |
 | ------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------- | -------------------------------- |
 | `frontend.name`                                        | Name suffix of the Frontend related resources                                                                     | `frontend`                       |
+| `frontend.config.tls.enabled`                          | Whether to enable TLS for the Frontend                                                                            | `false`                          |
+| `frontend.config.tls.caCertSecretName`                 | Name of the secret to use for the CA certificate                                                                  | `nil`                            |
+| `frontend.config.tls.caCertConfigMapName`              | Name of the config map to use for the CA certificate                                                              | `nil`                            |
+| `frontend.config.tls.caCertMountPath`                  | Path to mount the CA certificate                                                                                  | `/etc/llamacloud-ssl/certs`      |
+| `frontend.config.tls.caCertKey`                        | Key of the CA certificate                                                                                         | `cert.pem`                       |
 | `frontend.replicas`                                    | Number of replicas of Frontend Deployment                                                                         | `1`                              |
 | `frontend.image.registry`                              | Frontend Image registry                                                                                           | `docker.io`                      |
 | `frontend.image.repository`                            | Frontend Image repository                                                                                         | `llamaindex/llamacloud-frontend` |
-| `frontend.image.tag`                                   | Frontend Image tag                                                                                                | `0.4.6`                          |
+| `frontend.image.tag`                                   | Frontend Image tag                                                                                                | `0.5.0`                          |
 | `frontend.image.pullPolicy`                            | Frontend Image pull policy                                                                                        | `IfNotPresent`                   |
 | `frontend.service.type`                                | Frontend Service type                                                                                             | `ClusterIP`                      |
 | `frontend.service.port`                                | Frontend Service port                                                                                             | `3000`                           |
@@ -174,6 +177,10 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 | `backend.config.azureOpenAi.endpoint`                 | Azure OpenAI endpoint                                                                                             | `""`                            |
 | `backend.config.azureOpenAi.deploymentName`           | Azure OpenAI deployment                                                                                           | `""`                            |
 | `backend.config.azureOpenAi.apiVersion`               | Azure OpenAI API version                                                                                          | `""`                            |
+| `backend.config.basicAuth.enabled`                    | Enable Basic Auth for the backend                                                                                 | `false`                         |
+| `backend.config.basicAuth.validEmailDomain`           | Valid email domain for the application                                                                            | `nil`                           |
+| `backend.config.basicAuth.jwtSecret`                  | JWT secret for the backend                                                                                        | `secret`                        |
+| `backend.config.basicAuth.existingSecretName`         | Name of the existing secret to use for the JWT secret                                                             | `nil`                           |
 | `backend.config.oidc.existingSecretName`              | Name of the existing secret to use for OIDC configuration                                                         | `""`                            |
 | `backend.config.oidc.discoveryUrl`                    | OIDC discovery URL                                                                                                | `""`                            |
 | `backend.config.oidc.clientId`                        | OIDC client ID                                                                                                    | `""`                            |
@@ -186,7 +193,7 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 | `backend.replicas`                                    | Number of replicas of Backend Deployment                                                                          | `1`                             |
 | `backend.image.registry`                              | Backend Image registry                                                                                            | `docker.io`                     |
 | `backend.image.repository`                            | Backend Image repository                                                                                          | `llamaindex/llamacloud-backend` |
-| `backend.image.tag`                                   | Backend Image tag                                                                                                 | `0.4.6`                         |
+| `backend.image.tag`                                   | Backend Image tag                                                                                                 | `0.5.0`                         |
 | `backend.image.pullPolicy`                            | Backend Image pull policy                                                                                         | `IfNotPresent`                  |
 | `backend.service.type`                                | Backend Service type                                                                                              | `ClusterIP`                     |
 | `backend.service.port`                                | Backend Service port                                                                                              | `8000`                          |
@@ -209,14 +216,14 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 | `backend.livenessProbe.httpGet.path`                  | Path to hit for the liveness probe                                                                                | `/api/health`                   |
 | `backend.livenessProbe.httpGet.port`                  | Port to hit for the liveness probe                                                                                | `8000`                          |
 | `backend.livenessProbe.periodSeconds`                 | How often (in seconds) to perform the probe                                                                       | `10`                            |
-| `backend.livenessProbe.timeoutSeconds`                | Number of seconds after which the probe times out                                                                 | `30`                            |
-| `backend.livenessProbe.failureThreshold`              | Minimum consecutive failures for the probe to be considered failed after having succeeded                         | `3`                             |
+| `backend.livenessProbe.timeoutSeconds`                | Number of seconds after which the probe times out                                                                 | `5`                             |
+| `backend.livenessProbe.failureThreshold`              | Minimum consecutive failures for the probe to be considered failed after having succeeded                         | `30`                            |
 | `backend.livenessProbe.initialDelaySeconds`           | Number of seconds after the container has started before the probe is initiated                                   | `30`                            |
 | `backend.readinessProbe.httpGet.path`                 | Path to hit for the readiness probe                                                                               | `/api/health`                   |
 | `backend.readinessProbe.httpGet.port`                 | Port to hit for the readiness probe                                                                               | `8000`                          |
 | `backend.readinessProbe.periodSeconds`                | How often (in seconds) to perform the probe                                                                       | `10`                            |
 | `backend.readinessProbe.timeoutSeconds`               | Number of seconds after which the probe times out                                                                 | `5`                             |
-| `backend.readinessProbe.failureThreshold`             | Minimum consecutive failures for the probe to be considered failed after having succeeded                         | `5`                             |
+| `backend.readinessProbe.failureThreshold`             | Minimum consecutive failures for the probe to be considered failed after having succeeded                         | `30`                            |
 | `backend.readinessProbe.initialDelaySeconds`          | Number of seconds after the container has started before the probe is initiated                                   | `30`                            |
 | `backend.startupProbe.httpGet.path`                   | Path to hit for the startup probe                                                                                 | `/api/health`                   |
 | `backend.startupProbe.httpGet.port`                   | Port to hit for the startup probe                                                                                 | `8000`                          |
@@ -262,7 +269,7 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 | `jobsService.replicas`                                    | Number of replicas of JobsService Deployment                                                                      | `1`                                  |
 | `jobsService.image.registry`                              | JobsService Image registry                                                                                        | `docker.io`                          |
 | `jobsService.image.repository`                            | JobsService Image repository                                                                                      | `llamaindex/llamacloud-jobs-service` |
-| `jobsService.image.tag`                                   | JobsService Image tag                                                                                             | `0.4.6`                              |
+| `jobsService.image.tag`                                   | JobsService Image tag                                                                                             | `0.5.0`                              |
 | `jobsService.image.pullPolicy`                            | JobsService Image pull policy                                                                                     | `IfNotPresent`                       |
 | `jobsService.service.type`                                | JobsService Service type                                                                                          | `ClusterIP`                          |
 | `jobsService.service.port`                                | JobsService Service port                                                                                          | `8002`                               |
@@ -284,17 +291,18 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 | `jobsService.livenessProbe.httpGet.port`                  | Port to hit for the liveness prob                                                                                 | `8002`                               |
 | `jobsService.livenessProbe.periodSeconds`                 | How often (in seconds) to perform the probe                                                                       | `15`                                 |
 | `jobsService.livenessProbe.timeoutSeconds`                | Number of seconds after which the probe times out                                                                 | `10`                                 |
-| `jobsService.livenessProbe.failureThreshold`              | Minimum consecutive failures for the probe to be considered failed after having succeeded                         | `5`                                  |
+| `jobsService.livenessProbe.failureThreshold`              | Minimum consecutive failures for the probe to be considered failed after having succeeded                         | `30`                                 |
 | `jobsService.readinessProbe.httpGet.path`                 | Path to hit for the liveness probe                                                                                | `/api/health`                        |
 | `jobsService.readinessProbe.httpGet.port`                 | Port to hit for the liveness probe                                                                                | `8002`                               |
 | `jobsService.readinessProbe.periodSeconds`                | How often (in seconds) to perform the probe                                                                       | `15`                                 |
 | `jobsService.readinessProbe.timeoutSeconds`               | Number of seconds after which the probe times out                                                                 | `10`                                 |
-| `jobsService.readinessProbe.failureThreshold`             | Minimum consecutive failures for the probe to be considered failed after having succeeded                         | `5`                                  |
+| `jobsService.readinessProbe.failureThreshold`             | Minimum consecutive failures for the probe to be considered failed after having succeeded                         | `30`                                 |
 | `jobsService.startupProbe.failureThreshold`               | Minimum consecutive failures for the probe to be considered failed after having succeeded                         | `30`                                 |
 | `jobsService.startupProbe.httpGet.path`                   | Path to hit for the readiness probe                                                                               | `/api/health`                        |
 | `jobsService.startupProbe.httpGet.port`                   | Port to hit for the readiness probe                                                                               | `8002`                               |
 | `jobsService.startupProbe.periodSeconds`                  | How often (in seconds) to perform the probe                                                                       | `15`                                 |
 | `jobsService.startupProbe.timeoutSeconds`                 | Number of seconds after which the probe times out                                                                 | `10`                                 |
+| `jobsService.startupProbe.initialDelaySeconds`            | Number of seconds after the container has started before the probe is initiated                                   | `30`                                 |
 | `jobsService.autoscaling.enabled`                         | Enable autoscaling for the JobsService Deployment                                                                 | `true`                               |
 | `jobsService.autoscaling.minReplicas`                     | Minimum number of replicas for the JobsService Deployment                                                         | `1`                                  |
 | `jobsService.autoscaling.maxReplicas`                     | Maximum number of replicas for the JobsService Deployment                                                         | `4`                                  |
@@ -331,7 +339,7 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 | `jobsWorker.replicas`                                      | Number of replicas of JobsWorker Deployment                                                                       | `1`                                 |
 | `jobsWorker.image.registry`                                | JobsWorker Image registry                                                                                         | `docker.io`                         |
 | `jobsWorker.image.repository`                              | JobsWorker Image repository                                                                                       | `llamaindex/llamacloud-jobs-worker` |
-| `jobsWorker.image.tag`                                     | JobsWorker Image tag                                                                                              | `0.4.6`                             |
+| `jobsWorker.image.tag`                                     | JobsWorker Image tag                                                                                              | `0.5.0`                             |
 | `jobsWorker.image.pullPolicy`                              | JobsWorker Image pull policy                                                                                      | `IfNotPresent`                      |
 | `jobsWorker.service.type`                                  | JobsWorker Service type                                                                                           | `ClusterIP`                         |
 | `jobsWorker.service.port`                                  | JobsWorker Service port                                                                                           | `8001`                              |
@@ -357,13 +365,13 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 | `jobsWorker.livenessProbe.httpGet.port`                    | Port to hit for the liveness probe                                                                                | `8001`                              |
 | `jobsWorker.livenessProbe.periodSeconds`                   | How often (in seconds) to perform the probe                                                                       | `15`                                |
 | `jobsWorker.livenessProbe.timeoutSeconds`                  | Number of seconds after which the probe times out                                                                 | `5`                                 |
-| `jobsWorker.livenessProbe.failureThreshold`                | Minimum consecutive failures for the probe to be considered failed after having succeeded                         | `5`                                 |
+| `jobsWorker.livenessProbe.failureThreshold`                | Minimum consecutive failures for the probe to be considered failed after having succeeded                         | `30`                                |
 | `jobsWorker.livenessProbe.initialDelaySeconds`             | Number of seconds after the container has started before the probe is initiated                                   | `30`                                |
 | `jobsWorker.readinessProbe.httpGet.path`                   | Path to hit for the liveness probe                                                                                | `/api/health`                       |
 | `jobsWorker.readinessProbe.httpGet.port`                   | Port to hit for the liveness probe                                                                                | `8001`                              |
 | `jobsWorker.readinessProbe.periodSeconds`                  | How often (in seconds) to perform the probe                                                                       | `15`                                |
 | `jobsWorker.readinessProbe.timeoutSeconds`                 | Number of seconds after which the probe times out                                                                 | `5`                                 |
-| `jobsWorker.readinessProbe.failureThreshold`               | Minimum consecutive failures for the probe to be considered failed after having succeeded                         | `5`                                 |
+| `jobsWorker.readinessProbe.failureThreshold`               | Minimum consecutive failures for the probe to be considered failed after having succeeded                         | `30`                                |
 | `jobsWorker.readinessProbe.initialDelaySeconds`            | Number of seconds after the container has started before the probe is initiated                                   | `30`                                |
 | `jobsWorker.startupProbe.httpGet.path`                     | Path to hit for the liveness probe                                                                                | `/api/health`                       |
 | `jobsWorker.startupProbe.httpGet.port`                     | Port to hit for the liveness probe                                                                                | `8001`                              |
@@ -429,7 +437,7 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 | `llamaParse.replicas`                                    | Number of replicas of LlamaParse Deployment                                               | `2`                                         |
 | `llamaParse.image.registry`                              | LlamaParse Image registry                                                                 | `docker.io`                                 |
 | `llamaParse.image.repository`                            | LlamaParse Image repository                                                               | `llamaindex/llamacloud-llamaparse`          |
-| `llamaParse.image.tag`                                   | LlamaParse Image tag                                                                      | `0.4.6`                                     |
+| `llamaParse.image.tag`                                   | LlamaParse Image tag                                                                      | `0.5.0`                                     |
 | `llamaParse.image.pullPolicy`                            | LlamaParse Image pull policy                                                              | `IfNotPresent`                              |
 | `llamaParse.serviceAccount.create`                       | Whether or not to create a new service account                                            | `true`                                      |
 | `llamaParse.serviceAccount.name`                         | Name of the service account                                                               | `""`                                        |
@@ -504,7 +512,7 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 | `llamaParseOcr.replicas`                                    | Number of replicas of LlamaParseOcr Deployment                                              | `2`                                    |
 | `llamaParseOcr.image.registry`                              | LlamaParseOcr Image registry                                                                | `docker.io`                            |
 | `llamaParseOcr.image.repository`                            | LlamaParseOcr Image repository                                                              | `llamaindex/llamacloud-llamaparse-ocr` |
-| `llamaParseOcr.image.tag`                                   | LlamaParseOcr Image tag                                                                     | `0.4.6`                                |
+| `llamaParseOcr.image.tag`                                   | LlamaParseOcr Image tag                                                                     | `0.5.0`                                |
 | `llamaParseOcr.image.pullPolicy`                            | LlamaParseOcr Image pull policy                                                             | `IfNotPresent`                         |
 | `llamaParseOcr.service.type`                                | LlamaParseOcr Service type                                                                  | `ClusterIP`                            |
 | `llamaParseOcr.service.port`                                | LlamaParseOcr Service port                                                                  | `8080`                                 |
@@ -574,7 +582,7 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 | `llamaParseLayoutDetectionApi.config.logLevel`                             | Log level for the LlamaParse Layout Detectedion Api                                         | `INFO`                                       |
 | `llamaParseLayoutDetectionApi.image.registry`                              | LlamaParse Layout Detectedion Api Image registry                                            | `docker.io`                                  |
 | `llamaParseLayoutDetectionApi.image.repository`                            | LlamaParse Layout Detectedion Api Image repository                                          | `llamaindex/llamacloud-layout-detection-api` |
-| `llamaParseLayoutDetectionApi.image.tag`                                   | LlamaParse Layout Detectedion Api Image tag                                                 | `0.4.6`                                      |
+| `llamaParseLayoutDetectionApi.image.tag`                                   | LlamaParse Layout Detectedion Api Image tag                                                 | `0.5.0`                                      |
 | `llamaParseLayoutDetectionApi.image.pullPolicy`                            | LlamaParse Layout Detectedion Api Image pull policy                                         | `IfNotPresent`                               |
 | `llamaParseLayoutDetectionApi.service.type`                                | LlamaParse Layout Detectedion Api Service type                                              | `ClusterIP`                                  |
 | `llamaParseLayoutDetectionApi.service.port`                                | LlamaParse Layout Detectedion Api Service port                                              | `8000`                                       |
@@ -631,7 +639,7 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 | `usage.replicas`                                    | Number of replicas of usage Deployment                                                                            | `1`                           |
 | `usage.image.registry`                              | Usage Image registry                                                                                              | `docker.io`                   |
 | `usage.image.repository`                            | Usage Image repository                                                                                            | `llamaindex/llamacloud-usage` |
-| `usage.image.tag`                                   | Usage Image tag                                                                                                   | `0.4.6`                       |
+| `usage.image.tag`                                   | Usage Image tag                                                                                                   | `0.5.0`                       |
 | `usage.image.pullPolicy`                            | Usage Image pull policy                                                                                           | `IfNotPresent`                |
 | `usage.service.type`                                | Usage Service type                                                                                                | `ClusterIP`                   |
 | `usage.service.port`                                | Usage Service port                                                                                                | `8005`                        |
@@ -657,7 +665,7 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 | `usage.livenessProbe.initialDelaySeconds`           | Number of seconds after the container has started before liveness probes are initiated                            | `15`                          |
 | `usage.livenessProbe.periodSeconds`                 | How often (in seconds) to perform the probe                                                                       | `15`                          |
 | `usage.livenessProbe.timeoutSeconds`                | Number of seconds after which the probe times out                                                                 | `5`                           |
-| `usage.livenessProbe.failureThreshold`              | Minimum consecutive failures for the probe to be considered failed after having succeeded                         | `5`                           |
+| `usage.livenessProbe.failureThreshold`              | Minimum consecutive failures for the probe to be considered failed after having succeeded                         | `30`                          |
 | `usage.livenessProbe.successThreshold`              | Minimum consecutive successes for the probe to be considered successful after having failed                       | `1`                           |
 | `usage.readinessProbe.httpGet.path`                 | Path to hit for the liveness probe                                                                                | `/health_check`               |
 | `usage.readinessProbe.httpGet.port`                 | Port to hit for the liveness probe                                                                                | `8005`                        |
@@ -665,7 +673,7 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 | `usage.readinessProbe.initialDelaySeconds`          | Number of seconds after the container has started before liveness probes are initiated                            | `15`                          |
 | `usage.readinessProbe.periodSeconds`                | How often (in seconds) to perform the probe                                                                       | `15`                          |
 | `usage.readinessProbe.timeoutSeconds`               | Number of seconds after which the probe times out                                                                 | `5`                           |
-| `usage.readinessProbe.failureThreshold`             | Minimum consecutive failures for the probe to be considered failed after having succeeded                         | `5`                           |
+| `usage.readinessProbe.failureThreshold`             | Minimum consecutive failures for the probe to be considered failed after having succeeded                         | `30`                          |
 | `usage.readinessProbe.successThreshold`             | Minimum consecutive successes for the probe to be considered successful after having failed                       | `1`                           |
 | `usage.autoscaling.enabled`                         | Enable autoscaling for the Usage Deployment                                                                       | `false`                       |
 | `usage.autoscaling.minReplicas`                     | Minimum number of replicas for the Usage Deployment                                                               | `1`                           |

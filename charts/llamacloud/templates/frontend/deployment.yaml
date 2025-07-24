@@ -4,12 +4,12 @@ metadata:
   name: {{ include "llamacloud.fullname" . }}-{{ .Values.frontend.name }}
   labels:
     {{- include "llamacloud.labels" . | nindent 4 }}
-    {{- with.Values.frontend.labels }}
+    {{- with .Values.frontend.labels }}
       {{- toYaml . | nindent 4 }}
     {{- end }}
   annotations:
     {{- include "llamacloud.annotations" . | nindent 4 }}
-    {{- with.Values.frontend.annotations }}
+    {{- with .Values.frontend.annotations }}
       {{- toYaml . | nindent 4 }}
     {{- end }}
 spec:
@@ -83,18 +83,37 @@ spec:
           {{- if .Values.backend.config.qdrant.enabled }}
           - name: NEXT_PUBLIC_BYOC_HAS_MANAGED_QDRANT
             value: "true"
-          {{- end}}
+          {{- end }}
+          {{- if .Values.frontend.config.tls.enabled }}
+          - name: NODE_EXTRA_CA_CERTS
+            value: "{{ .Values.frontend.config.tls.caCertMountPath }}/{{ .Values.frontend.config.tls.caCertKey }}"
+          {{- end }}
           {{- with .Values.frontend.extraEnvVariables }}
           {{- toYaml . | nindent 10 }}
           {{- end }}
-          {{- with .Values.frontend.volumeMounts }}
           volumeMounts:
+          {{- if .Values.frontend.config.tls.enabled }}
+          - name: ca-certs
+            mountPath: {{ .Values.frontend.config.tls.caCertMountPath }}
+            readOnly: true
+          {{- end }}
+          {{- with .Values.frontend.volumeMounts }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
-      {{- with .Values.frontend.volumes }}
       volumes:
+        {{- if .Values.frontend.config.tls.enabled }}
+        - name: ca-certs
+          {{- if .Values.frontend.config.tls.caCertSecretName }}
+          secret:
+            secretName: {{ .Values.frontend.config.tls.caCertSecretName }}
+          {{- else }}
+          configMap:
+            name: {{ .Values.frontend.config.tls.caCertConfigMapName }}
+          {{- end }}
+        {{- end }}
+        {{- with .Values.frontend.volumes }}
         {{- toYaml . | nindent 8 }}
-      {{- end }}
+        {{- end }}
       {{- with .Values.frontend.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

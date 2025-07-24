@@ -5,12 +5,12 @@ metadata:
   name: {{ include "llamacloud.fullname" . }}-{{ .Values.llamaParseLayoutDetectionApi.name }}
   labels:
     {{- include "llamacloud.labels" . | nindent 4 }}
-    {{- with.Values.llamaParseLayoutDetectionApi.service.labels }}
+    {{- with .Values.llamaParseLayoutDetectionApi.service.labels }}
       {{- toYaml . | nindent 4 }}
     {{- end }}
   annotations:
     {{- include "llamacloud.annotations" . | nindent 4 }}
-    {{- with.Values.llamaParseLayoutDetectionApi.service.annotations }}
+    {{- with .Values.llamaParseLayoutDetectionApi.service.annotations }}
       {{- toYaml . | nindent 4 }}
     {{- end }}
 spec:

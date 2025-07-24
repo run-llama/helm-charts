@@ -5,12 +5,12 @@ metadata:
   labels:
     app.kubernetes.io/component: {{ include "llamacloud.fullname" . }}-{{ .Values.backend.name }}
     {{- include "llamacloud.labels" . | nindent 4 }}
-    {{- with.Values.backend.service.labels }}
+    {{- with .Values.backend.service.labels }}
       {{- toYaml . | nindent 4 }}
     {{- end }}
   annotations:
     {{- include "llamacloud.annotations" . | nindent 4 }}
-    {{- with.Values.backend.service.annotations }}
+    {{- with .Values.backend.service.annotations }}
       {{- toYaml . | nindent 4 }}
     {{- end }}
 spec:

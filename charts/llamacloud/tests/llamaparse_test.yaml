@@ -124,6 +124,9 @@ tests:
   template: ../templates/llamaparse/secret.yaml
   asserts:
     - equal:
+        path: .data.AWS_BEDROCK_ENABLED
+        value: dHJ1ZQ==
+    - equal:
         path: .data.AWS_BEDROCK_REGION
         value: dXMtZWFzdC0x
     - equal:
@@ -154,7 +157,7 @@ tests:
   asserts:
     - equal:
         path: .data.GOOGLE_VERTEX_AI_ENABLED
-        value: "true"
+        value: dHJ1ZQ==
     - equal:
         path: .data.GOOGLE_VERTEX_AI_PROJECT_ID
         value: dGVzdC1wcm9qZWN0LWlk

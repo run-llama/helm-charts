@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## [0.5.0] - 2025-07-23
+
+### LlamaCloud Platform
+- **New Basic Auth Mode**: Added support for basic auth mode.
+    - This is available via the `.Values.backend.config.basicAuth` field in the values.yaml file.
+    - Please refer to the [docs](https://docs.cloud.llamaindex.ai/self_hosting/configuration/auth-modes) for more information.
+
+### Infrastructure Changes
+- Fixes a bug with the `.Values.llamaParse.config.awsBedrock.*` configurations.
+- There is now first class support for mounting certificate authorities onto the frontend service.
+    - Configuration is available via the `.Values.frontend.config.tls.*` field in the values.yaml file.
+
 ## [0.4.6] - 2025-07-21
 
 ### Deprecation Warning
