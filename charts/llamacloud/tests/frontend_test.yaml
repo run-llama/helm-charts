@@ -199,6 +199,11 @@ tests:
     frontend.service.type: ClusterIP
     frontend.service.port: 3000
     frontend.containerPort: 3000
+    frontend.service.labels:
+      foo: bar
+    frontend.service.annotations:
+      tailscale.com/expose: "true"
+      tailscale.com/hostname: "test-release-llamacloud-frontend.internal"
     mongodb.enabled: false
     postgresql.enabled: false
     rabbitmq.enabled: false
@@ -219,6 +224,15 @@ tests:
     - equal:
         path: .spec.selector["app.kubernetes.io/component"]
         value: test-release-llamacloud-frontend
+    - equal:
+        path: .metadata.annotations["tailscale.com/expose"]
+        value: "true"
+    - equal:
+        path: .metadata.annotations["tailscale.com/hostname"]
+        value: "test-release-llamacloud-frontend.internal"
+    - equal:
+        path: .metadata.labels["foo"]
+        value: bar
 
 - it: should create a HorizontalPodAutoscaler if autoscaling is enabled
   set:
