@@ -472,3 +472,42 @@ tests:
     - equal:
         path: .spec.groups[0].rules[0].annotations.description
         value: The request duration is too high.
+
+- it: should create a Service for the backend
+  set:
+    backend.service.type: LoadBalancer
+    backend.service.port: 8000
+    backend.service.labels:
+      foo: bar
+    backend.service.annotations:
+      tailscale.com/expose: "true"
+      tailscale.com/hostname: "test-release-llamacloud-backend.internal"
+    mongodb.enabled: false
+    postgresql.enabled: false
+    rabbitmq.enabled: false
+    redis.enabled: false
+  template: ../templates/backend/service.yaml
+  asserts:
+    - isKind:
+        of: Service
+    - equal:
+        path: .spec.type
+        value: LoadBalancer
+    - equal:
+        path: .spec.ports[0].port
+        value: 8000
+    - equal:
+        path: .metadata.labels["app.kubernetes.io/component"]
+        value: test-release-llamacloud-backend
+    - equal:
+        path: .spec.selector["app.kubernetes.io/component"]
+        value: test-release-llamacloud-backend
+    - equal:
+        path: .metadata.annotations["tailscale.com/expose"]
+        value: "true"
+    - equal:
+        path: .metadata.annotations["tailscale.com/hostname"]
+        value: "test-release-llamacloud-backend.internal"
+    - equal:
+        path: .metadata.labels["foo"]
+        value: bar

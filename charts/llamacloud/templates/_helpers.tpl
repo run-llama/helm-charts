@@ -233,6 +233,20 @@ Service Accounts Names
   value: {{ .Values.global.config.redis.external.host | quote }}
 - name: REDIS_PORT
   value: {{ .Values.global.config.redis.external.port | quote }}
+- name: REDIS_DB
+  value: {{ .Values.global.config.redis.external.db | default "0" | quote }}
+{{- if .Values.global.config.redis.external.scheme }}
+- name: REDIS_SCHEME
+  value: {{ .Values.global.config.redis.external.scheme | quote }}
+{{- end }}
+{{- if .Values.global.config.redis.external.username }}
+- name: REDIS_USERNAME
+  value: {{ .Values.global.config.redis.external.username | quote }}
+{{- end }}
+{{- if .Values.global.config.redis.external.password }}
+- name: REDIS_PASSWORD
+  value: {{ .Values.global.config.redis.external.password | quote }}
+{{- end }}
 {{- end -}}
 {{- end -}}
 
