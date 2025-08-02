@@ -1043,13 +1043,14 @@ llamaParse:
     ## @param llamaParse.config.azureOpenAi.apiVersion Azure OpenAI API version
     azureOpenAi:
       enabled: false
+      # Note each model has its own deployment name / api version / key on azure openai
+      # For more information, please refer to https://docs.cloud.llamaindex.ai/self_hosting/configuration/azure-openai
       existingSecret: ""
       key: ""
       endpoint: ""
       deploymentName: ""
       apiVersion: ""
-      # Note each model has its own deployment name / api version / key on azure openai
- 
+
     ## @param llamaParse.config.anthropicApiKey Anthropic API key
     ## @param llamaParse.config.existingAnthropicApiKeySecret Name of the existing secret to use for the Anthropic API key
     anthropicApiKey: ""
