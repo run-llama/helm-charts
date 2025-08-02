@@ -85,12 +85,20 @@ global:
     ## @param global.config.redis.external.enabled Use an external Redis instance
     ## @param global.config.redis.external.host Redis host
     ## @param global.config.redis.external.port Redis port
+    ## @param global.config.redis.external.scheme Redis connection scheme (redis or rediss for SSL)
+    ## @param global.config.redis.external.username Redis username (required for Redis 6.0+)
+    ## @param global.config.redis.external.password Redis password
+    ## @param global.config.redis.external.db Redis database
     ## @param global.config.redis.external.existingSecretName Name of the existing secret to use for Redis credentials
     redis:
       external:
         enabled: false
         host: ""
         port: "6379"
+        scheme: "redis"
+        username: ""
+        password: ""
+        db: 0
         existingSecretName: ""
 
     ## Uncomment the below lines to configure file store bucket names
@@ -178,14 +186,18 @@ frontend:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-frontend
-    tag: 0.5.0
+    tag: 0.5.1
     pullPolicy: IfNotPresent
 
   ## @param frontend.service.type Frontend Service type
   ## @param frontend.service.port Frontend Service port
+  ## @param frontend.service.labels Labels to add to the service
+  ## @param frontend.service.annotations Annotations to add to the service
   service:
     type: ClusterIP
     port: 3000
+    labels: {}
+    annotations: {}
 
   ## @param frontend.serviceAccount.create Whether or not to create a new service account
   ## @param frontend.serviceAccount.name Name of the service account
@@ -366,15 +378,19 @@ backend:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-backend
-    tag: 0.5.0
+    tag: 0.5.1
     pullPolicy: IfNotPresent
 
   ## Backend Service information
   ## @param backend.service.type Backend Service type
   ## @param backend.service.port Backend Service port
+  ## @param backend.service.labels Labels to add to the service
+  ## @param backend.service.annotations Annotations to add to the service
   service:
     type: ClusterIP
     port: 8000
+    labels: {}
+    annotations: {}
 
   serviceAccount:
     ## @param backend.serviceAccount.create Whether or not to create a new service account
@@ -604,7 +620,7 @@ jobsService:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-jobs-service
-    tag: 0.5.0
+    tag: 0.5.1
     pullPolicy: IfNotPresent
 
   ## JobsService Service information\
@@ -814,7 +830,7 @@ jobsWorker:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-jobs-worker
-    tag: 0.5.0
+    tag: 0.5.1
     pullPolicy: IfNotPresent
 
   ## JobsWorker Service information
@@ -1032,7 +1048,8 @@ llamaParse:
       endpoint: ""
       deploymentName: ""
       apiVersion: ""
-
+      # Note each model has its own deployment name / api version / key on azure openai
+ 
     ## @param llamaParse.config.anthropicApiKey Anthropic API key
     ## @param llamaParse.config.existingAnthropicApiKeySecret Name of the existing secret to use for the Anthropic API key
     anthropicApiKey: ""
@@ -1051,6 +1068,7 @@ llamaParse:
     ## @param llamaParse.config.awsBedrock.sonnet3_5ModelVersionName Sonnet 3.5 model version name
     ## @param llamaParse.config.awsBedrock.sonnet3_7ModelVersionName Sonnet 3.7 model version name
     ## @param llamaParse.config.awsBedrock.sonnet4_0ModelVersionName Sonnet 4.0 model version name
+    ## @param llamaParse.config.awsBedrock.haiku3_5_ModelVersionName Haiku 3.5 model version name
     awsBedrock:
       enabled: false
       existingSecret: ""
@@ -1060,7 +1078,7 @@ llamaParse:
       sonnet3_5ModelVersionName: "anthropic.claude-3-5-sonnet-20240620-v1:0"
       sonnet3_7ModelVersionName: "anthropic.claude-3-7-sonnet-20250219-v1:0"
       sonnet4_0ModelVersionName: "anthropic.claude-sonnet-4-20250514-v1:0"
-
+      haiku3_5_ModelVersionName: "anthropic.claude-3-5-haiku-20241022-v1:0"
     ## @param llamaParse.config.googleVertexAi.enabled Enable Google Vertex AI for LlamaParse
     ## @param llamaParse.config.googleVertexAi.existingSecret Name of the existing secret to use for the Google Vertex AI API key
     ## @param llamaParse.config.googleVertexAi.projectId Google Vertex AI project id
@@ -1089,7 +1107,7 @@ llamaParse:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-llamaparse
-    tag: 0.5.0
+    tag: 0.5.1
     pullPolicy: IfNotPresent
 
   ## ServiceAccount configuration
@@ -1311,7 +1329,7 @@ llamaParseOcr:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-llamaparse-ocr
-    tag: 0.5.0
+    tag: 0.5.1
     pullPolicy: IfNotPresent
 
   ## LlamaParseOcr Service information
@@ -1508,7 +1526,7 @@ llamaParseLayoutDetectionApi:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-layout-detection-api
-    tag: 0.5.0
+    tag: 0.5.1
     pullPolicy: IfNotPresent
 
   ## LlamaParse Layout Detectedion Api Service information
@@ -1673,7 +1691,7 @@ usage:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-usage
-    tag: 0.5.0
+    tag: 0.5.1
     pullPolicy: IfNotPresent
 
   ## Usage Service information
@@ -2012,7 +2030,7 @@ redis:
 
   ## DO NOT ENABLE REDIS AUTH FOR NOW
   auth:
-    ## @param redis.auth.enabled Enable Redis Auth (DO NOT SET TO TRUE)
+    ## @param redis.auth.enabled Enable Redis Auth (DO NOT ENABLE FOR NOW)
     enabled: false
 
 rabbitmq:

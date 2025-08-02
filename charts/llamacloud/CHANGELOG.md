@@ -1,5 +1,28 @@
 # CHANGELOG
 
+## [0.5.1] - 2025-07-31
+
+### LlamaCloud Platform
+- **Webhooks available**: Webhooks are now available in LlamaExtract and LlamaParse.
+    - Please refer to the [docs](https://docs.cloud.llamaindex.ai/llamacloud/webhooks) for more information.
+- Added support for Azure OpenAI Gpt 4.1, Gpt 4.1-mini, and Gpt 4.1-nano deployments.
+
+### Index
+- Added a `skip_failures` capability to the Confluence reader, allowing ingestion to continue even when some batches or pages fail with HTTP 5xx errors.
+
+### LlamaExtract
+- `high_resolution_mode` is now available in Multimodal/Premium modes.
+
+### Infrastructure Changes
+- Added support for configuring custom labels and annotations to `frontend` and `backend` k8s services
+- Improved Helm Chart UX around configuring Redis
+    - New fields: `.Values.global.config.external.redis.scheme` and `.Values.global.config.external.redis.db`
+- Added official support for configuring Azure Managed Redis with Access Keys
+    - For more information, please visit the [Configuring External Dependencies](https://docs.cloud.llamaindex.ai/self_hosting/configuration/dependencies) page in our public documentation.
+
+### Breaking Changes
+- **AWS Bedrock Models**: Users must add the `bedrock:InvokeModelWithResponseStream` role to their bedrock user before deploying this version.
+
 ## [0.5.0] - 2025-07-23
 
 ### LlamaCloud Platform

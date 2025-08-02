@@ -17,6 +17,7 @@ data:
   MAX_INDEX_JOBS_IN_EXECUTION: {{ .Values.jobsWorker.config.maxIndexJobsInExecution | default 0 | quote }}
   MAX_DOCUMENT_INGESTION_JOBS_IN_EXECUTION: {{ .Values.jobsWorker.config.maxDocumentIngestionJobsInExecution | default 1 | quote }}
   JOB_SERVICE_URL: {{ printf "http://%s-%s:%d" (include "llamacloud.fullname" .) .Values.jobsService.name (.Values.jobsService.service.port | int) | quote }}
+  TRACKING_SERVICE_URL: {{ printf "http://%s-%s:%d" (include "llamacloud.fullname" .) .Values.usage.name (.Values.usage.service.port | int) | quote }}
   S3_DOCUMENT_BUCKET_NAME: {{ .Values.global.config.parsedDocumentsCloudBucketName | default "llama-platform-parsed-documents" }}
   S3_ETL_BUCKET_NAME: {{ .Values.global.config.parsedEtlCloudBucketName | default "llama-platform-etl" }}
   S3_EXTERNAL_COMPONENTS_BUCKET_NAME: {{ .Values.global.config.parsedExternalComponentsCloudBucketName | default "llama-platform-external-components" }}
