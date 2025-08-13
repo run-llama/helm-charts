@@ -1,5 +1,24 @@
 # CHANGELOG
 
+## [0.5.2] - 2025-08-12
+
+### LlamaCloud Platform
+- Update SharePoint Data Source to detect file changes and update metadata.
+- Add new Jira V2 Data Source with improved update detection.
+- Upgrade API to Confluence to use RPC API to fix connectivity issues in self hosted deployments.
+
+### Parse
+- Added support for Azure OpenAI gpt-5, gpt-5-mini, and gpt-5-nano deployments.
+
+### LlamaExtract
+- Adds support for `pptx` format.
+- Confidence scores now support files up to 100 pages long.
+- Adds additional compatibility checks to the admin dashboard to better reflect Extract requirements.
+- More settings available to configure for allowed files (size and pages):
+  - `backend.config.llamaExtractMaxPages`
+  - `backend.config.llamaExtractMaxFileSizeMb`
+  - `backend.config.llamaExtractMaxFileSizeUiMb`
+
 ## [0.5.1] - 2025-07-31
 
 ### LlamaCloud Platform
