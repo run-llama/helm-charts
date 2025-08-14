@@ -14,9 +14,6 @@ metadata:
       {{- toYaml . | nindent 4 }}
     {{- end }}
 spec:
-  {{- if .Values.global.progressDeadlineSeconds }}
-  progressDeadlineSeconds: {{ .Values.global.progressDeadlineSeconds | int }}
-  {{- end }}
   {{- if not .Values.llamaParseLayoutDetectionApi.autoscaling.enabled }}
   replicas: {{ .Values.llamaParseLayoutDetectionApi.replicas }}
   {{- end }}
