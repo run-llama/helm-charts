@@ -7,6 +7,11 @@ global:
   ## Supported values: aws, azure, gcp
   cloudProvider: aws
 
+  ## @param global.progressDeadlineSeconds Max seconds Kubernetes waits for a Deployment to progress
+  ## Ref: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#progress-deadline
+  ## Set to null to let Kubernetes use its default (600s)
+  progressDeadlineSeconds: 600
+
   ## @param global.imagePullSecrets Global Docker registry secret names as an array
   ## imagePullSecrets:
   ##   - name: myRegistryKeySecretName

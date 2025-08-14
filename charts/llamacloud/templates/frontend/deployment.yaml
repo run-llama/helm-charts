@@ -13,6 +13,9 @@ metadata:
       {{- toYaml . | nindent 4 }}
     {{- end }}
 spec:
+  {{- if .Values.global.progressDeadlineSeconds }}
+  progressDeadlineSeconds: {{ .Values.global.progressDeadlineSeconds | int }}
+  {{- end }}
   {{- if .Values.frontend.autoscaling.enabled }}
   replicas: {{ .Values.frontend.autoscaling.minReplicas }}
   {{- else }}
