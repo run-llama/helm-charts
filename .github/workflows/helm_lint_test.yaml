@@ -97,4 +97,4 @@ jobs:
             --set=backend.config.oidc.clientSecret=$OIDC_CLIENT_SECRET \
             --set=backend.config.openAiApiKey=$OPENAI_API_KEY \
             --set=llamaParse.config.openAiApiKey=$OPENAI_API_KEY \
-            --timeout 900s"
+            --timeout 1800s"
