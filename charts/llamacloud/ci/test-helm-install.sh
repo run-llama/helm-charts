@@ -70,7 +70,7 @@ else
     echo "Using concurrency: ${MAX_JOBS}"
 
     job_count=0
-    for node in $(kind get nodes); do
+    for node in $(kind get nodes --name chart-testing); do
         echo "Pre-pulling into node: ${node}"
         for img in ${IMAGES}; do
             echo "  scheduling pull ${img} on ${node}"
@@ -89,7 +89,7 @@ else
     # Wait for any remaining background pulls to finish
     wait
 fi
-ct install --target-branch ${{ github.event.repository.default_branch }} \
+ct install --target-branch main \
     --helm-extra-set-args \
     "--set=global.config.progressDeadlineSeconds=900 \
     --set=global.config.licenseKey=$LLAMACLOUD_LICENSE_KEY \
