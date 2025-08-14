@@ -142,6 +142,7 @@ tests:
         path: .data.LLAMA_EXTRACT_MULTIMODAL_MODEL
         value: "gemini-2.0-flash"
 
+
 - it: should create a Service
   set:
     mongodb.enabled: false

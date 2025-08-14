@@ -129,11 +129,45 @@ tests:
         path: .data.LLAMA_EXTRACT_MULTIMODAL_MODEL
         value: "gemini-2.0-flash"
     - equal:
+        path: .data.LLAMA_EXTRACT_MAX_PAGES
+        value: "500"
+    - equal:
+        path: .data.LLAMA_EXTRACT_MAX_FILE_SIZE_MB
+        value: "100"
+    - equal:
+        path: .data.LLAMA_EXTRACT_MAX_FILE_SIZE_UI_MB
+        value: "30"
+    - equal:
         path: .data.DEFAULT_TRANSFORM_DOCUMENT_TIMEOUT_SECONDS
         value: "300"
     - equal:
         path: .data.TRANSFORM_EMBEDDING_CHAR_LIMIT
         value: "5000000"
+
+- it: should set custom LLAMA_EXTRACT settings when specified
+  set:
+    backend.config.llamaExtractMultimodalModel: "openai-gpt-4-1"
+    backend.config.llamaExtractMaxPages: 1000
+    backend.config.llamaExtractMaxFileSizeMb: 200
+    backend.config.llamaExtractMaxFileSizeUiMb: 50
+    mongodb.enabled: false
+    postgresql.enabled: false
+    rabbitmq.enabled: false
+    redis.enabled: false
+  template: ../templates/jobs-worker/configmap.yaml
+  asserts:
+    - equal:
+        path: .data.LLAMA_EXTRACT_MULTIMODAL_MODEL
+        value: "openai-gpt-4-1"
+    - equal:
+        path: .data.LLAMA_EXTRACT_MAX_PAGES
+        value: "1000"
+    - equal:
+        path: .data.LLAMA_EXTRACT_MAX_FILE_SIZE_MB
+        value: "200"
+    - equal:
+        path: .data.LLAMA_EXTRACT_MAX_FILE_SIZE_UI_MB
+        value: "50"
 
 - it: should use default values for new BYOC configuration flags when not set
   set:

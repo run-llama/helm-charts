@@ -186,7 +186,7 @@ frontend:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-frontend
-    tag: 0.5.1
+    tag: 0.5.2
     pullPolicy: IfNotPresent
 
   ## @param frontend.service.type Frontend Service type
@@ -306,6 +306,9 @@ backend:
   ## @param backend.name Name suffix of the Backend related resources
   name: backend
 
+  ## @param backend.progressDeadlineSeconds Number of seconds for deployment progress deadline
+  progressDeadlineSeconds: 1800
+
   ## Backend configuration to enable backend features
   config:
     ## @param backend.config.logLevel Log level for the backend
@@ -317,13 +320,14 @@ backend:
     existingOpenAiApiKeySecretName: ""
 
     ## Backend Azure OpenAI configuration
-    ## @param backend.config.azureOpenAi.enabled Enable Azure OpenAI for backend
+    ## @param backend.config.azureOpenAi.enabled Enable Azure OpenAI for backend (Legacy Configuration - Deprecating Soon)
     ## @param backend.config.azureOpenAi.existingSecret Name of the existing secret to use for the Azure OpenAI API key
     ## @param backend.config.azureOpenAi.key Azure OpenAI API key
     ## @param backend.config.azureOpenAi.endpoint Azure OpenAI endpoint
     ## @param backend.config.azureOpenAi.deploymentName Azure OpenAI deployment
     ## @param backend.config.azureOpenAi.apiVersion Azure OpenAI API version
     azureOpenAi:
+      ## This is a legacy configuration that will be deprecated in the near future.
       enabled: false
       existingSecret: ""
       key: ""
@@ -366,6 +370,12 @@ backend:
 
     ## @param backend.config.llamaExtractMultimodalModel LlamaExtract multimodal model (gemini-2.0-flash, gemini-2.5-pro, openai-gpt-4-1)
     llamaExtractMultimodalModel: "gemini-2.0-flash"
+    ## @param backend.config.llamaExtractMaxPages LlamaExtract max pages allowed
+    llamaExtractMaxPages: 500
+    ## @param backend.config.llamaExtractMaxFileSizeMb LlamaExtract max file size (MB) allowed
+    llamaExtractMaxFileSizeMb: 100
+    ## @param backend.config.llamaExtractMaxFileSizeUiMb LlamaExtract max file size (MB) allowed for UI
+    llamaExtractMaxFileSizeUiMb: 30
 
   ## @param backend.replicas Number of replicas of Backend Deployment
   replicas: 1
@@ -378,7 +388,7 @@ backend:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-backend
-    tag: 0.5.1
+    tag: 0.5.2
     pullPolicy: IfNotPresent
 
   ## Backend Service information
@@ -620,7 +630,7 @@ jobsService:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-jobs-service
-    tag: 0.5.1
+    tag: 0.5.2
     pullPolicy: IfNotPresent
 
   ## JobsService Service information\
@@ -830,7 +840,7 @@ jobsWorker:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-jobs-worker
-    tag: 0.5.1
+    tag: 0.5.2
     pullPolicy: IfNotPresent
 
   ## JobsWorker Service information
@@ -1108,7 +1118,7 @@ llamaParse:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-llamaparse
-    tag: 0.5.1
+    tag: 0.5.2
     pullPolicy: IfNotPresent
 
   ## ServiceAccount configuration
@@ -1330,7 +1340,7 @@ llamaParseOcr:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-llamaparse-ocr
-    tag: 0.5.1
+    tag: 0.5.2
     pullPolicy: IfNotPresent
 
   ## LlamaParseOcr Service information
@@ -1527,7 +1537,7 @@ llamaParseLayoutDetectionApi:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-layout-detection-api
-    tag: 0.5.1
+    tag: 0.5.2
     pullPolicy: IfNotPresent
 
   ## LlamaParse Layout Detectedion Api Service information
@@ -1692,7 +1702,7 @@ usage:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-usage
-    tag: 0.5.1
+    tag: 0.5.2
     pullPolicy: IfNotPresent
 
   ## Usage Service information
