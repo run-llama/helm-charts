@@ -306,6 +306,9 @@ backend:
   ## @param backend.name Name suffix of the Backend related resources
   name: backend
 
+  ## @param backend.progressDeadlineSeconds Number of seconds for deployment progress deadline
+  progressDeadlineSeconds: 1800
+
   ## Backend configuration to enable backend features
   config:
     ## @param backend.config.logLevel Log level for the backend
