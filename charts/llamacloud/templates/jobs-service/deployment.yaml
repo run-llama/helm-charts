@@ -16,6 +16,7 @@ spec:
   {{- if not .Values.jobsService.autoscaling.enabled }}
   replicas: {{ .Values.jobsService.replicas }}
   {{- end }}
+  progressDeadlineSeconds: {{ .Values.jobsService.progressDeadlineSeconds | default 1800 }}
   selector:
     matchLabels:
       {{- include "llamacloud.selectorLabels" . | nindent 6 }}

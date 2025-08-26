@@ -181,6 +181,9 @@ frontend:
   ## @param frontend.replicas Number of replicas of Frontend Deployment
   replicas: 1
 
+  ## @param frontend.progressDeadlineSeconds The maximum time in seconds for a deployment to make progress before it is considered to be failed
+  progressDeadlineSeconds: 1800  # 30 minutes
+
   ## @param frontend.image.registry Frontend Image registry
   ## @param frontend.image.repository Frontend Image repository
   ## @param frontend.image.tag Frontend Image tag
@@ -378,6 +381,9 @@ backend:
 
   ## @param backend.replicas Number of replicas of Backend Deployment
   replicas: 1
+
+  ## @param backend.progressDeadlineSeconds The maximum time in seconds for a deployment to make progress before it is considered to be failed
+  progressDeadlineSeconds: 1800  # 30 minutes
 
   ## Backend Image information
   ## @param backend.image.registry Backend Image registry
@@ -621,6 +627,9 @@ jobsService:
   ## @param jobsService.replicas Number of replicas of JobsService Deployment
   replicas: 1
 
+  ## @param jobsService.progressDeadlineSeconds The maximum time in seconds for a deployment to make progress before it is considered to be failed
+  progressDeadlineSeconds: 1800  # 30 minutes
+
   ## JobsService Image information
   ## @param jobsService.image.registry JobsService Image registry
   ## @param jobsService.image.repository JobsService Image repository
@@ -830,6 +839,9 @@ jobsWorker:
 
   ## @param jobsWorker.replicas Number of replicas of JobsWorker Deployment
   replicas: 1
+
+  ## @param jobsWorker.progressDeadlineSeconds The maximum time in seconds for a deployment to make progress before it is considered to be failed
+  progressDeadlineSeconds: 1800  # 30 minutes
 
   ## JobsWorker Image information
   ## @param jobsWorker.image.registry JobsWorker Image registry
@@ -1109,6 +1121,9 @@ llamaParse:
   ## @param llamaParse.replicas Number of replicas of LlamaParse Deployment
   replicas: 2
 
+  ## @param llamaParse.progressDeadlineSeconds The maximum time in seconds for a deployment to make progress before it is considered to be failed
+  progressDeadlineSeconds: 1800  # 30 minutes
+
   ## LlamaParse Image information
   ## @param llamaParse.image.registry LlamaParse Image registry
   ## @param llamaParse.image.repository LlamaParse Image repository
@@ -1331,6 +1346,9 @@ llamaParseOcr:
   ## @param llamaParseOcr.replicas Number of replicas of LlamaParseOcr Deployment
   replicas: 2
 
+  ## @param llamaParseOcr.progressDeadlineSeconds The maximum time in seconds for a deployment to make progress before it is considered to be failed
+  progressDeadlineSeconds: 1800  # 30 minutes
+
   ## LlamaParseOcr Image information
   ## @param llamaParseOcr.image.registry LlamaParseOcr Image registry
   ## @param llamaParseOcr.image.repository LlamaParseOcr Image repository
@@ -1524,6 +1542,9 @@ llamaParseLayoutDetectionApi:
   ## @param llamaParseLayoutDetectionApi.replicas Number of replicas of LlamaParse Layout Detectedion Api Deployment
   replicas: 1
 
+  ## @param llamaParseLayoutDetectionApi.progressDeadlineSeconds The maximum time in seconds for a deployment to make progress before it is considered to be failed
+  progressDeadlineSeconds: 1800  # 30 minutes
+
   ## @param llamaParseLayoutDetectionApi.config.logLevel Log level for the LlamaParse Layout Detectedion Api
   config:
     logLevel: INFO
@@ -1692,6 +1713,9 @@ usage:
 
   ## @param usage.replicas Number of replicas of usage Deployment
   replicas: 1
+
+  ## @param usage.progressDeadlineSeconds The maximum time in seconds for a deployment to make progress before it is considered to be failed
+  progressDeadlineSeconds: 1800  # 30 minutes
 
   ## Usage Image information
   ## @param usage.image.registry Usage Image registry
@@ -1877,6 +1901,9 @@ s3proxy:
 
   ## @param s3proxy.replicas Number of replicas of s3proxy Deployment
   replicas: 1
+
+  ## @param s3proxy.progressDeadlineSeconds The maximum time in seconds for a deployment to make progress before it is considered to be failed
+  progressDeadlineSeconds: 1800  # 30 minutes
 
   ## Image information
   ## @param s3proxy.image.registry s3proxy Image registry

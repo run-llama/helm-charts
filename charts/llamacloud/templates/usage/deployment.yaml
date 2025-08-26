@@ -16,6 +16,7 @@ spec:
   {{- if not .Values.usage.autoscaling.enabled }}
   replicas: {{ .Values.usage.replicas }}
   {{- end }}
+  progressDeadlineSeconds: {{ .Values.usage.progressDeadlineSeconds | default 1800 }}
   strategy:
     rollingUpdate:
       maxUnavailable: 1
