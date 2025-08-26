@@ -212,12 +212,17 @@ Service Accounts Names
       key: rabbitmq-password
 {{- end -}}
 {{- if and (.Values.global.config.rabbitmq.external.enabled) (not .Values.global.config.rabbitmq.external.existingSecretName) -}}
+{{- if .Values.global.config.rabbitmq.external.connectionString -}}
+- name: JOB_QUEUE_CONNECTION_STRING
+  value: {{ .Values.global.config.rabbitmq.external.connectionString | quote }}
+{{- else -}}
 - name: JOB_QUEUE_ENDPOINT
   value: {{ printf "%s://%s:%s" .Values.global.config.rabbitmq.external.scheme .Values.global.config.rabbitmq.external.host .Values.global.config.rabbitmq.external.port | quote }}
 - name: JOB_QUEUE_USERNAME
   value: {{ .Values.global.config.rabbitmq.external.username | quote }}
 - name: JOB_QUEUE_PASSWORD
   value: {{ .Values.global.config.rabbitmq.external.password | quote }}
+{{- end -}}
 {{- end -}}
 {{- end -}}
 

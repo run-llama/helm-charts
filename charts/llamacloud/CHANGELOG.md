@@ -1,5 +1,19 @@
 # CHANGELOG
 
+## [0.5.3] - 2025-08-19
+
+### LlamaCloud Platform
+- Azure Service Bus Integration: `.Values.rabbitmq.external.connectionString*`
+- Webhook support for sending structured JSON output
+    - Please refer to the [docs](https://docs.cloud.llamaindex.ai/general/webhooks) for more information.
+
+### Index
+- Stability improvements
+- File name filter add the data source UI
+
+### LlamaExtract
+- Page quality is incorporated when computing confidence scores
+
 ## [0.5.2] - 2025-08-12
 
 ### LlamaCloud Platform

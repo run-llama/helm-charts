@@ -17,6 +17,7 @@ spec:
   {{- if not .Values.llamaParseLayoutDetectionApi.autoscaling.enabled }}
   replicas: {{ .Values.llamaParseLayoutDetectionApi.replicas }}
   {{- end }}
+  progressDeadlineSeconds: {{ .Values.llamaParseLayoutDetectionApi.progressDeadlineSeconds | default 1800 }}
   selector:
     matchLabels:
       {{- include "llamacloud.selectorLabels" . | nindent 6 }}

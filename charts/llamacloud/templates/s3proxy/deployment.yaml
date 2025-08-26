@@ -17,6 +17,7 @@ spec:
   {{- if not .Values.s3proxy.autoscaling.enabled }}
   replicas: {{ .Values.s3proxy.replicas }}
   {{- end }}
+  progressDeadlineSeconds: {{ .Values.s3proxy.progressDeadlineSeconds | default 1800 }}
   selector:
     matchLabels:
       {{- include "llamacloud.selectorLabels" . | nindent 6 }}
