@@ -476,7 +476,7 @@ backend:
     ## @param backend.livenessProbe.timeoutSeconds Number of seconds after which the probe times out
     ## @param backend.livenessProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
     ## @param backend.livenessProbe.initialDelaySeconds Number of seconds after the container has started before the probe is initiated
-    failureThreshold: 30
+    failureThreshold: 60
     initialDelaySeconds: 30
     httpGet:
       path: /api/health
@@ -493,7 +493,7 @@ backend:
     ## @param backend.readinessProbe.timeoutSeconds Number of seconds after which the probe times out
     ## @param backend.readinessProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
     ## @param backend.readinessProbe.initialDelaySeconds Number of seconds after the container has started before the probe is initiated
-    failureThreshold: 30
+    failureThreshold: 60
     initialDelaySeconds: 30
     httpGet:
       path: /api/health
@@ -510,7 +510,7 @@ backend:
     ## @param backend.startupProbe.timeoutSeconds Number of seconds after which the probe times out
     ## @param backend.startupProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
     ## @param backend.startupProbe.initialDelaySeconds Number of seconds after the container has started before the probe is initiated
-    failureThreshold: 30
+    failureThreshold: 60
     initialDelaySeconds: 30
     httpGet:
       path: /api/health
@@ -709,7 +709,7 @@ jobsService:
     ## @param jobsService.livenessProbe.periodSeconds How often (in seconds) to perform the probe
     ## @param jobsService.livenessProbe.timeoutSeconds Number of seconds after which the probe times out
     ## @param jobsService.livenessProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
-    failureThreshold: 30
+    failureThreshold: 60
     httpGet:
       path: /api/health
       port: 8002
@@ -724,7 +724,7 @@ jobsService:
     ## @param jobsService.readinessProbe.periodSeconds How often (in seconds) to perform the probe
     ## @param jobsService.readinessProbe.timeoutSeconds Number of seconds after which the probe times out
     ## @param jobsService.readinessProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
-    failureThreshold: 30
+    failureThreshold: 60
     httpGet:
       path: /api/health
       port: 8002
@@ -740,7 +740,7 @@ jobsService:
     ## @param jobsService.startupProbe.periodSeconds How often (in seconds) to perform the probe
     ## @param jobsService.startupProbe.timeoutSeconds Number of seconds after which the probe times out
     ## @param jobsService.startupProbe.initialDelaySeconds Number of seconds after the container has started before the probe is initiated
-    failureThreshold: 30
+    failureThreshold: 60
     initialDelaySeconds: 30
     httpGet:
       path: /api/health
@@ -928,7 +928,7 @@ jobsWorker:
     ## @param jobsWorker.livenessProbe.timeoutSeconds Number of seconds after which the probe times out
     ## @param jobsWorker.livenessProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
     ## @param jobsWorker.livenessProbe.initialDelaySeconds Number of seconds after the container has started before the probe is initiated
-    failureThreshold: 30
+    failureThreshold: 60
     initialDelaySeconds: 30
     httpGet:
       path: /api/health
@@ -945,7 +945,7 @@ jobsWorker:
     ## @param jobsWorker.readinessProbe.timeoutSeconds Number of seconds after which the probe times out
     ## @param jobsWorker.readinessProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
     ## @param jobsWorker.readinessProbe.initialDelaySeconds Number of seconds after the container has started before the probe is initiated
-    failureThreshold: 30
+    failureThreshold: 60
     initialDelaySeconds: 30
     httpGet:
       path: /api/health
@@ -962,7 +962,7 @@ jobsWorker:
     ## @param jobsWorker.startupProbe.timeoutSeconds Number of seconds after which the probe times out
     ## @param jobsWorker.startupProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
     ## @param jobsWorker.startupProbe.initialDelaySeconds Number of seconds after the container has started before the probe is initiated
-    failureThreshold: 30
+    failureThreshold: 60
     initialDelaySeconds: 30
     httpGet:
       path: /api/health
@@ -1207,7 +1207,7 @@ llamaParse:
     ## @param llamaParse.livenessProbe.initialDelaySeconds Number of seconds after the container has started before liveness probes are initiated
     ## @param llamaParse.livenessProbe.periodSeconds How often (in seconds) to perform the probe
     ## @param llamaParse.livenessProbe.timeoutSeconds Number of seconds after which the probe times out
-    failureThreshold: 10
+    failureThreshold: 20
     httpGet:
       path: /livez
       port: 8004
@@ -1223,7 +1223,7 @@ llamaParse:
     ## @param llamaParse.readinessProbe.initialDelaySeconds Number of seconds after the container has started before readiness probes are initiated
     ## @param llamaParse.readinessProbe.periodSeconds How often (in seconds) to perform the probe
     ## @param llamaParse.readinessProbe.timeoutSeconds Number of seconds after which the probe times out
-    failureThreshold: 10
+    failureThreshold: 20
     httpGet:
       path: /readyz
       port: 8004
@@ -1417,7 +1417,7 @@ llamaParseOcr:
     ## @param llamaParseOcr.livenessProbe.timeoutSeconds Number of seconds after which the probe times out
     ## @param llamaParseOcr.livenessProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
     ## @param llamaParseOcr.livenessProbe.successThreshold Minimum consecutive successes for the probe to be considered successful after having failed
-    failureThreshold: 5
+    failureThreshold: 10
     httpGet:
       path: /health_check
       port: 8080
@@ -1437,7 +1437,7 @@ llamaParseOcr:
     ## @param llamaParseOcr.readinessProbe.timeoutSeconds Number of seconds after which the probe times out
     ## @param llamaParseOcr.readinessProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
     ## @param llamaParseOcr.readinessProbe.successThreshold Minimum consecutive successes for the probe to be considered successful after having failed
-    failureThreshold: 5
+    failureThreshold: 10
     httpGet:
       path: /health_check
       port: 8080
@@ -1614,7 +1614,7 @@ llamaParseLayoutDetectionApi:
     ## @param llamaParseLayoutDetectionApi.livenessProbe.timeoutSeconds Number of seconds after which the probe times out
     ## @param llamaParseLayoutDetectionApi.livenessProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
     ## @param llamaParseLayoutDetectionApi.livenessProbe.successThreshold Minimum consecutive successes for the probe to be considered successful after having failed
-    failureThreshold: 5
+    failureThreshold: 10
     httpGet:
       path: /health
       port: 8000
@@ -1634,7 +1634,7 @@ llamaParseLayoutDetectionApi:
     ## @param llamaParseLayoutDetectionApi.readinessProbe.timeoutSeconds Number of seconds after which the probe times out
     ## @param llamaParseLayoutDetectionApi.readinessProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
     ## @param llamaParseLayoutDetectionApi.readinessProbe.successThreshold Minimum consecutive successes for the probe to be considered successful after having failed
-    failureThreshold: 5
+    failureThreshold: 10
     httpGet:
       path: /health
       port: 8000
@@ -1788,7 +1788,7 @@ usage:
     ## @param usage.livenessProbe.timeoutSeconds Number of seconds after which the probe times out
     ## @param usage.livenessProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
     ## @param usage.livenessProbe.successThreshold Minimum consecutive successes for the probe to be considered successful after having failed
-    failureThreshold: 30
+    failureThreshold: 60
     httpGet:
       path: /health_check
       port: 8005
@@ -1808,7 +1808,7 @@ usage:
     ## @param usage.readinessProbe.timeoutSeconds Number of seconds after which the probe times out
     ## @param usage.readinessProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
     ## @param usage.readinessProbe.successThreshold Minimum consecutive successes for the probe to be considered successful after having failed
-    failureThreshold: 30
+    failureThreshold: 60
     httpGet:
       path: /health_check
       port: 8005
