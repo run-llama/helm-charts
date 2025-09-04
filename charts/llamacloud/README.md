@@ -197,6 +197,7 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 | `backend.config.qdrant.url`                           | QDRANT Data-Sink host                                                                                             | `""`                            |
 | `backend.config.qdrant.apiKey`                        | QDRANT Data-Sink API key                                                                                          | `""`                            |
 | `backend.config.llamaExtractMultimodalModel`          | LlamaExtract multimodal model (gemini-2.0-flash, gemini-2.5-pro, openai-gpt-4-1)                                  | `gemini-2.0-flash`              |
+| `backend.config.llamaExtractSchemaGenerationModel`    | LlamaExtract schema generation model (gemini-2.0-flash, openai-gpt-4-1-mini)                                       | `gemini-2.0-flash`              |
 | `backend.config.llamaExtractMaxPages`                 | LlamaExtract max pages allowed                                                                                    | `500`                           |
 | `backend.config.llamaExtractMaxFileSizeMb`            | LlamaExtract max file size (MB) allowed                                                                           | `100`                           |
 | `backend.config.llamaExtractMaxFileSizeUiMb`          | LlamaExtract max file size (MB) allowed for UI                                                                    | `30`                            |

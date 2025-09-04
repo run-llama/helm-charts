@@ -257,6 +257,9 @@ tests:
         path: .data.LLAMA_EXTRACT_MULTIMODAL_MODEL
         value: "gemini-2.0-flash"
     - equal:
+        path: .data.LLAMA_EXTRACT_SCHEMA_GENERATION_MODEL
+        value: "gemini-2.0-flash"
+    - equal:
         path: .data.LLAMA_EXTRACT_MAX_PAGES
         value: "500"
     - equal:
@@ -269,6 +272,7 @@ tests:
 - it: should set custom LLAMA_EXTRACT settings when specified
   set:
     backend.config.llamaExtractMultimodalModel: "openai-gpt-4-1"
+    backend.config.llamaExtractSchemaGenerationModel: "openai-gpt-4-1-mini"
     backend.config.llamaExtractMaxPages: 1000
     backend.config.llamaExtractMaxFileSizeMb: 200
     backend.config.llamaExtractMaxFileSizeUiMb: 50
@@ -281,6 +285,9 @@ tests:
     - equal:
         path: .data.LLAMA_EXTRACT_MULTIMODAL_MODEL
         value: "openai-gpt-4-1"
+    - equal:
+        path: .data.LLAMA_EXTRACT_SCHEMA_GENERATION_MODEL
+        value: "openai-gpt-4-1-mini"
     - equal:
         path: .data.LLAMA_EXTRACT_MAX_PAGES
         value: "1000"

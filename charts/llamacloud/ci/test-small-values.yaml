@@ -3,30 +3,30 @@
 frontend:
   resources:
     requests:
-      cpu: 1000m
+      cpu: 200m
       memory: 1Gi
 
 backend:
   resources:
     requests:
-      cpu: 1
+      cpu: 200m
       memory: 1Gi
 
 jobsService:
   resources:
     requests:
-      cpu: 1
-      memory: 1Gi
+      cpu: 200m
+      memory: 512Mi
 
 jobsWorker:
   resources:
     requests:
-      cpu: 1
-      memory: 1Gi
+      cpu: 200m
+      memory: 512Mi
 usage:
   resources:
     requests:
-      cpu: 1
+      cpu: 200m
       memory: 1Gi
 
 llamaParse:
