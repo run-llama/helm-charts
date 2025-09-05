@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## [0.5.4] - 2025-09-04
+### LlamaCloud Platform
+- **Fixed Google Vertex AI Configuration**: Resolved environment variable inconsistency between Parse and backend services for Google Vertex AI credentials
+    - Parse now supports `GOOGLE_VERTEX_AI_CREDENTIALS_JSON` environment variable for consistency with backend configuration
+    - Maintains backward compatibility with `GOOGLE_APPLICATION_CREDENTIALS` (with deprecation warning)
+- Added GPT-5 support in admin UI panel
+
+### LlamaExtract
+- Extract supports selection of parse (`parse_model`) and extract (`extract_model`) models for Multimodal/Premium modes. 
+- Support for automatic schema generation in the UI. 
+
 ## [0.5.3] - 2025-08-19
 
 ### LlamaCloud Platform
