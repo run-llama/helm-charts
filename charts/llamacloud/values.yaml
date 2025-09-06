@@ -181,9 +181,6 @@ frontend:
   ## @param frontend.replicas Number of replicas of Frontend Deployment
   replicas: 1
 
-  ## @param frontend.progressDeadlineSeconds The maximum time in seconds for a deployment to make progress before it is considered to be failed
-  progressDeadlineSeconds: 1800  # 30 minutes
-
   ## @param frontend.image.registry Frontend Image registry
   ## @param frontend.image.repository Frontend Image repository
   ## @param frontend.image.tag Frontend Image tag
@@ -191,7 +188,7 @@ frontend:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-frontend
-    tag: 0.5.3
+    tag: 0.5.4
     pullPolicy: IfNotPresent
 
   ## @param frontend.service.type Frontend Service type
@@ -372,6 +369,8 @@ backend:
 
     ## @param backend.config.llamaExtractMultimodalModel LlamaExtract multimodal model (gemini-2.0-flash, gemini-2.5-pro, openai-gpt-4-1)
     llamaExtractMultimodalModel: "gemini-2.0-flash"
+    ## @param backend.config.llamaExtractSchemaGenerationModel LlamaExtract schema generation model (gemini-2.0-flash, openai-gpt-4-1-mini)
+    llamaExtractSchemaGenerationModel: "gemini-2.0-flash"
     ## @param backend.config.llamaExtractMaxPages LlamaExtract max pages allowed
     llamaExtractMaxPages: 500
     ## @param backend.config.llamaExtractMaxFileSizeMb LlamaExtract max file size (MB) allowed
@@ -382,9 +381,6 @@ backend:
   ## @param backend.replicas Number of replicas of Backend Deployment
   replicas: 1
 
-  ## @param backend.progressDeadlineSeconds The maximum time in seconds for a deployment to make progress before it is considered to be failed
-  progressDeadlineSeconds: 1800  # 30 minutes
-
   ## Backend Image information
   ## @param backend.image.registry Backend Image registry
   ## @param backend.image.repository Backend Image repository
@@ -393,7 +389,7 @@ backend:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-backend
-    tag: 0.5.3
+    tag: 0.5.4
     pullPolicy: IfNotPresent
 
   ## Backend Service information
@@ -482,7 +478,7 @@ backend:
     ## @param backend.livenessProbe.timeoutSeconds Number of seconds after which the probe times out
     ## @param backend.livenessProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
     ## @param backend.livenessProbe.initialDelaySeconds Number of seconds after the container has started before the probe is initiated
-    failureThreshold: 60
+    failureThreshold: 30
     initialDelaySeconds: 30
     httpGet:
       path: /api/health
@@ -499,7 +495,7 @@ backend:
     ## @param backend.readinessProbe.timeoutSeconds Number of seconds after which the probe times out
     ## @param backend.readinessProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
     ## @param backend.readinessProbe.initialDelaySeconds Number of seconds after the container has started before the probe is initiated
-    failureThreshold: 60
+    failureThreshold: 30
     initialDelaySeconds: 30
     httpGet:
       path: /api/health
@@ -516,7 +512,7 @@ backend:
     ## @param backend.startupProbe.timeoutSeconds Number of seconds after which the probe times out
     ## @param backend.startupProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
     ## @param backend.startupProbe.initialDelaySeconds Number of seconds after the container has started before the probe is initiated
-    failureThreshold: 200
+    failureThreshold: 30
     initialDelaySeconds: 30
     httpGet:
       path: /api/health
@@ -627,9 +623,6 @@ jobsService:
   ## @param jobsService.replicas Number of replicas of JobsService Deployment
   replicas: 1
 
-  ## @param jobsService.progressDeadlineSeconds The maximum time in seconds for a deployment to make progress before it is considered to be failed
-  progressDeadlineSeconds: 1800  # 30 minutes
-
   ## JobsService Image information
   ## @param jobsService.image.registry JobsService Image registry
   ## @param jobsService.image.repository JobsService Image repository
@@ -638,7 +631,7 @@ jobsService:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-jobs-service
-    tag: 0.5.3
+    tag: 0.5.4
     pullPolicy: IfNotPresent
 
   ## JobsService Service information\
@@ -718,7 +711,7 @@ jobsService:
     ## @param jobsService.livenessProbe.periodSeconds How often (in seconds) to perform the probe
     ## @param jobsService.livenessProbe.timeoutSeconds Number of seconds after which the probe times out
     ## @param jobsService.livenessProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
-    failureThreshold: 60
+    failureThreshold: 30
     httpGet:
       path: /api/health
       port: 8002
@@ -733,7 +726,7 @@ jobsService:
     ## @param jobsService.readinessProbe.periodSeconds How often (in seconds) to perform the probe
     ## @param jobsService.readinessProbe.timeoutSeconds Number of seconds after which the probe times out
     ## @param jobsService.readinessProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
-    failureThreshold: 60
+    failureThreshold: 30
     httpGet:
       path: /api/health
       port: 8002
@@ -749,7 +742,7 @@ jobsService:
     ## @param jobsService.startupProbe.periodSeconds How often (in seconds) to perform the probe
     ## @param jobsService.startupProbe.timeoutSeconds Number of seconds after which the probe times out
     ## @param jobsService.startupProbe.initialDelaySeconds Number of seconds after the container has started before the probe is initiated
-    failureThreshold: 200
+    failureThreshold: 30
     initialDelaySeconds: 30
     httpGet:
       path: /api/health
@@ -840,9 +833,6 @@ jobsWorker:
   ## @param jobsWorker.replicas Number of replicas of JobsWorker Deployment
   replicas: 1
 
-  ## @param jobsWorker.progressDeadlineSeconds The maximum time in seconds for a deployment to make progress before it is considered to be failed
-  progressDeadlineSeconds: 1800  # 30 minutes
-
   ## JobsWorker Image information
   ## @param jobsWorker.image.registry JobsWorker Image registry
   ## @param jobsWorker.image.repository JobsWorker Image repository
@@ -851,7 +841,7 @@ jobsWorker:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-jobs-worker
-    tag: 0.5.3
+    tag: 0.5.4
     pullPolicy: IfNotPresent
 
   ## JobsWorker Service information
@@ -940,7 +930,7 @@ jobsWorker:
     ## @param jobsWorker.livenessProbe.timeoutSeconds Number of seconds after which the probe times out
     ## @param jobsWorker.livenessProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
     ## @param jobsWorker.livenessProbe.initialDelaySeconds Number of seconds after the container has started before the probe is initiated
-    failureThreshold: 60
+    failureThreshold: 30
     initialDelaySeconds: 30
     httpGet:
       path: /api/health
@@ -957,7 +947,7 @@ jobsWorker:
     ## @param jobsWorker.readinessProbe.timeoutSeconds Number of seconds after which the probe times out
     ## @param jobsWorker.readinessProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
     ## @param jobsWorker.readinessProbe.initialDelaySeconds Number of seconds after the container has started before the probe is initiated
-    failureThreshold: 60
+    failureThreshold: 30
     initialDelaySeconds: 30
     httpGet:
       path: /api/health
@@ -974,7 +964,7 @@ jobsWorker:
     ## @param jobsWorker.startupProbe.timeoutSeconds Number of seconds after which the probe times out
     ## @param jobsWorker.startupProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
     ## @param jobsWorker.startupProbe.initialDelaySeconds Number of seconds after the container has started before the probe is initiated
-    failureThreshold: 200
+    failureThreshold: 30
     initialDelaySeconds: 30
     httpGet:
       path: /api/health
@@ -1121,9 +1111,6 @@ llamaParse:
   ## @param llamaParse.replicas Number of replicas of LlamaParse Deployment
   replicas: 2
 
-  ## @param llamaParse.progressDeadlineSeconds The maximum time in seconds for a deployment to make progress before it is considered to be failed
-  progressDeadlineSeconds: 1800  # 30 minutes
-
   ## LlamaParse Image information
   ## @param llamaParse.image.registry LlamaParse Image registry
   ## @param llamaParse.image.repository LlamaParse Image repository
@@ -1132,7 +1119,7 @@ llamaParse:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-llamaparse
-    tag: 0.5.3
+    tag: 0.5.4
     pullPolicy: IfNotPresent
 
   ## ServiceAccount configuration
@@ -1222,7 +1209,7 @@ llamaParse:
     ## @param llamaParse.livenessProbe.initialDelaySeconds Number of seconds after the container has started before liveness probes are initiated
     ## @param llamaParse.livenessProbe.periodSeconds How often (in seconds) to perform the probe
     ## @param llamaParse.livenessProbe.timeoutSeconds Number of seconds after which the probe times out
-    failureThreshold: 20
+    failureThreshold: 10
     httpGet:
       path: /livez
       port: 8004
@@ -1238,7 +1225,7 @@ llamaParse:
     ## @param llamaParse.readinessProbe.initialDelaySeconds Number of seconds after the container has started before readiness probes are initiated
     ## @param llamaParse.readinessProbe.periodSeconds How often (in seconds) to perform the probe
     ## @param llamaParse.readinessProbe.timeoutSeconds Number of seconds after which the probe times out
-    failureThreshold: 20
+    failureThreshold: 10
     httpGet:
       path: /readyz
       port: 8004
@@ -1346,9 +1333,6 @@ llamaParseOcr:
   ## @param llamaParseOcr.replicas Number of replicas of LlamaParseOcr Deployment
   replicas: 2
 
-  ## @param llamaParseOcr.progressDeadlineSeconds The maximum time in seconds for a deployment to make progress before it is considered to be failed
-  progressDeadlineSeconds: 1800  # 30 minutes
-
   ## LlamaParseOcr Image information
   ## @param llamaParseOcr.image.registry LlamaParseOcr Image registry
   ## @param llamaParseOcr.image.repository LlamaParseOcr Image repository
@@ -1357,7 +1341,7 @@ llamaParseOcr:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-llamaparse-ocr
-    tag: 0.5.3
+    tag: 0.5.4
     pullPolicy: IfNotPresent
 
   ## LlamaParseOcr Service information
@@ -1435,7 +1419,7 @@ llamaParseOcr:
     ## @param llamaParseOcr.livenessProbe.timeoutSeconds Number of seconds after which the probe times out
     ## @param llamaParseOcr.livenessProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
     ## @param llamaParseOcr.livenessProbe.successThreshold Minimum consecutive successes for the probe to be considered successful after having failed
-    failureThreshold: 10
+    failureThreshold: 5
     httpGet:
       path: /health_check
       port: 8080
@@ -1455,7 +1439,7 @@ llamaParseOcr:
     ## @param llamaParseOcr.readinessProbe.timeoutSeconds Number of seconds after which the probe times out
     ## @param llamaParseOcr.readinessProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
     ## @param llamaParseOcr.readinessProbe.successThreshold Minimum consecutive successes for the probe to be considered successful after having failed
-    failureThreshold: 10
+    failureThreshold: 5
     httpGet:
       path: /health_check
       port: 8080
@@ -1542,9 +1526,6 @@ llamaParseLayoutDetectionApi:
   ## @param llamaParseLayoutDetectionApi.replicas Number of replicas of LlamaParse Layout Detectedion Api Deployment
   replicas: 1
 
-  ## @param llamaParseLayoutDetectionApi.progressDeadlineSeconds The maximum time in seconds for a deployment to make progress before it is considered to be failed
-  progressDeadlineSeconds: 1800  # 30 minutes
-
   ## @param llamaParseLayoutDetectionApi.config.logLevel Log level for the LlamaParse Layout Detectedion Api
   config:
     logLevel: INFO
@@ -1557,7 +1538,7 @@ llamaParseLayoutDetectionApi:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-layout-detection-api
-    tag: 0.5.3
+    tag: 0.5.4
     pullPolicy: IfNotPresent
 
   ## LlamaParse Layout Detectedion Api Service information
@@ -1635,7 +1616,7 @@ llamaParseLayoutDetectionApi:
     ## @param llamaParseLayoutDetectionApi.livenessProbe.timeoutSeconds Number of seconds after which the probe times out
     ## @param llamaParseLayoutDetectionApi.livenessProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
     ## @param llamaParseLayoutDetectionApi.livenessProbe.successThreshold Minimum consecutive successes for the probe to be considered successful after having failed
-    failureThreshold: 10
+    failureThreshold: 5
     httpGet:
       path: /health
       port: 8000
@@ -1655,7 +1636,7 @@ llamaParseLayoutDetectionApi:
     ## @param llamaParseLayoutDetectionApi.readinessProbe.timeoutSeconds Number of seconds after which the probe times out
     ## @param llamaParseLayoutDetectionApi.readinessProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
     ## @param llamaParseLayoutDetectionApi.readinessProbe.successThreshold Minimum consecutive successes for the probe to be considered successful after having failed
-    failureThreshold: 10
+    failureThreshold: 5
     httpGet:
       path: /health
       port: 8000
@@ -1714,9 +1695,6 @@ usage:
   ## @param usage.replicas Number of replicas of usage Deployment
   replicas: 1
 
-  ## @param usage.progressDeadlineSeconds The maximum time in seconds for a deployment to make progress before it is considered to be failed
-  progressDeadlineSeconds: 1800  # 30 minutes
-
   ## Usage Image information
   ## @param usage.image.registry Usage Image registry
   ## @param usage.image.repository Usage Image repository
@@ -1725,7 +1703,7 @@ usage:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-usage
-    tag: 0.5.3
+    tag: 0.5.4
     pullPolicy: IfNotPresent
 
   ## Usage Service information
@@ -1812,7 +1790,7 @@ usage:
     ## @param usage.livenessProbe.timeoutSeconds Number of seconds after which the probe times out
     ## @param usage.livenessProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
     ## @param usage.livenessProbe.successThreshold Minimum consecutive successes for the probe to be considered successful after having failed
-    failureThreshold: 60
+    failureThreshold: 30
     httpGet:
       path: /health_check
       port: 8005
@@ -1832,7 +1810,7 @@ usage:
     ## @param usage.readinessProbe.timeoutSeconds Number of seconds after which the probe times out
     ## @param usage.readinessProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
     ## @param usage.readinessProbe.successThreshold Minimum consecutive successes for the probe to be considered successful after having failed
-    failureThreshold: 60
+    failureThreshold: 30
     httpGet:
       path: /health_check
       port: 8005
@@ -1901,9 +1879,6 @@ s3proxy:
 
   ## @param s3proxy.replicas Number of replicas of s3proxy Deployment
   replicas: 1
-
-  ## @param s3proxy.progressDeadlineSeconds The maximum time in seconds for a deployment to make progress before it is considered to be failed
-  progressDeadlineSeconds: 1800  # 30 minutes
 
   ## Image information
   ## @param s3proxy.image.registry s3proxy Image registry
@@ -2026,6 +2001,10 @@ postgresql:
   ## @param postgresql.enabled Enable PostgreSQL
   enabled: true
 
+  image:
+    registry: docker.io
+    repository: bitnamilegacy/postgresql
+
   # Postgres Auth
   auth:
     ## @param postgresql.auth.enabled Enable PostgreSQL Auth
@@ -2053,6 +2032,10 @@ mongodb:
   ## @param mongodb.enabled Enable MongoDB
   enabled: true
 
+  image:
+    registry: docker.io
+    repository: bitnamilegacy/mongodb
+
   # MongoDB Auth
   auth:
     ## @param mongodb.auth.enabled Enable MongoDB Auth
@@ -2065,6 +2048,10 @@ redis:
   ## @param redis.enabled Enable Redis
   enabled: true
 
+  image:
+    registry: docker.io
+    repository: bitnamilegacy/redis
+
   ## DO NOT ENABLE REDIS AUTH FOR NOW
   auth:
     ## @param redis.auth.enabled Enable Redis Auth (DO NOT ENABLE FOR NOW)
@@ -2073,3 +2060,7 @@ redis:
 rabbitmq:
   ## @param rabbitmq.enabled Enable RabbitMQ
   enabled: true
+
+  image:
+    registry: docker.io
+    repository: bitnamilegacy/rabbitmq
