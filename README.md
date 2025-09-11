@@ -4,6 +4,7 @@ LlamaIndex Helm Charts is a collection of charts for deploying [llamaindex.ai](h
 
 ## Important Links
 
+- [Self-Hosting Installation Guide](https://docs.cloud.llamaindex.ai/self_hosting/installation)
 - [Contact Information](https://www.llamaindex.ai/contact)
 - [Community Discord](https://discord.com/invite/eN6D2HQ4aX)
 
