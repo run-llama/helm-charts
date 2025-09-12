@@ -17,7 +17,6 @@ spec:
   {{- if not .Values.llamaParseOcr.autoscaling.enabled }}
   replicas: {{ .Values.llamaParseOcr.replicas }}
   {{- end }}
-  progressDeadlineSeconds: {{ .Values.llamaParseOcr.progressDeadlineSeconds | default 1800 }}
   selector:
     matchLabels:
       {{- include "llamacloud.selectorLabels" . | nindent 6 }}

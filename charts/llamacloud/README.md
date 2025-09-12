@@ -136,7 +136,7 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 | `frontend.replicas`                                    | Number of replicas of Frontend Deployment                                                                         | `1`                              |
 | `frontend.image.registry`                              | Frontend Image registry                                                                                           | `docker.io`                      |
 | `frontend.image.repository`                            | Frontend Image repository                                                                                         | `llamaindex/llamacloud-frontend` |
-| `frontend.image.tag`                                   | Frontend Image tag                                                                                                | `0.5.4`                          |
+| `frontend.image.tag`                                   | Frontend Image tag                                                                                                | `0.5.5`                          |
 | `frontend.image.pullPolicy`                            | Frontend Image pull policy                                                                                        | `IfNotPresent`                   |
 | `frontend.service.type`                                | Frontend Service type                                                                                             | `ClusterIP`                      |
 | `frontend.service.port`                                | Frontend Service port                                                                                             | `3000`                           |
@@ -197,14 +197,14 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 | `backend.config.qdrant.url`                           | QDRANT Data-Sink host                                                                                             | `""`                            |
 | `backend.config.qdrant.apiKey`                        | QDRANT Data-Sink API key                                                                                          | `""`                            |
 | `backend.config.llamaExtractMultimodalModel`          | LlamaExtract multimodal model (gemini-2.0-flash, gemini-2.5-pro, openai-gpt-4-1)                                  | `gemini-2.0-flash`              |
-| `backend.config.llamaExtractSchemaGenerationModel`    | LlamaExtract schema generation model (gemini-2.0-flash, openai-gpt-4-1-mini)                                       | `gemini-2.0-flash`              |
+| `backend.config.llamaExtractSchemaGenerationModel`    | LlamaExtract schema generation model (gemini-2.0-flash, openai-gpt-4-1-mini)                                      | `gemini-2.0-flash`              |
 | `backend.config.llamaExtractMaxPages`                 | LlamaExtract max pages allowed                                                                                    | `500`                           |
 | `backend.config.llamaExtractMaxFileSizeMb`            | LlamaExtract max file size (MB) allowed                                                                           | `100`                           |
 | `backend.config.llamaExtractMaxFileSizeUiMb`          | LlamaExtract max file size (MB) allowed for UI                                                                    | `30`                            |
 | `backend.replicas`                                    | Number of replicas of Backend Deployment                                                                          | `1`                             |
 | `backend.image.registry`                              | Backend Image registry                                                                                            | `docker.io`                     |
 | `backend.image.repository`                            | Backend Image repository                                                                                          | `llamaindex/llamacloud-backend` |
-| `backend.image.tag`                                   | Backend Image tag                                                                                                 | `0.5.4`                         |
+| `backend.image.tag`                                   | Backend Image tag                                                                                                 | `0.5.5`                         |
 | `backend.image.pullPolicy`                            | Backend Image pull policy                                                                                         | `IfNotPresent`                  |
 | `backend.service.type`                                | Backend Service type                                                                                              | `ClusterIP`                     |
 | `backend.service.port`                                | Backend Service port                                                                                              | `8000`                          |
@@ -282,7 +282,7 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 | `jobsService.replicas`                                    | Number of replicas of JobsService Deployment                                                                      | `1`                                  |
 | `jobsService.image.registry`                              | JobsService Image registry                                                                                        | `docker.io`                          |
 | `jobsService.image.repository`                            | JobsService Image repository                                                                                      | `llamaindex/llamacloud-jobs-service` |
-| `jobsService.image.tag`                                   | JobsService Image tag                                                                                             | `0.5.4`                              |
+| `jobsService.image.tag`                                   | JobsService Image tag                                                                                             | `0.5.5`                              |
 | `jobsService.image.pullPolicy`                            | JobsService Image pull policy                                                                                     | `IfNotPresent`                       |
 | `jobsService.service.type`                                | JobsService Service type                                                                                          | `ClusterIP`                          |
 | `jobsService.service.port`                                | JobsService Service port                                                                                          | `8002`                               |
@@ -352,7 +352,7 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 | `jobsWorker.replicas`                                      | Number of replicas of JobsWorker Deployment                                                                       | `1`                                 |
 | `jobsWorker.image.registry`                                | JobsWorker Image registry                                                                                         | `docker.io`                         |
 | `jobsWorker.image.repository`                              | JobsWorker Image repository                                                                                       | `llamaindex/llamacloud-jobs-worker` |
-| `jobsWorker.image.tag`                                     | JobsWorker Image tag                                                                                              | `0.5.4`                             |
+| `jobsWorker.image.tag`                                     | JobsWorker Image tag                                                                                              | `0.5.5`                             |
 | `jobsWorker.image.pullPolicy`                              | JobsWorker Image pull policy                                                                                      | `IfNotPresent`                      |
 | `jobsWorker.service.type`                                  | JobsWorker Service type                                                                                           | `ClusterIP`                         |
 | `jobsWorker.service.port`                                  | JobsWorker Service port                                                                                           | `8001`                              |
@@ -451,7 +451,7 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 | `llamaParse.replicas`                                    | Number of replicas of LlamaParse Deployment                                               | `2`                                         |
 | `llamaParse.image.registry`                              | LlamaParse Image registry                                                                 | `docker.io`                                 |
 | `llamaParse.image.repository`                            | LlamaParse Image repository                                                               | `llamaindex/llamacloud-llamaparse`          |
-| `llamaParse.image.tag`                                   | LlamaParse Image tag                                                                      | `0.5.4`                                     |
+| `llamaParse.image.tag`                                   | LlamaParse Image tag                                                                      | `0.5.5`                                     |
 | `llamaParse.image.pullPolicy`                            | LlamaParse Image pull policy                                                              | `IfNotPresent`                              |
 | `llamaParse.serviceAccount.create`                       | Whether or not to create a new service account                                            | `true`                                      |
 | `llamaParse.serviceAccount.name`                         | Name of the service account                                                               | `""`                                        |
@@ -492,6 +492,17 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 | `llamaParse.autoscaling.minReplicas`                     | Minimum number of replicas for the LlamaParse Deployment                                  | `2`                                         |
 | `llamaParse.autoscaling.maxReplicas`                     | Maximum number of replicas for the LlamaParse Deployment                                  | `10`                                        |
 | `llamaParse.autoscaling.targetCPUUtilizationPercentage`  | Target CPU utilization percentage for the LlamaParse Deployment                           | `80`                                        |
+| `llamaParse.keda.enabled`                                | Enable KEDA for the llamaParse Deployment                                                 | `false`                                     |
+| `llamaParse.keda.additionalAnnotations`                  | Additional annotations for the KEDA                                                       | `{}`                                        |
+| `llamaParse.keda.additionalLabels`                       | Additional labels for the KEDA                                                            | `{}`                                        |
+| `llamaParse.keda.pollingInterval`                        | Polling interval for the KEDA                                                             | `15`                                        |
+| `llamaParse.keda.cooldownPeriod`                         | Cooldown period for the KEDA                                                              | `120`                                       |
+| `llamaParse.keda.minReplicaCount`                        | Minimum number of replicas for the KEDA                                                   | `2`                                         |
+| `llamaParse.keda.maxReplicaCount`                        | Maximum number of replicas for the KEDA                                                   | `10`                                        |
+| `llamaParse.keda.initialCooldownPeriod`                  | Initial cooldown period for the KEDA                                                      | `0`                                         |
+| `llamaParse.keda.fallback`                               | Fallback for the KEDA                                                                     | `{}`                                        |
+| `llamaParse.keda.advanced`                               | Advanced configuration for the KEDA                                                       | `{}`                                        |
+| `llamaParse.keda.triggers`                               | Triggers for the KEDA                                                                     | `[]`                                        |
 | `llamaParse.podDisruptionBudget.enabled`                 | Enable PodDisruptionBudget for the LlamaParse Deployment                                  | `true`                                      |
 | `llamaParse.podDisruptionBudget.maxUnavailable`          | Maximum number of unavailable pods                                                        | `1`                                         |
 | `llamaParse.volumes`                                     | List of volumes that can be mounted by containers belonging to the pod                    | `[]`                                        |
@@ -526,7 +537,7 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 | `llamaParseOcr.replicas`                                    | Number of replicas of LlamaParseOcr Deployment                                              | `2`                                    |
 | `llamaParseOcr.image.registry`                              | LlamaParseOcr Image registry                                                                | `docker.io`                            |
 | `llamaParseOcr.image.repository`                            | LlamaParseOcr Image repository                                                              | `llamaindex/llamacloud-llamaparse-ocr` |
-| `llamaParseOcr.image.tag`                                   | LlamaParseOcr Image tag                                                                     | `0.5.4`                                |
+| `llamaParseOcr.image.tag`                                   | LlamaParseOcr Image tag                                                                     | `0.5.5`                                |
 | `llamaParseOcr.image.pullPolicy`                            | LlamaParseOcr Image pull policy                                                             | `IfNotPresent`                         |
 | `llamaParseOcr.service.type`                                | LlamaParseOcr Service type                                                                  | `ClusterIP`                            |
 | `llamaParseOcr.service.port`                                | LlamaParseOcr Service port                                                                  | `8080`                                 |
@@ -567,6 +578,17 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 | `llamaParseOcr.autoscaling.minReplicas`                     | Minimum number of replicas for the LlamaParseOcr Deployment                                 | `2`                                    |
 | `llamaParseOcr.autoscaling.maxReplicas`                     | Maximum number of replicas for the LlamaParseOcr Deployment                                 | `10`                                   |
 | `llamaParseOcr.autoscaling.targetCPUUtilizationPercentage`  | Target CPU utilization percentage for the LlamaParseOcr Deployment                          | `80`                                   |
+| `llamaParseOcr.keda.enabled`                                | Enable KEDA for the LlamaParseOcr Deployment                                                | `false`                                |
+| `llamaParseOcr.keda.additionalAnnotations`                  | Additional annotations for the KEDA                                                         | `{}`                                   |
+| `llamaParseOcr.keda.additionalLabels`                       | Additional labels for the KEDA                                                              | `{}`                                   |
+| `llamaParseOcr.keda.pollingInterval`                        | Polling interval for the KEDA                                                               | `15`                                   |
+| `llamaParseOcr.keda.cooldownPeriod`                         | Cooldown period for the KEDA                                                                | `120`                                  |
+| `llamaParseOcr.keda.minReplicaCount`                        | Minimum number of replicas for the KEDA                                                     | `2`                                    |
+| `llamaParseOcr.keda.maxReplicaCount`                        | Maximum number of replicas for the KEDA                                                     | `10`                                   |
+| `llamaParseOcr.keda.initialCooldownPeriod`                  | Initial cooldown period for the KEDA                                                        | `0`                                    |
+| `llamaParseOcr.keda.fallback`                               | Fallback for the KEDA                                                                       | `{}`                                   |
+| `llamaParseOcr.keda.advanced`                               | Advanced configuration for the KEDA                                                         | `{}`                                   |
+| `llamaParseOcr.keda.triggers`                               | Triggers for the KEDA                                                                       | `[]`                                   |
 | `llamaParseOcr.podDisruptionBudget.enabled`                 | Enable PodDisruptionBudget for the LlamaParseOcr Deployment                                 | `true`                                 |
 | `llamaParseOcr.podDisruptionBudget.maxUnavailable`          | Maximum number of unavailable pods                                                          | `1`                                    |
 | `llamaParseOcr.volumes`                                     | List of volumes that can be mounted by containers belonging to the pod                      | `[]`                                   |
@@ -596,7 +618,7 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 | `llamaParseLayoutDetectionApi.config.logLevel`                             | Log level for the LlamaParse Layout Detectedion Api                                         | `INFO`                                       |
 | `llamaParseLayoutDetectionApi.image.registry`                              | LlamaParse Layout Detectedion Api Image registry                                            | `docker.io`                                  |
 | `llamaParseLayoutDetectionApi.image.repository`                            | LlamaParse Layout Detectedion Api Image repository                                          | `llamaindex/llamacloud-layout-detection-api` |
-| `llamaParseLayoutDetectionApi.image.tag`                                   | LlamaParse Layout Detectedion Api Image tag                                                 | `0.5.4`                                      |
+| `llamaParseLayoutDetectionApi.image.tag`                                   | LlamaParse Layout Detectedion Api Image tag                                                 | `0.5.5`                                      |
 | `llamaParseLayoutDetectionApi.image.pullPolicy`                            | LlamaParse Layout Detectedion Api Image pull policy                                         | `IfNotPresent`                               |
 | `llamaParseLayoutDetectionApi.service.type`                                | LlamaParse Layout Detectedion Api Service type                                              | `ClusterIP`                                  |
 | `llamaParseLayoutDetectionApi.service.port`                                | LlamaParse Layout Detectedion Api Service port                                              | `8000`                                       |
@@ -653,7 +675,7 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 | `usage.replicas`                                    | Number of replicas of usage Deployment                                                                            | `1`                           |
 | `usage.image.registry`                              | Usage Image registry                                                                                              | `docker.io`                   |
 | `usage.image.repository`                            | Usage Image repository                                                                                            | `llamaindex/llamacloud-usage` |
-| `usage.image.tag`                                   | Usage Image tag                                                                                                   | `0.5.4`                       |
+| `usage.image.tag`                                   | Usage Image tag                                                                                                   | `0.5.5`                       |
 | `usage.image.pullPolicy`                            | Usage Image pull policy                                                                                           | `IfNotPresent`                |
 | `usage.service.type`                                | Usage Service type                                                                                                | `ClusterIP`                   |
 | `usage.service.port`                                | Usage Service port                                                                                                | `8005`                        |
@@ -739,19 +761,27 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 
 ### Dependencies Configuration
 
-| Name                                           | Description                               | Value        |
-| ---------------------------------------------- | ----------------------------------------- | ------------ |
-| `postgresql.enabled`                           | Enable PostgreSQL                         | `true`       |
-| `postgresql.auth.enabled`                      | Enable PostgreSQL Auth                    | `true`       |
-| `postgresql.auth.database`                     | Database name                             | `llamacloud` |
-| `postgresql.auth.username`                     | Username                                  | `llamacloud` |
-| `postgresql.primary.resources.requests.cpu`    | CPU requests                              | `1`          |
-| `postgresql.primary.resources.requests.memory` | Memory requests                           | `1Gi`        |
-| `postgresql.primary.resources.limits.cpu`      | CPU limits                                | `2`          |
-| `postgresql.primary.resources.limits.memory`   | Memory limits                             | `2Gi`        |
-| `mongodb.enabled`                              | Enable MongoDB                            | `true`       |
-| `mongodb.auth.enabled`                         | Enable MongoDB Auth                       | `true`       |
-| `mongodb.auth.rootUser`                        | Root user name                            | `root`       |
-| `redis.enabled`                                | Enable Redis                              | `true`       |
-| `redis.auth.enabled`                           | Enable Redis Auth (DO NOT ENABLE FOR NOW) | `false`      |
-| `rabbitmq.enabled`                             | Enable RabbitMQ                           | `true`       |
+| Name                                           | Description                               | Value                      |
+| ---------------------------------------------- | ----------------------------------------- | -------------------------- |
+| `postgresql.enabled`                           | Enable PostgreSQL                         | `true`                     |
+| `postgresql.image.registry`                    | PostgreSQL Image registry                 | `docker.io`                |
+| `postgresql.image.repository`                  | PostgreSQL Image repository               | `bitnamilegacy/postgresql` |
+| `postgresql.auth.enabled`                      | Enable PostgreSQL Auth                    | `true`                     |
+| `postgresql.auth.database`                     | Database name                             | `llamacloud`               |
+| `postgresql.auth.username`                     | Username                                  | `llamacloud`               |
+| `postgresql.primary.resources.requests.cpu`    | CPU requests                              | `1`                        |
+| `postgresql.primary.resources.requests.memory` | Memory requests                           | `1Gi`                      |
+| `postgresql.primary.resources.limits.cpu`      | CPU limits                                | `2`                        |
+| `postgresql.primary.resources.limits.memory`   | Memory limits                             | `2Gi`                      |
+| `mongodb.enabled`                              | Enable MongoDB                            | `true`                     |
+| `mongodb.image.registry`                       | MongoDB Image registry                    | `docker.io`                |
+| `mongodb.image.repository`                     | MongoDB Image repository                  | `bitnamilegacy/mongodb`    |
+| `mongodb.auth.enabled`                         | Enable MongoDB Auth                       | `true`                     |
+| `mongodb.auth.rootUser`                        | Root user name                            | `root`                     |
+| `redis.enabled`                                | Enable Redis                              | `true`                     |
+| `redis.image.registry`                         | Redis Image registry                      | `docker.io`                |
+| `redis.image.repository`                       | Redis Image repository                    | `bitnamilegacy/redis`      |
+| `redis.auth.enabled`                           | Enable Redis Auth (DO NOT ENABLE FOR NOW) | `false`                    |
+| `rabbitmq.enabled`                             | Enable RabbitMQ                           | `true`                     |
+| `rabbitmq.image.registry`                      | RabbitMQ Image registry                   | `docker.io`                |
+| `rabbitmq.image.repository`                    | RabbitMQ Image repository                 | `bitnamilegacy/rabbitmq`   |

@@ -1,5 +1,19 @@
 # CHANGELOG
 
+## [0.5.5] - 2025-09-10
+### Index
+- Added custom document status and sync to UI
+
+### Parse
+- Added Section/presenter comment extraction support in PPTX
+- Added Parse Configuration UI and API
+
+### Extract
+- GPT 5 Support
+
+### Infrastructure
+- Keda Scaledobject support in charts
+
 ## [0.5.4] - 2025-09-04
 ### LlamaCloud Platform
 - **Fixed Google Vertex AI Configuration**: Resolved environment variable inconsistency between Parse and backend services for Google Vertex AI credentials

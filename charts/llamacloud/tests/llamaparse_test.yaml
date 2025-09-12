@@ -10,6 +10,7 @@ templates:
 - ../templates/llamaparse/serviceaccount.yaml
 - ../templates/llamaparse/servicemonitor.yaml
 - ../templates/llamaparse/prometheusrule.yaml
+- ../templates/llamaparse/keda-scaledobject.yaml
 
 release:
   name: test-release
@@ -17,10 +18,11 @@ release:
 
 capabilities:
   majorVersion: 1
-  minorVersion: 30
+  minorVersion: 31
   apiVersions:
     - apps/v1
     - monitoring.coreos.com/v1
+    - keda.sh/v1alpha1
 
 chart:
   appVersion: 0.0.0
@@ -264,3 +266,128 @@ tests:
     - equal:
         path: .spec.groups[0].rules[0].annotations.description
         value: The request duration is too high.
+
+- it: should not create a KEDA if llamaParse.keda.enabled is false
+  set:
+    rabbitmq.enabled: false
+    llamaParse.enabled: true
+    llamaParse.keda.enabled: false
+  template: ../templates/llamaparse/keda-scaledobject.yaml
+  asserts:
+    - hasDocuments:
+        count: 0
+
+- it: should not create a KEDA if llamaParse.autoscaling.enabled is true
+  set:
+    rabbitmq.enabled: false
+    llamaParse.enabled: true
+    llamaParse.autoscaling.enabled: true
+  template: ../templates/llamaparse/keda-scaledobject.yaml
+  asserts:
+    - hasDocuments:
+        count: 0
+
+- it: should fail if llamaParse.keda.enabled is true and llamaParse.autoscaling.enabled is true
+  set:
+    rabbitmq.enabled: false
+    llamaParse.enabled: true
+    llamaParse.keda.enabled: true
+    llamaParse.autoscaling.enabled: true
+  template: ../templates/llamaparse/keda-scaledobject.yaml
+  asserts:
+    - failedTemplate:
+        errorMessage: "Keda configuration (`.Values.llamaParse.keda`) and HPA configurations (`.Values.llamaParse.autoscaling`) cannot be both enabled at the same time!"
+
+- it: should fail if llamaParse.keda.triggers is empty
+  set:
+    rabbitmq.enabled: false
+    llamaParse.enabled: true
+    llamaParse.autoscaling.enabled: false
+    llamaParse.keda.enabled: true
+    llamaParse.keda.triggers: []
+  template: ../templates/llamaparse/keda-scaledobject.yaml
+  asserts:
+    - failedTemplate:
+        errorMessage: "At least one element in `.Values.llamaParse.keda.triggers` is required!"
+
+- it: should create a KEDA if llamaParse.keda.enabled is true and llamaParse.autoscaling.enabled is false
+  set:
+    rabbitmq.enabled: false
+    llamaParse.enabled: true
+    llamaParse.autoscaling.enabled: false
+    llamaParse.keda.enabled: true
+    llamaParse.keda.triggers:
+      - type: prometheus
+        metricType: Value
+        metadata:
+          serverAddress: http://prometheus-kube-prometheus-prometheus.monitoring.svc.cluster.local:9090
+          query: |
+            sum(aws_amazonmq_message_count_maximum{dimension_Queue="parse_raw_file_job"}) / sum(kube_pod_container_status_running{namespace="llamaparse", container="llamaparse"})
+    llamaParse.keda.fallback:
+      failureThreshold: 3
+      replicas: 2
+    llamaParse.keda.advanced:
+      horizontalPodAutoscalerConfig:
+        behavior:
+          scaleDown:
+            stabilizationWindowSeconds: 120
+            policies:
+              - type: Pods
+                value: 1
+                periodSeconds: 30
+            selectPolicy: Min
+  template: ../templates/llamaparse/keda-scaledobject.yaml
+  asserts:
+    - hasDocuments:
+        count: 1
+    - equal:
+        path: .spec.scaleTargetRef.apiVersion
+        value: apps/v1
+    - equal:
+        path: .spec.scaleTargetRef.kind
+        value: Deployment
+    - equal:
+        path: .spec.scaleTargetRef.name
+        value: test-release-llamacloud-llamaparse
+    - equal:
+        path: .spec.pollingInterval
+        value: 15
+    - equal:
+        path: .spec.cooldownPeriod
+        value: 120
+    - equal:
+        path: .spec.minReplicaCount
+        value: 2
+    - equal:
+        path: .spec.maxReplicaCount
+        value: 10
+    - equal:
+        path: .spec.triggers[0].type
+        value: prometheus
+    - equal:
+        path: .spec.triggers[0].metricType
+        value: Value
+    - equal:
+        path: .spec.triggers[0].metadata.serverAddress
+        value: http://prometheus-kube-prometheus-prometheus.monitoring.svc.cluster.local:9090
+    - equal:
+        path: .spec.fallback.failureThreshold
+        value: 3
+    - equal:
+        path: .spec.fallback.replicas
+        value: 2
+    - equal:
+        path: .spec.advanced.horizontalPodAutoscalerConfig.behavior.scaleDown.stabilizationWindowSeconds
+        value: 120
+    - equal:
+        path: .spec.advanced.horizontalPodAutoscalerConfig.behavior.scaleDown.policies[0].type
+        value: Pods
+    - equal:
+        path: .spec.advanced.horizontalPodAutoscalerConfig.behavior.scaleDown.policies[0].value
+        value: 1
+    - equal:
+        path: .spec.advanced.horizontalPodAutoscalerConfig.behavior.scaleDown.policies[0].periodSeconds
+        value: 30
+    - equal:
+        path: .spec.advanced.horizontalPodAutoscalerConfig.behavior.scaleDown.selectPolicy
+        value: Min
