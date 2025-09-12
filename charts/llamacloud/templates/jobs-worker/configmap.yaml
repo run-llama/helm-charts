@@ -30,6 +30,7 @@ data:
   DEFAULT_TRANSFORM_DOCUMENT_TIMEOUT_SECONDS: {{ .Values.jobsWorker.config.defaultTransformDocumentTimeoutSeconds | default "240" | quote }}
   TRANSFORM_EMBEDDING_CHAR_LIMIT: {{ .Values.jobsWorker.config.transformEmbeddingCharLimit | default "11520000" | quote }}
   LLAMA_EXTRACT_MULTIMODAL_MODEL: {{ .Values.backend.config.llamaExtractMultimodalModel | quote }}
+  LLAMA_EXTRACT_SCHEMA_GENERATION_MODEL: {{ .Values.backend.config.llamaExtractSchemaGenerationModel | quote }}
   LLAMA_EXTRACT_MAX_PAGES: {{ .Values.backend.config.llamaExtractMaxPages | quote }}
   LLAMA_EXTRACT_MAX_FILE_SIZE_MB: {{ .Values.backend.config.llamaExtractMaxFileSizeMb | quote }}
   LLAMA_EXTRACT_MAX_FILE_SIZE_UI_MB: {{ .Values.backend.config.llamaExtractMaxFileSizeUiMb | quote }}

@@ -14,7 +14,7 @@ release:
 
 capabilities:
   majorVersion: 1
-  minorVersion: 30
+  minorVersion: 31
   apiVersions:
     - apps/v1
     - monitoring.coreos.com/v1

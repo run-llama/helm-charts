@@ -18,7 +18,6 @@ spec:
   {{- else }}
   replicas: {{ .Values.frontend.replicas }}
   {{- end }}
-  progressDeadlineSeconds: {{ .Values.frontend.progressDeadlineSeconds | default 1800 }}
   strategy:
     rollingUpdate:
       maxUnavailable: 1

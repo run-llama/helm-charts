@@ -1,6 +1,7 @@
 from llama_cloud.client import AsyncLlamaCloud
 from llama_cloud.types import Project
 
+
 async def delete_file(
     llama_cloud_client: AsyncLlamaCloud,
     file_id: str,
@@ -32,13 +33,13 @@ async def test_file_upload_from_url(
     llama_cloud_client: AsyncLlamaCloud,
     curr_project: Project,
 ):
-    file_url = "https://docs.llamaindex.ai/robots.txt"
+    file_url = "https://llamaindex-public-demo.s3.us-east-1.amazonaws.com/test.txt"
     file = await llama_cloud_client.files.upload_file_from_url(
         url=file_url,
         project_id=curr_project.id,
     )
     assert file.id is not None
-    assert file.name == "robots.txt"
+    assert file.name == "test.txt"
     assert file.file_size > 0
     # cleanup
     await delete_file(llama_cloud_client, file.id, curr_project.id)

@@ -188,7 +188,7 @@ frontend:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-frontend
-    tag: 0.5.4
+    tag: 0.5.5
     pullPolicy: IfNotPresent
 
   ## @param frontend.service.type Frontend Service type
@@ -389,7 +389,7 @@ backend:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-backend
-    tag: 0.5.4
+    tag: 0.5.5
     pullPolicy: IfNotPresent
 
   ## Backend Service information
@@ -631,7 +631,7 @@ jobsService:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-jobs-service
-    tag: 0.5.4
+    tag: 0.5.5
     pullPolicy: IfNotPresent
 
   ## JobsService Service information\
@@ -841,7 +841,7 @@ jobsWorker:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-jobs-worker
-    tag: 0.5.4
+    tag: 0.5.5
     pullPolicy: IfNotPresent
 
   ## JobsWorker Service information
@@ -1119,7 +1119,7 @@ llamaParse:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-llamaparse
-    tag: 0.5.4
+    tag: 0.5.5
     pullPolicy: IfNotPresent
 
   ## ServiceAccount configuration
@@ -1248,6 +1248,34 @@ llamaParse:
     targetCPUUtilizationPercentage: 80
     # targetMemoryUtilizationPercentage: 80
 
+  ## KEDA configuration for the LlamaParse Deployment
+  ## Ref: https://keda.sh
+  ## Note: .Values.llamaParse.autoscaling.enabled must be false for KEDA to be enabled
+  keda:
+    ## @param llamaParse.keda.enabled Enable KEDA for the llamaParse Deployment
+    enabled: false
+    ## @param llamaParse.keda.additionalAnnotations Additional annotations for the KEDA
+    additionalAnnotations: {}
+    ## @param llamaParse.keda.additionalLabels Additional labels for the KEDA
+    additionalLabels: {}
+    ## @param llamaParse.keda.pollingInterval Polling interval for the KEDA
+    pollingInterval: 15
+    ## @param llamaParse.keda.cooldownPeriod Cooldown period for the KEDA
+    cooldownPeriod: 120
+    ## @param llamaParse.keda.minReplicaCount Minimum number of replicas for the KEDA
+    minReplicaCount: 2
+    ## @param llamaParse.keda.maxReplicaCount Maximum number of replicas for the KEDA
+    maxReplicaCount: 10
+    ## @param llamaParse.keda.initialCooldownPeriod Initial cooldown period for the KEDA
+    initialCooldownPeriod: 0
+    ## @param llamaParse.keda.fallback Fallback for the KEDA
+    fallback: {}
+    ## @param llamaParse.keda.advanced Advanced configuration for the KEDA
+    advanced: {}
+    ## @param llamaParse.keda.triggers Triggers for the KEDA
+    ## This cannot be empty if .Values.llamaParse.keda.enabled is true
+    triggers: []
+
   ## PodDisruptionBudget configuration
   ## Ref: https://kubernetes.io/docs/tasks/run-application/configure-pdb/
   podDisruptionBudget:
@@ -1341,7 +1369,7 @@ llamaParseOcr:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-llamaparse-ocr
-    tag: 0.5.4
+    tag: 0.5.5
     pullPolicy: IfNotPresent
 
   ## LlamaParseOcr Service information
@@ -1464,6 +1492,34 @@ llamaParseOcr:
     targetCPUUtilizationPercentage: 80
     # targetMemoryUtilizationPercentage: 80
 
+  ## KEDA configuration for the LlamaParseOcr Deployment
+  ## Ref: https://keda.sh
+  ## Note: .Values.llamaParseOcr.autoscaling.enabled must be false for KEDA to be enabled
+  keda:
+    ## @param llamaParseOcr.keda.enabled Enable KEDA for the LlamaParseOcr Deployment
+    enabled: false
+    ## @param llamaParseOcr.keda.additionalAnnotations Additional annotations for the KEDA
+    additionalAnnotations: {}
+    ## @param llamaParseOcr.keda.additionalLabels Additional labels for the KEDA
+    additionalLabels: {}
+    ## @param llamaParseOcr.keda.pollingInterval Polling interval for the KEDA
+    pollingInterval: 15
+    ## @param llamaParseOcr.keda.cooldownPeriod Cooldown period for the KEDA
+    cooldownPeriod: 120
+    ## @param llamaParseOcr.keda.minReplicaCount Minimum number of replicas for the KEDA
+    minReplicaCount: 2
+    ## @param llamaParseOcr.keda.maxReplicaCount Maximum number of replicas for the KEDA
+    maxReplicaCount: 10
+    ## @param llamaParseOcr.keda.initialCooldownPeriod Initial cooldown period for the KEDA
+    initialCooldownPeriod: 0
+    ## @param llamaParseOcr.keda.fallback Fallback for the KEDA
+    fallback: {}
+    ## @param llamaParseOcr.keda.advanced Advanced configuration for the KEDA
+    advanced: {}
+    ## @param llamaParseOcr.keda.triggers Triggers for the KEDA
+    ## This cannot be empty if .Values.llamaParseOcr.keda.enabled is true
+    triggers: []
+
   ## PodDisruptionBudget configuration
   ## Ref: https://kubernetes.io/docs/tasks/run-application/configure-pdb/
   podDisruptionBudget:
@@ -1538,7 +1594,7 @@ llamaParseLayoutDetectionApi:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-layout-detection-api
-    tag: 0.5.4
+    tag: 0.5.5
     pullPolicy: IfNotPresent
 
   ## LlamaParse Layout Detectedion Api Service information
@@ -1703,7 +1759,7 @@ usage:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-usage
-    tag: 0.5.4
+    tag: 0.5.5
     pullPolicy: IfNotPresent
 
   ## Usage Service information
@@ -2002,6 +2058,8 @@ postgresql:
   enabled: true
 
   image:
+    ## @param postgresql.image.registry PostgreSQL Image registry
+    ## @param postgresql.image.repository PostgreSQL Image repository
     registry: docker.io
     repository: bitnamilegacy/postgresql
 
@@ -2033,6 +2091,8 @@ mongodb:
   enabled: true
 
   image:
+    ## @param mongodb.image.registry MongoDB Image registry
+    ## @param mongodb.image.repository MongoDB Image repository
     registry: docker.io
     repository: bitnamilegacy/mongodb
 
@@ -2049,6 +2109,8 @@ redis:
   enabled: true
 
   image:
+    ## @param redis.image.registry Redis Image registry
+    ## @param redis.image.repository Redis Image repository
     registry: docker.io
     repository: bitnamilegacy/redis
 
@@ -2062,5 +2124,7 @@ rabbitmq:
   enabled: true
 
   image:
+    ## @param rabbitmq.image.registry RabbitMQ Image registry
+    ## @param rabbitmq.image.repository RabbitMQ Image repository
     registry: docker.io
     repository: bitnamilegacy/rabbitmq
