@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## [0.5.6] - 2025-09-18
+
+### Index
+- Improved Logging in Confluence Connectors
+- Support large Google Drive Files
+
+### Parse
+- Improved hallucination handling on empty pages
+
 ## [0.5.5] - 2025-09-10
 ### Index
 - Added custom document status and sync to UI
