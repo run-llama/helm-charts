@@ -1,5 +1,18 @@
 # CHANGELOG
 
+## [0.5.7] - 2025-09-19
+
+### Index
+- Improved log handling
+- Bug fixes: manually uploaded documents
+- Clearer connection errors for all integrations
+
+### Platform
+- Improved API Key management UI and API
+
+### Parse
+- Round robin capabilities between model providers
+
 ## [0.5.6] - 2025-09-18
 
 ### Index
