@@ -54,17 +54,7 @@ spec:
             - name: {{ .Values.usage.name }}-http
               containerPort: {{ .Values.usage.containerPort }}
               protocol: TCP
-          command:
-            - "uvicorn"
-            - "src.usage.main:app"
-            - "--host"
-            - "0.0.0.0"
-            - "--port"
-            - {{ .Values.usage.containerPort | quote }}
-            - "--workers"
-            - "1"
-            - "--timeout-keep-alive"
-            - "300"
+          command: ["start_usage_service"]
           livenessProbe:
             {{- toYaml .Values.usage.livenessProbe | nindent 12 }}
           readinessProbe:
@@ -81,6 +71,8 @@ spec:
                 name: {{ include "llamacloud.fullname" . }}-license-key
                 {{- end }}
                 key: llamacloud-license-key
+          - name: UVICORN_PORT
+            value: {{ .Values.usage.containerPort | quote }}
           {{- include "common.postgresql.envVars" . | nindent 10 -}}
           {{- include "common.redis.envVars" . | nindent 10 }}
           {{- with .Values.usage.extraEnvVariables }}

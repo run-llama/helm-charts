@@ -141,6 +141,54 @@ Service Accounts Names
 {{- end -}}
 {{- end -}}
 
+{{- define "temporalParse.llamaParse.serviceAccountName" -}}
+{{- if .Values.temporalParse.llamaParse.serviceAccount.create -}}
+    {{ default (printf "%s-%s" (include "llamacloud.fullname" .) .Values.temporalParse.llamaParse.name) .Values.temporalParse.llamaParse.serviceAccount.name | trunc 63 | trimSuffix "-" }}
+{{- else -}}
+    {{ default "default" .Values.temporalParse.llamaParse.serviceAccount.name }}
+{{- end -}}
+{{- end -}}
+
+{{- define "temporalParse.parseDelegate.serviceAccountName" -}}
+{{- if .Values.temporalParse.parseDelegate.serviceAccount.create -}}
+    {{ default (printf "%s-%s" (include "llamacloud.fullname" .) .Values.temporalParse.parseDelegate.name) .Values.temporalParse.parseDelegate.serviceAccount.name | trunc 63 | trimSuffix "-" }}
+{{- else -}}
+    {{ default "default" .Values.temporalParse.parseDelegate.serviceAccount.name }}
+{{- end -}}
+{{- end -}}
+
+{{- define "temporalParse.parseScreenshotPDFs.serviceAccountName" -}}
+{{- if .Values.temporalParse.parseScreenshotPDFs.serviceAccount.create -}}
+    {{ default (printf "%s-%s" (include "llamacloud.fullname" .) .Values.temporalParse.parseScreenshotPDFs.name) .Values.temporalParse.parseScreenshotPDFs.serviceAccount.name | trunc 63 | trimSuffix "-" }}
+{{- else -}}
+    {{ default "default" .Values.temporalParse.parseScreenshotPDFs.serviceAccount.name }}
+{{- end -}}
+{{- end -}}
+
+{{- define "temporalJobsService.api.serviceAccountName" -}}
+{{- if .Values.temporalJobsService.api.serviceAccount.create -}}
+    {{ default (printf "%s-%s" (include "llamacloud.fullname" .) .Values.temporalJobsService.api.name) .Values.temporalJobsService.api.serviceAccount.name | trunc 63 | trimSuffix "-" }}
+{{- else -}}
+    {{ default "default" .Values.temporalJobsService.api.serviceAccount.name }}
+{{- end -}}
+{{- end -}}
+
+{{- define "temporalJobsService.jobsServiceWorker.serviceAccountName" -}}
+{{- if .Values.temporalJobsService.jobsServiceWorker.serviceAccount.create -}}
+    {{ default (printf "%s-%s" (include "llamacloud.fullname" .) .Values.temporalJobsService.jobsServiceWorker.name) .Values.temporalJobsService.jobsServiceWorker.serviceAccount.name | trunc 63 | trimSuffix "-" }}
+{{- else -}}
+    {{ default "default" .Values.temporalJobsService.jobsServiceWorker.serviceAccount.name }}
+{{- end -}}
+{{- end -}}
+
+{{- define "temporalJobsService.jobsExtractWorker.serviceAccountName" -}}
+{{- if .Values.temporalJobsService.jobsExtractWorker.serviceAccount.create -}}
+    {{ default (printf "%s-%s" (include "llamacloud.fullname" .) .Values.temporalJobsService.jobsExtractWorker.name) .Values.temporalJobsService.jobsExtractWorker.serviceAccount.name | trunc 63 | trimSuffix "-" }}
+{{- else -}}
+    {{ default "default" .Values.temporalJobsService.jobsExtractWorker.serviceAccount.name }}
+{{- end -}}
+{{- end -}}
+
 {{- define "common.postgresql.envVars" -}}
 {{- if .Values.postgresql.enabled -}}
 - name: DATABASE_HOST
@@ -168,6 +216,37 @@ Service Accounts Names
   value: {{ .Values.global.config.postgresql.external.username | quote }}
 - name: DATABASE_PASSWORD
   value: {{ .Values.global.config.postgresql.external.password | quote }}
+{{- end -}}
+{{- end -}}
+
+{{- define "common.postgresql.configMapData" -}}
+{{- if .Values.postgresql.enabled -}}
+DATABASE_HOST: {{ printf "%s-%s" .Release.Name "postgresql" | quote }}
+DATABASE_PORT: "5432"
+DATABASE_NAME: {{ .Values.postgresql.auth.database | quote }}
+DATABASE_USER: {{ .Values.postgresql.auth.username | quote }}
+{{- end -}}
+{{- if and (.Values.global.config.postgresql.external.enabled) (not .Values.global.config.postgresql.external.existingSecretName) -}}
+DATABASE_HOST: {{ .Values.global.config.postgresql.external.host | quote }}
+DATABASE_PORT: {{ .Values.global.config.postgresql.external.port | quote }}
+DATABASE_NAME: {{ .Values.global.config.postgresql.external.database | quote }}
+DATABASE_USER: {{ .Values.global.config.postgresql.external.username | quote }}
+{{- end -}}
+{{- end -}}
+
+{{- define "common.postgresql.secretData" -}}
+{{- if and (.Values.global.config.postgresql.external.enabled) (not .Values.global.config.postgresql.external.existingSecretName) -}}
+DATABASE_PASSWORD: {{ .Values.global.config.postgresql.external.password | b64enc | quote }}
+{{- end -}}
+{{- end -}}
+
+{{- define "common.postgresql.secretEnvVars" -}}
+{{- if .Values.postgresql.enabled -}}
+- name: DATABASE_PASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: {{ printf "%s-%s" .Release.Name "postgresql" }}
+      key: password
 {{- end -}}
 {{- end -}}
 
@@ -255,44 +334,111 @@ Service Accounts Names
 {{- end -}}
 {{- end -}}
 
-
 {{- define "common.llmModels.envVars" -}}
-{{- if and .Values.llamaParse.config.openAiApiKey (not .Values.llamaParse.existingOpenAiApiKeySecretName) }}
-LC_OPENAI_API_KEY: {{ .Values.llamaParse.config.openAiApiKey | b64enc | quote }}
+{{- if .Values.llms.enabled -}}
+{{- if and .Values.llms.openAiApiKey (not .Values.llms.existingOpenAiApiKeySecretName) -}}
+OPENAI_API_KEY: {{ .Values.llms.openAiApiKey | b64enc | quote }}
+LC_OPENAI_API_KEY: {{ .Values.llms.openAiApiKey | b64enc | quote }}
+{{ end }}
+{{- if and .Values.llms.anthropicApiKey (not .Values.llms.existingAnthropicApiKeySecretName) -}}
+ANTHROPIC_API_KEY: {{ .Values.llms.anthropicApiKey | b64enc | quote }}
+{{ end }}
+{{- if and .Values.llms.geminiApiKey (not .Values.llms.existingGeminiApiKeySecretName) -}}
+GOOGLE_GEMINI_API_KEY: {{ .Values.llms.geminiApiKey | b64enc | quote }}
 {{- end }}
-{{- if and .Values.llamaParse.config.azureOpenAi.enabled (not .Values.llamaParse.config.azureOpenAi.existingSecret) }}
+{{- if and .Values.llms.azureOpenAi.enabled (not .Values.llms.azureOpenAi.existingSecretName) -}}
+  {{- range $idx, $deployment := .Values.llms.azureOpenAi.deployments -}}
+    {{- if not (and $deployment.model $deployment.apiKey $deployment.baseUrl $deployment.apiVersion) -}}
+      {{- fail (printf "Azure OpenAI deployment %s at index %d is missing required fields: model, apiKey, baseUrl, or apiVersion" $deployment.model $idx) -}}
+    {{- end -}}
+{{ $MODEL_NAME_PREFIX := printf "AZURE_OPENAI_%s" ($deployment.model | replace "." "_" | replace "-" "_" | upper) | upper }}
+{{ $MODEL_NAME_PREFIX }}_API_KEY: {{ $deployment.apiKey | b64enc | quote }}
+{{ $MODEL_NAME_PREFIX }}_BASE_URL: {{ $deployment.baseUrl | b64enc | quote }}
+{{ $MODEL_NAME_PREFIX }}_DEPLOYMENT_NAME: {{ $deployment.deploymentName | default $deployment.model | b64enc | quote }}
+{{ $MODEL_NAME_PREFIX }}_API_VERSION: {{ $deployment.apiVersion | b64enc | quote }}
+  {{- end }}
+{{ end }}
+{{- if and .Values.llms.awsBedrock.enabled (not .Values.llms.awsBedrock.existingSecretName) -}}
+AWS_BEDROCK_ENABLED: {{ "true" | b64enc | quote }}
+AWS_BEDROCK_REGION: {{ .Values.llms.awsBedrock.region | b64enc | quote }}
+AWS_BEDROCK_ACCESS_KEY_ID: {{ .Values.llms.awsBedrock.accessKeyId | b64enc | quote }}
+AWS_BEDROCK_SECRET_ACCESS_KEY: {{ .Values.llms.awsBedrock.secretAccessKey | b64enc | quote }}
+AWS_BEDROCK_SONNET_3_5_MODEL_VERSION_NAME: {{ .Values.llms.awsBedrock.sonnet3_5ModelVersionName | b64enc | quote }}
+AWS_BEDROCK_SONNET_3_7_MODEL_VERSION_NAME: {{ .Values.llms.awsBedrock.sonnet3_7ModelVersionName | b64enc | quote }}
+AWS_BEDROCK_SONNET_4_0_MODEL_VERSION_NAME: {{ .Values.llms.awsBedrock.sonnet4_0ModelVersionName | b64enc | quote }}
+AWS_BEDROCK_HAIKU_3_5_MODEL_VERSION_NAME: {{ .Values.llms.awsBedrock.haiku3_5_ModelVersionName | b64enc | quote }}
+{{ end }}
+{{- if and .Values.llms.googleVertexAi.enabled (not .Values.llms.googleVertexAi.existingSecretName) -}}
+GOOGLE_VERTEX_AI_ENABLED: {{ "true" | b64enc | quote }}
+GOOGLE_VERTEX_AI_PROJECT_ID: {{ .Values.llms.googleVertexAi.projectId | b64enc | quote }}
+GOOGLE_VERTEX_AI_LOCATION: {{ .Values.llms.googleVertexAi.location | b64enc | quote }}
+GOOGLE_VERTEX_AI_CREDENTIALS_JSON: {{ .Values.llms.googleVertexAi.credentialsJson | b64enc | quote }}
+{{ end }}
+{{- else -}}
+{{- if and .Values.llamaParse.config.openAiApiKey (not .Values.llamaParse.existingOpenAiApiKeySecretName) -}}
+OPENAI_API_KEY: {{ .Values.llamaParse.config.openAiApiKey | b64enc | quote }}
+LC_OPENAI_API_KEY: {{ .Values.llamaParse.config.openAiApiKey | b64enc | quote }}
+{{- end -}}
+{{- if and .Values.llamaParse.config.azureOpenAi.enabled (not .Values.llamaParse.config.azureOpenAi.existingSecret) -}}
 AZURE_OPENAI_API_KEY: {{ .Values.llamaParse.config.azureOpenAi.key | b64enc | quote }}
 AZURE_OPENAI_BASE_URL: {{ .Values.llamaParse.config.azureOpenAi.endpoint | b64enc | quote }}
 AZURE_OPENAI_GPT_4O_DEPLOYMENT_NAME: {{ .Values.llamaParse.config.azureOpenAi.deploymentName | b64enc | quote }}
 AZURE_OPENAI_API_VERSION: {{ .Values.llamaParse.config.azureOpenAi.apiVersion | b64enc | quote }}
 {{- end }}
 {{- if and .Values.llamaParse.config.anthropicApiKey (not .Values.llamaParse.config.existingAnthropicApiKeySecret) }}
-ANTHROPIC_API_KEY: {{ .Values.llamaParse.config.anthropicApiKey | default "" | b64enc | quote }}
+ANTHROPIC_API_KEY: {{ .Values.llamaParse.config.anthropicApiKey | b64enc | quote }}
 {{- end }}
 {{- if and .Values.llamaParse.config.geminiApiKey (not .Values.llamaParse.config.existingGeminiApiKeySecret) }}
 GOOGLE_GEMINI_API_KEY: {{ .Values.llamaParse.config.geminiApiKey | b64enc | quote }}
 {{- end }}
-{{- if and .Values.llamaParse.config.awsBedrock.enabled (not .Values.llamaParse.config.awsBedrock.existingSecret) }}
+{{ if and .Values.llamaParse.config.awsBedrock.enabled (not .Values.llamaParse.config.awsBedrock.existingSecret) -}}
 AWS_BEDROCK_ENABLED: {{ "true" | b64enc | quote }}
-{{- end }}
-{{- if .Values.llamaParse.config.awsBedrock.region }}
+{{- end -}}
+{{- if .Values.llamaParse.config.awsBedrock.region -}}
 AWS_BEDROCK_REGION: {{ .Values.llamaParse.config.awsBedrock.region | b64enc | quote }}
-{{- end }}
-{{- if .Values.llamaParse.config.awsBedrock.accessKeyId }}
+{{- end -}}
+{{- if .Values.llamaParse.config.awsBedrock.accessKeyId -}}
 AWS_BEDROCK_ACCESS_KEY_ID: {{ .Values.llamaParse.config.awsBedrock.accessKeyId | b64enc | quote }}
-{{- end }}
-{{- if .Values.llamaParse.config.awsBedrock.secretAccessKey }}
+{{- end -}}
+{{- if .Values.llamaParse.config.awsBedrock.secretAccessKey -}}
 AWS_BEDROCK_SECRET_ACCESS_KEY: {{ .Values.llamaParse.config.awsBedrock.secretAccessKey | b64enc | quote }}
-{{- end }}
-{{- if and .Values.llamaParse.config.googleVertexAi.enabled (not .Values.llamaParse.config.googleVertexAi.existingSecret) }}
+{{- end -}}
+{{- if and .Values.llamaParse.config.googleVertexAi.enabled (not .Values.llamaParse.config.googleVertexAi.existingSecret) -}}
 GOOGLE_VERTEX_AI_ENABLED: {{ "true" | b64enc | quote }}
 GOOGLE_VERTEX_AI_PROJECT_ID: {{ .Values.llamaParse.config.googleVertexAi.projectId | b64enc | quote }}
 GOOGLE_VERTEX_AI_LOCATION: {{ .Values.llamaParse.config.googleVertexAi.location | b64enc | quote }}
 GOOGLE_VERTEX_AI_CREDENTIALS_JSON: {{ .Values.llamaParse.config.googleVertexAi.credentialsJson | b64enc | quote }}
-{{- end }}
+{{- end -}}
+{{- end -}}
 {{- end -}}
 
 {{- define "common.llmModels.secretRefs" -}}
+{{- if .Values.llms.enabled -}}
+{{- if .Values.llms.existingOpenAiApiKeySecretName }}
+- secretRef:
+    name: {{ .Values.llms.existingOpenAiApiKeySecretName }}
+{{- end }}
+{{- if and .Values.llms.azureOpenAi.enabled .Values.llms.azureOpenAi.existingSecretName }}
+- secretRef:
+    name: {{ .Values.llms.azureOpenAi.existingSecretName }}
+{{- end }}
+{{- if .Values.llms.existingAnthropicApiKeySecretName }}
+- secretRef:
+    name: {{ .Values.llms.existingAnthropicApiKeySecretName }}
+{{- end }}
+{{- if .Values.llms.existingGeminiApiKeySecretName }}
+- secretRef:
+    name: {{ .Values.llms.existingGeminiApiKeySecretName }}
+{{- end }}
+{{- if and .Values.llms.awsBedrock.enabled .Values.llms.awsBedrock.existingSecretName }}
+- secretRef:
+    name: {{ .Values.llms.awsBedrock.existingSecretName }}
+{{- end }}
+{{- if and .Values.llms.googleVertexAi.enabled .Values.llms.googleVertexAi.existingSecretName }}
+- secretRef:
+    name: {{ .Values.llms.googleVertexAi.existingSecretName }}
+{{- end }}
+{{- else -}}
 {{- if .Values.llamaParse.config.existingOpenAiApiKeySecretName }}
 - secretRef:
     name: {{ .Values.llamaParse.config.existingOpenAiApiKeySecretName }}
@@ -318,3 +464,39 @@ GOOGLE_VERTEX_AI_CREDENTIALS_JSON: {{ .Values.llamaParse.config.googleVertexAi.c
     name: {{ .Values.llamaParse.config.googleVertexAi.existingSecret }}
 {{- end }}
 {{- end -}}
+{{- end -}}
+
+{{/*
+Temporal Enabled
+Returns true if temporal is available (either internal or external)
+*/}}
+{{- define "temporal.enabled" -}}
+{{- if or .Values.temporal.enabled .Values.global.config.temporal.external.enabled -}}
+true
+{{- end -}}
+{{- end -}}
+
+{{/*
+Temporal Host
+Returns the host for the temporal server based on whether external temporal is enabled
+*/}}
+{{- define "temporal.host" -}}
+{{- if .Values.global.config.temporal.external.enabled -}}
+{{- .Values.global.config.temporal.external.host -}}
+{{- else -}}
+{{- printf "%s-temporal-frontend.%s.svc.cluster.local" .Release.Name .Release.Namespace -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Temporal Port
+Returns the port for the temporal server
+*/}}
+{{- define "temporal.port" -}}
+{{- if .Values.global.config.temporal.external.enabled -}}
+{{- .Values.global.config.temporal.external.port | default 7233 -}}
+{{- else -}}
+{{- 7233 -}}
+{{- end -}}
+{{- end -}}
+

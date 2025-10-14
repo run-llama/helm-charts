@@ -1,0 +1,472 @@
+suite: temporal-jobs-service-tests
+templates:
+  - ../templates/temporal_jobs_service/api/deployment.yaml
+  - ../templates/temporal_jobs_service/api/configmap.yaml
+  - ../templates/temporal_jobs_service/api/service.yaml
+  - ../templates/temporal_jobs_service/api/hpa.yaml
+  - ../templates/temporal_jobs_service/api/serviceaccount.yaml
+  - ../templates/temporal_jobs_service/jobs_service/deployment.yaml
+  - ../templates/temporal_jobs_service/jobs_service/configmap.yaml
+  - ../templates/temporal_jobs_service/jobs_service/secret.yaml
+  - ../templates/temporal_jobs_service/jobs_service/service.yaml
+  - ../templates/temporal_jobs_service/jobs_service/keda-scaledobject.yaml
+  - ../templates/temporal_jobs_service/jobs_service/servicemonitor.yaml
+  - ../templates/temporal_jobs_service/jobs_service/serviceaccount.yaml
+  - ../templates/temporal_jobs_service/extract/deployment.yaml
+  - ../templates/temporal_jobs_service/extract/configmap.yaml
+  - ../templates/temporal_jobs_service/extract/secret.yaml
+  - ../templates/temporal_jobs_service/extract/service.yaml
+  - ../templates/temporal_jobs_service/extract/keda-scaledobject.yaml
+  - ../templates/temporal_jobs_service/extract/servicemonitor.yaml
+  - ../templates/temporal_jobs_service/extract/serviceaccount.yaml
+release:
+  name: llamacloud
+  namespace: default
+capabilities:
+  majorVersion: 1
+  minorVersion: 28
+tests:
+  # Test that nothing is created when temporal is disabled
+  - it: should not create temporal jobs service resources when temporal is disabled
+    set:
+      temporal.enabled: false
+      mongodb.enabled: false
+      postgresql.enabled: false
+      rabbitmq.enabled: false
+      redis.enabled: false
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  # API Deployment Tests
+  - it: should create API deployment with correct configuration
+    set:
+      temporal.enabled: true
+      mongodb.enabled: false
+      postgresql.enabled: false
+      rabbitmq.enabled: false
+      redis.enabled: false
+    template: ../templates/temporal_jobs_service/api/deployment.yaml
+    asserts:
+      - isKind:
+          of: Deployment
+      - equal:
+          path: metadata.name
+          value: llamacloud-temporal-jobs-api
+      - equal:
+          path: spec.template.spec.containers[0].command[0]
+          value: start_jobs_api
+      - equal:
+          path: spec.template.spec.containers[0].ports[0].containerPort
+          value: 8002
+      - equal:
+          path: spec.template.spec.containers[0].ports[0].name
+          value: tj-api-http
+
+  # API ConfigMap Tests
+  - it: should create API configmap with temporal environment variables
+    set:
+      temporal.enabled: true
+      mongodb.enabled: false
+      postgresql.enabled: false
+      rabbitmq.enabled: false
+      redis.enabled: false
+    template: ../templates/temporal_jobs_service/api/configmap.yaml
+    asserts:
+      - isKind:
+          of: ConfigMap
+      - equal:
+          path: data.TEMPORAL_HOST
+          value: "llamacloud-temporal-frontend.default.svc.cluster.local"
+      - equal:
+          path: data.TEMPORAL_PORT
+          value: "7233"
+      - equal:
+          path: data.IS_DEPLOYED
+          value: "true"
+      - equal:
+          path: data.DEPLOYMENT_MODE
+          value: "prod"
+
+  - it: should include S3 bucket configurations in API configmap
+    set:
+      temporal.enabled: true
+      global.config.parsedDocumentsCloudBucketName: test-documents
+      global.config.parsedRawFileCloudBucketName: test-raw-files
+      mongodb.enabled: false
+      postgresql.enabled: false
+      rabbitmq.enabled: false
+      redis.enabled: false
+    template: ../templates/temporal_jobs_service/api/configmap.yaml
+    asserts:
+      - equal:
+          path: data.S3_DOCUMENT_BUCKET_NAME
+          value: test-documents
+      - equal:
+          path: data.S3_RAW_FILE_BUCKET_NAME
+          value: test-raw-files
+
+  # API Service Tests
+  - it: should create API service with correct port
+    set:
+      temporal.enabled: true
+      mongodb.enabled: false
+      postgresql.enabled: false
+      rabbitmq.enabled: false
+      redis.enabled: false
+    template: ../templates/temporal_jobs_service/api/service.yaml
+    asserts:
+      - isKind:
+          of: Service
+      - equal:
+          path: spec.ports[0].port
+          value: 8002
+      - equal:
+          path: spec.ports[0].targetPort
+          value: tj-api-http
+
+  # API HPA Tests
+  - it: should create HPA when autoscaling is enabled
+    set:
+      temporal.enabled: true
+      temporalJobsService.api.autoscaling.enabled: true
+      temporalJobsService.api.autoscaling.minReplicas: 2
+      temporalJobsService.api.autoscaling.maxReplicas: 10
+      mongodb.enabled: false
+      postgresql.enabled: false
+      rabbitmq.enabled: false
+      redis.enabled: false
+    template: ../templates/temporal_jobs_service/api/hpa.yaml
+    asserts:
+      - isKind:
+          of: HorizontalPodAutoscaler
+      - equal:
+          path: spec.minReplicas
+          value: 2
+      - equal:
+          path: spec.maxReplicas
+          value: 10
+
+  - it: should not create HPA when autoscaling is disabled
+    set:
+      temporal.enabled: true
+      temporalJobsService.api.autoscaling.enabled: false
+      mongodb.enabled: false
+      postgresql.enabled: false
+      rabbitmq.enabled: false
+      redis.enabled: false
+    template: ../templates/temporal_jobs_service/api/hpa.yaml
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  # API ServiceAccount Tests
+  - it: should create API service account when create is true
+    set:
+      temporal.enabled: true
+      temporalJobsService.api.serviceAccount.create: true
+      mongodb.enabled: false
+      postgresql.enabled: false
+      rabbitmq.enabled: false
+      redis.enabled: false
+    template: ../templates/temporal_jobs_service/api/serviceaccount.yaml
+    asserts:
+      - isKind:
+          of: ServiceAccount
+      - equal:
+          path: metadata.name
+          value: llamacloud-temporal-jobs-api
+
+  - it: should not create API service account when create is false
+    set:
+      temporal.enabled: true
+      temporalJobsService.api.serviceAccount.create: false
+      mongodb.enabled: false
+      postgresql.enabled: false
+      rabbitmq.enabled: false
+      redis.enabled: false
+    template: ../templates/temporal_jobs_service/api/serviceaccount.yaml
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should use custom service account name when provided
+    set:
+      temporal.enabled: true
+      temporalJobsService.api.serviceAccount.create: true
+      temporalJobsService.api.serviceAccount.name: custom-sa-name
+      mongodb.enabled: false
+      postgresql.enabled: false
+      rabbitmq.enabled: false
+      redis.enabled: false
+    template: ../templates/temporal_jobs_service/api/serviceaccount.yaml
+    asserts:
+      - equal:
+          path: metadata.name
+          value: custom-sa-name
+
+  # Jobs Service Worker Tests
+  - it: should create jobs_service worker deployment with correct configuration
+    set:
+      temporal.enabled: true
+      mongodb.enabled: false
+      postgresql.enabled: false
+      rabbitmq.enabled: false
+      redis.enabled: false
+    template: ../templates/temporal_jobs_service/jobs_service/deployment.yaml
+    asserts:
+      - isKind:
+          of: Deployment
+      - equal:
+          path: spec.template.spec.containers[0].command[0]
+          value: temporal_jobs_service
+      - equal:
+          path: spec.template.spec.containers[0].ports[0].containerPort
+          value: 8000
+
+  - it: should create jobs_service configmap with temporal variables
+    set:
+      temporal.enabled: true
+      mongodb.enabled: false
+      postgresql.enabled: false
+      rabbitmq.enabled: false
+      redis.enabled: false
+    template: ../templates/temporal_jobs_service/jobs_service/configmap.yaml
+    asserts:
+      - isKind:
+          of: ConfigMap
+      - equal:
+          path: data.TEMPORAL_HOST
+          value: "llamacloud-temporal-frontend.default.svc.cluster.local"
+      - equal:
+          path: data.TEMPORAL_PORT
+          value: "7233"
+
+  - it: should create jobs_service secret when external secrets disabled
+    set:
+      temporal.enabled: true
+      temporalJobsService.jobsServiceWorker.externalSecrets.enabled: false
+      mongodb.enabled: false
+      postgresql.enabled: false
+      rabbitmq.enabled: false
+      redis.enabled: false
+    template: ../templates/temporal_jobs_service/jobs_service/secret.yaml
+    asserts:
+      - isKind:
+          of: Secret
+      - equal:
+          path: metadata.name
+          value: llamacloud-temporal-jobs-service-secret
+
+  - it: should create jobs_service KEDA scaled object when enabled
+    set:
+      temporal.enabled: true
+      temporalJobsService.jobsServiceWorker.keda.enabled: true
+      temporalJobsService.jobsServiceWorker.keda.minReplicaCount: 1
+      temporalJobsService.jobsServiceWorker.keda.maxReplicaCount: 50
+      temporalJobsService.jobsServiceWorker.keda.triggers:
+        - type: prometheus
+          metadata:
+            serverAddress: http://prometheus:9090
+            query: sum(rate(temporal_worker_task_slots_available[5m]))
+            threshold: "10"
+      mongodb.enabled: false
+      postgresql.enabled: false
+      rabbitmq.enabled: false
+      redis.enabled: false
+    capabilities:
+      apiVersions:
+        - keda.sh/v1alpha1
+    template: ../templates/temporal_jobs_service/jobs_service/keda-scaledobject.yaml
+    asserts:
+      - isKind:
+          of: ScaledObject
+      - equal:
+          path: spec.minReplicaCount
+          value: 1
+      - equal:
+          path: spec.maxReplicaCount
+          value: 50
+
+  - it: should not create jobs_service KEDA when disabled
+    set:
+      temporal.enabled: true
+      temporalJobsService.jobsServiceWorker.keda.enabled: false
+      mongodb.enabled: false
+      postgresql.enabled: false
+      rabbitmq.enabled: false
+      redis.enabled: false
+    template: ../templates/temporal_jobs_service/jobs_service/keda-scaledobject.yaml
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should create jobs_service ServiceMonitor when monitoring is enabled
+    set:
+      temporal.enabled: true
+      temporalJobsService.jobsServiceWorker.metrics.enabled: true
+      temporalJobsService.jobsServiceWorker.metrics.serviceMonitor.enabled: true
+      mongodb.enabled: false
+      postgresql.enabled: false
+      rabbitmq.enabled: false
+      redis.enabled: false
+    capabilities:
+      apiVersions:
+        - monitoring.coreos.com/v1
+    template: ../templates/temporal_jobs_service/jobs_service/servicemonitor.yaml
+    asserts:
+      - isKind:
+          of: ServiceMonitor
+
+  # Extract Worker Tests
+  - it: should create extract worker deployment with correct configuration
+    set:
+      temporal.enabled: true
+      mongodb.enabled: false
+      postgresql.enabled: false
+      rabbitmq.enabled: false
+      redis.enabled: false
+    template: ../templates/temporal_jobs_service/extract/deployment.yaml
+    asserts:
+      - isKind:
+          of: Deployment
+      - equal:
+          path: spec.template.spec.containers[0].command[0]
+          value: temporal_extract
+      - equal:
+          path: spec.template.spec.containers[0].ports[0].containerPort
+          value: 8000
+
+  - it: should create extract configmap with temporal variables
+    set:
+      temporal.enabled: true
+      mongodb.enabled: false
+      postgresql.enabled: false
+      rabbitmq.enabled: false
+      redis.enabled: false
+    template: ../templates/temporal_jobs_service/extract/configmap.yaml
+    asserts:
+      - isKind:
+          of: ConfigMap
+      - equal:
+          path: data.TEMPORAL_HOST
+          value: "llamacloud-temporal-frontend.default.svc.cluster.local"
+      - equal:
+          path: data.TEMPORAL_PORT
+          value: "7233"
+
+  - it: should create extract secret when external secrets disabled
+    set:
+      temporal.enabled: true
+      temporalJobsService.jobsExtractWorker.externalSecrets.enabled: false
+      mongodb.enabled: false
+      postgresql.enabled: false
+      rabbitmq.enabled: false
+      redis.enabled: false
+    template: ../templates/temporal_jobs_service/extract/secret.yaml
+    asserts:
+      - isKind:
+          of: Secret
+      - equal:
+          path: metadata.name
+          value: llamacloud-temporal-extract-secret
+
+  - it: should create extract KEDA scaled object when enabled
+    set:
+      temporal.enabled: true
+      temporalJobsService.jobsExtractWorker.keda.enabled: true
+      temporalJobsService.jobsExtractWorker.keda.minReplicaCount: 1
+      temporalJobsService.jobsExtractWorker.keda.maxReplicaCount: 30
+      temporalJobsService.jobsExtractWorker.keda.triggers:
+        - type: prometheus
+          metadata:
+            serverAddress: http://prometheus:9090
+            query: sum(rate(temporal_worker_task_slots_available[5m]))
+            threshold: "10"
+      mongodb.enabled: false
+      postgresql.enabled: false
+      rabbitmq.enabled: false
+      redis.enabled: false
+    capabilities:
+      apiVersions:
+        - keda.sh/v1alpha1
+    template: ../templates/temporal_jobs_service/extract/keda-scaledobject.yaml
+    asserts:
+      - isKind:
+          of: ScaledObject
+      - equal:
+          path: spec.minReplicaCount
+          value: 1
+      - equal:
+          path: spec.maxReplicaCount
+          value: 30
+
+  - it: should create extract ServiceMonitor when monitoring is enabled
+    set:
+      temporal.enabled: true
+      temporalJobsService.jobsExtractWorker.metrics.enabled: true
+      temporalJobsService.jobsExtractWorker.metrics.serviceMonitor.enabled: true
+      mongodb.enabled: false
+      postgresql.enabled: false
+      rabbitmq.enabled: false
+      redis.enabled: false
+    capabilities:
+      apiVersions:
+        - monitoring.coreos.com/v1
+    template: ../templates/temporal_jobs_service/extract/servicemonitor.yaml
+    asserts:
+      - isKind:
+          of: ServiceMonitor
+
+  # Worker ServiceAccount Tests
+  - it: should create jobs_service service account when create is true
+    set:
+      temporal.enabled: true
+      temporalJobsService.jobsServiceWorker.serviceAccount.create: true
+      mongodb.enabled: false
+      postgresql.enabled: false
+      rabbitmq.enabled: false
+      redis.enabled: false
+    template: ../templates/temporal_jobs_service/jobs_service/serviceaccount.yaml
+    asserts:
+      - isKind:
+          of: ServiceAccount
+
+  - it: should not create jobs_service service account when create is false
+    set:
+      temporal.enabled: true
+      temporalJobsService.jobsServiceWorker.serviceAccount.create: false
+      mongodb.enabled: false
+      postgresql.enabled: false
+      rabbitmq.enabled: false
+      redis.enabled: false
+    template: ../templates/temporal_jobs_service/jobs_service/serviceaccount.yaml
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should create extract service account when create is true
+    set:
+      temporal.enabled: true
+      temporalJobsService.jobsExtractWorker.serviceAccount.create: true
+      mongodb.enabled: false
+      postgresql.enabled: false
+      rabbitmq.enabled: false
+      redis.enabled: false
+    template: ../templates/temporal_jobs_service/extract/serviceaccount.yaml
+    asserts:
+      - isKind:
+          of: ServiceAccount
+
+  - it: should not create extract service account when create is false
+    set:
+      temporal.enabled: true
+      temporalJobsService.jobsExtractWorker.serviceAccount.create: false
+      mongodb.enabled: false
+      postgresql.enabled: false
+      rabbitmq.enabled: false
+      redis.enabled: false
+    template: ../templates/temporal_jobs_service/extract/serviceaccount.yaml
+    asserts:
+      - hasDocuments:
+          count: 0
