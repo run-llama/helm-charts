@@ -205,7 +205,7 @@ tests:
         path: .spec.advanced.horizontalPodAutoscalerConfig.behavior.scaleDown.selectPolicy
         value: Min
 
-- it: should use CPU image by default (gpu.enabled not set)
+- it: should use image without suffix by default (gpu.enabled not set)
   set:
     mongodb.enabled: false
     postgresql.enabled: false
@@ -215,9 +215,9 @@ tests:
   asserts:
     - matchRegex:
         path: spec.template.spec.containers[0].image
-        pattern: docker\.io/llamaindex/llamacloud-llamaparse-ocr:.+-cpu$
+        pattern: docker\.io/llamaindex/llamacloud-llamaparse-ocr:[^-]+$
 
-- it: should use CPU image when gpu.enabled is false
+- it: should use image without suffix when gpu.enabled is false
   set:
     mongodb.enabled: false
     postgresql.enabled: false
@@ -228,9 +228,9 @@ tests:
   asserts:
     - matchRegex:
         path: spec.template.spec.containers[0].image
-        pattern: docker\.io/llamaindex/llamacloud-llamaparse-ocr:.+-cpu$
+        pattern: docker\.io/llamaindex/llamacloud-llamaparse-ocr:[^-]+$
 
-- it: should use GPU image when gpu.enabled is true
+- it: should use image without suffix when gpu.enabled is true
   set:
     mongodb.enabled: false
     postgresql.enabled: false
@@ -243,7 +243,7 @@ tests:
         path: spec.template.spec.containers[0].image
         pattern: docker\.io/llamaindex/llamacloud-llamaparse-ocr:[^-]+$
 
-- it: should use custom image tag with CPU suffix when gpu.enabled is false
+- it: should use custom image tag without suffix when gpu.enabled is false
   set:
     mongodb.enabled: false
     postgresql.enabled: false
@@ -255,7 +255,7 @@ tests:
   asserts:
     - equal:
         path: spec.template.spec.containers[0].image
-        value: docker.io/llamaindex/llamacloud-llamaparse-ocr:1.2.3-cpu
+        value: docker.io/llamaindex/llamacloud-llamaparse-ocr:1.2.3
 
 - it: should use custom image tag without suffix when gpu.enabled is true
   set:
