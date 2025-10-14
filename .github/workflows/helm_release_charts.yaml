@@ -26,6 +26,11 @@ jobs:
       - name: Install Helm
         uses: azure/setup-helm@v3
 
+      - name: Add Helm repositories
+        run: |
+          helm repo add temporal https://go.temporal.io/helm-charts
+          helm repo update
+
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.6.0
         with:
