@@ -1444,7 +1444,7 @@ llamaParseOcr:
   ## LlamaParseOcr Image information
   ## @param llamaParseOcr.image.registry LlamaParseOcr Image registry
   ## @param llamaParseOcr.image.repository LlamaParseOcr Image repository
-  ## @param llamaParseOcr.image.tag LlamaParseOcr Image tag (-cpu suffix added automatically for CPU backend)
+  ## @param llamaParseOcr.image.tag LlamaParseOcr Image tag
   ## @param llamaParseOcr.image.pullPolicy LlamaParseOcr Image pull policy
   image:
     registry: docker.io
