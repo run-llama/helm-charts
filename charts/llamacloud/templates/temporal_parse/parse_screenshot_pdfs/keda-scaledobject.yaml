@@ -1,0 +1,3 @@
+{{- if include "temporal.enabled" . -}}
+{{- include "temporalWorker.keda" (dict "worker" .Values.temporalParse.parseScreenshotPDFs "serviceAccountHelper" "temporalParse.parseScreenshotPDFs.serviceAccountName" "root" .) -}}
+{{- end -}}

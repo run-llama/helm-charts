@@ -107,21 +107,55 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 
 ### Overrides and Common Configuration
 
-| Name                       | Description                                    | Value   |
-| -------------------------- | ---------------------------------------------- | ------- |
-| `nameOverride`             | String to fully override llamacloud.name       | `""`    |
-| `fullnameOverride`         | String to fully override llamaecloud.fullname  | `""`    |
-| `namespaceOverride`        | String to fully override llamaecloud.namespace | `""`    |
-| `commonLabels`             | Labels to add to all deployed objects          | `{}`    |
-| `commonAnnotations`        | Annotations to add to all deployed objects     | `{}`    |
-| `ingress.enabled`          | Whether to enable the ingress                  | `false` |
-| `ingress.create`           | Whether to create the ingress                  | `true`  |
-| `ingress.labels`           | Labels to add to the ingress                   | `{}`    |
-| `ingress.annotations`      | Annotations to add to the ingress              | `{}`    |
-| `ingress.host`             | Hostname to use for the ingress                | `nil`   |
-| `ingress.scheme`           | Scheme to use for the ingress                  | `https` |
-| `ingress.tlsSecretName`    | TLS secret name to use for the ingress         | `nil`   |
-| `ingress.ingressClassName` | Ingress class name to use for the ingress      | `nil`   |
+| Name                | Description                                    | Value |
+| ------------------- | ---------------------------------------------- | ----- |
+| `nameOverride`      | String to fully override llamacloud.name       | `""`  |
+| `fullnameOverride`  | String to fully override llamaecloud.fullname  | `""`  |
+| `namespaceOverride` | String to fully override llamaecloud.namespace | `""`  |
+| `commonLabels`      | Labels to add to all deployed objects          | `{}`  |
+| `commonAnnotations` | Annotations to add to all deployed objects     | `{}`  |
+
+### Ingress Configuration
+
+| Name                       | Description                               | Value   |
+| -------------------------- | ----------------------------------------- | ------- |
+| `ingress.enabled`          | Whether to enable the ingress             | `false` |
+| `ingress.create`           | Whether to create the ingress             | `true`  |
+| `ingress.labels`           | Labels to add to the ingress              | `{}`    |
+| `ingress.annotations`      | Annotations to add to the ingress         | `{}`    |
+| `ingress.host`             | Hostname to use for the ingress           | `nil`   |
+| `ingress.scheme`           | Scheme to use for the ingress             | `https` |
+| `ingress.tlsSecretName`    | TLS secret name to use for the ingress    | `nil`   |
+| `ingress.ingressClassName` | Ingress class name to use for the ingress | `nil`   |
+
+### LLMs Configuration
+
+| Name                                        | Description                                                         | Value                                       |
+| ------------------------------------------- | ------------------------------------------------------------------- | ------------------------------------------- |
+| `llms.enabled`                              | Whether to enable the LLMs                                          | `false`                                     |
+| `llms.openAiApiKey`                         | OpenAI API key                                                      | `""`                                        |
+| `llms.existingOpenAiApiKeySecretName`       | Name of the existing secret to use for the OpenAI API key           | `""`                                        |
+| `llms.azureOpenAi.enabled`                  | Enable Azure OpenAI for LlamaParse                                  | `false`                                     |
+| `llms.azureOpenAi.existingSecretName`       | Name of the existing secret to use for the Azure OpenAI API key     | `""`                                        |
+| `llms.azureOpenAi.deployments`              | Azure OpenAI deployments                                            | `[]`                                        |
+| `llms.anthropicApiKey`                      | Anthropic API key                                                   | `""`                                        |
+| `llms.existingAnthropicApiKeySecretName`    | Name of the existing secret to use for the Anthropic API key        | `""`                                        |
+| `llms.geminiApiKey`                         | Google Gemini API key                                               | `""`                                        |
+| `llms.existingGeminiApiKeySecretName`       | Name of the existing secret to use for the Google Gemini API key    | `""`                                        |
+| `llms.awsBedrock.enabled`                   | Enable AWS Bedrock for LlamaParse                                   | `false`                                     |
+| `llms.awsBedrock.existingSecretName`        | Name of the existing secret to use for the AWS Bedrock API key      | `""`                                        |
+| `llms.awsBedrock.region`                    | AWS Bedrock region                                                  | `""`                                        |
+| `llms.awsBedrock.accessKeyId`               | AWS Bedrock access key ID                                           | `""`                                        |
+| `llms.awsBedrock.secretAccessKey`           | AWS Bedrock secret access key                                       | `""`                                        |
+| `llms.awsBedrock.sonnet3_5ModelVersionName` | Sonnet 3.5 model version name                                       | `anthropic.claude-3-5-sonnet-20240620-v1:0` |
+| `llms.awsBedrock.sonnet3_7ModelVersionName` | Sonnet 3.7 model version name                                       | `anthropic.claude-3-7-sonnet-20250219-v1:0` |
+| `llms.awsBedrock.sonnet4_0ModelVersionName` | Sonnet 4.0 model version name                                       | `anthropic.claude-sonnet-4-20250514-v1:0`   |
+| `llms.awsBedrock.haiku3_5_ModelVersionName` | Haiku 3.5 model version name                                        | `anthropic.claude-3-5-haiku-20241022-v1:0`  |
+| `llms.googleVertexAi.enabled`               | Enable Google Vertex AI for LlamaParse                              | `false`                                     |
+| `llms.googleVertexAi.existingSecretName`    | Name of the existing secret to use for the Google Vertex AI API key | `""`                                        |
+| `llms.googleVertexAi.projectId`             | Google Vertex AI project id                                         | `""`                                        |
+| `llms.googleVertexAi.location`              | Google Vertex AI location                                           | `""`                                        |
+| `llms.googleVertexAi.credentialsJson`       | Google Vertex AI credentials JSON                                   | `""`                                        |
 
 ### Frontend Configuration
 
@@ -136,7 +170,7 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 | `frontend.replicas`                                    | Number of replicas of Frontend Deployment                                                                         | `1`                              |
 | `frontend.image.registry`                              | Frontend Image registry                                                                                           | `docker.io`                      |
 | `frontend.image.repository`                            | Frontend Image repository                                                                                         | `llamaindex/llamacloud-frontend` |
-| `frontend.image.tag`                                   | Frontend Image tag                                                                                                | `0.5.7`                          |
+| `frontend.image.tag`                                   | Frontend Image tag                                                                                                | `0.5.8`                          |
 | `frontend.image.pullPolicy`                            | Frontend Image pull policy                                                                                        | `IfNotPresent`                   |
 | `frontend.service.type`                                | Frontend Service type                                                                                             | `ClusterIP`                      |
 | `frontend.service.port`                                | Frontend Service port                                                                                             | `3000`                           |
@@ -204,7 +238,7 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 | `backend.replicas`                                    | Number of replicas of Backend Deployment                                                                          | `1`                             |
 | `backend.image.registry`                              | Backend Image registry                                                                                            | `docker.io`                     |
 | `backend.image.repository`                            | Backend Image repository                                                                                          | `llamaindex/llamacloud-backend` |
-| `backend.image.tag`                                   | Backend Image tag                                                                                                 | `0.5.7`                         |
+| `backend.image.tag`                                   | Backend Image tag                                                                                                 | `0.5.8`                         |
 | `backend.image.pullPolicy`                            | Backend Image pull policy                                                                                         | `IfNotPresent`                  |
 | `backend.service.type`                                | Backend Service type                                                                                              | `ClusterIP`                     |
 | `backend.service.port`                                | Backend Service port                                                                                              | `8000`                          |
@@ -282,7 +316,7 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 | `jobsService.replicas`                                    | Number of replicas of JobsService Deployment                                                                      | `1`                                  |
 | `jobsService.image.registry`                              | JobsService Image registry                                                                                        | `docker.io`                          |
 | `jobsService.image.repository`                            | JobsService Image repository                                                                                      | `llamaindex/llamacloud-jobs-service` |
-| `jobsService.image.tag`                                   | JobsService Image tag                                                                                             | `0.5.7`                              |
+| `jobsService.image.tag`                                   | JobsService Image tag                                                                                             | `0.5.8`                              |
 | `jobsService.image.pullPolicy`                            | JobsService Image pull policy                                                                                     | `IfNotPresent`                       |
 | `jobsService.service.type`                                | JobsService Service type                                                                                          | `ClusterIP`                          |
 | `jobsService.service.port`                                | JobsService Service port                                                                                          | `8002`                               |
@@ -352,7 +386,7 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 | `jobsWorker.replicas`                                      | Number of replicas of JobsWorker Deployment                                                                       | `1`                                 |
 | `jobsWorker.image.registry`                                | JobsWorker Image registry                                                                                         | `docker.io`                         |
 | `jobsWorker.image.repository`                              | JobsWorker Image repository                                                                                       | `llamaindex/llamacloud-jobs-worker` |
-| `jobsWorker.image.tag`                                     | JobsWorker Image tag                                                                                              | `0.5.7`                             |
+| `jobsWorker.image.tag`                                     | JobsWorker Image tag                                                                                              | `0.5.8`                             |
 | `jobsWorker.image.pullPolicy`                              | JobsWorker Image pull policy                                                                                      | `IfNotPresent`                      |
 | `jobsWorker.service.type`                                  | JobsWorker Service type                                                                                           | `ClusterIP`                         |
 | `jobsWorker.service.port`                                  | JobsWorker Service port                                                                                           | `8001`                              |
@@ -451,7 +485,7 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 | `llamaParse.replicas`                                    | Number of replicas of LlamaParse Deployment                                               | `2`                                         |
 | `llamaParse.image.registry`                              | LlamaParse Image registry                                                                 | `docker.io`                                 |
 | `llamaParse.image.repository`                            | LlamaParse Image repository                                                               | `llamaindex/llamacloud-llamaparse`          |
-| `llamaParse.image.tag`                                   | LlamaParse Image tag                                                                      | `0.5.7`                                     |
+| `llamaParse.image.tag`                                   | LlamaParse Image tag                                                                      | `0.5.8`                                     |
 | `llamaParse.image.pullPolicy`                            | LlamaParse Image pull policy                                                              | `IfNotPresent`                              |
 | `llamaParse.serviceAccount.create`                       | Whether or not to create a new service account                                            | `true`                                      |
 | `llamaParse.serviceAccount.name`                         | Name of the service account                                                               | `""`                                        |
@@ -535,9 +569,10 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 | `llamaParseOcr.enabled`                                     | Enable LlamaParseOcr                                                                        | `true`                                 |
 | `llamaParseOcr.name`                                        | Name suffix of the LlamaParseOcr related resources                                          | `llamaparse-ocr`                       |
 | `llamaParseOcr.replicas`                                    | Number of replicas of LlamaParseOcr Deployment                                              | `2`                                    |
+| `llamaParseOcr.gpu.enabled`                                 | Enable GPU acceleration for OCR processing (if false, uses CPU backend)                     | `false`                                |
 | `llamaParseOcr.image.registry`                              | LlamaParseOcr Image registry                                                                | `docker.io`                            |
 | `llamaParseOcr.image.repository`                            | LlamaParseOcr Image repository                                                              | `llamaindex/llamacloud-llamaparse-ocr` |
-| `llamaParseOcr.image.tag`                                   | LlamaParseOcr Image tag                                                                     | `0.5.7`                                |
+| `llamaParseOcr.image.tag`                                   | LlamaParseOcr Image tag (-cpu suffix added automatically for CPU backend)                   | `0.5.8`                                |
 | `llamaParseOcr.image.pullPolicy`                            | LlamaParseOcr Image pull policy                                                             | `IfNotPresent`                         |
 | `llamaParseOcr.service.type`                                | LlamaParseOcr Service type                                                                  | `ClusterIP`                            |
 | `llamaParseOcr.service.port`                                | LlamaParseOcr Service port                                                                  | `8080`                                 |
@@ -618,7 +653,7 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 | `llamaParseLayoutDetectionApi.config.logLevel`                             | Log level for the LlamaParse Layout Detectedion Api                                         | `INFO`                                       |
 | `llamaParseLayoutDetectionApi.image.registry`                              | LlamaParse Layout Detectedion Api Image registry                                            | `docker.io`                                  |
 | `llamaParseLayoutDetectionApi.image.repository`                            | LlamaParse Layout Detectedion Api Image repository                                          | `llamaindex/llamacloud-layout-detection-api` |
-| `llamaParseLayoutDetectionApi.image.tag`                                   | LlamaParse Layout Detectedion Api Image tag                                                 | `0.5.7`                                      |
+| `llamaParseLayoutDetectionApi.image.tag`                                   | LlamaParse Layout Detectedion Api Image tag                                                 | `0.5.8`                                      |
 | `llamaParseLayoutDetectionApi.image.pullPolicy`                            | LlamaParse Layout Detectedion Api Image pull policy                                         | `IfNotPresent`                               |
 | `llamaParseLayoutDetectionApi.service.type`                                | LlamaParse Layout Detectedion Api Service type                                              | `ClusterIP`                                  |
 | `llamaParseLayoutDetectionApi.service.port`                                | LlamaParse Layout Detectedion Api Service port                                              | `8000`                                       |
@@ -675,7 +710,7 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 | `usage.replicas`                                    | Number of replicas of usage Deployment                                                                            | `1`                           |
 | `usage.image.registry`                              | Usage Image registry                                                                                              | `docker.io`                   |
 | `usage.image.repository`                            | Usage Image repository                                                                                            | `llamaindex/llamacloud-usage` |
-| `usage.image.tag`                                   | Usage Image tag                                                                                                   | `0.5.7`                       |
+| `usage.image.tag`                                   | Usage Image tag                                                                                                   | `0.5.8`                       |
 | `usage.image.pullPolicy`                            | Usage Image pull policy                                                                                           | `IfNotPresent`                |
 | `usage.service.type`                                | Usage Service type                                                                                                | `ClusterIP`                   |
 | `usage.service.port`                                | Usage Service port                                                                                                | `8005`                        |

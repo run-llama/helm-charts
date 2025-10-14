@@ -1,0 +1,3 @@
+{{- if include "temporal.enabled" . -}}
+{{- include "temporalWorker.servicemonitor" (dict "worker" .Values.temporalJobsService.jobsServiceWorker "serviceAccountHelper" "temporalJobsService.jobsServiceWorker.serviceAccountName" "root" .) -}}
+{{- end -}}

@@ -1,0 +1,46 @@
+{{- if include "temporal.enabled" . -}}
+{{- if and (.Capabilities.APIVersions.Has "keda.sh/v1alpha1") .Values.temporalParse.llamaParse.enabled .Values.temporalParse.llamaParse.keda.enabled }}
+{{- if .Values.temporalParse.llamaParse.autoscaling.enabled }}
+{{- fail "Keda configuration (`.Values.temporalParse.llamaParse.keda`) and HPA configurations (`.Values.temporalParse.llamaParse.autoscaling`) cannot be both enabled at the same time!" }}
+{{- end }}
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: {{ include "llamacloud.fullname" . }}-{{ .Values.temporalParse.llamaParse.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "llamacloud.labels" . | nindent 4 }}
+    {{- with .Values.temporalParse.llamaParse.keda.additionalLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- include "llamacloud.annotations" . | nindent 4 }}
+    {{- with .Values.temporalParse.llamaParse.keda.additionalAnnotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "llamacloud.fullname" . }}-{{ .Values.temporalParse.llamaParse.name }}
+  pollingInterval: {{ .Values.temporalParse.llamaParse.keda.pollingInterval }}
+  cooldownPeriod: {{ .Values.temporalParse.llamaParse.keda.cooldownPeriod }}
+  initialCooldownPeriod: {{ .Values.temporalParse.llamaParse.keda.initialCooldownPeriod }}
+  minReplicaCount: {{ .Values.temporalParse.llamaParse.keda.minReplicaCount }}
+  maxReplicaCount: {{ .Values.temporalParse.llamaParse.keda.maxReplicaCount }}
+  {{- with .Values.temporalParse.llamaParse.keda.fallback }}
+  fallback:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.temporalParse.llamaParse.keda.advanced }}
+  advanced:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.temporalParse.llamaParse.keda.triggers }}
+  triggers:
+    {{- tpl (toYaml .) $ | nindent 4 }}
+  {{- else }}
+    {{- fail "At least one element in `.Values.temporalParse.llamaParse.keda.triggers` is required!" }}
+  {{- end }}
+{{- end }}
+{{- end -}}

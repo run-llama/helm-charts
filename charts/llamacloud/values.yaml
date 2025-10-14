@@ -103,6 +103,15 @@ global:
         db: 0
         existingSecretName: ""
 
+    ## @param global.config.temporal.external.enabled Use an external Temporal instance
+    ## @param global.config.temporal.external.host Temporal host
+    ## @param global.config.temporal.external.port Temporal port
+    temporal:
+      external:
+        enabled: false
+        host: ""
+        port: 7233
+
     ## Uncomment the below lines to configure file store bucket names
     ## The default file store is AWS S3. If you are using a different cloud provider, please set s3proxy.enabled=true
     # parsedDocumentsCloudBucketName: "llama-platform-parsed-documents"
@@ -133,7 +142,7 @@ commonLabels: {}
 ##
 commonAnnotations: {}
 
-
+## @section Ingress Configuration
 ingress:
   ## @param ingress.enabled Whether to enable the ingress
   enabled: false
@@ -159,6 +168,71 @@ ingress:
   ## @param ingress.ingressClassName Ingress class name to use for the ingress
   ingressClassName:
 
+
+## @section LLMs Configuration
+llms:
+  ## @param llms.enabled Whether to enable the LLMs
+  enabled: false
+
+  ## @param llms.openAiApiKey OpenAI API key
+  ## @param llms.existingOpenAiApiKeySecretName Name of the existing secret to use for the OpenAI API key
+  openAiApiKey: ""
+  existingOpenAiApiKeySecretName: ""
+
+  ## @param llms.azureOpenAi.enabled Enable Azure OpenAI for LlamaParse
+  ## @param llms.azureOpenAi.existingSecretName Name of the existing secret to use for the Azure OpenAI API key
+  ## @param llms.azureOpenAi.deployments Azure OpenAI deployments
+  azureOpenAi:
+    enabled: false
+    existingSecretName: ""
+    deployments: []
+    # - model: "gpt-4o-mini"
+    #   deploymentName: "gpt-4o-mini"
+    #   apiKey: ""
+    #   baseUrl: "https://api.openai.com/v1"
+    #   apiVersion: "2024-08-06"
+
+  ## @param llms.anthropicApiKey Anthropic API key
+  ## @param llms.existingAnthropicApiKeySecretName Name of the existing secret to use for the Anthropic API key
+  anthropicApiKey: ""
+  existingAnthropicApiKeySecretName: ""
+
+  ## @param llms.geminiApiKey Google Gemini API key
+  ## @param llms.existingGeminiApiKeySecretName Name of the existing secret to use for the Google Gemini API key
+  geminiApiKey: ""
+  existingGeminiApiKeySecretName: ""
+
+  ## @param llms.awsBedrock.enabled Enable AWS Bedrock for LlamaParse
+  ## @param llms.awsBedrock.existingSecretName Name of the existing secret to use for the AWS Bedrock API key
+  ## @param llms.awsBedrock.region AWS Bedrock region
+  ## @param llms.awsBedrock.accessKeyId AWS Bedrock access key ID
+  ## @param llms.awsBedrock.secretAccessKey AWS Bedrock secret access key
+  ## @param llms.awsBedrock.sonnet3_5ModelVersionName Sonnet 3.5 model version name
+  ## @param llms.awsBedrock.sonnet3_7ModelVersionName Sonnet 3.7 model version name
+  ## @param llms.awsBedrock.sonnet4_0ModelVersionName Sonnet 4.0 model version name
+  ## @param llms.awsBedrock.haiku3_5_ModelVersionName Haiku 3.5 model version name
+  awsBedrock:
+    enabled: false
+    existingSecretName: ""
+    region: ""
+    accessKeyId: ""
+    secretAccessKey: ""
+    sonnet3_5ModelVersionName: "anthropic.claude-3-5-sonnet-20240620-v1:0"
+    sonnet3_7ModelVersionName: "anthropic.claude-3-7-sonnet-20250219-v1:0"
+    sonnet4_0ModelVersionName: "anthropic.claude-sonnet-4-20250514-v1:0"
+    haiku3_5_ModelVersionName: "anthropic.claude-3-5-haiku-20241022-v1:0"
+
+  ## @param llms.googleVertexAi.enabled Enable Google Vertex AI for LlamaParse
+  ## @param llms.googleVertexAi.existingSecretName Name of the existing secret to use for the Google Vertex AI API key
+  ## @param llms.googleVertexAi.projectId Google Vertex AI project id
+  ## @param llms.googleVertexAi.location Google Vertex AI location
+  ## @param llms.googleVertexAi.credentialsJson Google Vertex AI credentials JSON
+  googleVertexAi:
+    enabled: false
+    existingSecretName: ""
+    projectId: ""
+    location: ""
+    credentialsJson: ""
 
 ## @section Frontend Configuration
 frontend:
@@ -188,7 +262,7 @@ frontend:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-frontend
-    tag: 0.5.7
+    tag: 0.5.8
     pullPolicy: IfNotPresent
 
   ## @param frontend.service.type Frontend Service type
@@ -389,7 +463,7 @@ backend:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-backend
-    tag: 0.5.7
+    tag: 0.5.8
     pullPolicy: IfNotPresent
 
   ## Backend Service information
@@ -631,7 +705,7 @@ jobsService:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-jobs-service
-    tag: 0.5.7
+    tag: 0.5.8
     pullPolicy: IfNotPresent
 
   ## JobsService Service information\
@@ -841,7 +915,7 @@ jobsWorker:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-jobs-worker
-    tag: 0.5.7
+    tag: 0.5.8
     pullPolicy: IfNotPresent
 
   ## JobsWorker Service information
@@ -1091,6 +1165,7 @@ llamaParse:
       sonnet3_7ModelVersionName: "anthropic.claude-3-7-sonnet-20250219-v1:0"
       sonnet4_0ModelVersionName: "anthropic.claude-sonnet-4-20250514-v1:0"
       haiku3_5_ModelVersionName: "anthropic.claude-3-5-haiku-20241022-v1:0"
+
     ## @param llamaParse.config.googleVertexAi.enabled Enable Google Vertex AI for LlamaParse
     ## @param llamaParse.config.googleVertexAi.existingSecret Name of the existing secret to use for the Google Vertex AI API key
     ## @param llamaParse.config.googleVertexAi.projectId Google Vertex AI project id
@@ -1119,7 +1194,7 @@ llamaParse:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-llamaparse
-    tag: 0.5.7
+    tag: 0.5.8
     pullPolicy: IfNotPresent
 
   ## ServiceAccount configuration
@@ -1361,15 +1436,20 @@ llamaParseOcr:
   ## @param llamaParseOcr.replicas Number of replicas of LlamaParseOcr Deployment
   replicas: 2
 
+  ## GPU configuration for OCR processing
+  gpu:
+    ## @param llamaParseOcr.gpu.enabled Enable GPU acceleration for OCR processing (if false, uses CPU backend)
+    enabled: false
+
   ## LlamaParseOcr Image information
   ## @param llamaParseOcr.image.registry LlamaParseOcr Image registry
   ## @param llamaParseOcr.image.repository LlamaParseOcr Image repository
-  ## @param llamaParseOcr.image.tag LlamaParseOcr Image tag
+  ## @param llamaParseOcr.image.tag LlamaParseOcr Image tag (-cpu suffix added automatically for CPU backend)
   ## @param llamaParseOcr.image.pullPolicy LlamaParseOcr Image pull policy
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-llamaparse-ocr
-    tag: 0.5.7
+    tag: 0.5.8
     pullPolicy: IfNotPresent
 
   ## LlamaParseOcr Service information
@@ -1594,7 +1674,7 @@ llamaParseLayoutDetectionApi:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-layout-detection-api
-    tag: 0.5.7
+    tag: 0.5.8
     pullPolicy: IfNotPresent
 
   ## LlamaParse Layout Detectedion Api Service information
@@ -1759,7 +1839,7 @@ usage:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-usage
-    tag: 0.5.7
+    tag: 0.5.8
     pullPolicy: IfNotPresent
 
   ## Usage Service information
@@ -1909,6 +1989,1345 @@ usage:
   ## Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
   affinity: {}
 
+
+temporalParse:
+  llamaParse:
+    ## @param temporalParse.llamaParse.name Name suffix of the Temporal Parse LlamaParse related resources
+    name: temporal-llamaparse
+
+    config:
+      ## @param temporalParse.llamaParse.config.debugMode Enable debug mode for Temporal Parse LlamaParse
+      debugMode: false
+      ## @param temporalParse.llamaParse.config.maxQueueConcurrency Max number of jobs the worker can process at the same time
+      maxQueueConcurrency: 3
+      ## @param temporalParse.llamaParse.config.maxOldSpaceSize Maximum Node.js old space size in MB
+      maxOldSpaceSize: 14500
+
+      ## @param temporalParse.llamaParse.config.openAiApiKey OpenAI API key
+      ## @param temporalParse.llamaParse.config.existingOpenAiApiKeySecretName Name of the existing secret to use for the OpenAI API key
+      openAiApiKey: ""
+      existingOpenAiApiKeySecretName: ""
+
+      ## @param temporalParse.llamaParse.config.azureOpenAi.enabled Enable Azure OpenAI for Temporal Parse LlamaParse
+      ## @param temporalParse.llamaParse.config.azureOpenAi.existingSecret Name of the existing secret to use for the Azure OpenAI API key
+      ## @param temporalParse.llamaParse.config.azureOpenAi.key Azure OpenAI API key
+      ## @param temporalParse.llamaParse.config.azureOpenAi.endpoint Azure OpenAI endpoint
+      ## @param temporalParse.llamaParse.config.azureOpenAi.deploymentName Azure OpenAI deployment
+      ## @param temporalParse.llamaParse.config.azureOpenAi.apiVersion Azure OpenAI API version
+      azureOpenAi:
+        enabled: false
+        # Note each model has its own deployment name / api version / key on azure openai
+        # For more information, please refer to https://docs.cloud.llamaindex.ai/self_hosting/configuration/azure-openai
+        existingSecret: ""
+        key: ""
+        endpoint: ""
+        deploymentName: ""
+        apiVersion: ""
+
+      ## @param temporalParse.llamaParse.config.anthropicApiKey Anthropic API key
+      ## @param temporalParse.llamaParse.config.existingAnthropicApiKeySecret Name of the existing secret to use for the Anthropic API key
+      anthropicApiKey: ""
+      existingAnthropicApiKeySecret: ""
+
+      ## @param temporalParse.llamaParse.config.geminiApiKey Google Gemini API key
+      ## @param temporalParse.llamaParse.config.existingGeminiApiKeySecret Name of the existing secret to use for the Google Gemini API key
+      geminiApiKey: ""
+      existingGeminiApiKeySecret: ""
+
+      ## @param temporalParse.llamaParse.config.awsBedrock.enabled Enable AWS Bedrock for Temporal Parse LlamaParse
+      ## @param temporalParse.llamaParse.config.awsBedrock.existingSecret Name of the existing secret to use for the AWS Bedrock API key
+      ## @param temporalParse.llamaParse.config.awsBedrock.region AWS Bedrock region
+      ## @param temporalParse.llamaParse.config.awsBedrock.accessKeyId AWS Bedrock access key ID
+      ## @param temporalParse.llamaParse.config.awsBedrock.secretAccessKey AWS Bedrock secret access key
+      ## @param temporalParse.llamaParse.config.awsBedrock.sonnet3_5ModelVersionName Sonnet 3.5 model version name
+      ## @param temporalParse.llamaParse.config.awsBedrock.sonnet3_7ModelVersionName Sonnet 3.7 model version name
+      ## @param temporalParse.llamaParse.config.awsBedrock.sonnet4_0ModelVersionName Sonnet 4.0 model version name
+      ## @param temporalParse.llamaParse.config.awsBedrock.haiku3_5_ModelVersionName Haiku 3.5 model version name
+      awsBedrock:
+        enabled: false
+        existingSecret: ""
+        region: ""
+        accessKeyId: ""
+        secretAccessKey: ""
+        sonnet3_5ModelVersionName: "anthropic.claude-3-5-sonnet-20240620-v1:0"
+        sonnet3_7ModelVersionName: "anthropic.claude-3-7-sonnet-20250219-v1:0"
+        sonnet4_0ModelVersionName: "anthropic.claude-sonnet-4-20250514-v1:0"
+        haiku3_5_ModelVersionName: "anthropic.claude-3-5-haiku-20241022-v1:0"
+
+      ## @param temporalParse.llamaParse.config.googleVertexAi.enabled Enable Google Vertex AI for Temporal Parse LlamaParse
+      ## @param temporalParse.llamaParse.config.googleVertexAi.existingSecret Name of the existing secret to use for the Google Vertex AI API key
+      ## @param temporalParse.llamaParse.config.googleVertexAi.projectId Google Vertex AI project id
+      ## @param temporalParse.llamaParse.config.googleVertexAi.location Google Vertex AI location
+      ## @param temporalParse.llamaParse.config.googleVertexAi.credentialsJson Google Vertex AI credentials JSON
+      googleVertexAi:
+        enabled: false
+        existingSecret: ""
+        projectId: ""
+        location: ""
+        credentialsJson: ""
+
+      ## @param temporalParse.llamaParse.config.s3UploadBucket S3 bucket to upload files to
+      ## @param temporalParse.llamaParse.config.s3OutputBucket S3 bucket to output files to
+      s3UploadBucket: "llama-platform-file-parsing"
+      s3OutputBucket: "llama-platform-file-parsing"
+
+    ## @param temporalParse.llamaParse.replicas Number of replicas of Temporal Parse LlamaParse Deployment
+    replicas: 2
+
+    ## Temporal Parse LlamaParse Image information
+    ## @param temporalParse.llamaParse.image.registry Temporal Parse LlamaParse Image registry
+    ## @param temporalParse.llamaParse.image.repository Temporal Parse LlamaParse Image repository
+    ## @param temporalParse.llamaParse.image.tag Temporal Parse LlamaParse Image tag
+    ## @param temporalParse.llamaParse.image.pullPolicy Temporal Parse LlamaParse Image pull policy
+    image:
+      registry: docker.io
+      repository: llamaindex/llamacloud-llamaparse
+      tag: 0.5.7
+      pullPolicy: IfNotPresent
+
+    ## ServiceAccount configuration
+    ## @param temporalParse.llamaParse.serviceAccount.create Whether or not to create a new service account
+    ## @param temporalParse.llamaParse.serviceAccount.name Name of the service account
+    ## @param temporalParse.llamaParse.serviceAccount.labels Labels to add to the service account
+    ## @param temporalParse.llamaParse.serviceAccount.annotations Annotations to add to the service account
+    ## @param temporalParse.llamaParse.serviceAccount.automountServiceAccountToken Whether or not to automount the service account token
+    serviceAccount:
+      create: true
+      name: ""
+      labels: {}
+      annotations: {}
+      automountServiceAccountToken: true
+
+    ## @param temporalParse.llamaParse.labels Labels added to the Temporal Parse LlamaParse Deployment.
+    labels: {}
+    ## @param temporalParse.llamaParse.annotations Annotations added to the Temporal Parse LlamaParse Deployment.
+    annotations: {}
+
+    ## @param temporalParse.llamaParse.containerPort Port to expose on the Temporal Parse LlamaParse container
+    ## Ref: https://kubernetes.io/docs/tutorials/services/connect-applications-service/#exposing-pods-to-the-cluster
+    containerPort: 8004
+
+    ## @param temporalParse.llamaParse.service.type Temporal Parse LlamaParse Service type
+    ## @param temporalParse.llamaParse.service.port Temporal Parse LlamaParse Service port
+    service:
+      type: ClusterIP
+      port: 8004
+
+    ## @param temporalParse.llamaParse.extraEnvVariables Extra environment variables to add to Temporal Parse llamaParse pods
+    ## Example:
+    ## extraEnvVariables:
+    ##   - name: FOO
+    ##     value: BAR
+    ##   - name: OPENAI_API_KEY
+    ##     valueFrom:
+    ##       secretKeyRef:
+    ##         name: openai-api-secret
+    ##         key: openai-api-key
+    extraEnvVariables: []
+
+    ## External Secrets Configuration
+    ## @param temporalParse.llamaParse.externalSecrets.enabled Enable external secrets for the Temporal Parse LlamaParse Deployment
+    ## @param temporalParse.llamaParse.externalSecrets.secrets List of external secrets to load environment variables from
+    externalSecrets:
+      ## @param temporalParse.llamaParse.externalSecrets.enabled Enable external secrets for the Temporal Parse LlamaParse Deployment
+      enabled: false
+      ## @param temporalParse.llamaParse.externalSecrets.secrets List of external secrets to load environment variables from
+      ## ["secret-1", "secret-2"]
+      secrets: []
+
+    ## @param temporalParse.llamaParse.podAnnotations Annotations to add to the resulting Pods of the Deployment.
+    podAnnotations: {}
+
+    ## @param temporalParse.llamaParse.podLabels Labels to add to the resulting Pods of the Deployment.
+    podLabels: {}
+
+    ## @param temporalParse.llamaParse.podSecurityContext Pod security context
+    podSecurityContext: {}
+
+    ## @param temporalParse.llamaParse.securityContext Security context for the container
+    securityContext: {}
+    #  runAsUser: 1000
+    #  runAsGroup: 1000
+
+    ## Temporal Parse LlamaParse resources: Set container requests and limits for different resources like CPU or memory (essential for production workloads)
+    ## Ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+    ## Below are the recommended values for Temporal Parse LlamaParse. Please adjust according to your deployment's needs.
+    resources:
+      ## @param temporalParse.llamaParse.resources.requests.memory Memory request for the Temporal Parse LlamaParse container
+      ## @param temporalParse.llamaParse.resources.requests.cpu CPU request for the Temporal Parse LlamaParse container
+      ## @param temporalParse.llamaParse.resources.limits.memory Memory limit for the Temporal Parse LlamaParse container
+      ## @param temporalParse.llamaParse.resources.limits.cpu CPU limit for the Temporal Parse LlamaParse container
+      requests:
+        memory: 6Gi
+        cpu: 3
+      limits:
+        memory: 13Gi
+        cpu: 7
+
+    ## Temporal Parse LlamaParse Liveness probe configuration
+    livenessProbe:
+      ## @param temporalParse.llamaParse.livenessProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
+      ## @param temporalParse.llamaParse.livenessProbe.httpGet.path Path to hit for the liveness probe
+      ## @param temporalParse.llamaParse.livenessProbe.httpGet.port Port to hit for the liveness probe
+      ## @param temporalParse.llamaParse.livenessProbe.initialDelaySeconds Number of seconds after the container has started before liveness probes are initiated
+      ## @param temporalParse.llamaParse.livenessProbe.periodSeconds How often (in seconds) to perform the probe
+      ## @param temporalParse.llamaParse.livenessProbe.timeoutSeconds Number of seconds after which the probe times out
+      failureThreshold: 10
+      httpGet:
+        path: /healthcheck
+        port: 8004
+      initialDelaySeconds: 30
+      periodSeconds: 30
+      timeoutSeconds: 5
+
+    ## Temporal Parse LlamaParse HorizontalPodAutoScaler configuration
+    ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/
+    ## The HPA scales by the target CPU utilization percentage by default
+    ## Uncomment the targetMemoryUtilizationPercentage line below to scale by memory utilization
+    autoscaling:
+      ## @param temporalParse.llamaParse.autoscaling.enabled Enable autoscaling for the Temporal Parse LlamaParse Deployment
+      ## @param temporalParse.llamaParse.autoscaling.minReplicas Minimum number of replicas for the Temporal Parse LlamaParse Deployment
+      ## @param temporalParse.llamaParse.autoscaling.maxReplicas Maximum number of replicas for the Temporal Parse LlamaParse Deployment
+      ## @param temporalParse.llamaParse.autoscaling.targetCPUUtilizationPercentage Target CPU utilization percentage for the Temporal Parse LlamaParse Deployment
+      enabled: true
+      minReplicas: 2
+      maxReplicas: 10
+      targetCPUUtilizationPercentage: 80
+      # targetMemoryUtilizationPercentage: 80
+
+    ## KEDA configuration for the Temporal Parse LlamaParse Deployment
+    ## Ref: https://keda.sh
+    ## Note: .Values.temporalParse.llamaParse.autoscaling.enabled must be false for KEDA to be enabled
+    keda:
+      ## @param temporalParse.llamaParse.keda.enabled Enable KEDA for the Temporal Parse llamaParse Deployment
+      enabled: false
+      ## @param temporalParse.llamaParse.keda.additionalAnnotations Additional annotations for the KEDA
+      additionalAnnotations: {}
+      ## @param temporalParse.llamaParse.keda.additionalLabels Additional labels for the KEDA
+      additionalLabels: {}
+      ## @param temporalParse.llamaParse.keda.pollingInterval Polling interval for the KEDA
+      pollingInterval: 15
+      ## @param temporalParse.llamaParse.keda.cooldownPeriod Cooldown period for the KEDA
+      cooldownPeriod: 120
+      ## @param temporalParse.llamaParse.keda.minReplicaCount Minimum number of replicas for the KEDA
+      minReplicaCount: 2
+      ## @param temporalParse.llamaParse.keda.maxReplicaCount Maximum number of replicas for the KEDA
+      maxReplicaCount: 10
+      ## @param temporalParse.llamaParse.keda.initialCooldownPeriod Initial cooldown period for the KEDA
+      initialCooldownPeriod: 0
+      ## @param temporalParse.llamaParse.keda.fallback Fallback for the KEDA
+      fallback: {}
+      ## @param temporalParse.llamaParse.keda.advanced Advanced configuration for the KEDA
+      advanced: {}
+      ## @param temporalParse.llamaParse.keda.triggers Triggers for the KEDA
+      ## This cannot be empty if .Values.temporalParse.llamaParse.keda.enabled is true
+      ## Default trigger uses Temporal scaler: https://keda.sh/docs/2.17/scalers/temporal/
+      ## NOTE: You must update the taskQueue value for your specific worker queue name
+      triggers:
+        - type: temporal
+          metadata:
+            taskQueue: "parse-activity-queue"
+            ## Target queue size (from k8sctl defaults: BaseScaledObjectConfig.target_queue_size)
+            targetQueueSize: "2"
+            ## Activation target queue size (from k8sctl defaults: BaseScaledObjectConfig.activation_target_queue_size)
+            activationTargetQueueSize: "0"
+            ## Temporal namespace (optional) - the Temporal workflow namespace, defaults to "default" if not set
+            ## Uncomment to specify a custom Temporal namespace:
+            # namespace: "default"
+            ## Temporal endpoint - dynamically resolves to internal or external temporal service
+            endpoint: "{{ printf \"%s:%s\" (include \"temporal.host\" .) (include \"temporal.port\" .) }}"
+
+    ## PodDisruptionBudget configuration
+    ## Ref: https://kubernetes.io/docs/tasks/run-application/configure-pdb/
+    podDisruptionBudget:
+      ## @param temporalParse.llamaParse.podDisruptionBudget.enabled Enable PodDisruptionBudget for the Temporal Parse LlamaParse Deployment
+      ## @param temporalParse.llamaParse.podDisruptionBudget.maxUnavailable Maximum number of unavailable pods
+      enabled: true
+      maxUnavailable: 1
+
+    ## @param temporalParse.llamaParse.volumes List of volumes that can be mounted by containers belonging to the pod
+    ## @param temporalParse.llamaParse.volumeMounts List of volumeMounts that can be mounted by containers belonging to the pod
+    ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-volume-storage/
+    volumes: []
+    volumeMounts: []
+
+    ## @param temporalParse.llamaParse.nodeSelector Node labels for pod assignment
+    ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
+    nodeSelector: {}
+
+    ## @param temporalParse.llamaParse.tolerations Taints to tolerate on node assignment:
+    ## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+    tolerations: []
+
+    ## @param temporalParse.llamaParse.affinity Pod scheduling constraints
+    ## Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
+    affinity: {}
+
+    metrics:
+      ## @param temporalParse.llamaParse.metrics.enabled Enable metrics for the Temporal Parse llamaParse
+      enabled: false
+      serviceMonitor:
+        ## @param temporalParse.llamaParse.metrics.serviceMonitor.enabled Enable service monitor for the Temporal Parse llamaParse
+        enabled: false
+        ## @param temporalParse.llamaParse.metrics.serviceMonitor.selector Selector for the service monitor
+        selector: {}
+        ## @param temporalParse.llamaParse.metrics.serviceMonitor.additionalLabels Additional labels for the service monitor
+        additionalLabels: {}
+        ## @param temporalParse.llamaParse.metrics.serviceMonitor.annotations Annotations for the service monitor
+        annotations: {}
+        ## @param temporalParse.llamaParse.metrics.serviceMonitor.interval Interval for the service monitor
+        interval: 30s
+        ## @param temporalParse.llamaParse.metrics.serviceMonitor.scrapeTimeout Timeout for the service monitor
+        scrapeTimeout: 15s
+        ## @param temporalParse.llamaParse.metrics.serviceMonitor.relabelings Relabelings for the service monitor
+        relabelings: []
+        ## @param temporalParse.llamaParse.metrics.serviceMonitor.metricRelabelings Metric relabelings for the service monitor
+        metricRelabelings: []
+        ## @param temporalParse.llamaParse.metrics.serviceMonitor.scheme Scheme for the service monitor
+        scheme: http
+        ## @param temporalParse.llamaParse.metrics.serviceMonitor.tlsConfig TLS configuration for the service monitor
+        tlsConfig: {}
+
+      rules:
+        ## @param temporalParse.llamaParse.metrics.rules.enabled Enable rules for the Temporal Parse llamaParse
+        enabled: false
+        ## @param temporalParse.llamaParse.metrics.rules.namespace Namespace for the rules
+        namespace: ""
+        ## @param temporalParse.llamaParse.metrics.rules.additionalLabels Additional labels for the rules
+        additionalLabels: {}
+        ## @param temporalParse.llamaParse.metrics.rules.annotations Annotations for the rules
+        annotations: {}
+        ## @param temporalParse.llamaParse.metrics.rules.spec Rules spec
+        spec: []
+
+  parseDelegate:
+    ## @param temporalParse.parseDelegate.name Name suffix of the Temporal Parse Delegate related resources
+    name: temporal-parse-delegate
+
+    ## @param temporalParse.parseDelegate.command Command to run in the container
+    command: ["temporal_parse_delegate"]
+
+    ## @param temporalParse.parseDelegate.replicas Number of replicas of Temporal Parse Delegate Deployment
+    replicas: 1
+
+    ## Temporal Parse Delegate configuration
+    ## @param temporalParse.parseDelegate.config.logLevel Log level for the Temporal Parse Delegate
+    config:
+      logLevel: "info"
+
+    ## Temporal Parse Delegate Image information
+    ## @param temporalParse.parseDelegate.image.registry Temporal Parse Delegate Image registry
+    ## @param temporalParse.parseDelegate.image.repository Temporal Parse Delegate Image repository
+    ## @param temporalParse.parseDelegate.image.tag Temporal Parse Delegate Image tag
+    ## @param temporalParse.parseDelegate.image.pullPolicy Temporal Parse Delegate Image pull policy
+    image:
+      registry: docker.io
+      repository: llamaindex/llamacloud-backend
+      tag: 0.5.7
+      pullPolicy: IfNotPresent
+
+    ## ServiceAccount configuration
+    ## @param temporalParse.parseDelegate.serviceAccount.create Whether or not to create a new service account
+    ## @param temporalParse.parseDelegate.serviceAccount.name Name of the service account
+    ## @param temporalParse.parseDelegate.serviceAccount.labels Labels to add to the service account
+    ## @param temporalParse.parseDelegate.serviceAccount.annotations Annotations to add to the service account
+    ## @param temporalParse.parseDelegate.serviceAccount.automountServiceAccountToken Whether or not to automount the service account token
+    serviceAccount:
+      create: true
+      name: ""
+      labels: {}
+      annotations: {}
+      automountServiceAccountToken: true
+
+    ## @param temporalParse.parseDelegate.containerPort Port to expose on the Temporal Parse Delegate container
+    ## Ref: https://kubernetes.io/docs/tutorials/services/connect-applications-service/#exposing-pods-to-the-cluster
+    containerPort: 8000
+
+    ## Temporal Parse Delegate Service information
+    ## @param temporalParse.parseDelegate.service.type Temporal Parse Delegate Service type
+    ## @param temporalParse.parseDelegate.service.port Temporal Parse Delegate Service port
+    ## @param temporalParse.parseDelegate.service.labels Labels to add to the service
+    ## @param temporalParse.parseDelegate.service.annotations Annotations to add to the service
+    service:
+      type: ClusterIP
+      port: 8000
+      labels: {}
+      annotations: {}
+
+    ## @param temporalParse.parseDelegate.labels Labels added to the Temporal Parse Delegate Deployment.
+    labels: {}
+    ## @param temporalParse.parseDelegate.annotations Annotations added to the Temporal Parse Delegate Deployment.
+    annotations: {}
+
+    ## @param temporalParse.parseDelegate.extraEnvVariables Extra environment variables to add to Temporal Parse Delegate pods
+    ## Example:
+    ## extraEnvVariables:
+    ##   - name: FOO
+    ##     value: BAR
+    extraEnvVariables: []
+
+    ## External Secrets Configuration
+    ## @param temporalParse.parseDelegate.externalSecrets.enabled Enable external secrets for the Temporal Parse Delegate Deployment
+    ## @param temporalParse.parseDelegate.externalSecrets.secrets List of external secrets to load environment variables from
+    externalSecrets:
+      enabled: false
+      ## ["secret-1", "secret-2"]
+      secrets: []
+
+    ## @param temporalParse.parseDelegate.podAnnotations Annotations to add to the resulting Pods of the Deployment.
+    podAnnotations: {}
+
+    ## @param temporalParse.parseDelegate.podLabels Labels to add to the resulting Pods of the Deployment.
+    podLabels: {}
+
+    ## @param temporalParse.parseDelegate.podSecurityContext Pod security context
+    podSecurityContext: {}
+
+    ## @param temporalParse.parseDelegate.securityContext Security context for the container
+    securityContext: {}
+    #  runAsUser: 1000
+    #  runAsGroup: 1000
+
+    ## @param temporalParse.parseDelegate.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
+    ## Ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+    resources: {}
+      ## To use the recommended values, uncomment the following lines and remove the curly braces after 'resources:'
+      # requests:
+      #   cpu: 1
+      #   memory: 1Gi
+      # limits:
+      #   cpu: 2
+      #   memory: 2Gi
+
+    ## Temporal Parse Delegate Liveness probe configuration
+    livenessProbe:
+      ## @param temporalParse.parseDelegate.livenessProbe.httpGet.path Path to hit for the liveness probe
+      ## @param temporalParse.parseDelegate.livenessProbe.httpGet.port Port to hit for the liveness probe
+      ## @param temporalParse.parseDelegate.livenessProbe.periodSeconds How often (in seconds) to perform the probe
+      ## @param temporalParse.parseDelegate.livenessProbe.timeoutSeconds Number of seconds after which the probe times out
+      ## @param temporalParse.parseDelegate.livenessProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
+      httpGet:
+        path: /healthcheck
+        port: 8000
+      periodSeconds: 30
+      timeoutSeconds: 10
+      failureThreshold: 5
+
+    ## Temporal Parse Delegate HorizontalPodAutoScaler configuration
+    ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/
+    ## The HPA scales by the target CPU utilization percentage by default
+    ## Uncomment the targetMemoryUtilizationPercentage line below to scale by memory utilization
+    autoscaling:
+      ## @param temporalParse.parseDelegate.autoscaling.enabled Enable autoscaling for the Temporal Parse Delegate Deployment
+      ## @param temporalParse.parseDelegate.autoscaling.minReplicas Minimum number of replicas for the Temporal Parse Delegate Deployment
+      ## @param temporalParse.parseDelegate.autoscaling.maxReplicas Maximum number of replicas for the Temporal Parse Delegate Deployment
+      ## @param temporalParse.parseDelegate.autoscaling.targetCPUUtilizationPercentage Target CPU utilization percentage for the Temporal Parse Delegate Deployment
+      enabled: false
+      minReplicas: 1
+      maxReplicas: 4
+      targetCPUUtilizationPercentage: 80
+      # targetMemoryUtilizationPercentage: 80
+
+    ## KEDA based autoscaling for Temporal Parse Delegate Deployment
+    ## Ref: https://keda.sh
+    ## Note: .Values.temporalParse.parseDelegate.autoscaling.enabled must be false for KEDA to be enabled
+    keda:
+      ## @param temporalParse.parseDelegate.keda.enabled Enable KEDA for the Temporal Parse Delegate Deployment
+      enabled: false
+      ## @param temporalParse.parseDelegate.keda.additionalAnnotations Additional annotations for the KEDA
+      additionalAnnotations: {}
+      ## @param temporalParse.parseDelegate.keda.additionalLabels Additional labels for the KEDA
+      additionalLabels: {}
+      ## @param temporalParse.parseDelegate.keda.pollingInterval Polling interval for the KEDA
+      pollingInterval: 15
+      ## @param temporalParse.parseDelegate.keda.cooldownPeriod Cooldown period for the KEDA
+      cooldownPeriod: 120
+      ## @param temporalParse.parseDelegate.keda.minReplicaCount Minimum number of replicas for the KEDA
+      minReplicaCount: 2
+      ## @param temporalParse.parseDelegate.keda.maxReplicaCount Maximum number of replicas for the KEDA
+      maxReplicaCount: 10
+      ## @param temporalParse.parseDelegate.keda.initialCooldownPeriod Initial cooldown period for the KEDA
+      initialCooldownPeriod: 0
+      ## @param temporalParse.parseDelegate.keda.fallback Fallback configuration for the KEDA
+      ## Ref: https://keda.sh/docs/2.10/concepts/scaling-deployments/#fallback
+      fallback: {}
+        # failureThreshold: 3
+        # replicas: 6
+      ## @param temporalParse.parseDelegate.keda.advanced Advanced configuration for the KEDA
+      ## Ref: https://keda.sh/docs/2.10/concepts/scaling-deployments/#advanced
+      advanced: {}
+      ## @param temporalParse.parseDelegate.keda.triggers Triggers for the KEDA
+      ## Default trigger uses Temporal scaler: https://keda.sh/docs/2.17/scalers/temporal/
+      ## NOTE: You must update the taskQueue value for your specific worker queue name
+      triggers:
+        - type: temporal
+          metadata:
+            ## TODO: Update this to your worker's task queue name
+            taskQueue: "TODO-parse-delegate-queue"
+            ## Target queue size (from k8sctl defaults: BaseScaledObjectConfig.target_queue_size)
+            targetQueueSize: "2"
+            ## Activation target queue size (from k8sctl defaults: BaseScaledObjectConfig.activation_target_queue_size)
+            activationTargetQueueSize: "0"
+            ## Temporal namespace (optional) - the Temporal workflow namespace, defaults to "default" if not set
+            ## Uncomment to specify a custom Temporal namespace:
+            # namespace: "default"
+            ## Temporal endpoint - dynamically resolves to internal or external temporal service
+            endpoint: "{{ printf \"%s:%s\" (include \"temporal.host\" .) (include \"temporal.port\" .) }}"
+
+    ## Prometheus Metrics Configuration
+    metrics:
+      ## @param temporalParse.parseDelegate.metrics.enabled Enable exposing metrics to be gathered by Prometheus
+      enabled: false
+      serviceMonitor:
+        ## @param temporalParse.parseDelegate.metrics.serviceMonitor.enabled Create ServiceMonitor resource for scraping metrics using PrometheusOperator
+        enabled: false
+        ## @param temporalParse.parseDelegate.metrics.serviceMonitor.selector ServiceMonitor selector for the labels to be scraped
+        selector: {}
+        ## @param temporalParse.parseDelegate.metrics.serviceMonitor.additionalLabels Used to pass Labels that are used by the Prometheus installed in your cluster to select Service Monitors to work with
+        additionalLabels: {}
+        ## @param temporalParse.parseDelegate.metrics.serviceMonitor.annotations ServiceMonitor annotations
+        annotations: {}
+        ## @param temporalParse.parseDelegate.metrics.serviceMonitor.interval Interval at which metrics should be scraped
+        interval: 30s
+        ## @param temporalParse.parseDelegate.metrics.serviceMonitor.scrapeTimeout Specify the timeout after which the scrape is ended
+        scrapeTimeout: 15s
+        ## @param temporalParse.parseDelegate.metrics.serviceMonitor.relabelings RelabelConfigs to apply to samples before scraping
+        relabelings: []
+        ## @param temporalParse.parseDelegate.metrics.serviceMonitor.metricRelabelings MetricRelabelConfigs to apply to samples before ingestion
+        metricRelabelings: []
+        ## @param temporalParse.parseDelegate.metrics.serviceMonitor.scheme HTTP scheme to use for scraping
+        scheme: http
+        ## @param temporalParse.parseDelegate.metrics.serviceMonitor.tlsConfig TLS configuration to use when scraping the endpoint
+        tlsConfig: {}
+
+    ## @param temporalParse.parseDelegate.volumes List of volumes that can be mounted by containers belonging to the pod
+    ## @param temporalParse.parseDelegate.volumeMounts List of volumeMounts that can be mounted by containers belonging to the pod
+    ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-volume-storage/
+    volumes: []
+    volumeMounts: []
+
+    ## @param temporalParse.parseDelegate.nodeSelector Node labels for pod assignment
+    ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
+    nodeSelector: {}
+
+    ## @param temporalParse.parseDelegate.tolerations Taints to tolerate on node assignment:
+    ## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+    tolerations: []
+
+    ## @param temporalParse.parseDelegate.affinity Pod scheduling constraints
+    ## Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
+    affinity: {}
+
+  parseScreenshotPDFs:
+    ## @param temporalParse.parseScreenshotPDFs.name Name suffix of the Temporal Parse Screenshot PDFs related resources
+    name: temporal-parse-screenshot-pdfs
+
+    ## @param temporalParse.parseScreenshotPDFs.command Command to run in the container
+    command: ["temporal_parse_screenshots_pdf"]
+
+    ## @param temporalParse.parseScreenshotPDFs.replicas Number of replicas of Temporal Parse Screenshot PDFs Deployment
+    replicas: 1
+
+    ## Temporal Parse Screenshot PDFs configuration
+    ## @param temporalParse.parseScreenshotPDFs.config.logLevel Log level for the Temporal Parse Screenshot PDFs
+    config:
+      logLevel: "info"
+
+    ## Temporal Parse Screenshot PDFs Image information
+    ## @param temporalParse.parseScreenshotPDFs.image.registry Temporal Parse Screenshot PDFs Image registry
+    ## @param temporalParse.parseScreenshotPDFs.image.repository Temporal Parse Screenshot PDFs Image repository
+    ## @param temporalParse.parseScreenshotPDFs.image.tag Temporal Parse Screenshot PDFs Image tag
+    ## @param temporalParse.parseScreenshotPDFs.image.pullPolicy Temporal Parse Screenshot PDFs Image pull policy
+    image:
+      registry: docker.io
+      repository: llamaindex/llamacloud-backend
+      tag: 0.5.7
+      pullPolicy: IfNotPresent
+
+    ## ServiceAccount configuration
+    ## @param temporalParse.parseScreenshotPDFs.serviceAccount.create Whether or not to create a new service account
+    ## @param temporalParse.parseScreenshotPDFs.serviceAccount.name Name of the service account
+    ## @param temporalParse.parseScreenshotPDFs.serviceAccount.labels Labels to add to the service account
+    ## @param temporalParse.parseScreenshotPDFs.serviceAccount.annotations Annotations to add to the service account
+    ## @param temporalParse.parseScreenshotPDFs.serviceAccount.automountServiceAccountToken Whether or not to automount the service account token
+    serviceAccount:
+      create: true
+      name: ""
+      labels: {}
+      annotations: {}
+      automountServiceAccountToken: true
+
+    ## @param temporalParse.parseScreenshotPDFs.containerPort Port to expose on the Temporal Parse Screenshot PDFs container
+    ## Ref: https://kubernetes.io/docs/tutorials/services/connect-applications-service/#exposing-pods-to-the-cluster
+    containerPort: 8000
+
+    ## Temporal Parse Screenshot PDFs Service information
+    ## @param temporalParse.parseScreenshotPDFs.service.type Temporal Parse Screenshot PDFs Service type
+    ## @param temporalParse.parseScreenshotPDFs.service.port Temporal Parse Screenshot PDFs Service port
+    ## @param temporalParse.parseScreenshotPDFs.service.labels Labels to add to the service
+    ## @param temporalParse.parseScreenshotPDFs.service.annotations Annotations to add to the service
+    service:
+      type: ClusterIP
+      port: 8000
+      labels: {}
+      annotations: {}
+
+    ## @param temporalParse.parseScreenshotPDFs.labels Labels added to the Temporal Parse Screenshot PDFs Deployment.
+    labels: {}
+    ## @param temporalParse.parseScreenshotPDFs.annotations Annotations added to the Temporal Parse Screenshot PDFs Deployment.
+    annotations: {}
+
+    ## @param temporalParse.parseScreenshotPDFs.extraEnvVariables Extra environment variables to add to Temporal Parse Screenshot PDFs pods
+    ## Example:
+    ## extraEnvVariables:
+    ##   - name: FOO
+    ##     value: BAR
+    extraEnvVariables: []
+
+    ## External Secrets Configuration
+    ## @param temporalParse.parseScreenshotPDFs.externalSecrets.enabled Enable external secrets for the Temporal Parse Screenshot PDFs Deployment
+    ## @param temporalParse.parseScreenshotPDFs.externalSecrets.secrets List of external secrets to load environment variables from
+    externalSecrets:
+      enabled: false
+      ## ["secret-1", "secret-2"]
+      secrets: []
+
+    ## @param temporalParse.parseScreenshotPDFs.podAnnotations Annotations to add to the resulting Pods of the Deployment.
+    podAnnotations: {}
+
+    ## @param temporalParse.parseScreenshotPDFs.podLabels Labels to add to the resulting Pods of the Deployment.
+    podLabels: {}
+
+    ## @param temporalParse.parseScreenshotPDFs.podSecurityContext Pod security context
+    podSecurityContext: {}
+
+    ## @param temporalParse.parseScreenshotPDFs.securityContext Security context for the container
+    securityContext: {}
+    #  runAsUser: 1000
+    #  runAsGroup: 1000
+
+    ## @param temporalParse.parseScreenshotPDFs.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
+    ## Ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+    resources: {}
+      ## To use the recommended values, uncomment the following lines and remove the curly braces after 'resources:'
+      # requests:
+      #   cpu: 1
+      #   memory: 1Gi
+      # limits:
+      #   cpu: 2
+      #   memory: 2Gi
+
+    ## Temporal Parse Screenshot PDFs Liveness probe configuration
+    livenessProbe:
+      ## @param temporalParse.parseScreenshotPDFs.livenessProbe.httpGet.path Path to hit for the liveness probe
+      ## @param temporalParse.parseScreenshotPDFs.livenessProbe.httpGet.port Port to hit for the liveness probe
+      ## @param temporalParse.parseScreenshotPDFs.livenessProbe.periodSeconds How often (in seconds) to perform the probe
+      ## @param temporalParse.parseScreenshotPDFs.livenessProbe.timeoutSeconds Number of seconds after which the probe times out
+      ## @param temporalParse.parseScreenshotPDFs.livenessProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
+      httpGet:
+        path: /healthcheck
+        port: 8000
+      periodSeconds: 30
+      timeoutSeconds: 10
+      failureThreshold: 5
+
+    ## Temporal Parse Screenshot PDFs HorizontalPodAutoScaler configuration
+    ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/
+    ## The HPA scales by the target CPU utilization percentage by default
+    ## Uncomment the targetMemoryUtilizationPercentage line below to scale by memory utilization
+    autoscaling:
+      ## @param temporalParse.parseScreenshotPDFs.autoscaling.enabled Enable autoscaling for the Temporal Parse Screenshot PDFs Deployment
+      ## @param temporalParse.parseScreenshotPDFs.autoscaling.minReplicas Minimum number of replicas for the Temporal Parse Screenshot PDFs Deployment
+      ## @param temporalParse.parseScreenshotPDFs.autoscaling.maxReplicas Maximum number of replicas for the Temporal Parse Screenshot PDFs Deployment
+      ## @param temporalParse.parseScreenshotPDFs.autoscaling.targetCPUUtilizationPercentage Target CPU utilization percentage for the Temporal Parse Screenshot PDFs Deployment
+      enabled: false
+      minReplicas: 1
+      maxReplicas: 4
+      targetCPUUtilizationPercentage: 80
+      # targetMemoryUtilizationPercentage: 80
+
+    ## KEDA based autoscaling for Temporal Parse Screenshot PDFs Deployment
+    ## Ref: https://keda.sh
+    ## Note: .Values.temporalParse.parseScreenshotPDFs.autoscaling.enabled must be false for KEDA to be enabled
+    keda:
+      ## @param temporalParse.parseScreenshotPDFs.keda.enabled Enable KEDA for the Temporal Parse Screenshot PDFs Deployment
+      enabled: false
+      ## @param temporalParse.parseScreenshotPDFs.keda.additionalAnnotations Additional annotations for the KEDA
+      additionalAnnotations: {}
+      ## @param temporalParse.parseScreenshotPDFs.keda.additionalLabels Additional labels for the KEDA
+      additionalLabels: {}
+      ## @param temporalParse.parseScreenshotPDFs.keda.pollingInterval Polling interval for the KEDA
+      pollingInterval: 15
+      ## @param temporalParse.parseScreenshotPDFs.keda.cooldownPeriod Cooldown period for the KEDA
+      cooldownPeriod: 120
+      ## @param temporalParse.parseScreenshotPDFs.keda.minReplicaCount Minimum number of replicas for the KEDA
+      minReplicaCount: 2
+      ## @param temporalParse.parseScreenshotPDFs.keda.maxReplicaCount Maximum number of replicas for the KEDA
+      maxReplicaCount: 10
+      ## @param temporalParse.parseScreenshotPDFs.keda.initialCooldownPeriod Initial cooldown period for the KEDA
+      initialCooldownPeriod: 0
+      ## @param temporalParse.parseScreenshotPDFs.keda.fallback Fallback configuration for the KEDA
+      ## Ref: https://keda.sh/docs/2.10/concepts/scaling-deployments/#fallback
+      fallback: {}
+        # failureThreshold: 3
+        # replicas: 6
+      ## @param temporalParse.parseScreenshotPDFs.keda.advanced Advanced configuration for the KEDA
+      ## Ref: https://keda.sh/docs/2.10/concepts/scaling-deployments/#advanced
+      advanced: {}
+      ## @param temporalParse.parseScreenshotPDFs.keda.triggers Triggers for the KEDA
+      ## Default trigger uses Temporal scaler: https://keda.sh/docs/2.17/scalers/temporal/
+      ## NOTE: You must update the taskQueue value for your specific worker queue name
+      triggers:
+        - type: temporal
+          metadata:
+            ## TODO: Update this to your worker's task queue name
+            taskQueue: "TODO-parse-screenshot-pdfs-queue"
+            ## Target queue size (from k8sctl defaults: BaseScaledObjectConfig.target_queue_size)
+            targetQueueSize: "2"
+            ## Activation target queue size (from k8sctl defaults: BaseScaledObjectConfig.activation_target_queue_size)
+            activationTargetQueueSize: "0"
+            ## Temporal namespace (optional) - the Temporal workflow namespace, defaults to "default" if not set
+            ## Uncomment to specify a custom Temporal namespace:
+            # namespace: "default"
+            ## Temporal endpoint - dynamically resolves to internal or external temporal service
+            endpoint: "{{ printf \"%s:%s\" (include \"temporal.host\" .) (include \"temporal.port\" .) }}"
+
+    ## Prometheus Metrics Configuration
+    metrics:
+      ## @param temporalParse.parseScreenshotPDFs.metrics.enabled Enable exposing metrics to be gathered by Prometheus
+      enabled: false
+      serviceMonitor:
+        ## @param temporalParse.parseScreenshotPDFs.metrics.serviceMonitor.enabled Create ServiceMonitor resource for scraping metrics using PrometheusOperator
+        enabled: false
+        ## @param temporalParse.parseScreenshotPDFs.metrics.serviceMonitor.selector ServiceMonitor selector for the labels to be scraped
+        selector: {}
+        ## @param temporalParse.parseScreenshotPDFs.metrics.serviceMonitor.additionalLabels Used to pass Labels that are used by the Prometheus installed in your cluster to select Service Monitors to work with
+        additionalLabels: {}
+        ## @param temporalParse.parseScreenshotPDFs.metrics.serviceMonitor.annotations ServiceMonitor annotations
+        annotations: {}
+        ## @param temporalParse.parseScreenshotPDFs.metrics.serviceMonitor.interval Interval at which metrics should be scraped
+        interval: 30s
+        ## @param temporalParse.parseScreenshotPDFs.metrics.serviceMonitor.scrapeTimeout Specify the timeout after which the scrape is ended
+        scrapeTimeout: 15s
+        ## @param temporalParse.parseScreenshotPDFs.metrics.serviceMonitor.relabelings RelabelConfigs to apply to samples before scraping
+        relabelings: []
+        ## @param temporalParse.parseScreenshotPDFs.metrics.serviceMonitor.metricRelabelings MetricRelabelConfigs to apply to samples before ingestion
+        metricRelabelings: []
+        ## @param temporalParse.parseScreenshotPDFs.metrics.serviceMonitor.scheme HTTP scheme to use for scraping
+        scheme: http
+        ## @param temporalParse.parseScreenshotPDFs.metrics.serviceMonitor.tlsConfig TLS configuration to use when scraping the endpoint
+        tlsConfig: {}
+
+    ## @param temporalParse.parseScreenshotPDFs.volumes List of volumes that can be mounted by containers belonging to the pod
+    ## @param temporalParse.parseScreenshotPDFs.volumeMounts List of volumeMounts that can be mounted by containers belonging to the pod
+    ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-volume-storage/
+    volumes: []
+    volumeMounts: []
+
+    ## @param temporalParse.parseScreenshotPDFs.nodeSelector Node labels for pod assignment
+    ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
+    nodeSelector: {}
+
+    ## @param temporalParse.parseScreenshotPDFs.tolerations Taints to tolerate on node assignment:
+    ## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+    tolerations: []
+
+    ## @param temporalParse.parseScreenshotPDFs.affinity Pod scheduling constraints
+    ## Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
+    affinity: {}
+
+## @section Temporal Jobs Service Configuration
+temporalJobsService:
+  api:
+    ## @param temporalJobsService.api.name Name suffix of the Temporal Jobs Service API related resources
+    name: temporal-jobs-api
+
+    ## @param temporalJobsService.api.command Command to run in the container
+    command: ["start_jobs_api"]
+
+    ## @param temporalJobsService.api.replicas Number of replicas of Temporal Jobs Service API Deployment
+    replicas: 1
+
+    ## Temporal Jobs Service API configuration
+    ## @param temporalJobsService.api.config.logLevel Log level for the Temporal Jobs Service API
+    config:
+      logLevel: "info"
+
+    ## Temporal Jobs Service API Image information
+    ## @param temporalJobsService.api.image.registry Temporal Jobs Service API Image registry
+    ## @param temporalJobsService.api.image.repository Temporal Jobs Service API Image repository
+    ## @param temporalJobsService.api.image.tag Temporal Jobs Service API Image tag
+    ## @param temporalJobsService.api.image.pullPolicy Temporal Jobs Service API Image pull policy
+    image:
+      registry: docker.io
+      repository: llamaindex/llamacloud-backend
+      tag: 0.5.7
+      pullPolicy: IfNotPresent
+
+    ## ServiceAccount configuration
+    ## @param temporalJobsService.api.serviceAccount.create Whether or not to create a new service account
+    ## @param temporalJobsService.api.serviceAccount.name Name of the service account
+    ## @param temporalJobsService.api.serviceAccount.labels Labels to add to the service account
+    ## @param temporalJobsService.api.serviceAccount.annotations Annotations to add to the service account
+    ## @param temporalJobsService.api.serviceAccount.automountServiceAccountToken Whether or not to automount the service account token
+    serviceAccount:
+      create: true
+      name: ""
+      labels: {}
+      annotations: {}
+      automountServiceAccountToken: true
+
+    ## @param temporalJobsService.api.containerPort Port to expose on the Temporal Jobs Service API container
+    ## Ref: https://kubernetes.io/docs/tutorials/services/connect-applications-service/#exposing-pods-to-the-cluster
+    containerPort: 8002
+
+    ## Temporal Jobs Service API Service information
+    ## @param temporalJobsService.api.service.type Temporal Jobs Service API Service type
+    ## @param temporalJobsService.api.service.port Temporal Jobs Service API Service port
+    ## @param temporalJobsService.api.service.labels Labels to add to the service
+    ## @param temporalJobsService.api.service.annotations Annotations to add to the service
+    service:
+      type: ClusterIP
+      port: 8002
+      labels: {}
+      annotations: {}
+
+    ## @param temporalJobsService.api.labels Labels added to the Temporal Jobs Service API Deployment.
+    labels: {}
+    ## @param temporalJobsService.api.annotations Annotations added to the Temporal Jobs Service API Deployment.
+    annotations: {}
+
+    ## @param temporalJobsService.api.extraEnvVariables Extra environment variables to add to Temporal Jobs Service API pods
+    ## Example:
+    ## extraEnvVariables:
+    ##   - name: FOO
+    ##     value: BAR
+    extraEnvVariables: []
+
+    ## External Secrets Configuration
+    ## @param temporalJobsService.api.externalSecrets.enabled Enable external secrets for the Temporal Jobs Service API Deployment
+    ## @param temporalJobsService.api.externalSecrets.secrets List of external secrets to load environment variables from
+    externalSecrets:
+      enabled: false
+      ## ["secret-1", "secret-2"]
+      secrets: []
+
+    ## @param temporalJobsService.api.podAnnotations Annotations to add to the resulting Pods of the Deployment.
+    podAnnotations: {}
+
+    ## @param temporalJobsService.api.podLabels Labels to add to the resulting Pods of the Deployment.
+    podLabels: {}
+
+    ## @param temporalJobsService.api.podSecurityContext Pod security context
+    podSecurityContext: {}
+
+    ## @param temporalJobsService.api.securityContext Security context for the container
+    securityContext: {}
+    #  runAsUser: 1000
+    #  runAsGroup: 1000
+
+    ## @param temporalJobsService.api.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
+    ## Ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+    resources: {}
+      ## To use the recommended values, uncomment the following lines and remove the curly braces after 'resources:'
+      # requests:
+      #   cpu: 1
+      #   memory: 1Gi
+      # limits:
+      #   cpu: 2
+      #   memory: 2Gi
+
+    ## Temporal Jobs Service API Liveness probe configuration
+    livenessProbe:
+      ## @param temporalJobsService.api.livenessProbe.httpGet.path Path to hit for the liveness probe
+      ## @param temporalJobsService.api.livenessProbe.httpGet.port Port to hit for the liveness probe
+      httpGet:
+        path: /healthcheck
+        port: tj-api-http
+
+    ## Temporal Jobs Service API Readiness probe configuration
+    readinessProbe:
+      ## @param temporalJobsService.api.readinessProbe.httpGet.path Path to hit for the readiness probe
+      ## @param temporalJobsService.api.readinessProbe.httpGet.port Port to hit for the readiness probe
+      httpGet:
+        path: /healthcheck
+        port: tj-api-http
+
+    ## Temporal Jobs Service API Startup probe configuration
+    startupProbe:
+      ## @param temporalJobsService.api.startupProbe.httpGet.path Path to hit for the startup probe
+      ## @param temporalJobsService.api.startupProbe.httpGet.port Port to hit for the startup probe
+      httpGet:
+        path: /healthcheck
+        port: tj-api-http
+
+    ## Temporal Jobs Service API HorizontalPodAutoScaler configuration
+    ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/
+    ## The HPA scales by the target CPU utilization percentage by default
+    ## Uncomment the targetMemoryUtilizationPercentage line below to scale by memory utilization
+    autoscaling:
+      ## @param temporalJobsService.api.autoscaling.enabled Enable autoscaling for the Temporal Jobs Service API Deployment
+      ## @param temporalJobsService.api.autoscaling.minReplicas Minimum number of replicas for the Temporal Jobs Service API Deployment
+      ## @param temporalJobsService.api.autoscaling.maxReplicas Maximum number of replicas for the Temporal Jobs Service API Deployment
+      ## @param temporalJobsService.api.autoscaling.targetCPUUtilizationPercentage Target CPU utilization percentage for the Temporal Jobs Service API Deployment
+      enabled: false
+      minReplicas: 1
+      maxReplicas: 4
+      targetCPUUtilizationPercentage: 80
+      # targetMemoryUtilizationPercentage: 80
+
+    ## @param temporalJobsService.api.volumes List of volumes that can be mounted by containers belonging to the pod
+    ## @param temporalJobsService.api.volumeMounts List of volumeMounts that can be mounted by containers belonging to the pod
+    ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-volume-storage/
+    volumes: []
+    volumeMounts: []
+
+    ## @param temporalJobsService.api.nodeSelector Node labels for pod assignment
+    ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
+    nodeSelector: {}
+
+    ## @param temporalJobsService.api.tolerations Taints to tolerate on node assignment:
+    ## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+    tolerations: []
+
+    ## @param temporalJobsService.api.affinity Pod scheduling constraints
+    ## Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
+    affinity: {}
+
+  jobsServiceWorker:
+    ## @param temporalJobsService.jobsServiceWorker.name Name suffix of the Temporal Jobs Service Worker related resources
+    name: temporal-jobs-service
+
+    ## @param temporalJobsService.jobsServiceWorker.command Command to run in the container
+    command: ["temporal_jobs_service"]
+
+    ## @param temporalJobsService.jobsServiceWorker.replicas Number of replicas of Temporal Jobs Service Worker Deployment
+    replicas: 1
+
+    ## Temporal Jobs Service Worker configuration
+    ## @param temporalJobsService.jobsServiceWorker.config.logLevel Log level for the Temporal Jobs Service Worker
+    config:
+      logLevel: "info"
+
+    ## Temporal Jobs Service Worker Image information
+    ## @param temporalJobsService.jobsServiceWorker.image.registry Temporal Jobs Service Worker Image registry
+    ## @param temporalJobsService.jobsServiceWorker.image.repository Temporal Jobs Service Worker Image repository
+    ## @param temporalJobsService.jobsServiceWorker.image.tag Temporal Jobs Service Worker Image tag
+    ## @param temporalJobsService.jobsServiceWorker.image.pullPolicy Temporal Jobs Service Worker Image pull policy
+    image:
+      registry: docker.io
+      repository: llamaindex/llamacloud-backend
+      tag: 0.5.7
+      pullPolicy: IfNotPresent
+
+    ## ServiceAccount configuration
+    ## @param temporalJobsService.jobsServiceWorker.serviceAccount.create Whether or not to create a new service account
+    ## @param temporalJobsService.jobsServiceWorker.serviceAccount.name Name of the service account
+    ## @param temporalJobsService.jobsServiceWorker.serviceAccount.labels Labels to add to the service account
+    ## @param temporalJobsService.jobsServiceWorker.serviceAccount.annotations Annotations to add to the service account
+    ## @param temporalJobsService.jobsServiceWorker.serviceAccount.automountServiceAccountToken Whether or not to automount the service account token
+    serviceAccount:
+      create: true
+      name: ""
+      labels: {}
+      annotations: {}
+      automountServiceAccountToken: true
+
+    ## @param temporalJobsService.jobsServiceWorker.containerPort Port to expose on the Temporal Jobs Service Worker container
+    ## Ref: https://kubernetes.io/docs/tutorials/services/connect-applications-service/#exposing-pods-to-the-cluster
+    containerPort: 8000
+
+    ## Temporal Jobs Service Worker Service information
+    ## @param temporalJobsService.jobsServiceWorker.service.type Temporal Jobs Service Worker Service type
+    ## @param temporalJobsService.jobsServiceWorker.service.port Temporal Jobs Service Worker Service port
+    ## @param temporalJobsService.jobsServiceWorker.service.labels Labels to add to the service
+    ## @param temporalJobsService.jobsServiceWorker.service.annotations Annotations to add to the service
+    service:
+      type: ClusterIP
+      port: 8000
+      labels: {}
+      annotations: {}
+
+    ## @param temporalJobsService.jobsServiceWorker.labels Labels added to the Temporal Jobs Service Worker Deployment.
+    labels: {}
+    ## @param temporalJobsService.jobsServiceWorker.annotations Annotations added to the Temporal Jobs Service Worker Deployment.
+    annotations: {}
+
+    ## @param temporalJobsService.jobsServiceWorker.extraEnvVariables Extra environment variables to add to Temporal Jobs Service Worker pods
+    ## Example:
+    ## extraEnvVariables:
+    ##   - name: FOO
+    ##     value: BAR
+    extraEnvVariables: []
+
+    ## External Secrets Configuration
+    ## @param temporalJobsService.jobsServiceWorker.externalSecrets.enabled Enable external secrets for the Temporal Jobs Service Worker Deployment
+    ## @param temporalJobsService.jobsServiceWorker.externalSecrets.secrets List of external secrets to load environment variables from
+    externalSecrets:
+      enabled: false
+      ## ["secret-1", "secret-2"]
+      secrets: []
+
+    ## @param temporalJobsService.jobsServiceWorker.podAnnotations Annotations to add to the resulting Pods of the Deployment.
+    podAnnotations: {}
+
+    ## @param temporalJobsService.jobsServiceWorker.podLabels Labels to add to the resulting Pods of the Deployment.
+    podLabels: {}
+
+    ## @param temporalJobsService.jobsServiceWorker.podSecurityContext Pod security context
+    podSecurityContext: {}
+
+    ## @param temporalJobsService.jobsServiceWorker.securityContext Security context for the container
+    securityContext: {}
+    #  runAsUser: 1000
+    #  runAsGroup: 1000
+
+    ## @param temporalJobsService.jobsServiceWorker.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
+    ## Ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+    resources: {}
+      ## To use the recommended values, uncomment the following lines and remove the curly braces after 'resources:'
+      # requests:
+      #   cpu: 1
+      #   memory: 1Gi
+      # limits:
+      #   cpu: 2
+      #   memory: 2Gi
+
+    ## Temporal Jobs Service Worker Liveness probe configuration
+    livenessProbe:
+      ## @param temporalJobsService.jobsServiceWorker.livenessProbe.httpGet.path Path to hit for the liveness probe
+      ## @param temporalJobsService.jobsServiceWorker.livenessProbe.httpGet.port Port to hit for the liveness probe
+      ## @param temporalJobsService.jobsServiceWorker.livenessProbe.periodSeconds How often (in seconds) to perform the probe
+      ## @param temporalJobsService.jobsServiceWorker.livenessProbe.timeoutSeconds Number of seconds after which the probe times out
+      ## @param temporalJobsService.jobsServiceWorker.livenessProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
+      httpGet:
+        path: /healthcheck
+        port: 8000
+      periodSeconds: 30
+      timeoutSeconds: 10
+      failureThreshold: 5
+
+    ## Temporal Jobs Service Worker HorizontalPodAutoScaler configuration
+    ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/
+    ## The HPA scales by the target CPU utilization percentage by default
+    ## Uncomment the targetMemoryUtilizationPercentage line below to scale by memory utilization
+    autoscaling:
+      ## @param temporalJobsService.jobsServiceWorker.autoscaling.enabled Enable autoscaling for the Temporal Jobs Service Worker Deployment
+      ## @param temporalJobsService.jobsServiceWorker.autoscaling.minReplicas Minimum number of replicas for the Temporal Jobs Service Worker Deployment
+      ## @param temporalJobsService.jobsServiceWorker.autoscaling.maxReplicas Maximum number of replicas for the Temporal Jobs Service Worker Deployment
+      ## @param temporalJobsService.jobsServiceWorker.autoscaling.targetCPUUtilizationPercentage Target CPU utilization percentage for the Temporal Jobs Service Worker Deployment
+      enabled: false
+      minReplicas: 1
+      maxReplicas: 4
+      targetCPUUtilizationPercentage: 80
+      # targetMemoryUtilizationPercentage: 80
+
+    ## KEDA based autoscaling for Temporal Jobs Service Worker Deployment
+    ## Ref: https://keda.sh
+    ## Note: .Values.temporalJobsService.jobsServiceWorker.autoscaling.enabled must be false for KEDA to be enabled
+    keda:
+      ## @param temporalJobsService.jobsServiceWorker.keda.enabled Enable KEDA for the Temporal Jobs Service Worker Deployment
+      enabled: false
+      ## @param temporalJobsService.jobsServiceWorker.keda.additionalAnnotations Additional annotations for the KEDA
+      additionalAnnotations: {}
+      ## @param temporalJobsService.jobsServiceWorker.keda.additionalLabels Additional labels for the KEDA
+      additionalLabels: {}
+      ## @param temporalJobsService.jobsServiceWorker.keda.pollingInterval Polling interval for the KEDA
+      pollingInterval: 15
+      ## @param temporalJobsService.jobsServiceWorker.keda.cooldownPeriod Cooldown period for the KEDA
+      cooldownPeriod: 120
+      ## @param temporalJobsService.jobsServiceWorker.keda.minReplicaCount Minimum number of replicas for the KEDA
+      minReplicaCount: 2
+      ## @param temporalJobsService.jobsServiceWorker.keda.maxReplicaCount Maximum number of replicas for the KEDA
+      maxReplicaCount: 10
+      ## @param temporalJobsService.jobsServiceWorker.keda.initialCooldownPeriod Initial cooldown period for the KEDA
+      initialCooldownPeriod: 0
+      ## @param temporalJobsService.jobsServiceWorker.keda.fallback Fallback configuration for the KEDA
+      ## Ref: https://keda.sh/docs/2.10/concepts/scaling-deployments/#fallback
+      fallback: {}
+        # failureThreshold: 3
+        # replicas: 6
+      ## @param temporalJobsService.jobsServiceWorker.keda.advanced Advanced configuration for the KEDA
+      ## Ref: https://keda.sh/docs/2.10/concepts/scaling-deployments/#advanced
+      advanced: {}
+      ## @param temporalJobsService.jobsServiceWorker.keda.triggers Triggers for the KEDA
+      ## Default trigger uses Temporal scaler: https://keda.sh/docs/2.17/scalers/temporal/
+      ## NOTE: You must update the taskQueue value for your specific worker queue name
+      triggers:
+        - type: temporal
+          metadata:
+            ## TODO: Update this to your worker's task queue name
+            taskQueue: "TODO-jobs-service-queue"
+            ## Target queue size (from k8sctl defaults: BaseScaledObjectConfig.target_queue_size)
+            targetQueueSize: "2"
+            ## Activation target queue size (from k8sctl defaults: BaseScaledObjectConfig.activation_target_queue_size)
+            activationTargetQueueSize: "0"
+            ## Temporal namespace (optional) - the Temporal workflow namespace, defaults to "default" if not set
+            ## Uncomment to specify a custom Temporal namespace:
+            # namespace: "default"
+            ## Temporal endpoint - dynamically resolves to internal or external temporal service
+            endpoint: "{{ printf \"%s:%s\" (include \"temporal.host\" .) (include \"temporal.port\" .) }}"
+
+    ## Prometheus Metrics Configuration
+    metrics:
+      ## @param temporalJobsService.jobsServiceWorker.metrics.enabled Enable exposing metrics to be gathered by Prometheus
+      enabled: false
+      serviceMonitor:
+        ## @param temporalJobsService.jobsServiceWorker.metrics.serviceMonitor.enabled Create ServiceMonitor resource for scraping metrics using PrometheusOperator
+        enabled: false
+        ## @param temporalJobsService.jobsServiceWorker.metrics.serviceMonitor.selector ServiceMonitor selector for the labels to be scraped
+        selector: {}
+        ## @param temporalJobsService.jobsServiceWorker.metrics.serviceMonitor.additionalLabels Used to pass Labels that are used by the Prometheus installed in your cluster to select Service Monitors to work with
+        additionalLabels: {}
+        ## @param temporalJobsService.jobsServiceWorker.metrics.serviceMonitor.annotations ServiceMonitor annotations
+        annotations: {}
+        ## @param temporalJobsService.jobsServiceWorker.metrics.serviceMonitor.interval Interval at which metrics should be scraped
+        interval: 30s
+        ## @param temporalJobsService.jobsServiceWorker.metrics.serviceMonitor.scrapeTimeout Specify the timeout after which the scrape is ended
+        scrapeTimeout: 15s
+        ## @param temporalJobsService.jobsServiceWorker.metrics.serviceMonitor.relabelings RelabelConfigs to apply to samples before scraping
+        relabelings: []
+        ## @param temporalJobsService.jobsServiceWorker.metrics.serviceMonitor.metricRelabelings MetricRelabelConfigs to apply to samples before ingestion
+        metricRelabelings: []
+        ## @param temporalJobsService.jobsServiceWorker.metrics.serviceMonitor.scheme HTTP scheme to use for scraping
+        scheme: http
+        ## @param temporalJobsService.jobsServiceWorker.metrics.serviceMonitor.tlsConfig TLS configuration to use when scraping the endpoint
+        tlsConfig: {}
+
+    ## @param temporalJobsService.jobsServiceWorker.volumes List of volumes that can be mounted by containers belonging to the pod
+    ## @param temporalJobsService.jobsServiceWorker.volumeMounts List of volumeMounts that can be mounted by containers belonging to the pod
+    ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-volume-storage/
+    volumes: []
+    volumeMounts: []
+
+    ## @param temporalJobsService.jobsServiceWorker.nodeSelector Node labels for pod assignment
+    ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
+    nodeSelector: {}
+
+    ## @param temporalJobsService.jobsServiceWorker.tolerations Taints to tolerate on node assignment:
+    ## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+    tolerations: []
+
+    ## @param temporalJobsService.jobsServiceWorker.affinity Pod scheduling constraints
+    ## Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
+    affinity: {}
+
+  jobsExtractWorker:
+    ## @param temporalJobsService.jobsExtractWorker.name Name suffix of the Temporal Extract Worker related resources
+    name: temporal-extract
+
+    ## @param temporalJobsService.jobsExtractWorker.command Command to run in the container
+    command: ["temporal_extract"]
+
+    ## @param temporalJobsService.jobsExtractWorker.replicas Number of replicas of Temporal Extract Worker Deployment
+    replicas: 1
+
+    ## Temporal Extract Worker configuration
+    ## @param temporalJobsService.jobsExtractWorker.config.logLevel Log level for the Temporal Extract Worker
+    config:
+      logLevel: "info"
+
+    ## Temporal Extract Worker Image information
+    ## @param temporalJobsService.jobsExtractWorker.image.registry Temporal Extract Worker Image registry
+    ## @param temporalJobsService.jobsExtractWorker.image.repository Temporal Extract Worker Image repository
+    ## @param temporalJobsService.jobsExtractWorker.image.tag Temporal Extract Worker Image tag
+    ## @param temporalJobsService.jobsExtractWorker.image.pullPolicy Temporal Extract Worker Image pull policy
+    image:
+      registry: docker.io
+      repository: llamaindex/llamacloud-backend
+      tag: 0.5.7
+      pullPolicy: IfNotPresent
+
+    ## ServiceAccount configuration
+    ## @param temporalJobsService.jobsExtractWorker.serviceAccount.create Whether or not to create a new service account
+    ## @param temporalJobsService.jobsExtractWorker.serviceAccount.name Name of the service account
+    ## @param temporalJobsService.jobsExtractWorker.serviceAccount.labels Labels to add to the service account
+    ## @param temporalJobsService.jobsExtractWorker.serviceAccount.annotations Annotations to add to the service account
+    ## @param temporalJobsService.jobsExtractWorker.serviceAccount.automountServiceAccountToken Whether or not to automount the service account token
+    serviceAccount:
+      create: true
+      name: ""
+      labels: {}
+      annotations: {}
+      automountServiceAccountToken: true
+
+    ## @param temporalJobsService.jobsExtractWorker.containerPort Port to expose on the Temporal Extract Worker container
+    ## Ref: https://kubernetes.io/docs/tutorials/services/connect-applications-service/#exposing-pods-to-the-cluster
+    containerPort: 8000
+
+    ## Temporal Extract Worker Service information
+    ## @param temporalJobsService.jobsExtractWorker.service.type Temporal Extract Worker Service type
+    ## @param temporalJobsService.jobsExtractWorker.service.port Temporal Extract Worker Service port
+    ## @param temporalJobsService.jobsExtractWorker.service.labels Labels to add to the service
+    ## @param temporalJobsService.jobsExtractWorker.service.annotations Annotations to add to the service
+    service:
+      type: ClusterIP
+      port: 8000
+      labels: {}
+      annotations: {}
+
+    ## @param temporalJobsService.jobsExtractWorker.labels Labels added to the Temporal Extract Worker Deployment.
+    labels: {}
+    ## @param temporalJobsService.jobsExtractWorker.annotations Annotations added to the Temporal Extract Worker Deployment.
+    annotations: {}
+
+    ## @param temporalJobsService.jobsExtractWorker.extraEnvVariables Extra environment variables to add to Temporal Extract Worker pods
+    ## Example:
+    ## extraEnvVariables:
+    ##   - name: FOO
+    ##     value: BAR
+    extraEnvVariables: []
+
+    ## External Secrets Configuration
+    ## @param temporalJobsService.jobsExtractWorker.externalSecrets.enabled Enable external secrets for the Temporal Extract Worker Deployment
+    ## @param temporalJobsService.jobsExtractWorker.externalSecrets.secrets List of external secrets to load environment variables from
+    externalSecrets:
+      enabled: false
+      ## ["secret-1", "secret-2"]
+      secrets: []
+
+    ## @param temporalJobsService.jobsExtractWorker.podAnnotations Annotations to add to the resulting Pods of the Deployment.
+    podAnnotations: {}
+
+    ## @param temporalJobsService.jobsExtractWorker.podLabels Labels to add to the resulting Pods of the Deployment.
+    podLabels: {}
+
+    ## @param temporalJobsService.jobsExtractWorker.podSecurityContext Pod security context
+    podSecurityContext: {}
+
+    ## @param temporalJobsService.jobsExtractWorker.securityContext Security context for the container
+    securityContext: {}
+    #  runAsUser: 1000
+    #  runAsGroup: 1000
+
+    ## @param temporalJobsService.jobsExtractWorker.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
+    ## Ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+    resources: {}
+      ## To use the recommended values, uncomment the following lines and remove the curly braces after 'resources:'
+      # requests:
+      #   cpu: 1
+      #   memory: 1Gi
+      # limits:
+      #   cpu: 2
+      #   memory: 2Gi
+
+    ## Temporal Extract Worker Liveness probe configuration
+    livenessProbe:
+      ## @param temporalJobsService.jobsExtractWorker.livenessProbe.httpGet.path Path to hit for the liveness probe
+      ## @param temporalJobsService.jobsExtractWorker.livenessProbe.httpGet.port Port to hit for the liveness probe
+      ## @param temporalJobsService.jobsExtractWorker.livenessProbe.periodSeconds How often (in seconds) to perform the probe
+      ## @param temporalJobsService.jobsExtractWorker.livenessProbe.timeoutSeconds Number of seconds after which the probe times out
+      ## @param temporalJobsService.jobsExtractWorker.livenessProbe.failureThreshold Minimum consecutive failures for the probe to be considered failed after having succeeded
+      httpGet:
+        path: /healthcheck
+        port: 8000
+      periodSeconds: 30
+      timeoutSeconds: 10
+      failureThreshold: 5
+
+    ## Temporal Extract Worker HorizontalPodAutoScaler configuration
+    ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/
+    ## The HPA scales by the target CPU utilization percentage by default
+    ## Uncomment the targetMemoryUtilizationPercentage line below to scale by memory utilization
+    autoscaling:
+      ## @param temporalJobsService.jobsExtractWorker.autoscaling.enabled Enable autoscaling for the Temporal Extract Worker Deployment
+      ## @param temporalJobsService.jobsExtractWorker.autoscaling.minReplicas Minimum number of replicas for the Temporal Extract Worker Deployment
+      ## @param temporalJobsService.jobsExtractWorker.autoscaling.maxReplicas Maximum number of replicas for the Temporal Extract Worker Deployment
+      ## @param temporalJobsService.jobsExtractWorker.autoscaling.targetCPUUtilizationPercentage Target CPU utilization percentage for the Temporal Extract Worker Deployment
+      enabled: false
+      minReplicas: 1
+      maxReplicas: 4
+      targetCPUUtilizationPercentage: 80
+      # targetMemoryUtilizationPercentage: 80
+
+    ## KEDA based autoscaling for Temporal Extract Worker Deployment
+    ## Ref: https://keda.sh
+    ## Note: .Values.temporalJobsService.jobsExtractWorker.autoscaling.enabled must be false for KEDA to be enabled
+    keda:
+      ## @param temporalJobsService.jobsExtractWorker.keda.enabled Enable KEDA for the Temporal Extract Worker Deployment
+      enabled: false
+      ## @param temporalJobsService.jobsExtractWorker.keda.additionalAnnotations Additional annotations for the KEDA
+      additionalAnnotations: {}
+      ## @param temporalJobsService.jobsExtractWorker.keda.additionalLabels Additional labels for the KEDA
+      additionalLabels: {}
+      ## @param temporalJobsService.jobsExtractWorker.keda.pollingInterval Polling interval for the KEDA
+      pollingInterval: 15
+      ## @param temporalJobsService.jobsExtractWorker.keda.cooldownPeriod Cooldown period for the KEDA
+      cooldownPeriod: 120
+      ## @param temporalJobsService.jobsExtractWorker.keda.minReplicaCount Minimum number of replicas for the KEDA
+      minReplicaCount: 2
+      ## @param temporalJobsService.jobsExtractWorker.keda.maxReplicaCount Maximum number of replicas for the KEDA
+      maxReplicaCount: 10
+      ## @param temporalJobsService.jobsExtractWorker.keda.initialCooldownPeriod Initial cooldown period for the KEDA
+      initialCooldownPeriod: 0
+      ## @param temporalJobsService.jobsExtractWorker.keda.fallback Fallback configuration for the KEDA
+      ## Ref: https://keda.sh/docs/2.10/concepts/scaling-deployments/#fallback
+      fallback: {}
+        # failureThreshold: 3
+        # replicas: 6
+      ## @param temporalJobsService.jobsExtractWorker.keda.advanced Advanced configuration for the KEDA
+      ## Ref: https://keda.sh/docs/2.10/concepts/scaling-deployments/#advanced
+      advanced: {}
+      ## @param temporalJobsService.jobsExtractWorker.keda.triggers Triggers for the KEDA
+      ## Default trigger uses Temporal scaler: https://keda.sh/docs/2.17/scalers/temporal/
+      ## NOTE: You must update the taskQueue value for your specific worker queue name
+      triggers:
+        - type: temporal
+          metadata:
+            taskQueue: "extract"
+            ## Target queue size (from k8sctl defaults: BaseScaledObjectConfig.target_queue_size)
+            targetQueueSize: "2"
+            ## Activation target queue size (from k8sctl defaults: BaseScaledObjectConfig.activation_target_queue_size)
+            activationTargetQueueSize: "0"
+            ## Temporal namespace (optional) - the Temporal workflow namespace, defaults to "default" if not set
+            ## Uncomment to specify a custom Temporal namespace:
+            # namespace: "default"
+            ## Temporal endpoint - dynamically resolves to internal or external temporal service
+            endpoint: "{{ printf \"%s:%s\" (include \"temporal.host\" .) (include \"temporal.port\" .) }}"
+
+    ## Prometheus Metrics Configuration
+    metrics:
+      ## @param temporalJobsService.jobsExtractWorker.metrics.enabled Enable exposing metrics to be gathered by Prometheus
+      enabled: false
+      serviceMonitor:
+        ## @param temporalJobsService.jobsExtractWorker.metrics.serviceMonitor.enabled Create ServiceMonitor resource for scraping metrics using PrometheusOperator
+        enabled: false
+        ## @param temporalJobsService.jobsExtractWorker.metrics.serviceMonitor.selector ServiceMonitor selector for the labels to be scraped
+        selector: {}
+        ## @param temporalJobsService.jobsExtractWorker.metrics.serviceMonitor.additionalLabels Used to pass Labels that are used by the Prometheus installed in your cluster to select Service Monitors to work with
+        additionalLabels: {}
+        ## @param temporalJobsService.jobsExtractWorker.metrics.serviceMonitor.annotations ServiceMonitor annotations
+        annotations: {}
+        ## @param temporalJobsService.jobsExtractWorker.metrics.serviceMonitor.interval Interval at which metrics should be scraped
+        interval: 30s
+        ## @param temporalJobsService.jobsExtractWorker.metrics.serviceMonitor.scrapeTimeout Specify the timeout after which the scrape is ended
+        scrapeTimeout: 15s
+        ## @param temporalJobsService.jobsExtractWorker.metrics.serviceMonitor.relabelings RelabelConfigs to apply to samples before scraping
+        relabelings: []
+        ## @param temporalJobsService.jobsExtractWorker.metrics.serviceMonitor.metricRelabelings MetricRelabelConfigs to apply to samples before ingestion
+        metricRelabelings: []
+        ## @param temporalJobsService.jobsExtractWorker.metrics.serviceMonitor.scheme HTTP scheme to use for scraping
+        scheme: http
+        ## @param temporalJobsService.jobsExtractWorker.metrics.serviceMonitor.tlsConfig TLS configuration to use when scraping the endpoint
+        tlsConfig: {}
+
+    ## @param temporalJobsService.jobsExtractWorker.volumes List of volumes that can be mounted by containers belonging to the pod
+    ## @param temporalJobsService.jobsExtractWorker.volumeMounts List of volumeMounts that can be mounted by containers belonging to the pod
+    ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-volume-storage/
+    volumes: []
+    volumeMounts: []
+
+    ## @param temporalJobsService.jobsExtractWorker.nodeSelector Node labels for pod assignment
+    ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
+    nodeSelector: {}
+
+    ## @param temporalJobsService.jobsExtractWorker.tolerations Taints to tolerate on node assignment:
+    ## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+    tolerations: []
+
+    ## @param temporalJobsService.jobsExtractWorker.affinity Pod scheduling constraints
+    ## Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
+    affinity: {}
 
 ## @section S3Proxy Configuration
 s3proxy:
@@ -2128,3 +3547,101 @@ rabbitmq:
     ## @param rabbitmq.image.repository RabbitMQ Image repository
     registry: docker.io
     repository: bitnamilegacy/rabbitmq
+
+temporal:
+  ## @param temporal.enabled Enable Temporal
+  ## IMPORTANT: When enabling Temporal, you must configure the database connection.
+  ## If using the postgresql subchart (postgresql.enabled=true):
+  ##   Set host to: "<your-release-name>-postgresql"
+  ##   Set existingSecret to: "<your-release-name>-postgresql"
+  ##   Set user to match postgresql.auth.username (default: "llamacloud")
+  ## Example for release name "my-release":
+  ##   temporal.server.config.persistence.default.sql.host: "my-release-postgresql"
+  ##   temporal.server.config.persistence.default.sql.existingSecret: "my-release-postgresql"
+  enabled: false
+
+  cassandra:
+    enabled: false
+
+  prometheus:
+    enabled: false
+
+  grafana:
+    enabled: false
+
+  elasticsearch:
+    enabled: false
+
+  server:
+    config:
+      namespaces:
+        # Enable this to create namespaces
+        create: true
+      persistence:
+        default:
+          driver: "sql"
+          sql:
+            driver: "postgres12"
+            # REQUIRED: Set to "<release-name>-postgresql" when using postgresql subchart
+            # Example: "my-release-postgresql"
+            host: ""
+            port: 5432
+            database: "temporal"
+            # Should match postgresql.auth.username
+            user: "llamacloud"
+            password: ""
+            # REQUIRED: Set to "<release-name>-postgresql" when using postgresql subchart
+            # Example: "my-release-postgresql"
+            existingSecret: ""
+            secretName: ""
+            maxConns: 20
+            maxIdleConns: 20
+            maxConnLifetime: "1h"
+
+        visibility:
+          driver: "sql"
+
+          sql:
+            driver: "postgres12"
+            # REQUIRED: Set to "<release-name>-postgresql" when using postgresql subchart
+            # Example: "my-release-postgresql"
+            host: ""
+            port: 5432
+            database: "temporal_visibility"
+            # Should match postgresql.auth.username
+            user: "llamacloud"
+            password: ""
+            # REQUIRED: Set to "<release-name>-postgresql" when using postgresql subchart
+            # Example: "my-release-postgresql"
+            existingSecret: ""
+            secretName: ""
+            maxConns: 20
+            maxIdleConns: 20
+            maxConnLifetime: "1h"
+
+## Temporal Server Configuration
+## Configuration for temporal server components and setup jobs
+temporalServer:
+  ## Search Attributes Job
+  ## @param temporalServer.searchAttributesJob.enabled Enable the search attributes job
+  ## @param temporalServer.searchAttributesJob.backoffLimit Number of retries before considering job as failed
+  searchAttributesJob:
+    enabled: true
+    backoffLimit: 3
+
+    ## @param temporalServer.searchAttributesJob.image.repository Image repository for temporal admin tools
+    ## @param temporalServer.searchAttributesJob.image.tag Image tag for temporal admin tools
+    ## @param temporalServer.searchAttributesJob.image.pullPolicy Image pull policy
+    image:
+      repository: temporalio/admin-tools
+      tag: "1.29"
+      pullPolicy: IfNotPresent
+
+    ## @param temporalServer.searchAttributesJob.attributes List of search attributes to create
+    ## Each attribute should have a name and type (Text, Keyword, Int, Double, Bool, Datetime, KeywordList)
+    attributes:
+      - name: Project
+        type: Keyword
+      - name: Organization
+        type: Keyword
+

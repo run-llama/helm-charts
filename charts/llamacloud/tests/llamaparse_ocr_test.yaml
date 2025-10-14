@@ -204,3 +204,69 @@ tests:
     - equal:
         path: .spec.advanced.horizontalPodAutoscalerConfig.behavior.scaleDown.selectPolicy
         value: Min
+
+- it: should use CPU image by default (gpu.enabled not set)
+  set:
+    mongodb.enabled: false
+    postgresql.enabled: false
+    rabbitmq.enabled: false
+    redis.enabled: false
+  template: ../templates/llamaparse-ocr/deployment.yaml
+  asserts:
+    - matchRegex:
+        path: spec.template.spec.containers[0].image
+        pattern: docker\.io/llamaindex/llamacloud-llamaparse-ocr:.+-cpu$
+
+- it: should use CPU image when gpu.enabled is false
+  set:
+    mongodb.enabled: false
+    postgresql.enabled: false
+    rabbitmq.enabled: false
+    redis.enabled: false
+    llamaParseOcr.gpu.enabled: false
+  template: ../templates/llamaparse-ocr/deployment.yaml
+  asserts:
+    - matchRegex:
+        path: spec.template.spec.containers[0].image
+        pattern: docker\.io/llamaindex/llamacloud-llamaparse-ocr:.+-cpu$
+
+- it: should use GPU image when gpu.enabled is true
+  set:
+    mongodb.enabled: false
+    postgresql.enabled: false
+    rabbitmq.enabled: false
+    redis.enabled: false
+    llamaParseOcr.gpu.enabled: true
+  template: ../templates/llamaparse-ocr/deployment.yaml
+  asserts:
+    - matchRegex:
+        path: spec.template.spec.containers[0].image
+        pattern: docker\.io/llamaindex/llamacloud-llamaparse-ocr:[^-]+$
+
+- it: should use custom image tag with CPU suffix when gpu.enabled is false
+  set:
+    mongodb.enabled: false
+    postgresql.enabled: false
+    rabbitmq.enabled: false
+    redis.enabled: false
+    llamaParseOcr.gpu.enabled: false
+    llamaParseOcr.image.tag: "1.2.3"
+  template: ../templates/llamaparse-ocr/deployment.yaml
+  asserts:
+    - equal:
+        path: spec.template.spec.containers[0].image
+        value: docker.io/llamaindex/llamacloud-llamaparse-ocr:1.2.3-cpu
+
+- it: should use custom image tag without suffix when gpu.enabled is true
+  set:
+    mongodb.enabled: false
+    postgresql.enabled: false
+    rabbitmq.enabled: false
+    redis.enabled: false
+    llamaParseOcr.gpu.enabled: true
+    llamaParseOcr.image.tag: "1.2.3"
+  template: ../templates/llamaparse-ocr/deployment.yaml
+  asserts:
+    - equal:
+        path: spec.template.spec.containers[0].image
+        value: docker.io/llamaindex/llamacloud-llamaparse-ocr:1.2.3
