@@ -1,0 +1,29 @@
+{{- if include "temporal.enabled" . -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "llamacloud.fullname" . }}-{{ .Values.temporalParse.llamaParse.name }}-config
+  labels:
+    {{- include "llamacloud.labels" . | nindent 4 }}
+  annotations:
+    {{- include "llamacloud.annotations" . | nindent 4 }}
+data:
+  CLOUD_PROVIDER: {{ .Values.global.cloudProvider | quote }}
+  DEBUG_MODE: {{ .Values.temporalParse.llamaParse.config.debugMode | default false | quote }}
+  MAX_QUEUE_CONCURRENCY: {{ .Values.temporalParse.llamaParse.config.maxQueueConcurrency | default 1 | quote }}
+  MAX_OLD_SPACE_SIZE: {{ .Values.temporalParse.llamaParse.config.maxOldSpaceSize | default "14500" | quote }}
+  WORKER_HOST: "0.0.0.0"
+  JOB_SERVICE_URL: {{ printf "http://%s-%s:%d" (include "llamacloud.fullname" .) .Values.jobsService.name (.Values.jobsService.service.port | int) | quote }}
+  OCR_SERVER_URL: {{ printf "http://%s-%s:%d/ocr" (include "llamacloud.fullname" .) .Values.llamaParseOcr.name (.Values.llamaParseOcr.service.port | int) | quote }}
+  TRACKING_SERVICE_URL: {{ printf "http://%s-%s:%d" (include "llamacloud.fullname" .) .Values.usage.name (.Values.usage.service.port | int) | quote }}
+  TEMPORAL_HOST: {{ include "temporal.host" . | quote }}
+  TEMPORAL_PORT: {{ include "temporal.port" . | quote }}
+  S3_UPLOAD_BUCKET: {{ .Values.temporalParse.llamaParse.config.s3UploadBucket }}
+  S3_OUTPUT_BUCKET: {{ .Values.temporalParse.llamaParse.config.s3OutputBucket }}
+  {{- if .Values.s3proxy.enabled }}
+  S3_ENDPOINT_URL: {{ printf "http://%s-%s:%d" (include "llamacloud.fullname" .) .Values.s3proxy.name (.Values.s3proxy.service.port | int) | quote }}
+  {{- end }}
+  {{- if .Values.llamaParseLayoutDetectionApi.enabled }}
+  LAYOUT_EXTRACTION_ENDPOINT: {{ printf "http://%s-%s:%d" (include "llamacloud.fullname" .) .Values.llamaParseLayoutDetectionApi.name (.Values.llamaParseLayoutDetectionApi.service.port | int) | quote }}
+  {{- end }}
+{{- end -}}

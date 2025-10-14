@@ -21,6 +21,11 @@ data:
   S3_LLAMA_CLOUD_PARSE_OUTPUT_BUCKET_NAME: {{ .Values.global.config.parsedLlamaCloudParseOutputCloudBucketName | default "llama-cloud-parse-output" }}
   S3_FILE_SCREENSHOT_BUCKET_NAME: {{ .Values.global.config.parsedFileScreenshotCloudBucketName | default "llama-platform-file-screenshots" }}
   S3_LLAMA_EXTRACT_OUTPUT_BUCKET_NAME: {{ .Values.global.config.llamaExtractOutputCloudBucketName | default "llama-platform-extract-output" }}
+  {{- if include "temporal.enabled" . }}
+  TEMPORAL_HOST: {{ include "temporal.host" . | quote }}
+  TEMPORAL_PORT: {{ include "temporal.port" . | quote }}
+  TEMPORAL_JOB_SERVICE_URL: {{ printf "http://%s-%s:%d" (include "llamacloud.fullname" .) .Values.temporalJobsService.api.name (.Values.temporalJobsService.api.service.port | int) | quote }}
+  {{- end }}
   TRACKING_SERVICE_URL: {{ printf "http://%s-%s:%d" (include "llamacloud.fullname" .) .Values.usage.name (.Values.usage.service.port | int) | quote }}
   JOB_SERVICE_URL: {{ printf "http://%s-%s:%d" (include "llamacloud.fullname" .) .Values.jobsService.name (.Values.jobsService.service.port | int ) | quote }}
   LLAMA_EXTRACT_MULTIMODAL_MODEL: {{ .Values.backend.config.llamaExtractMultimodalModel | quote }}

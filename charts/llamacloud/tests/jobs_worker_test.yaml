@@ -38,6 +38,9 @@ tests:
     - equal:
         path: .spec.template.spec.containers[0].image
         value: docker.io/llamaindex/llamacloud-jobs-worker:latest
+    - equal:
+        path: .spec.template.spec.containers[0].env[?(@.name == "UVICORN_PORT")].value
+        value: "8001"
 
 - it: should use an external secret name for the license key if it is set
   set:
@@ -175,6 +178,20 @@ tests:
     - equal:
         path: .data.LLAMA_EXTRACT_MAX_FILE_SIZE_UI_MB
         value: "50"
+
+- it: should include the LLM models in the environment variables
+  template: ../templates/jobs-worker/secret.yaml
+  set:
+    llms.enabled: true
+    llms.openAiApiKey: test-openai-api-key
+    mongodb.enabled: false
+    postgresql.enabled: false
+    rabbitmq.enabled: false
+    redis.enabled: false
+  asserts:
+    - equal:
+        path: .data.OPENAI_API_KEY
+        value: dGVzdC1vcGVuYWktYXBpLWtleQ==
 
 - it: should use default values for new BYOC configuration flags when not set
   set:

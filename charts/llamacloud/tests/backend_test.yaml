@@ -40,6 +40,9 @@ tests:
     - equal:
         path: .spec.template.spec.containers[0].image
         value: docker.io/llamaindex/llamacloud-backend:latest
+    - equal:
+        path: .spec.template.spec.containers[0].env[?(@.name == "UVICORN_PORT")].value
+        value: "8000"
 
 - it: should use an external secret name for the license key if it is set
   set:
@@ -379,6 +382,20 @@ tests:
     - equal:
         path: .spec.template.spec.containers[0].envFrom[?(@.secretRef.name == "existing-azure-openai-api-key")].secretRef.name
         value: existing-azure-openai-api-key
+
+- it: should include the LLM models in the environment variables
+  template: ../templates/backend/secret.yaml
+  set:
+    llms.enabled: true
+    llms.openAiApiKey: test-openai-api-key
+    mongodb.enabled: false
+    postgresql.enabled: false
+    rabbitmq.enabled: false
+    redis.enabled: false
+  asserts:
+    - equal:
+        path: .data.OPENAI_API_KEY
+        value: dGVzdC1vcGVuYWktYXBpLWtleQ==
 
 - it: should create a HorizontalPodAutoscaler if autoscaling is enabled
   set:

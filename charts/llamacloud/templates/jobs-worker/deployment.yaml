@@ -54,7 +54,7 @@ spec:
             - name: http
               containerPort: {{ .Values.jobsWorker.containerPort }}
               protocol: TCP
-          command: ["python", "-m", "src.jobs.consumer_main"]
+          command: ["start_consumer"]
           livenessProbe:
             {{- toYaml .Values.jobsWorker.livenessProbe | nindent 12 }}
           readinessProbe:
@@ -73,6 +73,8 @@ spec:
                 name: {{ include "llamacloud.fullname" . }}-license-key
                 {{- end }}
                 key: llamacloud-license-key
+          - name: UVICORN_PORT
+            value: {{ .Values.jobsWorker.containerPort | quote }}
           {{- include "common.postgresql.envVars" . | nindent 10 -}}
           {{- include "common.mongodb.envVars" . | nindent 10 -}}
           {{- include "common.rabbitmq.envVars" . | nindent 10 -}}
@@ -87,6 +89,9 @@ spec:
           - secretRef:
               name: {{ .Values.global.config.existingAwsSecretName }}
           {{- end }}
+          {{- if .Values.llms.enabled }}
+          {{- include "common.llmModels.secretRefs" . | nindent 10 }}
+          {{- else }}
           {{- if .Values.backend.config.existingOpenAiApiKeySecretName }}
           - secretRef:
               name: {{ .Values.backend.config.existingOpenAiApiKeySecretName }}
@@ -94,6 +99,7 @@ spec:
           {{- if and .Values.backend.config.azureOpenAi.enabled .Values.backend.config.azureOpenAi.existingSecret }}
           - secretRef:
               name: {{ .Values.backend.config.azureOpenAi.existingSecret }}
+          {{- end }}
           {{- end }}
           {{- if and (not .Values.postgresql.enabled) .Values.global.config.postgresql.external.enabled .Values.global.config.postgresql.external.existingSecretName }}
           - secretRef:
