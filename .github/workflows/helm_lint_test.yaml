@@ -33,6 +33,9 @@ jobs:
       - name: Set up chart-testing
         uses: helm/chart-testing-action@v2.6.1
 
+      - name: Add Temporal Helm Repository
+        run: helm repo add temporal https://go.temporal.io/helm-charts
+
       - name: Lint
         id: lint-charts
         run: |
@@ -79,6 +82,9 @@ jobs:
 
       - name: Set up chart-testing
         uses: helm/chart-testing-action@v2.6.1
+
+      - name: Add Temporal Helm Repository
+        run: helm repo add temporal https://go.temporal.io/helm-charts
 
       - name: Test
         id: test-charts

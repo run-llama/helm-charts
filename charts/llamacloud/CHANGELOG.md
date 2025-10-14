@@ -1,5 +1,27 @@
 # CHANGELOG
 
+## [0.5.8] - 2025-10-10
+
+### Index
+- Indexing system status resolution improvements
+- Added full error resolution in pipeline status https://api.cloud.llamaindex.ai/docs#/Pipelines/get_pipeline_status_api_v1_pipelines__pipeline_id__status_get
+
+### Confluence Feature Fixes
+- Various bug fixes and improvements
+
+### Parse
+- Sonnet 4.5 and GPT 5 support
+
+### UI Rework
+- User interface improvements and enhancements
+
+### Core Logging
+- Logging Structure has been updated
+- Metadata may be attached as 'extra' fields
+
+### Extract
+- Internal improvement: More comprehensive merging of sub-extractions on large documents
+
 ## [0.5.7] - 2025-09-19
 
 ### Index
@@ -84,7 +106,7 @@
 
 ### LlamaCloud Platform
 - **Webhooks available**: Webhooks are now available in LlamaExtract and LlamaParse.
-    - Please refer to the [docs](https://docs.cloud.llamaindex.ai/llamacloud/webhooks) for more information.
+    - Please refer to the [docs](https://developers.llamaindex.ai/python/cloud/general/webhooks) for more information.
 - Added support for Azure OpenAI Gpt 4.1, Gpt 4.1-mini, and Gpt 4.1-nano deployments.
 
 ### Index

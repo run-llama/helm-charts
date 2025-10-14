@@ -81,26 +81,7 @@ spec:
           - secretRef:
               name: {{ .Values.global.config.existingAwsSecretName }}
           {{- end }}
-          {{- if .Values.llamaParse.config.existingOpenAiApiKeySecretName }}
-          - secretRef:
-              name: {{ .Values.llamaParse.config.existingOpenAiApiKeySecretName }}
-          {{- end }}
-          {{- if and .Values.llamaParse.config.azureOpenAi.enabled .Values.llamaParse.config.azureOpenAi.existingSecret }}
-          - secretRef:
-              name: {{ .Values.llamaParse.config.azureOpenAi.existingSecret }}
-          {{- end }}
-          {{- if .Values.llamaParse.config.existingAnthropicApiKeySecret }}
-          - secretRef:
-              name: {{ .Values.llamaParse.config.existingAnthropicApiKeySecret }}
-          {{- end }}
-          {{- if .Values.llamaParse.config.existingGeminiApiKeySecret }}
-          - secretRef:
-              name: {{ .Values.llamaParse.config.existingGeminiApiKeySecret }}
-          {{- end }}
-          {{- if and .Values.llamaParse.config.awsBedrock.enabled .Values.llamaParse.config.awsBedrock.existingSecret }}
-          - secretRef:
-              name: {{ .Values.llamaParse.config.awsBedrock.existingSecret }}
-          {{- end }}
+          {{- include "common.llmModels.secretRefs" . | nindent 10 }}
           {{- if and (not .Values.rabbitmq.enabled) .Values.global.config.rabbitmq.external.enabled .Values.global.config.rabbitmq.external.existingSecretName }}
           - secretRef:
               name: {{ .Values.global.config.rabbitmq.external.existingSecretName }}

@@ -1,0 +1,46 @@
+{{- if include "temporal.enabled" . -}}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "llamacloud.fullname" . }}-temporal-search-attributes
+  labels:
+    {{- include "llamacloud.labels" . | nindent 4 }}
+  annotations:
+    {{- include "llamacloud.annotations" . | nindent 4 }}
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "5"
+    "helm.sh/hook-delete-policy": before-hook-creation
+spec:
+  backoffLimit: {{ .Values.temporalServer.searchAttributesJob.backoffLimit }}
+  template:
+    metadata:
+      labels:
+        {{- include "llamacloud.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: temporal-search-attributes-job
+    spec:
+      restartPolicy: OnFailure
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+      - name: create-search-attributes
+        image: "{{ .Values.temporalServer.searchAttributesJob.image.repository }}:{{ .Values.temporalServer.searchAttributesJob.image.tag }}"
+        imagePullPolicy: {{ .Values.temporalServer.searchAttributesJob.image.pullPolicy }}
+        command:
+          - /bin/bash
+          - -c
+          - |
+            set -e
+            echo "Creating search attributes..."
+            {{- range .Values.temporalServer.searchAttributesJob.attributes }}
+            echo "Creating search attribute: {{ .name }} ({{ .type }})"
+            temporal operator search-attribute create --name {{ .name }} --type {{ .type }} || echo "Search attribute {{ .name }} may already exist"
+            {{- end }}
+            echo "Search attributes creation completed"
+        env:
+        - name: TEMPORAL_CLI_ADDRESS
+          value: {{ printf "%s-temporal-frontend.%s.svc.cluster.local:%d" .Release.Name .Release.Namespace (include "temporal.port" . | int) | quote }}
+        - name: TEMPORAL_ADDRESS
+          value: {{ printf "%s-temporal-frontend.%s.svc.cluster.local:%d" .Release.Name .Release.Namespace (include "temporal.port" . | int) | quote }}
+{{- end -}}

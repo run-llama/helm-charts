@@ -1,0 +1,26 @@
+{{- if include "temporal.enabled" . -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "llamacloud.fullname" . }}-{{ .Values.temporalJobsService.api.name }}-config
+  labels:
+    {{- include "llamacloud.labels" . | nindent 4 }}
+  annotations:
+    {{- include "llamacloud.annotations" . | nindent 4 }}
+data:
+  IS_DEPLOYED: "true"
+  DEPLOYMENT_MODE: "prod"
+  LOG_LEVEL: {{ .Values.temporalJobsService.api.config.logLevel | default "info" }}
+  LLAMA_LOG_LEVEL: {{ .Values.temporalJobsService.api.config.logLevel | default "info" }}
+  S3_DOCUMENT_BUCKET_NAME: {{ .Values.global.config.parsedDocumentsCloudBucketName | default "llama-platform-parsed-documents" }}
+  S3_ETL_BUCKET_NAME: {{ .Values.global.config.parsedEtlCloudBucketName | default "llama-platform-etl" }}
+  S3_EXTERNAL_COMPONENTS_BUCKET_NAME: {{ .Values.global.config.parsedExternalComponentsCloudBucketName | default "llama-platform-external-components" }}
+  S3_FILE_PARSING_BUCKET_NAME: {{ .Values.global.config.parsedFileParsingCloudBucketName | default "llama-platform-file-parsing" }}
+  S3_RAW_FILE_BUCKET_NAME: {{ .Values.global.config.parsedRawFileCloudBucketName | default "llama-platform-raw-files" }}
+  S3_LLAMA_CLOUD_PARSE_OUTPUT_BUCKET_NAME: {{ .Values.global.config.parsedLlamaCloudParseOutputCloudBucketName | default "llama-cloud-parse-output" }}
+  S3_FILE_SCREENSHOT_BUCKET_NAME: {{ .Values.global.config.parsedFileScreenshotCloudBucketName | default "llama-platform-file-screenshots" }}
+  S3_LLAMA_EXTRACT_OUTPUT_BUCKET_NAME: {{ .Values.global.config.llamaExtractOutputCloudBucketName | default "llama-platform-extract-output" }}
+  TEMPORAL_HOST: {{ include "temporal.host" . | quote }}
+  TEMPORAL_PORT: {{ include "temporal.port" . | quote }}
+  TRACKING_SERVICE_URL: {{ printf "http://%s-%s:%d" (include "llamacloud.fullname" .) .Values.usage.name (.Values.usage.service.port | int) | quote }}
+{{- end -}}

@@ -1,0 +1,27 @@
+{{- if include "temporal.enabled" . -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "llamacloud.fullname" . }}-{{ .Values.temporalJobsService.api.name }}
+  labels:
+    app.kubernetes.io/component: {{ include "llamacloud.fullname" . }}-{{ .Values.temporalJobsService.api.name }}
+    {{- include "llamacloud.labels" . | nindent 4 }}
+    {{- with .Values.temporalJobsService.api.service.labels }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- include "llamacloud.annotations" . | nindent 4 }}
+    {{- with .Values.temporalJobsService.api.service.annotations }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  type: {{ .Values.temporalJobsService.api.service.type }}
+  ports:
+    - name: http
+      port: {{ .Values.temporalJobsService.api.service.port }}
+      targetPort: tj-api-http
+      protocol: TCP
+  selector:
+    {{- include "llamacloud.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: {{ include "llamacloud.fullname" . }}-{{ .Values.temporalJobsService.api.name }}
+{{- end -}}

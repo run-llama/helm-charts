@@ -1,0 +1,148 @@
+{{- if include "temporal.enabled" . -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "llamacloud.fullname" . }}-{{ .Values.temporalJobsService.api.name }}
+  labels:
+    {{- include "llamacloud.labels" . | nindent 4 }}
+    {{- with .Values.temporalJobsService.api.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- include "llamacloud.annotations" . | nindent 4 }}
+    {{- with .Values.temporalJobsService.api.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  {{- if not .Values.temporalJobsService.api.autoscaling.enabled }}
+  replicas: {{ .Values.temporalJobsService.api.replicas }}
+  {{- end }}
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 1
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      {{- include "llamacloud.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: {{ include "llamacloud.fullname" . }}-{{ .Values.temporalJobsService.api.name }}
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/temporal_jobs_service/api/configmap.yaml") . | sha256sum }}
+        {{- with .Values.temporalJobsService.api.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        app.kubernetes.io/component: {{ include "llamacloud.fullname" . }}-{{ .Values.temporalJobsService.api.name }}
+        {{- include "llamacloud.labels" . | nindent 8 }}
+        {{- with .Values.temporalJobsService.api.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "temporalJobsService.api.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.temporalJobsService.api.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Values.temporalJobsService.api.name | default "temporal-jobs-api" }}
+          securityContext:
+            {{- toYaml .Values.temporalJobsService.api.securityContext | nindent 12 }}
+          image: "{{ .Values.temporalJobsService.api.image.registry }}/{{ .Values.temporalJobsService.api.image.repository }}:{{ .Values.temporalJobsService.api.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.temporalJobsService.api.image.pullPolicy }}
+          ports:
+            - name: tj-api-http
+              containerPort: {{ .Values.temporalJobsService.api.containerPort }}
+              protocol: TCP
+          command: {{ .Values.temporalJobsService.api.command | toJson }}
+          livenessProbe:
+            {{- toYaml .Values.temporalJobsService.api.livenessProbe | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.temporalJobsService.api.readinessProbe | nindent 12 }}
+          startupProbe:
+            {{- toYaml .Values.temporalJobsService.api.startupProbe | nindent 12 }}
+          resources:
+            {{- toYaml .Values.temporalJobsService.api.resources | nindent 12 }}
+          env:
+          - name: LLAMACLOUD_LICENSE_KEY
+            valueFrom:
+              secretKeyRef:
+                {{- if .Values.global.config.existingLicenseKeySecret }}
+                name: {{ .Values.global.config.existingLicenseKeySecret }}
+                {{- else }}
+                name: {{ include "llamacloud.fullname" . }}-license-key
+                {{- end }}
+                key: llamacloud-license-key
+          - name: UVICORN_PORT
+            value: {{ .Values.temporalJobsService.api.containerPort | quote }}
+          {{- include "common.postgresql.envVars" . | nindent 10 -}}
+          {{- include "common.mongodb.envVars" . | nindent 10 -}}
+          {{- include "common.rabbitmq.envVars" . | nindent 10 -}}
+          {{- include "common.redis.envVars" . | nindent 10 -}}
+          {{- with .Values.temporalJobsService.api.extraEnvVariables }}
+          {{- toYaml . | nindent 10 }}
+          {{- end }}
+          envFrom:
+          - configMapRef:
+              name: {{ include "llamacloud.fullname" . }}-{{ .Values.temporalJobsService.api.name }}-config
+          {{- if .Values.global.config.existingAwsSecretName }}
+          - secretRef:
+              name: {{ .Values.global.config.existingAwsSecretName }}
+          {{- end }}
+          {{- if .Values.llms.enabled }}
+          {{- include "common.llmModels.secretRefs" . | nindent 10 }}
+          {{- else }}
+          {{- if .Values.backend.config.existingOpenAiApiKeySecretName }}
+          - secretRef:
+              name: {{ .Values.backend.config.existingOpenAiApiKeySecretName }}
+          {{- end }}
+          {{- if and .Values.backend.config.azureOpenAi.enabled .Values.backend.config.azureOpenAi.existingSecret }}
+          - secretRef:
+              name: {{ .Values.backend.config.azureOpenAi.existingSecret }}
+          {{- end }}
+          {{- end }}
+          {{- if and (not .Values.postgresql.enabled) .Values.global.config.postgresql.external.enabled .Values.global.config.postgresql.external.existingSecretName }}
+          - secretRef:
+              name: {{ .Values.global.config.postgresql.external.existingSecretName }}
+          {{- end }}
+          {{- if and (not .Values.mongodb.enabled) .Values.global.config.mongodb.external.enabled .Values.global.config.mongodb.external.existingSecretName }}
+          - secretRef:
+              name: {{ .Values.global.config.mongodb.external.existingSecretName }}
+          {{- end }}
+          {{- if and (not .Values.rabbitmq.enabled) .Values.global.config.rabbitmq.external.enabled .Values.global.config.rabbitmq.external.existingSecretName }}
+          - secretRef:
+              name: {{ .Values.global.config.rabbitmq.external.existingSecretName }}
+          {{- end }}
+          {{- if and (not .Values.redis.enabled) .Values.global.config.redis.external.enabled .Values.global.config.redis.external.existingSecretName }}
+          - secretRef:
+              name: {{ .Values.global.config.redis.external.existingSecretName }}
+          {{- end }}
+          {{- if .Values.temporalJobsService.api.externalSecrets.enabled }}
+          {{- range .Values.temporalJobsService.api.externalSecrets.secrets }}
+          - secretRef:
+              name: {{ . }}
+          {{- end }}
+          {{- end }}
+          {{- with .Values.temporalJobsService.api.volumeMounts }}
+          volumeMounts:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- with .Values.temporalJobsService.api.volumes }}
+      volumes:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.temporalJobsService.api.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.temporalJobsService.api.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.temporalJobsService.api.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end -}}

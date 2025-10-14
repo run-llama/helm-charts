@@ -49,7 +49,8 @@ spec:
         - name: {{ .Values.llamaParseOcr.name }}
           securityContext:
             {{- toYaml .Values.llamaParseOcr.securityContext | nindent 12 }}
-          image: "{{ .Values.llamaParseOcr.image.registry }}/{{ .Values.llamaParseOcr.image.repository }}:{{ .Values.llamaParseOcr.image.tag | default .Chart.AppVersion }}"
+          image:
+            {{ .Values.llamaParseOcr.image.registry }}/{{ .Values.llamaParseOcr.image.repository }}:{{ .Values.llamaParseOcr.image.tag | default .Chart.AppVersion }}
           imagePullPolicy: {{ .Values.llamaParseOcr.image.pullPolicy }}
           ports:
             - name: http
