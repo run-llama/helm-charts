@@ -95,3 +95,25 @@ tests:
   asserts:
     - hasDocuments:
         count: 0
+
+- it: should set replicas field when autoscaling is disabled
+  set:
+    llamaParseLayoutDetectionApi.enabled: true
+    llamaParseLayoutDetectionApi.replicas: 3
+    llamaParseLayoutDetectionApi.autoscaling.enabled: false
+  template: ../templates/llamaparse-layout-detection-api/deployment.yaml
+  asserts:
+    - equal:
+        path: .spec.replicas
+        value: 3
+
+- it: should not set replicas field when autoscaling is enabled
+  set:
+    llamaParseLayoutDetectionApi.enabled: true
+    llamaParseLayoutDetectionApi.replicas: 3
+    llamaParseLayoutDetectionApi.autoscaling.enabled: true
+  template: ../templates/llamaparse-layout-detection-api/deployment.yaml
+  asserts:
+    - notExists:
+        path: .spec.replicas
+

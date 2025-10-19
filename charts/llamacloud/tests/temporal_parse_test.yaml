@@ -591,3 +591,49 @@ tests:
               secretKeyRef:
                 name: llamacloud-license-key
                 key: llamacloud-license-key
+
+  - it: temporalParse.llamaParse should set replicas field when both autoscaling and KEDA are disabled
+    set:
+      temporal.enabled: true
+      temporalParse.llamaParse.replicas: 3
+      temporalParse.llamaParse.autoscaling.enabled: false
+      temporalParse.llamaParse.keda.enabled: false
+      mongodb.enabled: false
+      postgresql.enabled: false
+      rabbitmq.enabled: false
+      redis.enabled: false
+    template: ../templates/temporal_parse/llamaparse/deployment.yaml
+    asserts:
+      - equal:
+          path: .spec.replicas
+          value: 3
+
+  - it: temporalParse.llamaParse should not set replicas field when autoscaling is enabled
+    set:
+      temporal.enabled: true
+      temporalParse.llamaParse.replicas: 3
+      temporalParse.llamaParse.autoscaling.enabled: true
+      temporalParse.llamaParse.keda.enabled: false
+      mongodb.enabled: false
+      postgresql.enabled: false
+      rabbitmq.enabled: false
+      redis.enabled: false
+    template: ../templates/temporal_parse/llamaparse/deployment.yaml
+    asserts:
+      - notExists:
+          path: .spec.replicas
+
+  - it: temporalParse.llamaParse should not set replicas field when KEDA is enabled
+    set:
+      temporal.enabled: true
+      temporalParse.llamaParse.replicas: 3
+      temporalParse.llamaParse.autoscaling.enabled: false
+      temporalParse.llamaParse.keda.enabled: true
+      mongodb.enabled: false
+      postgresql.enabled: false
+      rabbitmq.enabled: false
+      redis.enabled: false
+    template: ../templates/temporal_parse/llamaparse/deployment.yaml
+    asserts:
+      - notExists:
+          path: .spec.replicas

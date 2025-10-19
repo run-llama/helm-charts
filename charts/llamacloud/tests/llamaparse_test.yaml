@@ -391,3 +391,37 @@ tests:
     - equal:
         path: .spec.advanced.horizontalPodAutoscalerConfig.behavior.scaleDown.selectPolicy
         value: Min
+
+- it: should set replicas field when both autoscaling and KEDA are disabled
+  set:
+    llamaParse.replicas: 3
+    llamaParse.autoscaling.enabled: false
+    llamaParse.keda.enabled: false
+    rabbitmq.enabled: false
+  template: ../templates/llamaparse/deployment.yaml
+  asserts:
+    - equal:
+        path: .spec.replicas
+        value: 3
+
+- it: should not set replicas field when autoscaling is enabled
+  set:
+    llamaParse.replicas: 3
+    llamaParse.autoscaling.enabled: true
+    llamaParse.keda.enabled: false
+    rabbitmq.enabled: false
+  template: ../templates/llamaparse/deployment.yaml
+  asserts:
+    - notExists:
+        path: .spec.replicas
+
+- it: should not set replicas field when KEDA is enabled
+  set:
+    llamaParse.replicas: 3
+    llamaParse.autoscaling.enabled: false
+    llamaParse.keda.enabled: true
+    rabbitmq.enabled: false
+  template: ../templates/llamaparse/deployment.yaml
+  asserts:
+    - notExists:
+        path: .spec.replicas

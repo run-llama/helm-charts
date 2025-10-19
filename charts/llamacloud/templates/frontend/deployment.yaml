@@ -13,9 +13,7 @@ metadata:
       {{- toYaml . | nindent 4 }}
     {{- end }}
 spec:
-  {{- if .Values.frontend.autoscaling.enabled }}
-  replicas: {{ .Values.frontend.autoscaling.minReplicas }}
-  {{- else }}
+  {{- if not .Values.frontend.autoscaling.enabled }}
   replicas: {{ .Values.frontend.replicas }}
   {{- end }}
   strategy:
@@ -84,6 +82,12 @@ spec:
           - name: NEXT_PUBLIC_BYOC_HAS_MANAGED_QDRANT
             value: "true"
           {{- end }}
+          - name: NEXT_PUBLIC_TEMPORAL_ENABLED
+            {{- if include "temporal.enabled" . }}
+            value: "true"
+            {{- else }}
+            value: "false"
+            {{- end }}
           {{- if .Values.frontend.config.tls.enabled }}
           - name: NODE_EXTRA_CA_CERTS
             value: "{{ .Values.frontend.config.tls.caCertMountPath }}/{{ .Values.frontend.config.tls.caCertKey }}"

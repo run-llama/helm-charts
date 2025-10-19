@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## [0.5.9] - 2025-10-17
+
+### Index
+- Mitigate connection issues and address system segfaults when resolving network proxies
+
 ## [0.5.8] - 2025-10-10
 
 ### Index
