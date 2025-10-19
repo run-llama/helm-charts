@@ -29,7 +29,7 @@ metadata:
     {{- toYaml . | nindent 4 }}
     {{- end }}
 spec:
-  {{- if not $worker.autoscaling.enabled }}
+  {{- if and (not $worker.autoscaling.enabled) (not $worker.keda.enabled) }}
   replicas: {{ $worker.replicas }}
   {{- end }}
   strategy:
@@ -98,7 +98,7 @@ spec:
               fieldRef:
                 apiVersion: v1
                 fieldPath: metadata.name
-          {{- include "common.postgresql.secretEnvVars" $root | nindent 10 }}
+          {{- include "common.postgresql.envVars" $root | nindent 10 -}}
           {{- with $worker.extraEnvVariables }}
           {{- toYaml . | nindent 10 }}
           {{- end }}
@@ -108,6 +108,18 @@ spec:
           {{- if $root.Values.global.config.existingAwsSecretName }}
           - secretRef:
               name: {{ $root.Values.global.config.existingAwsSecretName }}
+          {{- end }}
+          {{- if $root.Values.llms.enabled }}
+          {{- include "common.llmModels.secretRefs" $root | nindent 10 }}
+          {{- else }}
+          {{- if $root.Values.backend.config.existingOpenAiApiKeySecretName }}
+          - secretRef:
+              name: {{ $root.Values.backend.config.existingOpenAiApiKeySecretName }}
+          {{- end }}
+          {{- if and $root.Values.backend.config.azureOpenAi.enabled $root.Values.backend.config.azureOpenAi.existingSecret }}
+          - secretRef:
+              name: {{ $root.Values.backend.config.azureOpenAi.existingSecret }}
+          {{- end }}
           {{- end }}
           {{- if and (not $root.Values.postgresql.enabled) $root.Values.global.config.postgresql.external.enabled $root.Values.global.config.postgresql.external.existingSecretName }}
           - secretRef:

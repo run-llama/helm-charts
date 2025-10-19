@@ -93,6 +93,10 @@ spec:
             value: {{ .Values.backend.config.basicAuth.jwtSecret | default (randAlphaNum 16) | quote }}
           {{- end }}
           {{- end }}
+          {{- if and .Values.ingress.enabled .Values.ingress.host }}
+          - name: BYOC_INGRESS_URL
+            value: {{ printf "%s://%s" .Values.ingress.scheme .Values.ingress.host | quote }}
+          {{- end }}
           {{- include "common.postgresql.envVars" . | nindent 10 -}}
           {{- include "common.mongodb.envVars" . | nindent 10 -}}
           {{- include "common.rabbitmq.envVars" . | nindent 10 -}}

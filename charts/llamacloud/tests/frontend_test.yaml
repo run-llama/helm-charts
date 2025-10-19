@@ -165,22 +165,7 @@ tests:
         path: .spec.template.spec.containers[0].env[?(@.name == "NODE_EXTRA_CA_CERTS")].value
         value: "/etc/ssl/certs/cert.pem"
 
-- it: should set replicas based on autoscaling configuration
-  set:
-    frontend.autoscaling.enabled: true
-    frontend.autoscaling.minReplicas: 2
-    frontend.replicas: 5
-    mongodb.enabled: false
-    postgresql.enabled: false
-    rabbitmq.enabled: false
-    redis.enabled: false
-  template: ../templates/frontend/deployment.yaml
-  asserts:
-    - equal:
-        path: .spec.replicas
-        value: 2
-
-- it: should set replicas based on static configuration when autoscaling is disabled
+- it: should set replicas field when autoscaling is disabled
   set:
     frontend.autoscaling.enabled: false
     frontend.replicas: 3
@@ -193,6 +178,20 @@ tests:
     - equal:
         path: .spec.replicas
         value: 3
+
+- it: should not set replicas field when autoscaling is enabled
+  set:
+    frontend.autoscaling.enabled: true
+    frontend.autoscaling.minReplicas: 2
+    frontend.replicas: 5
+    mongodb.enabled: false
+    postgresql.enabled: false
+    rabbitmq.enabled: false
+    redis.enabled: false
+  template: ../templates/frontend/deployment.yaml
+  asserts:
+    - notExists:
+        path: .spec.replicas
 
 - it: should create a Service with correct configuration
   set:

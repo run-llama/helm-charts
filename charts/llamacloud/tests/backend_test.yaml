@@ -97,6 +97,21 @@ tests:
         path: .spec.template.spec.containers[0].env[?(@.name == "BYOC_JWT_SECRET")].valueFrom.secretKeyRef.key
         value: byoc-jwt-secret
 
+- it: BYOC_INGRESS_URL should be set to the correct value if ingress is enabled
+  set:
+    ingress.enabled: true
+    ingress.host: test-ingress-host
+    ingress.scheme: https
+    mongodb.enabled: false
+    postgresql.enabled: false
+    rabbitmq.enabled: false
+    redis.enabled: false
+  template: ../templates/backend/deployment.yaml
+  asserts:
+    - equal:
+        path: .spec.template.spec.containers[0].env[?(@.name == "BYOC_INGRESS_URL")].value
+        value: "https://test-ingress-host"
+
 - it: should use the custom service account if it is set
   set:
     backend.serviceAccount.name: test-service-account
@@ -569,3 +584,31 @@ tests:
     - equal:
         path: .metadata.labels["foo"]
         value: bar
+
+- it: should set replicas field when both autoscaling and KEDA are disabled
+  set:
+    backend.replicas: 3
+    backend.autoscaling.enabled: false
+    backend.keda.enabled: false
+    mongodb.enabled: false
+    postgresql.enabled: false
+    rabbitmq.enabled: false
+    redis.enabled: false
+  template: ../templates/backend/deployment.yaml
+  asserts:
+    - equal:
+        path: .spec.replicas
+        value: 3
+
+- it: should not set replicas field when autoscaling is enabled
+  set:
+    backend.replicas: 3
+    backend.autoscaling.enabled: true
+    mongodb.enabled: false
+    postgresql.enabled: false
+    rabbitmq.enabled: false
+    redis.enabled: false
+  template: ../templates/backend/deployment.yaml
+  asserts:
+    - notExists:
+        path: .spec.replicas

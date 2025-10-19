@@ -13,7 +13,7 @@ metadata:
       {{- toYaml . | nindent 4 }}
     {{- end }}
 spec:
-  {{- if not .Values.llamaParse.autoscaling.enabled }}
+  {{- if and (not .Values.llamaParse.autoscaling.enabled) (not .Values.llamaParse.keda.enabled) }}
   replicas: {{ .Values.llamaParse.replicas }}
   {{- end }}
   selector:

@@ -220,3 +220,31 @@ tests:
   asserts:
     - isKind:
         of: ServiceMonitor
+
+- it: should set replicas field when autoscaling is disabled
+  set:
+    jobsWorker.replicas: 3
+    jobsWorker.autoscaling.enabled: false
+    mongodb.enabled: false
+    postgresql.enabled: false
+    rabbitmq.enabled: false
+    redis.enabled: false
+  template: ../templates/jobs-worker/deployment.yaml
+  asserts:
+    - equal:
+        path: .spec.replicas
+        value: 3
+
+- it: should not set replicas field when autoscaling is enabled
+  set:
+    jobsWorker.replicas: 3
+    jobsWorker.autoscaling.enabled: true
+    mongodb.enabled: false
+    postgresql.enabled: false
+    rabbitmq.enabled: false
+    redis.enabled: false
+  template: ../templates/jobs-worker/deployment.yaml
+  asserts:
+    - notExists:
+        path: .spec.replicas
+

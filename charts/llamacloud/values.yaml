@@ -262,7 +262,7 @@ frontend:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-frontend
-    tag: 0.5.8
+    tag: 0.5.9
     pullPolicy: IfNotPresent
 
   ## @param frontend.service.type Frontend Service type
@@ -463,7 +463,7 @@ backend:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-backend
-    tag: 0.5.8
+    tag: 0.5.9
     pullPolicy: IfNotPresent
 
   ## Backend Service information
@@ -705,7 +705,7 @@ jobsService:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-jobs-service
-    tag: 0.5.8
+    tag: 0.5.9
     pullPolicy: IfNotPresent
 
   ## JobsService Service information\
@@ -915,7 +915,7 @@ jobsWorker:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-jobs-worker
-    tag: 0.5.8
+    tag: 0.5.9
     pullPolicy: IfNotPresent
 
   ## JobsWorker Service information
@@ -1194,7 +1194,7 @@ llamaParse:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-llamaparse
-    tag: 0.5.8
+    tag: 0.5.9
     pullPolicy: IfNotPresent
 
   ## ServiceAccount configuration
@@ -1444,12 +1444,12 @@ llamaParseOcr:
   ## LlamaParseOcr Image information
   ## @param llamaParseOcr.image.registry LlamaParseOcr Image registry
   ## @param llamaParseOcr.image.repository LlamaParseOcr Image repository
-  ## @param llamaParseOcr.image.tag LlamaParseOcr Image tag
+  ## @param llamaParseOcr.image.tag LlamaParseOcr Image tag (-cpu suffix added automatically for CPU backend)
   ## @param llamaParseOcr.image.pullPolicy LlamaParseOcr Image pull policy
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-llamaparse-ocr
-    tag: 0.5.8
+    tag: 0.5.9
     pullPolicy: IfNotPresent
 
   ## LlamaParseOcr Service information
@@ -1656,30 +1656,30 @@ llamaParseLayoutDetectionApi:
   ## @param llamaParseLayoutDetectionApi.enabled Enable LlamaParseLayoutDetectionApi
   enabled: false
 
-  ## @param llamaParseLayoutDetectionApi.name Name suffix of the LlamaParse Layout Detectedion Api related resources
+  ## @param llamaParseLayoutDetectionApi.name Name suffix of the LlamaParse Layout Detection Api related resources
   name: llamaparse-layout-detection-api
 
-  ## @param llamaParseLayoutDetectionApi.replicas Number of replicas of LlamaParse Layout Detectedion Api Deployment
+  ## @param llamaParseLayoutDetectionApi.replicas Number of replicas of LlamaParse Layout Detection Api Deployment
   replicas: 1
 
-  ## @param llamaParseLayoutDetectionApi.config.logLevel Log level for the LlamaParse Layout Detectedion Api
+  ## @param llamaParseLayoutDetectionApi.config.logLevel Log level for the LlamaParse Layout Detection Api
   config:
     logLevel: INFO
 
-  ## LlamaParse Layout Detectedion Api Image information
-  ## @param llamaParseLayoutDetectionApi.image.registry LlamaParse Layout Detectedion Api Image registry
-  ## @param llamaParseLayoutDetectionApi.image.repository LlamaParse Layout Detectedion Api Image repository
-  ## @param llamaParseLayoutDetectionApi.image.tag LlamaParse Layout Detectedion Api Image tag
-  ## @param llamaParseLayoutDetectionApi.image.pullPolicy LlamaParse Layout Detectedion Api Image pull policy
+  ## LlamaParse Layout Detection Api Image information
+  ## @param llamaParseLayoutDetectionApi.image.registry LlamaParse Layout Detection Api Image registry
+  ## @param llamaParseLayoutDetectionApi.image.repository LlamaParse Layout Detection Api Image repository
+  ## @param llamaParseLayoutDetectionApi.image.tag LlamaParse Layout Detection Api Image tag
+  ## @param llamaParseLayoutDetectionApi.image.pullPolicy LlamaParse Layout Detection Api Image pull policy
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-layout-detection-api
-    tag: 0.5.8
+    tag: 0.5.9
     pullPolicy: IfNotPresent
 
-  ## LlamaParse Layout Detectedion Api Service information
-  ## @param llamaParseLayoutDetectionApi.service.type LlamaParse Layout Detectedion Api Service type
-  ## @param llamaParseLayoutDetectionApi.service.port LlamaParse Layout Detectedion Api Service port
+  ## LlamaParse Layout Detection Api Service information
+  ## @param llamaParseLayoutDetectionApi.service.type LlamaParse Layout Detection Api Service type
+  ## @param llamaParseLayoutDetectionApi.service.port LlamaParse Layout Detection Api Service port
   service:
     type: ClusterIP
     port: 8000
@@ -1697,13 +1697,13 @@ llamaParseLayoutDetectionApi:
     annotations: {}
     automountServiceAccountToken: true
 
-  ## @param llamaParseLayoutDetectionApi.containerPort Port to expose on the LlamaParse Layout Detectedion Api container
+  ## @param llamaParseLayoutDetectionApi.containerPort Port to expose on the LlamaParse Layout Detection Api container
   ## Ref: https://kubernetes.io/docs/tutorials/services/connect-applications-service/#exposing-pods-to-the-cluster
   containerPort: 8000
 
-  ## @param llamaParseLayoutDetectionApi.labels Labels added to the LlamaParse Layout Detectedion Api Deployment.
+  ## @param llamaParseLayoutDetectionApi.labels Labels added to the LlamaParse Layout Detection Api Deployment.
   labels: {}
-  ## @param llamaParseLayoutDetectionApi.annotations Annotations added to the LlamaParse Layout Detectedion Api Deployment.
+  ## @param llamaParseLayoutDetectionApi.annotations Annotations added to the LlamaParse Layout Detection Api Deployment.
   annotations: {}
 
   ## @param llamaParseLayoutDetectionApi.podAnnotations Annotations to add to the resulting Pods of the Deployment.
@@ -1720,14 +1720,14 @@ llamaParseLayoutDetectionApi:
   #  runAsUser: 1000
   #  runAsGroup: 1000
 
-  ## @param llamaParseLayoutDetectionApi.extraEnvVariables Extra environment variables to add to LlamaParse Layout Detectedion Api pods
+  ## @param llamaParseLayoutDetectionApi.extraEnvVariables Extra environment variables to add to LlamaParse Layout Detection Api pods
   ## Example:
   ## extraEnvVariables:
   ##   - name: FOO
   ##     value: BAR
   extraEnvVariables: []
 
-  ## LlamaParse Layout Detectedion Api Resources: Set container requests and limits for different resources like CPU or memory (essential for production workloads)
+  ## LlamaParse Layout Detection Api Resources: Set container requests and limits for different resources like CPU or memory (essential for production workloads)
   ## Ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
   ## Below are the recommended settings for a basic deployment. Adjust according to your needs.
   resources:
@@ -1787,12 +1787,12 @@ llamaParseLayoutDetectionApi:
   ## The HPA scales by the target CPU utilization percentage by default
   ## Uncomment the targetMemoryUtilizationPercentage line below to scale by memory utilization
   autoscaling:
-    ## @param llamaParseLayoutDetectionApi.autoscaling.enabled Enable autoscaling for the LlamaParse Layout Detectedion Api Deployment
-    ## @param llamaParseLayoutDetectionApi.autoscaling.minReplicas Minimum number of replicas for the LlamaParse Layout Detectedion Api Deployment
-    ## @param llamaParseLayoutDetectionApi.autoscaling.maxReplicas Maximum number of replicas for the LlamaParse Layout Detectedion Api Deployment
-    ## @param llamaParseLayoutDetectionApi.autoscaling.targetCPUUtilizationPercentage Target CPU utilization percentage for the LlamaParse Layout Detectedion Api Deployment
+    ## @param llamaParseLayoutDetectionApi.autoscaling.enabled Enable autoscaling for the LlamaParse Layout Detection Api Deployment
+    ## @param llamaParseLayoutDetectionApi.autoscaling.minReplicas Minimum number of replicas for the LlamaParse Layout Detection Api Deployment
+    ## @param llamaParseLayoutDetectionApi.autoscaling.maxReplicas Maximum number of replicas for the LlamaParse Layout Detection Api Deployment
+    ## @param llamaParseLayoutDetectionApi.autoscaling.targetCPUUtilizationPercentage Target CPU utilization percentage for the LlamaParse Layout Detection Api Deployment
     enabled: false
-    minReplicas: 2
+    minReplicas: 1
     maxReplicas: 10
     targetCPUUtilizationPercentage: 80
     # targetMemoryUtilizationPercentage: 80
@@ -1800,7 +1800,7 @@ llamaParseLayoutDetectionApi:
   ## PodDisruptionBudget configuration
   ## Ref: https://kubernetes.io/docs/tasks/run-application/configure-pdb/
   podDisruptionBudget:
-    ## @param llamaParseLayoutDetectionApi.podDisruptionBudget.enabled Enable PodDisruptionBudget for the LlamaParse Layout Detectedion Api Deployment
+    ## @param llamaParseLayoutDetectionApi.podDisruptionBudget.enabled Enable PodDisruptionBudget for the LlamaParse Layout Detection Api Deployment
     ## @param llamaParseLayoutDetectionApi.podDisruptionBudget.maxUnavailable Maximum number of unavailable pods
     enabled: true
     maxUnavailable: 1
@@ -1839,7 +1839,7 @@ usage:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-usage
-    tag: 0.5.8
+    tag: 0.5.9
     pullPolicy: IfNotPresent
 
   ## Usage Service information
@@ -2448,7 +2448,7 @@ temporalParse:
       ## @param temporalParse.parseDelegate.keda.cooldownPeriod Cooldown period for the KEDA
       cooldownPeriod: 120
       ## @param temporalParse.parseDelegate.keda.minReplicaCount Minimum number of replicas for the KEDA
-      minReplicaCount: 2
+      minReplicaCount: 1
       ## @param temporalParse.parseDelegate.keda.maxReplicaCount Maximum number of replicas for the KEDA
       maxReplicaCount: 10
       ## @param temporalParse.parseDelegate.keda.initialCooldownPeriod Initial cooldown period for the KEDA
@@ -2670,7 +2670,7 @@ temporalParse:
       ## @param temporalParse.parseScreenshotPDFs.keda.cooldownPeriod Cooldown period for the KEDA
       cooldownPeriod: 120
       ## @param temporalParse.parseScreenshotPDFs.keda.minReplicaCount Minimum number of replicas for the KEDA
-      minReplicaCount: 2
+      minReplicaCount: 1
       ## @param temporalParse.parseScreenshotPDFs.keda.maxReplicaCount Maximum number of replicas for the KEDA
       maxReplicaCount: 10
       ## @param temporalParse.parseScreenshotPDFs.keda.initialCooldownPeriod Initial cooldown period for the KEDA
@@ -3050,7 +3050,7 @@ temporalJobsService:
       ## @param temporalJobsService.jobsServiceWorker.keda.cooldownPeriod Cooldown period for the KEDA
       cooldownPeriod: 120
       ## @param temporalJobsService.jobsServiceWorker.keda.minReplicaCount Minimum number of replicas for the KEDA
-      minReplicaCount: 2
+      minReplicaCount: 1
       ## @param temporalJobsService.jobsServiceWorker.keda.maxReplicaCount Maximum number of replicas for the KEDA
       maxReplicaCount: 10
       ## @param temporalJobsService.jobsServiceWorker.keda.initialCooldownPeriod Initial cooldown period for the KEDA
@@ -3272,7 +3272,7 @@ temporalJobsService:
       ## @param temporalJobsService.jobsExtractWorker.keda.cooldownPeriod Cooldown period for the KEDA
       cooldownPeriod: 120
       ## @param temporalJobsService.jobsExtractWorker.keda.minReplicaCount Minimum number of replicas for the KEDA
-      minReplicaCount: 2
+      minReplicaCount: 1
       ## @param temporalJobsService.jobsExtractWorker.keda.maxReplicaCount Maximum number of replicas for the KEDA
       maxReplicaCount: 10
       ## @param temporalJobsService.jobsExtractWorker.keda.initialCooldownPeriod Initial cooldown period for the KEDA

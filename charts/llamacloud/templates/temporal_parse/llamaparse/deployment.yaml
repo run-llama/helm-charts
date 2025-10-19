@@ -14,7 +14,7 @@ metadata:
       {{- toYaml . | nindent 4 }}
     {{- end }}
 spec:
-  {{- if not .Values.temporalParse.llamaParse.autoscaling.enabled }}
+  {{- if and (not .Values.temporalParse.llamaParse.autoscaling.enabled) (not .Values.temporalParse.llamaParse.keda.enabled) }}
   replicas: {{ .Values.temporalParse.llamaParse.replicas }}
   {{- end }}
   selector:
