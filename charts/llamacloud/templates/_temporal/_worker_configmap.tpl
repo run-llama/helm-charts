@@ -28,6 +28,7 @@ data:
   TEMPORAL_HOST: {{ include "temporal.host" $root | quote }}
   TEMPORAL_PORT: {{ include "temporal.port" $root | quote }}
   TEMPORAL_NAMESPACE: "default"
+  TEMPORAL_WORKER_REGISTRY_PROFILE: {{ $worker.config.temporalWorkerRegistryProfile | default "consolidated" | quote }}
   JOB_SERVICE_URL: {{ printf "http://%s-%s:%d" (include "llamacloud.fullname" $root) $root.Values.jobsService.name ($root.Values.jobsService.service.port | int) | quote }}
   TRACKING_SERVICE_URL: {{ printf "http://%s-%s:%d" (include "llamacloud.fullname" $root) $root.Values.usage.name ($root.Values.usage.service.port | int) | quote }}
   LOG_LEVEL: {{ $worker.config.logLevel | default "info" }}

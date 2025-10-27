@@ -215,7 +215,7 @@ tests:
   asserts:
     - matchRegex:
         path: spec.template.spec.containers[0].image
-        pattern: docker\.io/llamaindex/llamacloud-llamaparse-ocr:[^-]+$
+        pattern: docker\.io/llamaindex/llamacloud-llamaparse-ocr:.+-cpu$
 
 - it: should use CPU image when gpu.enabled is false
   set:
@@ -228,7 +228,7 @@ tests:
   asserts:
     - matchRegex:
         path: spec.template.spec.containers[0].image
-        pattern: docker\.io/llamaindex/llamacloud-llamaparse-ocr:[^-]+$
+        pattern: docker\.io/llamaindex/llamacloud-llamaparse-ocr:.+-cpu$
 
 - it: should use GPU image when gpu.enabled is true
   set:
@@ -255,7 +255,7 @@ tests:
   asserts:
     - equal:
         path: spec.template.spec.containers[0].image
-        value: docker.io/llamaindex/llamacloud-llamaparse-ocr:1.2.3
+        value: docker.io/llamaindex/llamacloud-llamaparse-ocr:1.2.3-cpu
 
 - it: should use custom image tag without suffix when gpu.enabled is true
   set:

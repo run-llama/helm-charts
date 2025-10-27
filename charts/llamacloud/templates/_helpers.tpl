@@ -149,22 +149,6 @@ Service Accounts Names
 {{- end -}}
 {{- end -}}
 
-{{- define "temporalParse.parseDelegate.serviceAccountName" -}}
-{{- if .Values.temporalParse.parseDelegate.serviceAccount.create -}}
-    {{ default (printf "%s-%s" (include "llamacloud.fullname" .) .Values.temporalParse.parseDelegate.name) .Values.temporalParse.parseDelegate.serviceAccount.name | trunc 63 | trimSuffix "-" }}
-{{- else -}}
-    {{ default "default" .Values.temporalParse.parseDelegate.serviceAccount.name }}
-{{- end -}}
-{{- end -}}
-
-{{- define "temporalParse.parseScreenshotPDFs.serviceAccountName" -}}
-{{- if .Values.temporalParse.parseScreenshotPDFs.serviceAccount.create -}}
-    {{ default (printf "%s-%s" (include "llamacloud.fullname" .) .Values.temporalParse.parseScreenshotPDFs.name) .Values.temporalParse.parseScreenshotPDFs.serviceAccount.name | trunc 63 | trimSuffix "-" }}
-{{- else -}}
-    {{ default "default" .Values.temporalParse.parseScreenshotPDFs.serviceAccount.name }}
-{{- end -}}
-{{- end -}}
-
 {{- define "temporalJobsService.api.serviceAccountName" -}}
 {{- if .Values.temporalJobsService.api.serviceAccount.create -}}
     {{ default (printf "%s-%s" (include "llamacloud.fullname" .) .Values.temporalJobsService.api.name) .Values.temporalJobsService.api.serviceAccount.name | trunc 63 | trimSuffix "-" }}
@@ -173,19 +157,11 @@ Service Accounts Names
 {{- end -}}
 {{- end -}}
 
-{{- define "temporalJobsService.jobsServiceWorker.serviceAccountName" -}}
-{{- if .Values.temporalJobsService.jobsServiceWorker.serviceAccount.create -}}
-    {{ default (printf "%s-%s" (include "llamacloud.fullname" .) .Values.temporalJobsService.jobsServiceWorker.name) .Values.temporalJobsService.jobsServiceWorker.serviceAccount.name | trunc 63 | trimSuffix "-" }}
+{{- define "temporalWorkers.pythonWorker.serviceAccountName" -}}
+{{- if .Values.temporalWorkers.pythonWorker.serviceAccount.create -}}
+    {{ default (printf "%s-%s" (include "llamacloud.fullname" .) .Values.temporalWorkers.pythonWorker.name) .Values.temporalWorkers.pythonWorker.serviceAccount.name | trunc 63 | trimSuffix "-" }}
 {{- else -}}
-    {{ default "default" .Values.temporalJobsService.jobsServiceWorker.serviceAccount.name }}
-{{- end -}}
-{{- end -}}
-
-{{- define "temporalJobsService.jobsExtractWorker.serviceAccountName" -}}
-{{- if .Values.temporalJobsService.jobsExtractWorker.serviceAccount.create -}}
-    {{ default (printf "%s-%s" (include "llamacloud.fullname" .) .Values.temporalJobsService.jobsExtractWorker.name) .Values.temporalJobsService.jobsExtractWorker.serviceAccount.name | trunc 63 | trimSuffix "-" }}
-{{- else -}}
-    {{ default "default" .Values.temporalJobsService.jobsExtractWorker.serviceAccount.name }}
+    {{ default "default" .Values.temporalWorkers.pythonWorker.serviceAccount.name }}
 {{- end -}}
 {{- end -}}
 
@@ -366,8 +342,12 @@ AWS_BEDROCK_SECRET_ACCESS_KEY: {{ .Values.llms.awsBedrock.secretAccessKey | b64e
 AWS_BEDROCK_SONNET_3_5_MODEL_VERSION_NAME: {{ .Values.llms.awsBedrock.sonnet3_5ModelVersionName | b64enc | quote }}
 AWS_BEDROCK_SONNET_3_7_MODEL_VERSION_NAME: {{ .Values.llms.awsBedrock.sonnet3_7ModelVersionName | b64enc | quote }}
 AWS_BEDROCK_SONNET_4_0_MODEL_VERSION_NAME: {{ .Values.llms.awsBedrock.sonnet4_0ModelVersionName | b64enc | quote }}
-AWS_BEDROCK_HAIKU_3_5_MODEL_VERSION_NAME: {{ .Values.llms.awsBedrock.haiku3_5_ModelVersionName | b64enc | quote }}
+AWS_BEDROCK_HAIKU_3_5_MODEL_VERSION_NAME: {{ .Values.llms.awsBedrock.haiku3_5ModelVersionName | b64enc | quote }}
+AWS_BEDROCK_HAIKU_4_5_MODEL_VERSION_NAME: {{ .Values.llms.awsBedrock.haiku4_5ModelVersionName | b64enc | quote }}
 {{ end }}
+{{- if .Values.llamaParse.config.preferedPremiumModel -}}
+PREFERED_PREMIUM_MODE_MODEL:  {{ .Values.llamaParse.config.preferedPremiumModel | b64enc | quote }}
+{{end}}
 {{- if and .Values.llms.googleVertexAi.enabled (not .Values.llms.googleVertexAi.existingSecretName) -}}
 GOOGLE_VERTEX_AI_ENABLED: {{ "true" | b64enc | quote }}
 GOOGLE_VERTEX_AI_PROJECT_ID: {{ .Values.llms.googleVertexAi.projectId | b64enc | quote }}

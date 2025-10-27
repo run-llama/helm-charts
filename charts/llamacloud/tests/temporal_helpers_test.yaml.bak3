@@ -554,7 +554,7 @@ tests:
   - it: temporalWorker helpers should work for jobs_service worker
     set:
       temporal.enabled: true
-      temporalWorkers.pythonWorker.serviceAccount.create: true
+      temporalJobsService.jobsServiceWorker.serviceAccount.create: true
       mongodb.enabled: false
       postgresql.enabled: false
       rabbitmq.enabled: false

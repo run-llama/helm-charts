@@ -6,22 +6,14 @@ templates:
   - ../templates/temporal_jobs_service/api/service.yaml
   - ../templates/temporal_jobs_service/api/hpa.yaml
   - ../templates/temporal_jobs_service/api/serviceaccount.yaml
-  - ../templates/temporal_jobs_service/jobs_service/deployment.yaml
-  - ../templates/temporal_jobs_service/jobs_service/configmap.yaml
-  - ../templates/temporal_jobs_service/jobs_service/secret.yaml
-  - ../templates/temporal_jobs_service/jobs_service/service.yaml
-  - ../templates/temporal_jobs_service/jobs_service/hpa.yaml
-  - ../templates/temporal_jobs_service/jobs_service/keda-scaledobject.yaml
-  - ../templates/temporal_jobs_service/jobs_service/servicemonitor.yaml
-  - ../templates/temporal_jobs_service/jobs_service/serviceaccount.yaml
-  - ../templates/temporal_jobs_service/extract/deployment.yaml
-  - ../templates/temporal_jobs_service/extract/configmap.yaml
-  - ../templates/temporal_jobs_service/extract/secret.yaml
-  - ../templates/temporal_jobs_service/extract/service.yaml
-  - ../templates/temporal_jobs_service/extract/hpa.yaml
-  - ../templates/temporal_jobs_service/extract/keda-scaledobject.yaml
-  - ../templates/temporal_jobs_service/extract/servicemonitor.yaml
-  - ../templates/temporal_jobs_service/extract/serviceaccount.yaml
+  - ../templates/temporal_workers/python_worker/deployment.yaml
+  - ../templates/temporal_workers/python_worker/configmap.yaml
+  - ../templates/temporal_workers/python_worker/secret.yaml
+  - ../templates/temporal_workers/python_worker/service.yaml
+  - ../templates/temporal_workers/python_worker/hpa.yaml
+  - ../templates/temporal_workers/python_worker/keda-scaledobject.yaml
+  - ../templates/temporal_workers/python_worker/servicemonitor.yaml
+  - ../templates/temporal_workers/python_worker/serviceaccount.yaml
   # Temporal Parse Templates
   - ../templates/temporal_parse/llamaparse/deployment.yaml
   - ../templates/temporal_parse/llamaparse/configmap.yaml
@@ -33,22 +25,6 @@ templates:
   - ../templates/temporal_parse/llamaparse/secret.yaml
   - ../templates/temporal_parse/llamaparse/serviceaccount.yaml
   - ../templates/temporal_parse/llamaparse/servicemonitor.yaml
-  - ../templates/temporal_parse/parse_delegate/deployment.yaml
-  - ../templates/temporal_parse/parse_delegate/configmap.yaml
-  - ../templates/temporal_parse/parse_delegate/service.yaml
-  - ../templates/temporal_parse/parse_delegate/hpa.yaml
-  - ../templates/temporal_parse/parse_delegate/keda-scaledobject.yaml
-  - ../templates/temporal_parse/parse_delegate/secret.yaml
-  - ../templates/temporal_parse/parse_delegate/serviceaccount.yaml
-  - ../templates/temporal_parse/parse_delegate/servicemonitor.yaml
-  - ../templates/temporal_parse/parse_screenshot_pdfs/deployment.yaml
-  - ../templates/temporal_parse/parse_screenshot_pdfs/configmap.yaml
-  - ../templates/temporal_parse/parse_screenshot_pdfs/service.yaml
-  - ../templates/temporal_parse/parse_screenshot_pdfs/hpa.yaml
-  - ../templates/temporal_parse/parse_screenshot_pdfs/keda-scaledobject.yaml
-  - ../templates/temporal_parse/parse_screenshot_pdfs/secret.yaml
-  - ../templates/temporal_parse/parse_screenshot_pdfs/serviceaccount.yaml
-  - ../templates/temporal_parse/parse_screenshot_pdfs/servicemonitor.yaml
   # Temporal Server Templates
   - ../templates/temporal_server/job.yaml
 release:
@@ -172,13 +148,13 @@ tests:
       postgresql.enabled: false
       rabbitmq.enabled: false
       redis.enabled: false
-    template: ../templates/temporal_parse/parse_delegate/deployment.yaml
+    template: ../templates/temporal_workers/python_worker/deployment.yaml
     asserts:
       - isKind:
           of: Deployment
       - equal:
           path: metadata.name
-          value: llamacloud-temporal-parse-delegate
+          value: llamacloud-temporal-python-worker
 
   # Verify jobs service workers are created when either flag is true
   - it: should create temporal jobs service worker when temporal.enabled is true
@@ -189,13 +165,13 @@ tests:
       postgresql.enabled: false
       rabbitmq.enabled: false
       redis.enabled: false
-    template: ../templates/temporal_jobs_service/jobs_service/deployment.yaml
+    template: ../templates/temporal_workers/python_worker/deployment.yaml
     asserts:
       - isKind:
           of: Deployment
       - equal:
           path: metadata.name
-          value: llamacloud-temporal-jobs-service
+          value: llamacloud-temporal-python-worker
 
   - it: should create temporal extract worker when global.config.temporal.external.enabled is true
     set:
@@ -205,13 +181,13 @@ tests:
       postgresql.enabled: false
       rabbitmq.enabled: false
       redis.enabled: false
-    template: ../templates/temporal_jobs_service/extract/deployment.yaml
+    template: ../templates/temporal_workers/python_worker/deployment.yaml
     asserts:
       - isKind:
           of: Deployment
       - equal:
           path: metadata.name
-          value: llamacloud-temporal-extract
+          value: llamacloud-temporal-python-worker
 
   # Test specific temporal_jobs_service components when temporal is disabled
   - it: should not create temporal jobs service API deployment when temporal is disabled
@@ -235,7 +211,7 @@ tests:
       postgresql.enabled: false
       rabbitmq.enabled: false
       redis.enabled: false
-    template: ../templates/temporal_jobs_service/jobs_service/deployment.yaml
+    template: ../templates/temporal_workers/python_worker/deployment.yaml
     asserts:
       - hasDocuments:
           count: 0
@@ -248,7 +224,7 @@ tests:
       postgresql.enabled: false
       rabbitmq.enabled: false
       redis.enabled: false
-    template: ../templates/temporal_jobs_service/extract/deployment.yaml
+    template: ../templates/temporal_workers/python_worker/deployment.yaml
     asserts:
       - hasDocuments:
           count: 0
@@ -275,7 +251,7 @@ tests:
       postgresql.enabled: false
       rabbitmq.enabled: false
       redis.enabled: false
-    template: ../templates/temporal_parse/parse_delegate/deployment.yaml
+    template: ../templates/temporal_workers/python_worker/deployment.yaml
     asserts:
       - hasDocuments:
           count: 0
@@ -288,7 +264,7 @@ tests:
       postgresql.enabled: false
       rabbitmq.enabled: false
       redis.enabled: false
-    template: ../templates/temporal_parse/parse_screenshot_pdfs/deployment.yaml
+    template: ../templates/temporal_workers/python_worker/deployment.yaml
     asserts:
       - hasDocuments:
           count: 0
@@ -366,12 +342,12 @@ tests:
     set:
       temporal.enabled: false
       global.config.temporal.external.enabled: false
-      temporalJobsService.jobsServiceWorker.externalSecrets.enabled: false
+      temporalWorkers.pythonWorker.externalSecrets.enabled: false
       mongodb.enabled: false
       postgresql.enabled: false
       rabbitmq.enabled: false
       redis.enabled: false
-    template: ../templates/temporal_jobs_service/jobs_service/secret.yaml
+    template: ../templates/temporal_workers/python_worker/secret.yaml
     asserts:
       - hasDocuments:
           count: 0
@@ -380,12 +356,12 @@ tests:
     set:
       temporal.enabled: false
       global.config.temporal.external.enabled: false
-      temporalJobsService.jobsExtractWorker.externalSecrets.enabled: false
+      temporalWorkers.pythonWorker.externalSecrets.enabled: false
       mongodb.enabled: false
       postgresql.enabled: false
       rabbitmq.enabled: false
       redis.enabled: false
-    template: ../templates/temporal_jobs_service/extract/secret.yaml
+    template: ../templates/temporal_workers/python_worker/secret.yaml
     asserts:
       - hasDocuments:
           count: 0
@@ -438,7 +414,7 @@ tests:
     set:
       temporal.enabled: false
       global.config.temporal.external.enabled: false
-      temporalJobsService.jobsServiceWorker.keda.enabled: true
+      temporalWorkers.pythonWorker.keda.enabled: true
       mongodb.enabled: false
       postgresql.enabled: false
       rabbitmq.enabled: false
@@ -446,7 +422,7 @@ tests:
     capabilities:
       apiVersions:
         - keda.sh/v1alpha1
-    template: ../templates/temporal_jobs_service/jobs_service/keda-scaledobject.yaml
+    template: ../templates/temporal_workers/python_worker/keda-scaledobject.yaml
     asserts:
       - hasDocuments:
           count: 0
@@ -455,7 +431,7 @@ tests:
     set:
       temporal.enabled: false
       global.config.temporal.external.enabled: false
-      temporalJobsService.jobsExtractWorker.keda.enabled: true
+      temporalWorkers.pythonWorker.keda.enabled: true
       mongodb.enabled: false
       postgresql.enabled: false
       rabbitmq.enabled: false
@@ -463,7 +439,7 @@ tests:
     capabilities:
       apiVersions:
         - keda.sh/v1alpha1
-    template: ../templates/temporal_jobs_service/extract/keda-scaledobject.yaml
+    template: ../templates/temporal_workers/python_worker/keda-scaledobject.yaml
     asserts:
       - hasDocuments:
           count: 0
@@ -490,8 +466,8 @@ tests:
     set:
       temporal.enabled: false
       global.config.temporal.external.enabled: false
-      temporalJobsService.jobsServiceWorker.metrics.enabled: true
-      temporalJobsService.jobsServiceWorker.metrics.serviceMonitor.enabled: true
+      temporalWorkers.pythonWorker.metrics.enabled: true
+      temporalWorkers.pythonWorker.metrics.serviceMonitor.enabled: true
       mongodb.enabled: false
       postgresql.enabled: false
       rabbitmq.enabled: false
@@ -499,7 +475,7 @@ tests:
     capabilities:
       apiVersions:
         - monitoring.coreos.com/v1
-    template: ../templates/temporal_jobs_service/jobs_service/servicemonitor.yaml
+    template: ../templates/temporal_workers/python_worker/servicemonitor.yaml
     asserts:
       - hasDocuments:
           count: 0

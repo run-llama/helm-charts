@@ -94,7 +94,7 @@ spec:
           {{- end }}
           {{- end }}
           {{- if and .Values.ingress.enabled .Values.ingress.host }}
-          - name: BYOC_INGRESS_URL
+          - name: LLAMACLOUD_INGRESS_URL
             value: {{ printf "%s://%s" .Values.ingress.scheme .Values.ingress.host | quote }}
           {{- end }}
           {{- include "common.postgresql.envVars" . | nindent 10 -}}

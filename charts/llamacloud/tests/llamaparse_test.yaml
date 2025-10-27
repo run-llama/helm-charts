@@ -121,7 +121,8 @@ tests:
     llamaParse.config.awsBedrock.sonnet3_5ModelVersionName: test-sonnet-3-5-model-version-name
     llamaParse.config.awsBedrock.sonnet3_7ModelVersionName: test-sonnet-3-7-model-version-name
     llamaParse.config.awsBedrock.sonnet4_0ModelVersionName: test-sonnet-4-0-model-version-name
-    llamaParse.config.awsBedrock.haiku3_5_ModelVersionName: test-haiku-3-5-model-version-name
+    llamaParse.config.awsBedrock.haiku3_5ModelVersionName: test-haiku-3-5-model-version-name
+    llamaParse.config.awsBedrock.haiku4_5ModelVersionName: test-haiku-4-5-model-version-name
     rabbitmq.enabled: true
     rabbitmq.auth.username: test-username
   template: ../templates/llamaparse/secret.yaml
@@ -150,6 +151,9 @@ tests:
     - equal:
         path: .data.BEDROCK_ANTHROPIC_HAIKU_3_5_VERSION_NAME
         value: dGVzdC1oYWlrdS0zLTUtbW9kZWwtdmVyc2lvbi1uYW1l
+    - equal:
+        path: .data.BEDROCK_ANTHROPIC_HAIKU_4_5_VERSION_NAME
+        value: dGVzdC1oYWlrdS00LTUtbW9kZWwtdmVyc2lvbi1uYW1l
 
 - it: should set the Google Vertex AI env vars if feature is enabled
   set:
