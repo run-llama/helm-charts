@@ -45,8 +45,8 @@ tests:
   - it: temporalWorker.deployment should use custom replicas when autoscaling disabled
     set:
       temporal.enabled: true
-      temporalWorkers.pythonWorker.autoscaling.enabled: false
-      temporalWorkers.pythonWorker.replicas: 5
+      temporalParse.parseDelegate.autoscaling.enabled: false
+      temporalParse.parseDelegate.replicas: 5
       mongodb.enabled: false
       postgresql.enabled: false
       rabbitmq.enabled: false
@@ -60,8 +60,8 @@ tests:
   - it: temporalWorker.deployment should not set replicas when autoscaling enabled
     set:
       temporal.enabled: true
-      temporalWorkers.pythonWorker.autoscaling.enabled: true
-      temporalWorkers.pythonWorker.replicas: 5
+      temporalParse.parseDelegate.autoscaling.enabled: true
+      temporalParse.parseDelegate.replicas: 5
       mongodb.enabled: false
       postgresql.enabled: false
       rabbitmq.enabled: false
@@ -74,7 +74,7 @@ tests:
   - it: temporalWorker.deployment should include service account name
     set:
       temporal.enabled: true
-      temporalWorkers.pythonWorker.serviceAccount.create: true
+      temporalParse.parseDelegate.serviceAccount.create: true
       mongodb.enabled: false
       postgresql.enabled: false
       rabbitmq.enabled: false
@@ -87,7 +87,7 @@ tests:
   - it: temporalWorker.deployment should include command if specified
     set:
       temporal.enabled: true
-      temporalWorkers.pythonWorker.command:
+      temporalParse.parseDelegate.command:
         - "custom-command"
         - "arg1"
       mongodb.enabled: false
@@ -106,7 +106,7 @@ tests:
   - it: temporalWorker.deployment should include extraEnvVariables
     set:
       temporal.enabled: true
-      temporalWorkers.pythonWorker.extraEnvVariables:
+      temporalParse.parseDelegate.extraEnvVariables:
         - name: CUSTOM_VAR
           value: custom_value
       mongodb.enabled: false
@@ -178,7 +178,7 @@ tests:
   - it: temporalWorker.secret should create secret when external secrets disabled
     set:
       temporal.enabled: true
-      temporalWorkers.pythonWorker.externalSecrets.enabled: false
+      temporalParse.parseDelegate.externalSecrets.enabled: false
       mongodb.enabled: false
       postgresql.enabled: false
       rabbitmq.enabled: false
@@ -194,8 +194,8 @@ tests:
   - it: temporalWorker.secret should not create secret when external secrets enabled
     set:
       temporal.enabled: true
-      temporalWorkers.pythonWorker.externalSecrets.enabled: true
-      temporalWorkers.pythonWorker.externalSecrets.secrets:
+      temporalParse.parseDelegate.externalSecrets.enabled: true
+      temporalParse.parseDelegate.externalSecrets.secrets:
         - external-secret-1
       mongodb.enabled: false
       postgresql.enabled: false
@@ -229,7 +229,7 @@ tests:
   - it: temporalWorker.service should use custom service type when provided
     set:
       temporal.enabled: true
-      temporalWorkers.pythonWorker.service.type: LoadBalancer
+      temporalParse.parseDelegate.service.type: LoadBalancer
       mongodb.enabled: false
       postgresql.enabled: false
       rabbitmq.enabled: false
@@ -243,7 +243,7 @@ tests:
   - it: temporalWorker.service should include metrics port when metrics enabled
     set:
       temporal.enabled: true
-      temporalWorkers.pythonWorker.metrics.enabled: true
+      temporalParse.parseDelegate.metrics.enabled: true
       mongodb.enabled: false
       postgresql.enabled: false
       rabbitmq.enabled: false
@@ -264,9 +264,9 @@ tests:
   - it: temporalWorker.hpa should create HPA when autoscaling enabled
     set:
       temporal.enabled: true
-      temporalWorkers.pythonWorker.autoscaling.enabled: true
-      temporalWorkers.pythonWorker.autoscaling.minReplicas: 2
-      temporalWorkers.pythonWorker.autoscaling.maxReplicas: 10
+      temporalParse.parseDelegate.autoscaling.enabled: true
+      temporalParse.parseDelegate.autoscaling.minReplicas: 2
+      temporalParse.parseDelegate.autoscaling.maxReplicas: 10
       mongodb.enabled: false
       postgresql.enabled: false
       rabbitmq.enabled: false
@@ -288,7 +288,7 @@ tests:
   - it: temporalWorker.hpa should not create HPA when autoscaling disabled
     set:
       temporal.enabled: true
-      temporalWorkers.pythonWorker.autoscaling.enabled: false
+      temporalParse.parseDelegate.autoscaling.enabled: false
       mongodb.enabled: false
       postgresql.enabled: false
       rabbitmq.enabled: false
@@ -301,8 +301,8 @@ tests:
   - it: temporalWorker.hpa should include CPU metrics when targetCPUUtilizationPercentage set
     set:
       temporal.enabled: true
-      temporalWorkers.pythonWorker.autoscaling.enabled: true
-      temporalWorkers.pythonWorker.autoscaling.targetCPUUtilizationPercentage: 70
+      temporalParse.parseDelegate.autoscaling.enabled: true
+      temporalParse.parseDelegate.autoscaling.targetCPUUtilizationPercentage: 70
       mongodb.enabled: false
       postgresql.enabled: false
       rabbitmq.enabled: false
@@ -325,11 +325,11 @@ tests:
   - it: temporalWorker.keda should create ScaledObject when KEDA enabled
     set:
       temporal.enabled: true
-      temporalWorkers.pythonWorker.autoscaling.enabled: false
-      temporalWorkers.pythonWorker.keda.enabled: true
-      temporalWorkers.pythonWorker.keda.minReplicaCount: 1
-      temporalWorkers.pythonWorker.keda.maxReplicaCount: 30
-      temporalWorkers.pythonWorker.keda.triggers:
+      temporalParse.parseDelegate.autoscaling.enabled: false
+      temporalParse.parseDelegate.keda.enabled: true
+      temporalParse.parseDelegate.keda.minReplicaCount: 1
+      temporalParse.parseDelegate.keda.maxReplicaCount: 30
+      temporalParse.parseDelegate.keda.triggers:
         - type: prometheus
           metadata:
             serverAddress: http://prometheus:9090
@@ -359,7 +359,7 @@ tests:
   - it: temporalWorker.keda should not create ScaledObject when KEDA disabled
     set:
       temporal.enabled: true
-      temporalWorkers.pythonWorker.keda.enabled: false
+      temporalParse.parseDelegate.keda.enabled: false
       mongodb.enabled: false
       postgresql.enabled: false
       rabbitmq.enabled: false
@@ -372,10 +372,10 @@ tests:
   - it: temporalWorker.keda should not create ScaledObject without API version
     set:
       temporal.enabled: true
-      temporalWorkers.pythonWorker.keda.enabled: true
-      temporalWorkers.pythonWorker.keda.minReplicaCount: 1
-      temporalWorkers.pythonWorker.keda.maxReplicaCount: 30
-      temporalWorkers.pythonWorker.keda.triggers:
+      temporalParse.parseDelegate.keda.enabled: true
+      temporalParse.parseDelegate.keda.minReplicaCount: 1
+      temporalParse.parseDelegate.keda.maxReplicaCount: 30
+      temporalParse.parseDelegate.keda.triggers:
         - type: prometheus
           metadata:
             serverAddress: http://prometheus:9090
@@ -396,7 +396,7 @@ tests:
   - it: temporalWorker.serviceaccount should create ServiceAccount when create is true
     set:
       temporal.enabled: true
-      temporalWorkers.pythonWorker.serviceAccount.create: true
+      temporalParse.parseDelegate.serviceAccount.create: true
       mongodb.enabled: false
       postgresql.enabled: false
       rabbitmq.enabled: false
@@ -412,7 +412,7 @@ tests:
   - it: temporalWorker.serviceaccount should not create ServiceAccount when create is false
     set:
       temporal.enabled: true
-      temporalWorkers.pythonWorker.serviceAccount.create: false
+      temporalParse.parseDelegate.serviceAccount.create: false
       mongodb.enabled: false
       postgresql.enabled: false
       rabbitmq.enabled: false
@@ -425,8 +425,8 @@ tests:
   - it: temporalWorker.serviceaccount should use custom name when provided
     set:
       temporal.enabled: true
-      temporalWorkers.pythonWorker.serviceAccount.create: true
-      temporalWorkers.pythonWorker.serviceAccount.name: custom-sa
+      temporalParse.parseDelegate.serviceAccount.create: true
+      temporalParse.parseDelegate.serviceAccount.name: custom-sa
       mongodb.enabled: false
       postgresql.enabled: false
       rabbitmq.enabled: false
@@ -440,8 +440,8 @@ tests:
   - it: temporalWorker.serviceaccount should include custom labels
     set:
       temporal.enabled: true
-      temporalWorkers.pythonWorker.serviceAccount.create: true
-      temporalWorkers.pythonWorker.serviceAccount.labels:
+      temporalParse.parseDelegate.serviceAccount.create: true
+      temporalParse.parseDelegate.serviceAccount.labels:
         custom-label: custom-value
       mongodb.enabled: false
       postgresql.enabled: false
@@ -456,8 +456,8 @@ tests:
   - it: temporalWorker.serviceaccount should include custom annotations
     set:
       temporal.enabled: true
-      temporalWorkers.pythonWorker.serviceAccount.create: true
-      temporalWorkers.pythonWorker.serviceAccount.annotations:
+      temporalParse.parseDelegate.serviceAccount.create: true
+      temporalParse.parseDelegate.serviceAccount.annotations:
         custom-annotation: custom-value
       mongodb.enabled: false
       postgresql.enabled: false
@@ -475,8 +475,8 @@ tests:
   - it: temporalWorker.servicemonitor should create ServiceMonitor when monitoring enabled
     set:
       temporal.enabled: true
-      temporalWorkers.pythonWorker.metrics.enabled: true
-      temporalWorkers.pythonWorker.metrics.serviceMonitor.enabled: true
+      temporalParse.parseDelegate.metrics.enabled: true
+      temporalParse.parseDelegate.metrics.serviceMonitor.enabled: true
       mongodb.enabled: false
       postgresql.enabled: false
       rabbitmq.enabled: false
@@ -497,8 +497,8 @@ tests:
   - it: temporalWorker.servicemonitor should not create ServiceMonitor when metrics disabled
     set:
       temporal.enabled: true
-      temporalWorkers.pythonWorker.metrics.enabled: false
-      temporalWorkers.pythonWorker.metrics.serviceMonitor.enabled: true
+      temporalParse.parseDelegate.metrics.enabled: false
+      temporalParse.parseDelegate.metrics.serviceMonitor.enabled: true
       mongodb.enabled: false
       postgresql.enabled: false
       rabbitmq.enabled: false
@@ -514,8 +514,8 @@ tests:
   - it: temporalWorker.servicemonitor should not create ServiceMonitor without API version
     set:
       temporal.enabled: true
-      temporalWorkers.pythonWorker.metrics.enabled: true
-      temporalWorkers.pythonWorker.metrics.serviceMonitor.enabled: true
+      temporalParse.parseDelegate.metrics.enabled: true
+      temporalParse.parseDelegate.metrics.serviceMonitor.enabled: true
       mongodb.enabled: false
       postgresql.enabled: false
       rabbitmq.enabled: false
@@ -528,10 +528,10 @@ tests:
   - it: temporalWorker.servicemonitor should use custom interval and scrapeTimeout
     set:
       temporal.enabled: true
-      temporalWorkers.pythonWorker.metrics.enabled: true
-      temporalWorkers.pythonWorker.metrics.serviceMonitor.enabled: true
-      temporalWorkers.pythonWorker.metrics.serviceMonitor.interval: 60s
-      temporalWorkers.pythonWorker.metrics.serviceMonitor.scrapeTimeout: 30s
+      temporalParse.parseDelegate.metrics.enabled: true
+      temporalParse.parseDelegate.metrics.serviceMonitor.enabled: true
+      temporalParse.parseDelegate.metrics.serviceMonitor.interval: 60s
+      temporalParse.parseDelegate.metrics.serviceMonitor.scrapeTimeout: 30s
       mongodb.enabled: false
       postgresql.enabled: false
       rabbitmq.enabled: false
@@ -554,12 +554,12 @@ tests:
   - it: temporalWorker helpers should work for jobs_service worker
     set:
       temporal.enabled: true
-      temporalWorkers.pythonWorker.serviceAccount.create: true
+      temporalJobsService.jobsServiceWorker.serviceAccount.create: true
       mongodb.enabled: false
       postgresql.enabled: false
       rabbitmq.enabled: false
       redis.enabled: false
-    template: ../templates/temporal_workers/python_worker/deployment.yaml
+    template: ../templates/temporal_jobs_service/jobs_service/deployment.yaml
     asserts:
       - isKind:
           of: Deployment
@@ -573,7 +573,7 @@ tests:
       postgresql.enabled: false
       rabbitmq.enabled: false
       redis.enabled: false
-    template: ../templates/temporal_workers/python_worker/configmap.yaml
+    template: ../templates/temporal_jobs_service/jobs_service/configmap.yaml
     asserts:
       - isKind:
           of: ConfigMap
@@ -599,7 +599,7 @@ tests:
   - it: temporalWorker.deployment should handle nodeSelector configuration
     set:
       temporal.enabled: true
-      temporalWorkers.pythonWorker.nodeSelector:
+      temporalParse.parseDelegate.nodeSelector:
         node-type: temporal-worker
       mongodb.enabled: false
       postgresql.enabled: false
@@ -614,7 +614,7 @@ tests:
   - it: temporalWorker.deployment should handle tolerations configuration
     set:
       temporal.enabled: true
-      temporalWorkers.pythonWorker.tolerations:
+      temporalParse.parseDelegate.tolerations:
         - key: "temporal"
           operator: "Equal"
           value: "true"
@@ -635,7 +635,7 @@ tests:
   - it: temporalWorker.deployment should handle affinity configuration
     set:
       temporal.enabled: true
-      temporalWorkers.pythonWorker.affinity:
+      temporalParse.parseDelegate.affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:

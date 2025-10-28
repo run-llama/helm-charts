@@ -1,5 +1,19 @@
 # CHANGELOG
 
+## [0.5.10] - 2025-10-27
+
+### Index
+- Indexing system status resolution improvements
+
+### Platform
+- Add Global Administrator Configurations
+
+### Excel APIs
+- Added Excel Spreadsheet APIs
+
+### Platform - Frontend
+- Standardize CSP Policies
+
 ## [0.5.9] - 2025-10-17
 
 ### Index

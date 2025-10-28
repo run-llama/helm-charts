@@ -97,7 +97,7 @@ tests:
         path: .spec.template.spec.containers[0].env[?(@.name == "BYOC_JWT_SECRET")].valueFrom.secretKeyRef.key
         value: byoc-jwt-secret
 
-- it: BYOC_INGRESS_URL should be set to the correct value if ingress is enabled
+- it: LLAMACLOUD_INGRESS_URL should be set to the correct value if ingress is enabled
   set:
     ingress.enabled: true
     ingress.host: test-ingress-host
@@ -109,7 +109,7 @@ tests:
   template: ../templates/backend/deployment.yaml
   asserts:
     - equal:
-        path: .spec.template.spec.containers[0].env[?(@.name == "BYOC_INGRESS_URL")].value
+        path: .spec.template.spec.containers[0].env[?(@.name == "LLAMACLOUD_INGRESS_URL")].value
         value: "https://test-ingress-host"
 
 - it: should use the custom service account if it is set

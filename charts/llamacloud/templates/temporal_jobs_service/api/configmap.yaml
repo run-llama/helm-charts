@@ -22,5 +22,6 @@ data:
   S3_LLAMA_EXTRACT_OUTPUT_BUCKET_NAME: {{ .Values.global.config.llamaExtractOutputCloudBucketName | default "llama-platform-extract-output" }}
   TEMPORAL_HOST: {{ include "temporal.host" . | quote }}
   TEMPORAL_PORT: {{ include "temporal.port" . | quote }}
+  TEMPORAL_WORKER_REGISTRY_PROFILE: {{ .Values.temporalJobsService.api.config.temporalWorkerRegistryProfile | default "consolidated" | quote }}
   TRACKING_SERVICE_URL: {{ printf "http://%s-%s:%d" (include "llamacloud.fullname" .) .Values.usage.name (.Values.usage.service.port | int) | quote }}
 {{- end -}}
