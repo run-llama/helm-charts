@@ -448,8 +448,8 @@ backend:
 
     ## @param backend.config.llamaExtractMultimodalModel LlamaExtract multimodal model (gemini-2.0-flash, gemini-2.5-pro, openai-gpt-4-1)
     llamaExtractMultimodalModel: "gemini-2.0-flash"
-    ## @param backend.config.llamaExtractSchemaGenerationModel LlamaExtract schema generation model (gemini-2.0-flash, gemini-2.5-flash, openai-gpt-4-1-mini)
-    llamaExtractSchemaGenerationModel: "gemini-2.5-flash"
+    ## @param backend.config.llamaExtractSchemaGenerationModel LlamaExtract schema generation model (gemini-2.0-flash, openai-gpt-4-1-mini)
+    llamaExtractSchemaGenerationModel: "gemini-2.0-flash"
     ## @param backend.config.llamaExtractMaxPages LlamaExtract max pages allowed
     llamaExtractMaxPages: 500
     ## @param backend.config.llamaExtractMaxFileSizeMb LlamaExtract max file size (MB) allowed

@@ -133,7 +133,7 @@ tests:
         value: "gemini-2.0-flash"
     - equal:
         path: .data.LLAMA_EXTRACT_SCHEMA_GENERATION_MODEL
-        value: "gemini-2.5-flash"
+        value: "gemini-2.0-flash"
     - equal:
         path: .data.LLAMA_EXTRACT_MAX_PAGES
         value: "500"
