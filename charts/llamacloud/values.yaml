@@ -267,7 +267,7 @@ frontend:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-frontend
-    tag: 0.5.10
+    tag: 0.5.11
     pullPolicy: IfNotPresent
 
   ## @param frontend.service.type Frontend Service type
@@ -448,8 +448,8 @@ backend:
 
     ## @param backend.config.llamaExtractMultimodalModel LlamaExtract multimodal model (gemini-2.0-flash, gemini-2.5-pro, openai-gpt-4-1)
     llamaExtractMultimodalModel: "gemini-2.0-flash"
-    ## @param backend.config.llamaExtractSchemaGenerationModel LlamaExtract schema generation model (gemini-2.0-flash, openai-gpt-4-1-mini)
-    llamaExtractSchemaGenerationModel: "gemini-2.0-flash"
+    ## @param backend.config.llamaExtractSchemaGenerationModel LlamaExtract schema generation model (gemini-2.0-flash, gemini-2.5-flash, openai-gpt-4-1-mini)
+    llamaExtractSchemaGenerationModel: "gemini-2.5-flash"
     ## @param backend.config.llamaExtractMaxPages LlamaExtract max pages allowed
     llamaExtractMaxPages: 500
     ## @param backend.config.llamaExtractMaxFileSizeMb LlamaExtract max file size (MB) allowed
@@ -468,7 +468,7 @@ backend:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-backend
-    tag: 0.5.10
+    tag: 0.5.11
     pullPolicy: IfNotPresent
 
   ## Backend Service information
@@ -710,7 +710,7 @@ jobsService:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-jobs-service
-    tag: 0.5.10
+    tag: 0.5.11
     pullPolicy: IfNotPresent
 
   ## JobsService Service information\
@@ -920,7 +920,7 @@ jobsWorker:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-jobs-worker
-    tag: 0.5.10
+    tag: 0.5.11
     pullPolicy: IfNotPresent
 
   ## JobsWorker Service information
@@ -1204,7 +1204,7 @@ llamaParse:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-llamaparse
-    tag: 0.5.10
+    tag: 0.5.11
     pullPolicy: IfNotPresent
 
   ## ServiceAccount configuration
@@ -1454,12 +1454,12 @@ llamaParseOcr:
   ## LlamaParseOcr Image information
   ## @param llamaParseOcr.image.registry LlamaParseOcr Image registry
   ## @param llamaParseOcr.image.repository LlamaParseOcr Image repository
-  ## @param llamaParseOcr.image.tag LlamaParseOcr Image tag
+  ## @param llamaParseOcr.image.tag LlamaParseOcr Image tag (-cpu suffix added automatically for CPU backend)
   ## @param llamaParseOcr.image.pullPolicy LlamaParseOcr Image pull policy
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-llamaparse-ocr
-    tag: 0.5.10
+    tag: 0.5.11
     pullPolicy: IfNotPresent
 
   ## LlamaParseOcr Service information
@@ -1684,7 +1684,7 @@ llamaParseLayoutDetectionApi:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-layout-detection-api
-    tag: 0.5.10
+    tag: 0.5.11
     pullPolicy: IfNotPresent
 
   ## LlamaParse Layout Detection Api Service information
@@ -1849,7 +1849,7 @@ usage:
   image:
     registry: docker.io
     repository: llamaindex/llamacloud-usage
-    tag: 0.5.10
+    tag: 0.5.11
     pullPolicy: IfNotPresent
 
   ## Usage Service information

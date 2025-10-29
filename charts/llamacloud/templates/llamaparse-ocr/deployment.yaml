@@ -50,7 +50,7 @@ spec:
           securityContext:
             {{- toYaml .Values.llamaParseOcr.securityContext | nindent 12 }}
           image:
-            {{ .Values.llamaParseOcr.image.registry }}/{{ .Values.llamaParseOcr.image.repository }}:{{ .Values.llamaParseOcr.image.tag | default .Chart.AppVersion }}
+            {{ .Values.llamaParseOcr.image.registry }}/{{ .Values.llamaParseOcr.image.repository }}:{{ .Values.llamaParseOcr.image.tag | default .Chart.AppVersion }}{{- if not (.Values.llamaParseOcr.gpu.enabled | default false) }}-cpu{{- end }}
           imagePullPolicy: {{ .Values.llamaParseOcr.image.pullPolicy }}
           ports:
             - name: http
