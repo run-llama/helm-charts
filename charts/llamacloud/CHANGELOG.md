@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## [0.5.11] - 2025-10-28
+
+### Bug Fixes
+- Fixed default frontend image tag
+
+### Platform - Frontend
+- Standardize CSP Policies
+
 ## [0.5.10] - 2025-10-27
 
 ### Index
@@ -10,9 +18,6 @@
 
 ### Excel APIs
 - Added Excel Spreadsheet APIs
-
-### Platform - Frontend
-- Standardize CSP Policies
 
 ## [0.5.9] - 2025-10-17
 
