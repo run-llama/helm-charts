@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## [0.6.0] - 2025-11-20
+
+### Infrastructure
+- **BREAKING**: New helm template introduced
+
+### LlamaExtract
+- **[Feature]** New extraction target (`PER_TABLE_ROW`) for tabular extraction available
+- **[Bug Fix]** Fixed a bug where schema generation when configured to use OpenAI's GPT 4.1-mini was not working
+- **[Bug Fix]** Fixed multiple bugs related to merging of field metadata (e.g. confidence scores) with the main extraction results on long files
+
 ## [0.5.11] - 2025-10-28
 
 ### Bug Fixes

@@ -1,10 +1,7 @@
 suite: redis-config-tests
 
 templates:
-- ../templates/backend/deployment.yaml
-- ../templates/jobs-service/deployment.yaml
-- ../templates/jobs-worker/deployment.yaml
-- ../templates/usage/deployment.yaml
+- ../templates/llamacloud/deployment.yaml
 
 release:
   name: test-release
@@ -20,198 +17,112 @@ chart:
   appVersion: 0.0.0
 
 tests:
-- it: should set Redis scheme environment variable for external Redis
+- it: should reference redis-secret in envFrom for backend
   set:
-    redis.enabled: false
-    global.config.redis.external.enabled: true
-    global.config.redis.external.host: test-redis-host
-    global.config.redis.external.port: "6379"
-    global.config.redis.external.scheme: rediss
-    global.config.redis.external.db: "0"
-    mongodb.enabled: false
-    postgresql.enabled: false
-    rabbitmq.enabled: false
-  template: ../templates/backend/deployment.yaml
+    redis.host: test-redis-host
+    redis.port: "6379"
+    redis.scheme: rediss
+    redis.db: 0
+    redis.password: test-password
+    config.frontend.enabled: false
+    config.parseOcr.enabled: false
+    config.parseLayoutDetection.enabled: false
+  documentIndex: 0
+  template: ../templates/llamacloud/deployment.yaml
   asserts:
-    - equal:
-        path: .spec.template.spec.containers[0].env[?(@.name == "REDIS_HOST")].value
-        value: test-redis-host
-    - equal:
-        path: .spec.template.spec.containers[0].env[?(@.name == "REDIS_PORT")].value
-        value: "6379"
-    - equal:
-        path: .spec.template.spec.containers[0].env[?(@.name == "REDIS_SCHEME")].value
-        value: rediss
-    - equal:
-        path: .spec.template.spec.containers[0].env[?(@.name == "REDIS_DB")].value
-        value: "0"
+    - contains:
+        path: .spec.template.spec.containers[0].envFrom
+        content:
+          secretRef:
+            name: redis-secret
 
-- it: should set Redis username environment variable for external Redis
+- it: should reference redis-secret in envFrom when Redis credentials are provided
   set:
-    redis.enabled: false
-    global.config.redis.external.enabled: true
-    global.config.redis.external.host: test-redis-host
-    global.config.redis.external.port: "6379"
-    global.config.redis.external.scheme: redis
-    global.config.redis.external.username: test-redis-user
-    global.config.redis.external.db: "0"
-    mongodb.enabled: false
-    postgresql.enabled: false
-    rabbitmq.enabled: false
-  template: ../templates/backend/deployment.yaml
+    redis.host: test-redis-host
+    redis.port: "6379"
+    redis.scheme: redis
+    redis.username: test-redis-user
+    redis.password: test-redis-password
+    config.frontend.enabled: false
+    config.parseOcr.enabled: false
+    config.parseLayoutDetection.enabled: false
+  documentIndex: 0
+  template: ../templates/llamacloud/deployment.yaml
   asserts:
-    - equal:
-        path: .spec.template.spec.containers[0].env[?(@.name == "REDIS_USERNAME")].value
-        value: test-redis-user
-    - equal:
-        path: .spec.template.spec.containers[0].env[?(@.name == "REDIS_DB")].value
-        value: "0"
+    - contains:
+        path: .spec.template.spec.containers[0].envFrom
+        content:
+          secretRef:
+            name: redis-secret
 
-- it: should set Redis password environment variable for external Redis
+- it: should use custom redis secret name when provided
   set:
-    redis.enabled: false
-    global.config.redis.external.enabled: true
-    global.config.redis.external.host: test-redis-host
-    global.config.redis.external.port: "6379"
-    global.config.redis.external.scheme: redis
-    global.config.redis.external.username: test-redis-user
-    global.config.redis.external.password: test-redis-password
-    mongodb.enabled: false
-    postgresql.enabled: false
-    rabbitmq.enabled: false
-  template: ../templates/backend/deployment.yaml
+    redis.secret: custom-redis-secret
+    config.frontend.enabled: false
+    config.parseOcr.enabled: false
+    config.parseLayoutDetection.enabled: false
+  documentIndex: 0
+  template: ../templates/llamacloud/deployment.yaml
   asserts:
-    - equal:
-        path: .spec.template.spec.containers[0].env[?(@.name == "REDIS_PASSWORD")].value
-        value: test-redis-password
+    - contains:
+        path: .spec.template.spec.containers[0].envFrom
+        content:
+          secretRef:
+            name: custom-redis-secret
 
-- it: should not set Redis scheme when explicitly set to empty
+- it: should reference redis-secret in jobs-service deployment
   set:
-    redis.enabled: false
-    global.config.redis.external.enabled: true
-    global.config.redis.external.host: test-redis-host
-    global.config.redis.external.port: "6379"
-    global.config.redis.external.scheme: ""
-    mongodb.enabled: false
-    postgresql.enabled: false
-    rabbitmq.enabled: false
-  template: ../templates/backend/deployment.yaml
+    redis.host: test-redis-host
+    redis.port: "6380"
+    redis.scheme: rediss
+    redis.username: jobs-redis-user
+    redis.password: jobs-redis-password
+    config.frontend.enabled: false
+    config.parseOcr.enabled: false
+    config.parseLayoutDetection.enabled: false
+  documentIndex: 1
+  template: ../templates/llamacloud/deployment.yaml
   asserts:
-    - notExists:
-        path: .spec.template.spec.containers[0].env[?(@.name == "REDIS_SCHEME")]
+    - contains:
+        path: .spec.template.spec.containers[0].envFrom
+        content:
+          secretRef:
+            name: redis-secret
 
-- it: should not set Redis username when not provided
+- it: should reference redis-secret in jobs-worker deployment
   set:
-    redis.enabled: false
-    global.config.redis.external.enabled: true
-    global.config.redis.external.host: test-redis-host
-    global.config.redis.external.port: "6379"
-    global.config.redis.external.scheme: redis
-    mongodb.enabled: false
-    postgresql.enabled: false
-    rabbitmq.enabled: false
-  template: ../templates/backend/deployment.yaml
+    redis.host: worker-redis-host
+    redis.port: "6379"
+    redis.scheme: redis
+    redis.username: worker-redis-user
+    redis.password: worker-redis-password
+    config.frontend.enabled: false
+    config.parseOcr.enabled: false
+    config.parseLayoutDetection.enabled: false
+  documentIndex: 2
+  template: ../templates/llamacloud/deployment.yaml
   asserts:
-    - notExists:
-        path: .spec.template.spec.containers[0].env[?(@.name == "REDIS_USERNAME")]
+    - contains:
+        path: .spec.template.spec.containers[0].envFrom
+        content:
+          secretRef:
+            name: redis-secret
 
-- it: should not set Redis password when not provided
+- it: should reference redis-secret in usage deployment
   set:
-    redis.enabled: false
-    global.config.redis.external.enabled: true
-    global.config.redis.external.host: test-redis-host
-    global.config.redis.external.port: "6379"
-    global.config.redis.external.scheme: redis
-    global.config.redis.external.username: test-redis-user
-    mongodb.enabled: false
-    postgresql.enabled: false
-    rabbitmq.enabled: false
-  template: ../templates/backend/deployment.yaml
+    redis.host: usage-redis-host
+    redis.port: "6380"
+    redis.scheme: rediss
+    redis.username: usage-redis-user
+    redis.password: usage-redis-password
+    config.frontend.enabled: false
+    config.parseOcr.enabled: false
+    config.parseLayoutDetection.enabled: false
+  documentIndex: 4
+  template: ../templates/llamacloud/deployment.yaml
   asserts:
-    - notExists:
-        path: .spec.template.spec.containers[0].env[?(@.name == "REDIS_PASSWORD")]
-
-- it: should set Redis config in jobs-service deployment
-  set:
-    redis.enabled: false
-    global.config.redis.external.enabled: true
-    global.config.redis.external.host: test-redis-host
-    global.config.redis.external.port: "6380"
-    global.config.redis.external.scheme: rediss
-    global.config.redis.external.username: jobs-redis-user
-    global.config.redis.external.password: jobs-redis-password
-    mongodb.enabled: false
-    postgresql.enabled: false
-    rabbitmq.enabled: false
-  template: ../templates/jobs-service/deployment.yaml
-  asserts:
-    - equal:
-        path: .spec.template.spec.containers[0].env[?(@.name == "REDIS_HOST")].value
-        value: test-redis-host
-    - equal:
-        path: .spec.template.spec.containers[0].env[?(@.name == "REDIS_PORT")].value
-        value: "6380"
-    - equal:
-        path: .spec.template.spec.containers[0].env[?(@.name == "REDIS_SCHEME")].value
-        value: rediss
-    - equal:
-        path: .spec.template.spec.containers[0].env[?(@.name == "REDIS_USERNAME")].value
-        value: jobs-redis-user
-    - equal:
-        path: .spec.template.spec.containers[0].env[?(@.name == "REDIS_PASSWORD")].value
-        value: jobs-redis-password
-
-- it: should set Redis config in jobs-worker deployment
-  set:
-    redis.enabled: false
-    global.config.redis.external.enabled: true
-    global.config.redis.external.host: worker-redis-host
-    global.config.redis.external.port: "6379"
-    global.config.redis.external.scheme: redis
-    global.config.redis.external.username: worker-redis-user
-    mongodb.enabled: false
-    postgresql.enabled: false
-    rabbitmq.enabled: false
-  template: ../templates/jobs-worker/deployment.yaml
-  asserts:
-    - equal:
-        path: .spec.template.spec.containers[0].env[?(@.name == "REDIS_HOST")].value
-        value: worker-redis-host
-    - equal:
-        path: .spec.template.spec.containers[0].env[?(@.name == "REDIS_SCHEME")].value
-        value: redis
-    - equal:
-        path: .spec.template.spec.containers[0].env[?(@.name == "REDIS_USERNAME")].value
-        value: worker-redis-user
-    - notExists:
-        path: .spec.template.spec.containers[0].env[?(@.name == "REDIS_PASSWORD")]
-
-- it: should set Redis config in usage deployment
-  set:
-    redis.enabled: false
-    global.config.redis.external.enabled: true
-    global.config.redis.external.host: usage-redis-host
-    global.config.redis.external.port: "6380"
-    global.config.redis.external.scheme: rediss
-    global.config.redis.external.username: usage-redis-user
-    global.config.redis.external.password: usage-redis-password
-    mongodb.enabled: false
-    postgresql.enabled: false
-    rabbitmq.enabled: false
-  template: ../templates/usage/deployment.yaml
-  asserts:
-    - equal:
-        path: .spec.template.spec.containers[0].env[?(@.name == "REDIS_HOST")].value
-        value: usage-redis-host
-    - equal:
-        path: .spec.template.spec.containers[0].env[?(@.name == "REDIS_PORT")].value
-        value: "6380"
-    - equal:
-        path: .spec.template.spec.containers[0].env[?(@.name == "REDIS_SCHEME")].value
-        value: rediss
-    - equal:
-        path: .spec.template.spec.containers[0].env[?(@.name == "REDIS_USERNAME")].value
-        value: usage-redis-user
-    - equal:
-        path: .spec.template.spec.containers[0].env[?(@.name == "REDIS_PASSWORD")].value
-        value: usage-redis-password
+    - contains:
+        path: .spec.template.spec.containers[0].envFrom
+        content:
+          secretRef:
+            name: redis-secret

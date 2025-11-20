@@ -1,32 +1,8 @@
 suite: temporal-disabled-tests
 templates:
-  # Temporal Jobs Service Templates
-  - ../templates/temporal_jobs_service/api/deployment.yaml
-  - ../templates/temporal_jobs_service/api/configmap.yaml
-  - ../templates/temporal_jobs_service/api/service.yaml
-  - ../templates/temporal_jobs_service/api/hpa.yaml
-  - ../templates/temporal_jobs_service/api/serviceaccount.yaml
-  - ../templates/temporal_workers/python_worker/deployment.yaml
-  - ../templates/temporal_workers/python_worker/configmap.yaml
-  - ../templates/temporal_workers/python_worker/secret.yaml
-  - ../templates/temporal_workers/python_worker/service.yaml
-  - ../templates/temporal_workers/python_worker/hpa.yaml
-  - ../templates/temporal_workers/python_worker/keda-scaledobject.yaml
-  - ../templates/temporal_workers/python_worker/servicemonitor.yaml
-  - ../templates/temporal_workers/python_worker/serviceaccount.yaml
-  # Temporal Parse Templates
-  - ../templates/temporal_parse/llamaparse/deployment.yaml
-  - ../templates/temporal_parse/llamaparse/configmap.yaml
-  - ../templates/temporal_parse/llamaparse/service.yaml
-  - ../templates/temporal_parse/llamaparse/hpa.yaml
-  - ../templates/temporal_parse/llamaparse/keda-scaledobject.yaml
-  - ../templates/temporal_parse/llamaparse/pdb.yaml
-  - ../templates/temporal_parse/llamaparse/prometheusrule.yaml
-  - ../templates/temporal_parse/llamaparse/secret.yaml
-  - ../templates/temporal_parse/llamaparse/serviceaccount.yaml
-  - ../templates/temporal_parse/llamaparse/servicemonitor.yaml
-  # Temporal Server Templates
-  - ../templates/temporal_server/job.yaml
+  - ../templates/llamacloud/deployment.yaml
+  - ../templates/llamacloud/service.yaml
+  - ../templates/llamacloud/job.yaml
 release:
   name: llamacloud
   namespace: default
@@ -35,528 +11,63 @@ capabilities:
   minorVersion: 28
 tests:
   # Main test: verify NO temporal resources are created when temporal.enabled is false
-  - it: should not create any temporal resources when temporal.enabled is false
+  - it: should not create temporal job when temporal.enabled is false
     set:
       temporal.enabled: false
-      global.config.temporal.external.enabled: false
-      mongodb.enabled: false
-      postgresql.enabled: false
-      rabbitmq.enabled: false
-      redis.enabled: false
+    template: ../templates/llamacloud/job.yaml
     asserts:
       - hasDocuments:
           count: 0
 
-  # Test with temporal.enabled explicitly set to false and other services enabled
-  - it: should not create any temporal resources even when other services are enabled
+  # Test with temporal.enabled explicitly set to false with other configurations
+  - it: should not create temporal job even when other temporal configurations exist
     set:
       temporal.enabled: false
-      global.config.temporal.external.enabled: false
-      mongodb.enabled: true
-      postgresql.enabled: true
-      rabbitmq.enabled: true
-      redis.enabled: true
+      temporal.host: "external-temporal.example.com"
+      temporal.port: 7233
+    template: ../templates/llamacloud/job.yaml
     asserts:
       - hasDocuments:
           count: 0
 
-  # Test that both temporal flags must be false for no resources to be created
-  - it: should not create any temporal resources when both temporal.enabled and global.config.temporal.external.enabled are false
-    set:
-      temporal.enabled: false
-      global.config.temporal.external.enabled: false
-      mongodb.enabled: false
-      postgresql.enabled: false
-      rabbitmq.enabled: false
-      redis.enabled: false
-    asserts:
-      - hasDocuments:
-          count: 0
-
-  # Positive tests: verify resources ARE created when at least one flag is true
-  - it: should create temporal resources when temporal.enabled is true (even if external is false)
+  # Positive test: verify job IS created when temporal.enabled is true
+  - it: should create temporal search attributes job when temporal.enabled is true
     set:
       temporal.enabled: true
-      global.config.temporal.external.enabled: false
-      mongodb.enabled: false
-      postgresql.enabled: false
-      rabbitmq.enabled: false
-      redis.enabled: false
-    template: ../templates/temporal_jobs_service/api/deployment.yaml
+      temporal.host: "temporal.example.com"
+      temporal.port: 7233
+      config.temporal.searchAttributesJob.enabled: true
+      config.temporal.searchAttributesJob.image: "temporalio/admin-tools:latest"
+      config.temporal.searchAttributesJob.attributes:
+        - name: "CustomStringAttr"
+          type: "Keyword"
+    template: ../templates/llamacloud/job.yaml
     asserts:
       - isKind:
-          of: Deployment
+          of: Job
       - equal:
           path: metadata.name
-          value: llamacloud-temporal-jobs-api
+          value: llamacloud-temporal-search-attributes
 
-  - it: should create temporal resources when global.config.temporal.external.enabled is true (even if temporal.enabled is false)
+  # Verify that standard deployments are still created regardless of temporal.enabled
+  - it: should still create standard deployments when temporal is disabled
     set:
       temporal.enabled: false
-      global.config.temporal.external.enabled: true
-      mongodb.enabled: false
-      postgresql.enabled: false
-      rabbitmq.enabled: false
-      redis.enabled: false
-    template: ../templates/temporal_jobs_service/api/deployment.yaml
-    asserts:
-      - isKind:
-          of: Deployment
-      - equal:
-          path: metadata.name
-          value: llamacloud-temporal-jobs-api
-
-  - it: should create temporal resources when both temporal flags are true
-    set:
-      temporal.enabled: true
-      global.config.temporal.external.enabled: true
-      mongodb.enabled: false
-      postgresql.enabled: false
-      rabbitmq.enabled: false
-      redis.enabled: false
-    template: ../templates/temporal_jobs_service/api/deployment.yaml
-    asserts:
-      - isKind:
-          of: Deployment
-      - equal:
-          path: metadata.name
-          value: llamacloud-temporal-jobs-api
-
-  # Verify parse workers are created when temporal.enabled is true
-  - it: should create temporal parse workers when temporal.enabled is true
-    set:
-      temporal.enabled: true
-      global.config.temporal.external.enabled: false
-      mongodb.enabled: false
-      postgresql.enabled: false
-      rabbitmq.enabled: false
-      redis.enabled: false
-    template: ../templates/temporal_parse/llamaparse/deployment.yaml
-    asserts:
-      - isKind:
-          of: Deployment
-      - equal:
-          path: metadata.name
-          value: llamacloud-temporal-llamaparse
-
-  # Verify parse workers are created when external temporal is enabled
-  - it: should create temporal parse workers when global.config.temporal.external.enabled is true
-    set:
-      temporal.enabled: false
-      global.config.temporal.external.enabled: true
-      mongodb.enabled: false
-      postgresql.enabled: false
-      rabbitmq.enabled: false
-      redis.enabled: false
-    template: ../templates/temporal_workers/python_worker/deployment.yaml
-    asserts:
-      - isKind:
-          of: Deployment
-      - equal:
-          path: metadata.name
-          value: llamacloud-temporal-python-worker
-
-  # Verify jobs service workers are created when either flag is true
-  - it: should create temporal jobs service worker when temporal.enabled is true
-    set:
-      temporal.enabled: true
-      global.config.temporal.external.enabled: false
-      mongodb.enabled: false
-      postgresql.enabled: false
-      rabbitmq.enabled: false
-      redis.enabled: false
-    template: ../templates/temporal_workers/python_worker/deployment.yaml
-    asserts:
-      - isKind:
-          of: Deployment
-      - equal:
-          path: metadata.name
-          value: llamacloud-temporal-python-worker
-
-  - it: should create temporal extract worker when global.config.temporal.external.enabled is true
-    set:
-      temporal.enabled: false
-      global.config.temporal.external.enabled: true
-      mongodb.enabled: false
-      postgresql.enabled: false
-      rabbitmq.enabled: false
-      redis.enabled: false
-    template: ../templates/temporal_workers/python_worker/deployment.yaml
-    asserts:
-      - isKind:
-          of: Deployment
-      - equal:
-          path: metadata.name
-          value: llamacloud-temporal-python-worker
-
-  # Test specific temporal_jobs_service components when temporal is disabled
-  - it: should not create temporal jobs service API deployment when temporal is disabled
-    set:
-      temporal.enabled: false
-      global.config.temporal.external.enabled: false
-      mongodb.enabled: false
-      postgresql.enabled: false
-      rabbitmq.enabled: false
-      redis.enabled: false
-    template: ../templates/temporal_jobs_service/api/deployment.yaml
+      config.frontend.enabled: false
+      config.parseOcr.enabled: false
+      config.parseLayoutDetection.enabled: false
+    template: ../templates/llamacloud/deployment.yaml
     asserts:
       - hasDocuments:
-          count: 0
+          count: 5
 
-  - it: should not create temporal jobs service worker deployment when temporal is disabled
+  - it: should still create standard services when temporal is disabled
     set:
       temporal.enabled: false
-      global.config.temporal.external.enabled: false
-      mongodb.enabled: false
-      postgresql.enabled: false
-      rabbitmq.enabled: false
-      redis.enabled: false
-    template: ../templates/temporal_workers/python_worker/deployment.yaml
+      config.frontend.enabled: false
+      config.parseOcr.enabled: false
+      config.parseLayoutDetection.enabled: false
+    template: ../templates/llamacloud/service.yaml
     asserts:
       - hasDocuments:
-          count: 0
-
-  - it: should not create temporal extract worker deployment when temporal is disabled
-    set:
-      temporal.enabled: false
-      global.config.temporal.external.enabled: false
-      mongodb.enabled: false
-      postgresql.enabled: false
-      rabbitmq.enabled: false
-      redis.enabled: false
-    template: ../templates/temporal_workers/python_worker/deployment.yaml
-    asserts:
-      - hasDocuments:
-          count: 0
-
-  # Test specific temporal_parse components when temporal is disabled
-  - it: should not create temporal llamaparse worker deployment when temporal is disabled
-    set:
-      temporal.enabled: false
-      global.config.temporal.external.enabled: false
-      mongodb.enabled: false
-      postgresql.enabled: false
-      rabbitmq.enabled: false
-      redis.enabled: false
-    template: ../templates/temporal_parse/llamaparse/deployment.yaml
-    asserts:
-      - hasDocuments:
-          count: 0
-
-  - it: should not create temporal parse_delegate worker deployment when temporal is disabled
-    set:
-      temporal.enabled: false
-      global.config.temporal.external.enabled: false
-      mongodb.enabled: false
-      postgresql.enabled: false
-      rabbitmq.enabled: false
-      redis.enabled: false
-    template: ../templates/temporal_workers/python_worker/deployment.yaml
-    asserts:
-      - hasDocuments:
-          count: 0
-
-  - it: should not create temporal parse_screenshot_pdfs worker deployment when temporal is disabled
-    set:
-      temporal.enabled: false
-      global.config.temporal.external.enabled: false
-      mongodb.enabled: false
-      postgresql.enabled: false
-      rabbitmq.enabled: false
-      redis.enabled: false
-    template: ../templates/temporal_workers/python_worker/deployment.yaml
-    asserts:
-      - hasDocuments:
-          count: 0
-
-  # Test temporal server components when temporal is disabled
-  - it: should not create temporal server search attributes job when temporal is disabled
-    set:
-      temporal.enabled: false
-      global.config.temporal.external.enabled: false
-      mongodb.enabled: false
-      postgresql.enabled: false
-      rabbitmq.enabled: false
-      redis.enabled: false
-    template: ../templates/temporal_server/job.yaml
-    asserts:
-      - hasDocuments:
-          count: 0
-
-  # Test configmaps are not created when temporal is disabled
-  - it: should not create temporal jobs service API configmap when temporal is disabled
-    set:
-      temporal.enabled: false
-      global.config.temporal.external.enabled: false
-      mongodb.enabled: false
-      postgresql.enabled: false
-      rabbitmq.enabled: false
-      redis.enabled: false
-    template: ../templates/temporal_jobs_service/api/configmap.yaml
-    asserts:
-      - hasDocuments:
-          count: 0
-
-  - it: should not create temporal llamaparse configmap when temporal is disabled
-    set:
-      temporal.enabled: false
-      global.config.temporal.external.enabled: false
-      mongodb.enabled: false
-      postgresql.enabled: false
-      rabbitmq.enabled: false
-      redis.enabled: false
-    template: ../templates/temporal_parse/llamaparse/configmap.yaml
-    asserts:
-      - hasDocuments:
-          count: 0
-
-  # Test services are not created when temporal is disabled
-  - it: should not create temporal jobs service API service when temporal is disabled
-    set:
-      temporal.enabled: false
-      global.config.temporal.external.enabled: false
-      mongodb.enabled: false
-      postgresql.enabled: false
-      rabbitmq.enabled: false
-      redis.enabled: false
-    template: ../templates/temporal_jobs_service/api/service.yaml
-    asserts:
-      - hasDocuments:
-          count: 0
-
-  - it: should not create temporal llamaparse service when temporal is disabled
-    set:
-      temporal.enabled: false
-      global.config.temporal.external.enabled: false
-      mongodb.enabled: false
-      postgresql.enabled: false
-      rabbitmq.enabled: false
-      redis.enabled: false
-    template: ../templates/temporal_parse/llamaparse/service.yaml
-    asserts:
-      - hasDocuments:
-          count: 0
-
-  # Test secrets are not created when temporal is disabled
-  - it: should not create temporal jobs service secret when temporal is disabled
-    set:
-      temporal.enabled: false
-      global.config.temporal.external.enabled: false
-      temporalWorkers.pythonWorker.externalSecrets.enabled: false
-      mongodb.enabled: false
-      postgresql.enabled: false
-      rabbitmq.enabled: false
-      redis.enabled: false
-    template: ../templates/temporal_workers/python_worker/secret.yaml
-    asserts:
-      - hasDocuments:
-          count: 0
-
-  - it: should not create temporal extract secret when temporal is disabled
-    set:
-      temporal.enabled: false
-      global.config.temporal.external.enabled: false
-      temporalWorkers.pythonWorker.externalSecrets.enabled: false
-      mongodb.enabled: false
-      postgresql.enabled: false
-      rabbitmq.enabled: false
-      redis.enabled: false
-    template: ../templates/temporal_workers/python_worker/secret.yaml
-    asserts:
-      - hasDocuments:
-          count: 0
-
-  - it: should not create temporal llamaparse secret when temporal is disabled
-    set:
-      temporal.enabled: false
-      global.config.temporal.external.enabled: false
-      temporalParse.llamaParse.externalSecrets.enabled: false
-      mongodb.enabled: false
-      postgresql.enabled: false
-      rabbitmq.enabled: false
-      redis.enabled: false
-    template: ../templates/temporal_parse/llamaparse/secret.yaml
-    asserts:
-      - hasDocuments:
-          count: 0
-
-  # Test autoscaling resources are not created when temporal is disabled
-  - it: should not create temporal jobs API HPA when temporal is disabled
-    set:
-      temporal.enabled: false
-      global.config.temporal.external.enabled: false
-      temporalJobsService.api.autoscaling.enabled: true
-      mongodb.enabled: false
-      postgresql.enabled: false
-      rabbitmq.enabled: false
-      redis.enabled: false
-    template: ../templates/temporal_jobs_service/api/hpa.yaml
-    asserts:
-      - hasDocuments:
-          count: 0
-
-  - it: should not create temporal llamaparse HPA when temporal is disabled
-    set:
-      temporal.enabled: false
-      global.config.temporal.external.enabled: false
-      temporalParse.llamaParse.autoscaling.enabled: true
-      mongodb.enabled: false
-      postgresql.enabled: false
-      rabbitmq.enabled: false
-      redis.enabled: false
-    template: ../templates/temporal_parse/llamaparse/hpa.yaml
-    asserts:
-      - hasDocuments:
-          count: 0
-
-  # Test KEDA resources are not created when temporal is disabled
-  - it: should not create temporal jobs service KEDA when temporal is disabled
-    set:
-      temporal.enabled: false
-      global.config.temporal.external.enabled: false
-      temporalWorkers.pythonWorker.keda.enabled: true
-      mongodb.enabled: false
-      postgresql.enabled: false
-      rabbitmq.enabled: false
-      redis.enabled: false
-    capabilities:
-      apiVersions:
-        - keda.sh/v1alpha1
-    template: ../templates/temporal_workers/python_worker/keda-scaledobject.yaml
-    asserts:
-      - hasDocuments:
-          count: 0
-
-  - it: should not create temporal extract KEDA when temporal is disabled
-    set:
-      temporal.enabled: false
-      global.config.temporal.external.enabled: false
-      temporalWorkers.pythonWorker.keda.enabled: true
-      mongodb.enabled: false
-      postgresql.enabled: false
-      rabbitmq.enabled: false
-      redis.enabled: false
-    capabilities:
-      apiVersions:
-        - keda.sh/v1alpha1
-    template: ../templates/temporal_workers/python_worker/keda-scaledobject.yaml
-    asserts:
-      - hasDocuments:
-          count: 0
-
-  - it: should not create temporal llamaparse KEDA when temporal is disabled
-    set:
-      temporal.enabled: false
-      global.config.temporal.external.enabled: false
-      temporalParse.llamaParse.keda.enabled: true
-      mongodb.enabled: false
-      postgresql.enabled: false
-      rabbitmq.enabled: false
-      redis.enabled: false
-    capabilities:
-      apiVersions:
-        - keda.sh/v1alpha1
-    template: ../templates/temporal_parse/llamaparse/keda-scaledobject.yaml
-    asserts:
-      - hasDocuments:
-          count: 0
-
-  # Test ServiceMonitor resources are not created when temporal is disabled
-  - it: should not create temporal jobs service ServiceMonitor when temporal is disabled
-    set:
-      temporal.enabled: false
-      global.config.temporal.external.enabled: false
-      temporalWorkers.pythonWorker.metrics.enabled: true
-      temporalWorkers.pythonWorker.metrics.serviceMonitor.enabled: true
-      mongodb.enabled: false
-      postgresql.enabled: false
-      rabbitmq.enabled: false
-      redis.enabled: false
-    capabilities:
-      apiVersions:
-        - monitoring.coreos.com/v1
-    template: ../templates/temporal_workers/python_worker/servicemonitor.yaml
-    asserts:
-      - hasDocuments:
-          count: 0
-
-  - it: should not create temporal llamaparse ServiceMonitor when temporal is disabled
-    set:
-      temporal.enabled: false
-      global.config.temporal.external.enabled: false
-      temporalParse.llamaParse.metrics.enabled: true
-      temporalParse.llamaParse.metrics.serviceMonitor.enabled: true
-      mongodb.enabled: false
-      postgresql.enabled: false
-      rabbitmq.enabled: false
-      redis.enabled: false
-    capabilities:
-      apiVersions:
-        - monitoring.coreos.com/v1
-    template: ../templates/temporal_parse/llamaparse/servicemonitor.yaml
-    asserts:
-      - hasDocuments:
-          count: 0
-
-  # Test ServiceAccounts are not created when temporal is disabled
-  - it: should not create temporal jobs API service account when temporal is disabled
-    set:
-      temporal.enabled: false
-      global.config.temporal.external.enabled: false
-      temporalJobsService.api.serviceAccount.create: true
-      mongodb.enabled: false
-      postgresql.enabled: false
-      rabbitmq.enabled: false
-      redis.enabled: false
-    template: ../templates/temporal_jobs_service/api/serviceaccount.yaml
-    asserts:
-      - hasDocuments:
-          count: 0
-
-  - it: should not create temporal llamaparse service account when temporal is disabled
-    set:
-      temporal.enabled: false
-      global.config.temporal.external.enabled: false
-      temporalParse.llamaParse.serviceAccount.create: true
-      mongodb.enabled: false
-      postgresql.enabled: false
-      rabbitmq.enabled: false
-      redis.enabled: false
-    template: ../templates/temporal_parse/llamaparse/serviceaccount.yaml
-    asserts:
-      - hasDocuments:
-          count: 0
-
-  # Test PodDisruptionBudget is not created when temporal is disabled
-  - it: should not create temporal llamaparse PDB when temporal is disabled
-    set:
-      temporal.enabled: false
-      global.config.temporal.external.enabled: false
-      temporalParse.llamaParse.podDisruptionBudget.enabled: true
-      mongodb.enabled: false
-      postgresql.enabled: false
-      rabbitmq.enabled: false
-      redis.enabled: false
-    template: ../templates/temporal_parse/llamaparse/pdb.yaml
-    asserts:
-      - hasDocuments:
-          count: 0
-
-  # Test PrometheusRule is not created when temporal is disabled
-  - it: should not create temporal llamaparse PrometheusRule when temporal is disabled
-    set:
-      temporal.enabled: false
-      global.config.temporal.external.enabled: false
-      temporalParse.llamaParse.metrics.enabled: true
-      temporalParse.llamaParse.metrics.rules.enabled: true
-      mongodb.enabled: false
-      postgresql.enabled: false
-      rabbitmq.enabled: false
-      redis.enabled: false
-    capabilities:
-      apiVersions:
-        - monitoring.coreos.com/v1
-    template: ../templates/temporal_parse/llamaparse/prometheusrule.yaml
-    asserts:
-      - hasDocuments:
-          count: 0
+          count: 5

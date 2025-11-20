@@ -1,11 +1,11 @@
 suite: llamaparse-layout-detection-api-tests
 
 templates:
-- ../templates/llamaparse-layout-detection-api/deployment.yaml
-- ../templates/llamaparse-layout-detection-api/hpa.yaml
-- ../templates/llamaparse-layout-detection-api/pdb.yaml
-- ../templates/llamaparse-layout-detection-api/service.yaml
-- ../templates/llamaparse-layout-detection-api/serviceaccount.yaml
+- ../templates/llamacloud/deployment.yaml
+- ../templates/llamacloud/hpa.yaml
+- ../templates/llamacloud/pdb.yaml
+- ../templates/llamacloud/service.yaml
+- ../templates/llamacloud/serviceaccount.yaml
 
 release:
   name: test-release
@@ -14,106 +14,242 @@ release:
 tests:
 - it: should be a Deployment
   set:
-    mongodb.enabled: false
-    postgresql.enabled: false
-    rabbitmq.enabled: false
-    redis.enabled: false
-    llamaParseLayoutDetectionApi.enabled: true
-  template: ../templates/llamaparse-layout-detection-api/deployment.yaml
+    config:
+      frontend:
+        enabled: false
+      parseOcr:
+        enabled: false
+      parseLayoutDetection:
+        enabled: true
+    llamaParseLayoutDetectionApi:
+      image: docker.io/llamaindex/llamacloud-layout-detection-api:latest
+    redis:
+      host: test-redis
+      port: "6379"
+      password: test-pass
+    postgresql:
+      host: test-pg
+      port: "5432"
+      username: test-user
+      password: test-pass
+      database: test-db
+    mongodb:
+      host: mongodb
+      username: test-mongo-user
+      password: test-mongo-pass
+    rabbitmq:
+      host: test-rabbit
+      username: test-user
+      password: test-pass
+  template: ../templates/llamacloud/deployment.yaml
+  documentIndex: 4
   asserts:
     - isKind:
         of: Deployment
     - equal:
         path: metadata.name
-        value: test-release-llamacloud-llamaparse-layout-detection-api
+        value: llamacloud-layout
     - equal:
-        path: spec.selector.matchLabels["app.kubernetes.io/component"]
-        value: test-release-llamacloud-llamaparse-layout-detection-api
+        path: spec.selector.matchLabels["app.kubernetes.io/name"]
+        value: llamacloud-layout
     - equal:
         path: spec.template.spec.containers[0].name
-        value: llamaparse-layout-detection-api
-    - equal:
-        path: .spec.template.spec.containers[0].env[?(@.name == "LLAMACLOUD_LICENSE_KEY")].valueFrom.secretKeyRef.name
-        value: test-release-llamacloud-license-key
+        value: llamacloud-layout
+    - notEqual:
+        path: .spec.template.spec.containers[0].envFrom
+        value: []
 
-- it: should create a deployment if llamaParseLayoutDetectionApi.enabled is true
+- it: should create a deployment if config.parseLayoutDetection.enabled is true
   set:
-    llamaParseLayoutDetectionApi.enabled: true
-  template: ../templates/llamaparse-layout-detection-api/deployment.yaml
+    config:
+      frontend:
+        enabled: false
+      parseOcr:
+        enabled: false
+      parseLayoutDetection:
+        enabled: true
+    llamaParseLayoutDetectionApi:
+      image: docker.io/llamaindex/llamacloud-layout-detection-api:latest
+    redis:
+      host: test-redis
+      port: "6379"
+      password: test-pass
+    postgresql:
+      host: test-pg
+      port: "5432"
+      username: test-user
+      password: test-pass
+      database: test-db
+    mongodb:
+      host: mongodb
+      username: test-mongo-user
+      password: test-mongo-pass
+    rabbitmq:
+      host: test-rabbit
+      username: test-user
+      password: test-pass
+  template: ../templates/llamacloud/deployment.yaml
+  documentIndex: 4
   asserts:
-    - hasDocuments:
-        count: 1
-    - equal:
-        path: .spec.template.spec.containers[0].env[?(@.name == "LLAMACLOUD_LICENSE_KEY")].valueFrom.secretKeyRef.name
-        value: test-release-llamacloud-license-key
     - equal:
         path: .spec.template.spec.containers[0].env[?(@.name == "LOG_LEVEL")].value
         value: INFO
     - equal:
         path: .spec.template.spec.serviceAccountName
-        value: test-release-llamacloud-llamaparse-layout-detection-api
+        value: llamacloud-layout
 
-- it: should not create a deployment if llamaParseLayoutDetectionApi.enabled is false
+- it: should not create a deployment if config.parseLayoutDetection.enabled is false
   set:
-    llamaParseLayoutDetectionApi.enabled: false
-  template: ../templates/llamaparse-layout-detection-api/deployment.yaml
+    config:
+      frontend:
+        enabled: false
+      parseOcr:
+        enabled: false
+      parseLayoutDetection:
+        enabled: false
+    redis:
+      host: test-redis
+      port: "6379"
+      password: test-pass
+    postgresql:
+      host: test-pg
+      port: "5432"
+      username: test-user
+      password: test-pass
+      database: test-db
+    mongodb:
+      host: mongodb
+      username: test-mongo-user
+      password: test-mongo-pass
+    rabbitmq:
+      host: test-rabbit
+      username: test-user
+      password: test-pass
+  template: ../templates/llamacloud/deployment.yaml
   asserts:
-    - hasDocuments:
-        count: 0
+    - matchRegex:
+        path: metadata.name
+        pattern: ^(llamacloud|llamacloud-operator|llamacloud-worker|llamacloud-parse|llamacloud-telemetry)$
 
-- it: should not create a service if llamaParseLayoutDetectionApi.enabled is false
+- it: should create a service if config.parseLayoutDetection.enabled is true
   set:
-    llamaParseLayoutDetectionApi.enabled: false
-  template: ../templates/llamaparse-layout-detection-api/service.yaml
-  asserts:
-    - hasDocuments:
-        count: 0
-
-- it: should not create a service account if llamaParseLayoutDetectionApi.serviceAccount.create is false
-  set:
-    llamaParseLayoutDetectionApi.enabled: true
-    llamaParseLayoutDetectionApi.serviceAccount.create: false
-  template: ../templates/llamaparse-layout-detection-api/serviceaccount.yaml
-  asserts:
-    - hasDocuments:
-        count: 0
-
-- it: should not create a HPA if llamaParseLayoutDetectionApi.autoscaling.enabled is false
-  set:
-    llamaParseLayoutDetectionApi.enabled: true
-    llamaParseLayoutDetectionApi.autoscaling.enabled: false
-  template: ../templates/llamaparse-layout-detection-api/hpa.yaml
-  asserts:
-    - hasDocuments:
-        count: 0
-
-- it: should not create a PDB if llamaParseLayoutDetectionApi.podDisruptionBudget.enabled is false
-  set:
-    llamaParseLayoutDetectionApi.enabled: true
-    llamaParseLayoutDetectionApi.podDisruptionBudget.enabled: false
-  template: ../templates/llamaparse-layout-detection-api/pdb.yaml
-  asserts:
-    - hasDocuments:
-        count: 0
-
-- it: should set replicas field when autoscaling is disabled
-  set:
-    llamaParseLayoutDetectionApi.enabled: true
-    llamaParseLayoutDetectionApi.replicas: 3
-    llamaParseLayoutDetectionApi.autoscaling.enabled: false
-  template: ../templates/llamaparse-layout-detection-api/deployment.yaml
+    config:
+      frontend:
+        enabled: false
+      parseOcr:
+        enabled: false
+      parseLayoutDetection:
+        enabled: true
+    llamaParseLayoutDetectionApi:
+      image: docker.io/llamaindex/llamacloud-layout-detection-api:latest
+    redis:
+      host: test-redis
+      port: "6379"
+      password: test-pass
+    postgresql:
+      host: test-pg
+      port: "5432"
+      username: test-user
+      password: test-pass
+      database: test-db
+    mongodb:
+      host: mongodb
+      username: test-mongo-user
+      password: test-mongo-pass
+    rabbitmq:
+      host: test-rabbit
+      username: test-user
+      password: test-pass
+  template: ../templates/llamacloud/service.yaml
+  documentIndex: 4
   asserts:
     - equal:
-        path: .spec.replicas
-        value: 3
+        path: metadata.name
+        value: llamacloud-layout
 
-- it: should not set replicas field when autoscaling is enabled
+- it: should not create a HPA if horizontalPodAutoccalerSpec is not set
   set:
-    llamaParseLayoutDetectionApi.enabled: true
-    llamaParseLayoutDetectionApi.replicas: 3
-    llamaParseLayoutDetectionApi.autoscaling.enabled: true
-  template: ../templates/llamaparse-layout-detection-api/deployment.yaml
+    config:
+      frontend:
+        enabled: false
+      parseOcr:
+        enabled: false
+      parseLayoutDetection:
+        enabled: true
+    llamaParseLayoutDetectionApi:
+      image: docker.io/llamaindex/llamacloud-layout-detection-api:latest
+    redis:
+      host: test-redis
+      port: "6379"
+      password: test-pass
+    postgresql:
+      host: test-pg
+      port: "5432"
+      username: test-user
+      password: test-pass
+      database: test-db
+    mongodb:
+      host: mongodb
+      username: test-mongo-user
+      password: test-mongo-pass
+    rabbitmq:
+      host: test-rabbit
+      username: test-user
+      password: test-pass
+  template: ../templates/llamacloud/hpa.yaml
   asserts:
-    - notExists:
-        path: .spec.replicas
+    - hasDocuments:
+        count: 0
 
+- it: should create a HPA if horizontalPodAutoccalerSpec is set
+  set:
+    config:
+      frontend:
+        enabled: false
+      parseOcr:
+        enabled: false
+      parseLayoutDetection:
+        enabled: true
+    llamaParseLayoutDetectionApi:
+      image: docker.io/llamaindex/llamacloud-layout-detection-api:latest
+      horizontalPodAutoscalerSpec:
+        minReplicas: 2
+        maxReplicas: 10
+        metrics:
+          - type: Resource
+            resource:
+              name: cpu
+              target:
+                type: Utilization
+                averageUtilization: 80
+    redis:
+      host: test-redis
+      port: "6379"
+      password: test-pass
+    postgresql:
+      host: test-pg
+      port: "5432"
+      username: test-user
+      password: test-pass
+      database: test-db
+    mongodb:
+      host: mongodb
+      username: test-mongo-user
+      password: test-mongo-pass
+    rabbitmq:
+      host: test-rabbit
+      username: test-user
+      password: test-pass
+  template: ../templates/llamacloud/hpa.yaml
+  asserts:
+    - hasDocuments:
+        count: 1
+    - equal:
+        path: metadata.name
+        value: llamacloud-layout
+    - equal:
+        path: spec.minReplicas
+        value: 2
+    - equal:
+        path: spec.maxReplicas
+        value: 10

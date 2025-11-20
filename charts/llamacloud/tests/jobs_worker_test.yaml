@@ -1,13 +1,15 @@
 suite: jobs-worker-tests
 
 templates:
-- ../templates/jobs-worker/configmap.yaml
-- ../templates/jobs-worker/deployment.yaml
-- ../templates/jobs-worker/hpa.yaml
-- ../templates/jobs-worker/service.yaml
-- ../templates/jobs-worker/secret.yaml
-- ../templates/jobs-worker/serviceaccount.yaml
-- ../templates/jobs-worker/servicemonitor.yaml
+- ../templates/llamacloud/configmaps/common.yaml
+- ../templates/llamacloud/configmaps/buckets.yaml
+- ../templates/llamacloud/configmaps/extract.yaml
+- ../templates/llamacloud/configmap.yaml
+- ../templates/llamacloud/deployment.yaml
+- ../templates/llamacloud/hpa.yaml
+- ../templates/llamacloud/service.yaml
+- ../templates/llamacloud/secret.yaml
+- ../templates/llamacloud/serviceaccount.yaml
 
 release:
   name: test-release
@@ -26,12 +28,12 @@ chart:
 tests:
 - it: should be a Deployment
   set:
-    jobsWorker.image.tag: latest
-    mongodb.enabled: false
-    postgresql.enabled: false
-    rabbitmq.enabled: false
-    redis.enabled: false
-  template: ../templates/jobs-worker/deployment.yaml
+    config.frontend.enabled: false
+    config.parseOcr.enabled: false
+    config.parseLayoutDetection.enabled: false
+    jobsWorker.image: "docker.io/llamaindex/llamacloud-jobs-worker:latest"
+  template: ../templates/llamacloud/deployment.yaml
+  documentIndex: 2
   asserts:
     - isKind:
         of: Deployment
@@ -42,71 +44,27 @@ tests:
         path: .spec.template.spec.containers[0].env[?(@.name == "UVICORN_PORT")].value
         value: "8001"
 
-- it: should use an external secret name for the license key if it is set
-  set:
-    global.config.existingLicenseKeySecret: existing-license-key
-    mongodb.enabled: false
-    postgresql.enabled: false
-    rabbitmq.enabled: false
-    redis.enabled: false
-  template: ../templates/jobs-worker/deployment.yaml
+- it: should create common-config ConfigMap with IS_DEPLOYED
+  templates:
+    - ../templates/llamacloud/configmaps/common.yaml
   asserts:
-    - equal:
-        path: .spec.template.spec.containers[0].env[?(@.name == "LLAMACLOUD_LICENSE_KEY")].valueFrom.secretKeyRef.name
-        value: existing-license-key
-
-- it: should use the custom service account if it is set
-  set:
-    jobsWorker.serviceAccount.name: test-service-account
-    mongodb.enabled: false
-    postgresql.enabled: false
-    rabbitmq.enabled: false
-    redis.enabled: false
-  template: ../templates/jobs-worker/deployment.yaml
-  asserts:
-    - equal:
-        path: .spec.template.spec.serviceAccountName
-        value: test-service-account
-
-- it: should create a ConfigMap with the correct values
-  set:
-    global.config.parsedDocumentsCloudBucketName: test-cloud-bucket-name
-    jobsWorker.config.maxJobsInExecutionPerJobType: 5
-    jobsWorker.config.maxIndexJobsInExecution: 5
-    jobsWorker.config.maxDocumentIngestionJobsInExecution: 5
-    jobsWorker.config.includeJobErrorDetails: "false"
-    jobsWorker.config.defaultTransformDocumentTimeoutSeconds: "300"
-    jobsWorker.config.transformEmbeddingCharLimit: "5000000"
-    mongodb.enabled: false
-    postgresql.enabled: false
-    rabbitmq.enabled: false
-    redis.enabled: false
-  template: ../templates/jobs-worker/configmap.yaml
-  asserts:
-    - equal:
-        path: .data.LOG_LEVEL
-        value: info
+    - isKind:
+        of: ConfigMap
     - equal:
         path: .data.IS_DEPLOYED
         value: "true"
+
+- it: should create bucket-config ConfigMap with correct bucket names
+  set:
+    config.storageBuckets.parsedDocuments: test-cloud-bucket-name
+  templates:
+    - ../templates/llamacloud/configmaps/buckets.yaml
+  asserts:
+    - isKind:
+        of: ConfigMap
     - equal:
         path: .data.S3_DOCUMENT_BUCKET_NAME
         value: test-cloud-bucket-name
-    - equal:
-        path: .data.MAX_JOBS_IN_EXECUTION_PER_JOB_TYPE
-        value: "5"
-    - equal:
-        path: .data.MAX_INDEX_JOBS_IN_EXECUTION
-        value: "5"
-    - equal:
-        path: .data.MAX_DOCUMENT_INGESTION_JOBS_IN_EXECUTION
-        value: "5"
-    - equal:
-        path: .data.INCLUDE_JOB_ERROR_DETAILS
-        value: "false"
-    - equal:
-        path: .data.JOB_SERVICE_URL
-        value: http://test-release-llamacloud-jobs-service:8002
     - equal:
         path: .data.S3_ETL_BUCKET_NAME
         value: llama-platform-etl
@@ -128,12 +86,19 @@ tests:
     - equal:
         path: .data.S3_LLAMA_EXTRACT_OUTPUT_BUCKET_NAME
         value: llama-platform-extract-output
+
+- it: should create extract-config ConfigMap with default LLAMA_EXTRACT settings
+  templates:
+    - ../templates/llamacloud/configmaps/extract.yaml
+  asserts:
+    - isKind:
+        of: ConfigMap
     - equal:
         path: .data.LLAMA_EXTRACT_MULTIMODAL_MODEL
-        value: "gemini-2.0-flash"
+        value: "openai-gpt-4-1"
     - equal:
         path: .data.LLAMA_EXTRACT_SCHEMA_GENERATION_MODEL
-        value: "gemini-2.0-flash"
+        value: "openai-gpt-4-1-mini"
     - equal:
         path: .data.LLAMA_EXTRACT_MAX_PAGES
         value: "500"
@@ -143,25 +108,16 @@ tests:
     - equal:
         path: .data.LLAMA_EXTRACT_MAX_FILE_SIZE_UI_MB
         value: "30"
-    - equal:
-        path: .data.DEFAULT_TRANSFORM_DOCUMENT_TIMEOUT_SECONDS
-        value: "300"
-    - equal:
-        path: .data.TRANSFORM_EMBEDDING_CHAR_LIMIT
-        value: "5000000"
 
 - it: should set custom LLAMA_EXTRACT settings when specified
   set:
-    backend.config.llamaExtractMultimodalModel: "openai-gpt-4-1"
-    backend.config.llamaExtractSchemaGenerationModel: "openai-gpt-4-1-mini"
-    backend.config.llamaExtractMaxPages: 1000
-    backend.config.llamaExtractMaxFileSizeMb: 200
-    backend.config.llamaExtractMaxFileSizeUiMb: 50
-    mongodb.enabled: false
-    postgresql.enabled: false
-    rabbitmq.enabled: false
-    redis.enabled: false
-  template: ../templates/jobs-worker/configmap.yaml
+    config.extraction.multimodalModel: "openai-gpt-4-1"
+    config.extraction.schemaGenerationModel: "openai-gpt-4-1-mini"
+    config.extraction.maxPages: 1000
+    config.extraction.maxFileSizeMb: 200
+    config.extraction.maxFileSizeUiMb: 50
+  templates:
+    - ../templates/llamacloud/configmaps/extract.yaml
   asserts:
     - equal:
         path: .data.LLAMA_EXTRACT_MULTIMODAL_MODEL
@@ -178,73 +134,4 @@ tests:
     - equal:
         path: .data.LLAMA_EXTRACT_MAX_FILE_SIZE_UI_MB
         value: "50"
-
-- it: should include the LLM models in the environment variables
-  template: ../templates/jobs-worker/secret.yaml
-  set:
-    llms.enabled: true
-    llms.openAiApiKey: test-openai-api-key
-    mongodb.enabled: false
-    postgresql.enabled: false
-    rabbitmq.enabled: false
-    redis.enabled: false
-  asserts:
-    - equal:
-        path: .data.OPENAI_API_KEY
-        value: dGVzdC1vcGVuYWktYXBpLWtleQ==
-
-- it: should use default values for new BYOC configuration flags when not set
-  set:
-    mongodb.enabled: false
-    postgresql.enabled: false
-    rabbitmq.enabled: false
-    redis.enabled: false
-  template: ../templates/jobs-worker/configmap.yaml
-  asserts:
-    - equal:
-        path: .data.DEFAULT_TRANSFORM_DOCUMENT_TIMEOUT_SECONDS
-        value: "240"
-    - equal:
-        path: .data.TRANSFORM_EMBEDDING_CHAR_LIMIT
-        value: "11520000"
-
-- it: should create a ServiceMonitor
-  set:
-    mongodb.enabled: false
-    postgresql.enabled: false
-    rabbitmq.enabled: false
-    redis.enabled: false
-    jobsWorker.metrics.enabled: true
-    jobsWorker.metrics.serviceMonitor.enabled: true
-  template: ../templates/jobs-worker/servicemonitor.yaml
-  asserts:
-    - isKind:
-        of: ServiceMonitor
-
-- it: should set replicas field when autoscaling is disabled
-  set:
-    jobsWorker.replicas: 3
-    jobsWorker.autoscaling.enabled: false
-    mongodb.enabled: false
-    postgresql.enabled: false
-    rabbitmq.enabled: false
-    redis.enabled: false
-  template: ../templates/jobs-worker/deployment.yaml
-  asserts:
-    - equal:
-        path: .spec.replicas
-        value: 3
-
-- it: should not set replicas field when autoscaling is enabled
-  set:
-    jobsWorker.replicas: 3
-    jobsWorker.autoscaling.enabled: true
-    mongodb.enabled: false
-    postgresql.enabled: false
-    rabbitmq.enabled: false
-    redis.enabled: false
-  template: ../templates/jobs-worker/deployment.yaml
-  asserts:
-    - notExists:
-        path: .spec.replicas
 

@@ -1,10 +1,7 @@
 suite: temporal-jobs-service-tests
 templates:
-  - ../templates/temporal_jobs_service/api/deployment.yaml
-  - ../templates/temporal_jobs_service/api/configmap.yaml
-  - ../templates/temporal_jobs_service/api/service.yaml
-  - ../templates/temporal_jobs_service/api/hpa.yaml
-  - ../templates/temporal_jobs_service/api/serviceaccount.yaml
+  - ../templates/llamacloud/deployment.yaml
+  - ../templates/llamacloud/service.yaml
 release:
   name: llamacloud
   namespace: default
@@ -12,199 +9,25 @@ capabilities:
   majorVersion: 1
   minorVersion: 28
 tests:
-  # Test that nothing is created when temporal is disabled
-  - it: should not create temporal jobs service resources when temporal is disabled
+  # Test deployments created with temporal disabled
+  - it: should create standard deployments when temporal is disabled
     set:
       temporal.enabled: false
-      mongodb.enabled: false
-      postgresql.enabled: false
-      rabbitmq.enabled: false
-      redis.enabled: false
+      config.frontend.enabled: false
+      config.parseOcr.enabled: false
+      config.parseLayoutDetection.enabled: false
+    template: ../templates/llamacloud/deployment.yaml
     asserts:
       - hasDocuments:
-          count: 0
+          count: 5
 
-  # API Deployment Tests
-  - it: should create API deployment with correct configuration
+  - it: should create standard services when temporal is disabled
     set:
-      temporal.enabled: true
-      mongodb.enabled: false
-      postgresql.enabled: false
-      rabbitmq.enabled: false
-      redis.enabled: false
-    template: ../templates/temporal_jobs_service/api/deployment.yaml
-    asserts:
-      - isKind:
-          of: Deployment
-      - equal:
-          path: metadata.name
-          value: llamacloud-temporal-jobs-api
-      - equal:
-          path: spec.template.spec.containers[0].command[0]
-          value: start_jobs_api
-      - equal:
-          path: spec.template.spec.containers[0].ports[0].containerPort
-          value: 8002
-      - equal:
-          path: spec.template.spec.containers[0].ports[0].name
-          value: tj-api-http
-
-  # API ConfigMap Tests
-  - it: should create API configmap with temporal environment variables
-    set:
-      temporal.enabled: true
-      mongodb.enabled: false
-      postgresql.enabled: false
-      rabbitmq.enabled: false
-      redis.enabled: false
-    template: ../templates/temporal_jobs_service/api/configmap.yaml
-    asserts:
-      - isKind:
-          of: ConfigMap
-      - equal:
-          path: data.TEMPORAL_HOST
-          value: "llamacloud-temporal-frontend.default.svc.cluster.local"
-      - equal:
-          path: data.TEMPORAL_PORT
-          value: "7233"
-      - equal:
-          path: data.IS_DEPLOYED
-          value: "true"
-      - equal:
-          path: data.DEPLOYMENT_MODE
-          value: "prod"
-      - equal:
-          path: data.TEMPORAL_WORKER_REGISTRY_PROFILE
-          value: "consolidated"
-
-  - it: should allow customizing temporal worker registry profile in API
-    set:
-      temporal.enabled: true
-      temporalJobsService.api.config.temporalWorkerRegistryProfile: "default"
-      mongodb.enabled: false
-      postgresql.enabled: false
-      rabbitmq.enabled: false
-      redis.enabled: false
-    template: ../templates/temporal_jobs_service/api/configmap.yaml
-    asserts:
-      - equal:
-          path: data.TEMPORAL_WORKER_REGISTRY_PROFILE
-          value: "default"
-
-  - it: should include S3 bucket configurations in API configmap
-    set:
-      temporal.enabled: true
-      global.config.parsedDocumentsCloudBucketName: test-documents
-      global.config.parsedRawFileCloudBucketName: test-raw-files
-      mongodb.enabled: false
-      postgresql.enabled: false
-      rabbitmq.enabled: false
-      redis.enabled: false
-    template: ../templates/temporal_jobs_service/api/configmap.yaml
-    asserts:
-      - equal:
-          path: data.S3_DOCUMENT_BUCKET_NAME
-          value: test-documents
-      - equal:
-          path: data.S3_RAW_FILE_BUCKET_NAME
-          value: test-raw-files
-
-  # API Service Tests
-  - it: should create API service with correct port
-    set:
-      temporal.enabled: true
-      mongodb.enabled: false
-      postgresql.enabled: false
-      rabbitmq.enabled: false
-      redis.enabled: false
-    template: ../templates/temporal_jobs_service/api/service.yaml
-    asserts:
-      - isKind:
-          of: Service
-      - equal:
-          path: spec.ports[0].port
-          value: 8002
-      - equal:
-          path: spec.ports[0].targetPort
-          value: tj-api-http
-
-  # API HPA Tests
-  - it: should create HPA when autoscaling is enabled
-    set:
-      temporal.enabled: true
-      temporalJobsService.api.autoscaling.enabled: true
-      temporalJobsService.api.autoscaling.minReplicas: 2
-      temporalJobsService.api.autoscaling.maxReplicas: 10
-      mongodb.enabled: false
-      postgresql.enabled: false
-      rabbitmq.enabled: false
-      redis.enabled: false
-    template: ../templates/temporal_jobs_service/api/hpa.yaml
-    asserts:
-      - isKind:
-          of: HorizontalPodAutoscaler
-      - equal:
-          path: spec.minReplicas
-          value: 2
-      - equal:
-          path: spec.maxReplicas
-          value: 10
-
-  - it: should not create HPA when autoscaling is disabled
-    set:
-      temporal.enabled: true
-      temporalJobsService.api.autoscaling.enabled: false
-      mongodb.enabled: false
-      postgresql.enabled: false
-      rabbitmq.enabled: false
-      redis.enabled: false
-    template: ../templates/temporal_jobs_service/api/hpa.yaml
+      temporal.enabled: false
+      config.frontend.enabled: false
+      config.parseOcr.enabled: false
+      config.parseLayoutDetection.enabled: false
+    template: ../templates/llamacloud/service.yaml
     asserts:
       - hasDocuments:
-          count: 0
-
-  # API ServiceAccount Tests
-  - it: should create API service account when create is true
-    set:
-      temporal.enabled: true
-      temporalJobsService.api.serviceAccount.create: true
-      mongodb.enabled: false
-      postgresql.enabled: false
-      rabbitmq.enabled: false
-      redis.enabled: false
-    template: ../templates/temporal_jobs_service/api/serviceaccount.yaml
-    asserts:
-      - isKind:
-          of: ServiceAccount
-      - equal:
-          path: metadata.name
-          value: llamacloud-temporal-jobs-api
-
-  - it: should not create API service account when create is false
-    set:
-      temporal.enabled: true
-      temporalJobsService.api.serviceAccount.create: false
-      mongodb.enabled: false
-      postgresql.enabled: false
-      rabbitmq.enabled: false
-      redis.enabled: false
-    template: ../templates/temporal_jobs_service/api/serviceaccount.yaml
-    asserts:
-      - hasDocuments:
-          count: 0
-
-  - it: should use custom service account name when provided
-    set:
-      temporal.enabled: true
-      temporalJobsService.api.serviceAccount.create: true
-      temporalJobsService.api.serviceAccount.name: custom-sa-name
-      mongodb.enabled: false
-      postgresql.enabled: false
-      rabbitmq.enabled: false
-      redis.enabled: false
-    template: ../templates/temporal_jobs_service/api/serviceaccount.yaml
-    asserts:
-      - equal:
-          path: metadata.name
-          value: custom-sa-name
-
+          count: 5
