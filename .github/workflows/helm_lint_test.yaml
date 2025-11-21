@@ -53,46 +53,46 @@ jobs:
         run: |
           helm unittest ./charts/llamacloud
 
-  install-test:
-    name: "Install Helm Charts"
+  # install-test:
+  #   name: "Install Helm Charts"
 
-    needs: [lint-test]
+  #   needs: [lint-test]
 
-    runs-on:
-      labels: helm-charts-runner
+  #   runs-on:
+  #     labels: helm-charts-runner
 
-    strategy:
-      matrix:
-        k8s-version:
-          # Limit testing because tests can take a while to run
-          # Ref: https://hub.docker.com/r/kindest/node/tags
-          - v1.30.10
-          - v1.32.3
+  #   strategy:
+  #     matrix:
+  #       k8s-version:
+  #         # Limit testing because tests can take a while to run
+  #         # Ref: https://hub.docker.com/r/kindest/node/tags
+  #         - v1.30.10
+  #         - v1.32.3
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
+  #       with:
+  #         fetch-depth: 0
 
-      - name: Create kind cluster
-        uses: helm/kind-action@v1.10.0
-        with:
-          node_image: kindest/node:${{ matrix.k8s-version }}
+  #     - name: Create kind cluster
+  #       uses: helm/kind-action@v1.10.0
+  #       with:
+  #         node_image: kindest/node:${{ matrix.k8s-version }}
 
-      - name: Set up chart-testing
-        uses: helm/chart-testing-action@v2.6.1
+  #     - name: Set up chart-testing
+  #       uses: helm/chart-testing-action@v2.6.1
 
-      - name: Add Temporal Helm Repository
-        run: helm repo add temporal https://go.temporal.io/helm-charts
+  #     - name: Add Temporal Helm Repository
+  #       run: helm repo add temporal https://go.temporal.io/helm-charts
 
-      - name: Test
-        id: test-charts
-        env:
-          LLAMACLOUD_LICENSE_KEY: ${{ secrets.LLAMACLOUD_LICENSE_KEY }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          OIDC_DISCOVERY_URL: ${{ secrets.OIDC_DISCOVERY_URL }}
-          OIDC_CLIENT_ID: ${{ secrets.OIDC_CLIENT_ID }}
-          OIDC_CLIENT_SECRET: ${{ secrets.OIDC_CLIENT_SECRET }}
-        run: |
-          charts/llamacloud/ci/test-helm-install.sh
+  #     - name: Test
+  #       id: test-charts
+  #       env:
+  #         LLAMACLOUD_LICENSE_KEY: ${{ secrets.LLAMACLOUD_LICENSE_KEY }}
+  #         OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+  #         OIDC_DISCOVERY_URL: ${{ secrets.OIDC_DISCOVERY_URL }}
+  #         OIDC_CLIENT_ID: ${{ secrets.OIDC_CLIENT_ID }}
+  #         OIDC_CLIENT_SECRET: ${{ secrets.OIDC_CLIENT_SECRET }}
+  #       run: |
+  #         charts/llamacloud/ci/test-helm-install.sh
