@@ -1,7 +1,35 @@
-global:
-  config:
-    licenseKey: "<REPLACE-WITH-LLAMACLOUD-LICENSE-KEY>"
-    # existingLicenseKeySecret: "<uncomment-if-using-existing-secret>"
+license:
+  key: "<REPLACE-WITH-LLAMACLOUD-LICENSE-KEY>"
+  # secret: "<uncomment-if-using-existing-secret>"
+
+# Connection details for required services
+postgresql:
+  host: "<REPLACE-WITH-POSTGRESQL-HOST>"
+  port: "5432"
+  database: "<REPLACE-WITH-DATABASE-NAME>"
+  username: "<REPLACE-WITH-USERNAME>"
+  password: "<REPLACE-WITH-PASSWORD>"
+  # secret: "<uncomment-if-using-existing-secret>"
+
+mongodb:
+  host: "<REPLACE-WITH-MONGODB-HOST>"
+  port: "27017"
+  username: "<REPLACE-WITH-USERNAME>"
+  password: "<REPLACE-WITH-PASSWORD>"
+  # secret: "<uncomment-if-using-existing-secret>"
+
+rabbitmq:
+  host: "<REPLACE-WITH-RABBITMQ-HOST>"
+  port: "5672"
+  username: "<REPLACE-WITH-USERNAME>"
+  password: "<REPLACE-WITH-PASSWORD>"
+  # secret: "<uncomment-if-using-existing-secret>"
+
+redis:
+  host: "<REPLACE-WITH-REDIS-HOST>"
+  port: "6379"
+  password: "<REPLACE-WITH-PASSWORD>"
+  # secret: "<uncomment-if-using-existing-secret>"
 
 ingress:
   enabled: true
@@ -9,18 +37,16 @@ ingress:
   tlsSecretName: "llamacloud-example-tls-secret"
   ingressClassName: "default-ingress-class"
 
-backend:
-  config:
-    openAiApiKey: "<REPLACE-WITH-OPENAI-API-KEY>"
-    # existingOpenAiApiKeySecret: "<uncomment-if-using-existing-secret>"
+config:
+  llms:
+    openAi:
+      apiKey: "<REPLACE-WITH-OPENAI-API-KEY>"
+      # secret: "<uncomment-if-using-existing-secret>"
 
+  authentication:
     oidc:
-      discoveryUrl: "https://login.microsoftonline.com/your-tenant-id/oauth2/v2.0/token"
+      enabled: true
+      discoveryUrl: "https://login.microsoftonline.com/<your-tenant-id>/v2.0/.well-known/openid-configuration"
       clientId: "your-client-id"
       clientSecret: "your-client-secret"
-      # existingSecretName: "oidc-secret"
-
-llamaParse:
-  config:
-    openaiApiKey: "<REPLACE-WITH-OPENAI-API-KEY>"
-    # existingOpenAiApiKeySecret: "<uncomment-if-using-existing-secret>"
+      # secret: "oidc-secret"
