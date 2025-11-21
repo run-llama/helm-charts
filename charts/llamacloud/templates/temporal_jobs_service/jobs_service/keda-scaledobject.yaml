@@ -1,3 +1,0 @@
-{{- if include "temporal.enabled" . -}}
-{{- include "temporalWorker.keda" (dict "worker" .Values.temporalJobsService.jobsServiceWorker "serviceAccountHelper" "temporalJobsService.jobsServiceWorker.serviceAccountName" "root" .) -}}
-{{- end -}}

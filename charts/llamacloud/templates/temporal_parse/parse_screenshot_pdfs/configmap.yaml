@@ -1,3 +1,0 @@
-{{- if include "temporal.enabled" . -}}
-{{- include "temporalWorker.configmap" (dict "worker" .Values.temporalParse.parseScreenshotPDFs "serviceAccountHelper" "temporalParse.parseScreenshotPDFs.serviceAccountName" "root" .) -}}
-{{- end -}}
