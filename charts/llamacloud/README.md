@@ -39,14 +39,6 @@ Warning #2:The base cpu/memory requirements may increase if you are running cont
 
 The LlamaCloud charts provide easy deployment options for the 3rd party dependencies that the platform requires. Each of the following dependencies can be enabled directly through the `values.yaml` file, or alternatively, you can supply your own `Secret` objects to provide the LlamaCloud deployments with the necessar credentials to those services.
 
-- PostgreSQL (Helm Chart Dependency)
-    - [Bitnami Helm Chart](https://github.com/bitnami/charts/blob/main/bitnami/postgresql/README.md)
-- MongoDB (Helm Chart Dependency)
-    - [Bitnami Helm Chart](https://github.com/bitnami/charts/blob/main/bitnami/mongodb/README.md)
-- RabbitMQ (Helm Chart Dependency)
-    - [Bitnami Helm Chart](https://github.com/bitnami/charts/blob/main/bitnami/rabbitmq/README.md)
-- Redis (Helm Chart Dependency)
-    - [Bitnami Helm Chart](https://github.com/bitnami/charts/blob/main/bitnami/redis/README.md)
 - S3Proxy (Templates)
     - If enabled, we are deploying a containerized version of gaul's [s3proxy project](https://github.com/gaul/s3proxy).
     - If you wish to use a non-aws file store such as Azure Blob Storage or GCP Filestore, enable and configure the s3proxy deployment. For more information, please refer to our docs.
@@ -62,1040 +54,515 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 
 ## Parameters
 
-### Global Configuration
+### License Configuration
 
-| Name                                                   | Description                                                        | Value                      |
-| ------------------------------------------------------ | ------------------------------------------------------------------ | -------------------------- |
-| `global.cloudProvider`                                 | Cloud provider where the chart is deployed in.                     | `aws`                      |
-| `global.imagePullSecrets`                              | Global Docker registry secret names as an array                    | `[]`                       |
-| `global.storageClass`                                  | Storage class to use for dynamic provisioning                      | `""`                       |
-| `global.config.licenseKey`                             | License key for all components                                     | `<input-license-key-here>` |
-| `global.config.existingLicenseKeySecret`               | Name of the secret to use for the license key                      | `""`                       |
-| `global.config.awsAccessKeyId`                         | AWS Access Key ID                                                  | `nil`                      |
-| `global.config.awsSecretAccessKey`                     | AWS Secret Access Key                                              | `nil`                      |
-| `global.config.existingAwsSecretName`                  | Name of the existing secret to use for AWS credentials             | `""`                       |
-| `global.config.postgresql.external.enabled`            | Use an external PostgreSQL database                                | `false`                    |
-| `global.config.postgresql.external.host`               | PostgreSQL host                                                    | `""`                       |
-| `global.config.postgresql.external.port`               | PostgreSQL port                                                    | `5432`                     |
-| `global.config.postgresql.external.database`           | PostgreSQL database                                                | `""`                       |
-| `global.config.postgresql.external.username`           | PostgreSQL user                                                    | `""`                       |
-| `global.config.postgresql.external.password`           | PostgreSQL password                                                | `""`                       |
-| `global.config.postgresql.external.existingSecretName` | Name of the existing secret to use for PostgreSQL credentials      | `""`                       |
-| `global.config.mongodb.external.enabled`               | Use an external MongoDB database                                   | `false`                    |
-| `global.config.mongodb.external.scheme`                | MongoDB connection scheme (i.e. mongodb, mongodb+srv)              | `mongodb`                  |
-| `global.config.mongodb.external.host`                  | MongoDB host                                                       | `""`                       |
-| `global.config.mongodb.external.port`                  | MongoDB port                                                       | `27017`                    |
-| `global.config.mongodb.external.username`              | MongoDB user                                                       | `""`                       |
-| `global.config.mongodb.external.password`              | MongoDB password                                                   | `""`                       |
-| `global.config.mongodb.external.existingSecretName`    | Name of the existing secret to use for MongoDB credentials         | `""`                       |
-| `global.config.rabbitmq.external.enabled`              | Use an external RabbitMQ instance                                  | `false`                    |
-| `global.config.rabbitmq.external.scheme`               | RabbitMQ scheme                                                    | `amqp`                     |
-| `global.config.rabbitmq.external.host`                 | RabbitMQ host                                                      | `""`                       |
-| `global.config.rabbitmq.external.port`                 | RabbitMQ port                                                      | `5672`                     |
-| `global.config.rabbitmq.external.username`             | RabbitMQ user                                                      | `""`                       |
-| `global.config.rabbitmq.external.password`             | RabbitMQ password                                                  | `""`                       |
-| `global.config.rabbitmq.external.connectionString`     | Connection string for the AMQP queue (e.g., for Azure Service Bus) | `""`                       |
-| `global.config.rabbitmq.external.existingSecretName`   | Name of the existing secret to use for RabbitMQ credentials        | `""`                       |
-| `global.config.redis.external.enabled`                 | Use an external Redis instance                                     | `false`                    |
-| `global.config.redis.external.host`                    | Redis host                                                         | `""`                       |
-| `global.config.redis.external.port`                    | Redis port                                                         | `6379`                     |
-| `global.config.redis.external.scheme`                  | Redis connection scheme (redis or rediss for SSL)                  | `redis`                    |
-| `global.config.redis.external.username`                | Redis username (required for Redis 6.0+)                           | `""`                       |
-| `global.config.redis.external.password`                | Redis password                                                     | `""`                       |
-| `global.config.redis.external.db`                      | Redis database                                                     | `0`                        |
-| `global.config.redis.external.existingSecretName`      | Name of the existing secret to use for Redis credentials           | `""`                       |
-| `global.config.temporal.external.enabled`              | Use an external Temporal instance                                  | `false`                    |
-| `global.config.temporal.external.host`                 | Temporal host                                                      | `""`                       |
-| `global.config.temporal.external.port`                 | Temporal port                                                      | `7233`                     |
+| Name             | Description                                       | Value                      |
+| ---------------- | ------------------------------------------------- | -------------------------- |
+| `license.key`    | License key for all components                    | `<input-license-key-here>` |
+| `license.secret` | Name of the k8s secret to use for the license key | `""`                       |
 
-### Overrides and Common Configuration
+### Postgresql Configuration
 
-| Name                | Description                                    | Value |
-| ------------------- | ---------------------------------------------- | ----- |
-| `nameOverride`      | String to fully override llamacloud.name       | `""`  |
-| `fullnameOverride`  | String to fully override llamaecloud.fullname  | `""`  |
-| `namespaceOverride` | String to fully override llamaecloud.namespace | `""`  |
-| `commonLabels`      | Labels to add to all deployed objects          | `{}`  |
-| `commonAnnotations` | Annotations to add to all deployed objects     | `{}`  |
+| Name                  | Description                                                   | Value  |
+| --------------------- | ------------------------------------------------------------- | ------ |
+| `postgresql.host`     | PostgreSQL host                                               | `""`   |
+| `postgresql.port`     | PostgreSQL port                                               | `5432` |
+| `postgresql.database` | PostgreSQL database                                           | `""`   |
+| `postgresql.username` | PostgreSQL user                                               | `""`   |
+| `postgresql.password` | PostgreSQL password                                           | `""`   |
+| `postgresql.secret`   | Name of the existing secret to use for PostgreSQL credentials | `""`   |
+
+### MongoDB Configuration
+
+| Name               | Description                                                | Value     |
+| ------------------ | ---------------------------------------------------------- | --------- |
+| `mongodb.scheme`   | MongoDB connection scheme (i.e. mongodb, mongodb+srv)      | `mongodb` |
+| `mongodb.host`     | MongoDB host                                               | `""`      |
+| `mongodb.port`     | MongoDB port                                               | `27017`   |
+| `mongodb.username` | MongoDB user                                               | `""`      |
+| `mongodb.password` | MongoDB password                                           | `""`      |
+| `mongodb.secret`   | Name of the existing secret to use for MongoDB credentials | `""`      |
+
+### RabbitMQ Configuration
+
+| Name                        | Description                                                        | Value  |
+| --------------------------- | ------------------------------------------------------------------ | ------ |
+| `rabbitmq.scheme`           | RabbitMQ scheme                                                    | `amqp` |
+| `rabbitmq.host`             | RabbitMQ host                                                      | `""`   |
+| `rabbitmq.port`             | RabbitMQ port                                                      | `5672` |
+| `rabbitmq.username`         | RabbitMQ user                                                      | `""`   |
+| `rabbitmq.password`         | RabbitMQ password                                                  | `""`   |
+| `rabbitmq.connectionString` | Connection string for the AMQP queue (e.g., for Azure Service Bus) | `""`   |
+| `rabbitmq.secret`           | Name of the existing secret to use for RabbitMQ credentials        | `""`   |
+
+### Redis Configuration
+
+| Name             | Description                                              | Value   |
+| ---------------- | -------------------------------------------------------- | ------- |
+| `redis.host`     | Redis host                                               | `""`    |
+| `redis.port`     | Redis port                                               | `6379`  |
+| `redis.scheme`   | Redis connection scheme (redis or rediss for SSL)        | `redis` |
+| `redis.username` | Redis username (required for Redis 6.0+)                 | `""`    |
+| `redis.password` | Redis password                                           | `""`    |
+| `redis.db`       | Redis database                                           | `0`     |
+| `redis.secret`   | Name of the existing secret to use for Redis credentials | `""`    |
+
+### Optional QDRANT Data-Sink configuration
+
+| Name             | Description                                                 | Value   |
+| ---------------- | ----------------------------------------------------------- | ------- |
+| `qdrant.enabled` | Enable QDRANT Data-Sink for backend                         | `false` |
+| `qdrant.url`     | QDRANT Data-Sink host                                       | `""`    |
+| `qdrant.apiKey`  | QDRANT Data-Sink API key                                    | `""`    |
+| `qdrant.secret`  | Name of the existing secret to use for the QDRANT Data-Sink | `""`    |
+
+### Optional Temporal configuration
+
+| Name               | Description                 | Value   |
+| ------------------ | --------------------------- | ------- |
+| `temporal.enabled` | Enable Temporal for backend | `false` |
+| `temporal.host`    | Temporal host               | `""`    |
+| `temporal.port`    | Temporal port               | `7233`  |
 
 ### Ingress Configuration
 
 | Name                       | Description                               | Value   |
 | -------------------------- | ----------------------------------------- | ------- |
 | `ingress.enabled`          | Whether to enable the ingress             | `false` |
-| `ingress.create`           | Whether to create the ingress             | `true`  |
-| `ingress.labels`           | Labels to add to the ingress              | `{}`    |
 | `ingress.annotations`      | Annotations to add to the ingress         | `{}`    |
-| `ingress.host`             | Hostname to use for the ingress           | `nil`   |
-| `ingress.scheme`           | Scheme to use for the ingress             | `https` |
-| `ingress.tlsSecretName`    | TLS secret name to use for the ingress    | `nil`   |
-| `ingress.ingressClassName` | Ingress class name to use for the ingress | `nil`   |
+| `ingress.host`             | Hostname to use for the ingress           | `""`    |
+| `ingress.tlsSecretName`    | TLS secret name to use for the ingress    | `""`    |
+| `ingress.ingressClassName` | Ingress class name to use for the ingress | `""`    |
+
+### Application Configuration
+
+| Name              | Description                                                           | Value  |
+| ----------------- | --------------------------------------------------------------------- | ------ |
+| `config.logLevel` | Log level for the application (DEBUG, INFO, WARNING, ERROR, CRITICAL) | `INFO` |
 
 ### LLMs Configuration
 
-| Name                                        | Description                                                         | Value                                       |
-| ------------------------------------------- | ------------------------------------------------------------------- | ------------------------------------------- |
-| `llms.enabled`                              | Whether to enable the LLMs                                          | `false`                                     |
-| `llms.openAiApiKey`                         | OpenAI API key                                                      | `""`                                        |
-| `llms.existingOpenAiApiKeySecretName`       | Name of the existing secret to use for the OpenAI API key           | `""`                                        |
-| `llms.azureOpenAi.enabled`                  | Enable Azure OpenAI for LlamaParse                                  | `false`                                     |
-| `llms.azureOpenAi.existingSecretName`       | Name of the existing secret to use for the Azure OpenAI API key     | `""`                                        |
-| `llms.azureOpenAi.deployments`              | Azure OpenAI deployments                                            | `[]`                                        |
-| `llms.anthropicApiKey`                      | Anthropic API key                                                   | `""`                                        |
-| `llms.existingAnthropicApiKeySecretName`    | Name of the existing secret to use for the Anthropic API key        | `""`                                        |
-| `llms.geminiApiKey`                         | Google Gemini API key                                               | `""`                                        |
-| `llms.existingGeminiApiKeySecretName`       | Name of the existing secret to use for the Google Gemini API key    | `""`                                        |
-| `llms.awsBedrock.enabled`                   | Enable AWS Bedrock for LlamaParse                                   | `false`                                     |
-| `llms.awsBedrock.existingSecretName`        | Name of the existing secret to use for the AWS Bedrock API key      | `""`                                        |
-| `llms.awsBedrock.region`                    | AWS Bedrock region                                                  | `""`                                        |
-| `llms.awsBedrock.accessKeyId`               | AWS Bedrock access key ID                                           | `""`                                        |
-| `llms.awsBedrock.secretAccessKey`           | AWS Bedrock secret access key                                       | `""`                                        |
-| `llms.awsBedrock.sonnet3_5ModelVersionName` | Sonnet 3.5 model version name                                       | `anthropic.claude-3-5-sonnet-20240620-v1:0` |
-| `llms.awsBedrock.sonnet3_7ModelVersionName` | Sonnet 3.7 model version name                                       | `anthropic.claude-3-7-sonnet-20250219-v1:0` |
-| `llms.awsBedrock.sonnet4_0ModelVersionName` | Sonnet 4.0 model version name                                       | `anthropic.claude-sonnet-4-20250514-v1:0`   |
-| `llms.awsBedrock.haiku3_5ModelVersionName`  | Haiku 3.5 model version name                                        | `anthropic.claude-3-5-haiku-20241022-v1:0`  |
-| `llms.awsBedrock.haiku4_5ModelVersionName`  | Haiku 4.5 model version name                                        | `anthropic.claude-haiku-4-5-20251001-v1:0`  |
-| `llms.preferedPremiumModel`                 | Preferred premium model for LlamaParse                              | `""`                                        |
-| `llms.googleVertexAi.enabled`               | Enable Google Vertex AI for LlamaParse                              | `false`                                     |
-| `llms.googleVertexAi.existingSecretName`    | Name of the existing secret to use for the Google Vertex AI API key | `""`                                        |
-| `llms.googleVertexAi.projectId`             | Google Vertex AI project id                                         | `""`                                        |
-| `llms.googleVertexAi.location`              | Google Vertex AI location                                           | `""`                                        |
-| `llms.googleVertexAi.credentialsJson`       | Google Vertex AI credentials JSON                                   | `""`                                        |
+
+### OpenAI Configuration
+
+| Name                        | Description                                               | Value |
+| --------------------------- | --------------------------------------------------------- | ----- |
+| `config.llms.openAi.apiKey` | OpenAI API key                                            | `""`  |
+| `config.llms.openAi.secret` | Name of the existing secret to use for the OpenAI API key | `""`  |
+
+### Anthropic Configuration
+
+| Name                           | Description                                                  | Value |
+| ------------------------------ | ------------------------------------------------------------ | ----- |
+| `config.llms.anthropic.apiKey` | Anthropic API key                                            | `""`  |
+| `config.llms.anthropic.secret` | Name of the existing secret to use for the Anthropic API key | `""`  |
+
+### Google Gemini Configuration
+
+| Name                        | Description                                                      | Value |
+| --------------------------- | ---------------------------------------------------------------- | ----- |
+| `config.llms.gemini.apiKey` | Google Gemini API key                                            | `""`  |
+| `config.llms.gemini.secret` | Name of the existing secret to use for the Google Gemini API key | `""`  |
+
+### Azure OpenAI Configuration
+
+| Name                                  | Description                                                     | Value |
+| ------------------------------------- | --------------------------------------------------------------- | ----- |
+| `config.llms.azureOpenAi.secret`      | Name of the existing secret to use for the Azure OpenAI API key | `""`  |
+| `config.llms.azureOpenAi.deployments` | Azure OpenAI deployments                                        | `[]`  |
+
+### AWS Bedrock Configuration
+
+| Name                                               | Description                                                                               | Value                                       |
+| -------------------------------------------------- | ----------------------------------------------------------------------------------------- | ------------------------------------------- |
+| `config.llms.awsBedrock.region`                    | AWS Bedrock region                                                                        | `""`                                        |
+| `config.llms.awsBedrock.accessKeyId`               | AWS Bedrock access key ID                                                                 | `""`                                        |
+| `config.llms.awsBedrock.secretAccessKey`           | AWS Bedrock secret access key                                                             | `""`                                        |
+| `config.llms.awsBedrock.sonnet3_5ModelVersionName` | Sonnet 3.5 model version name example. Usually needs a 'us.', 'global.', or 'eu.' prefix. | `anthropic.claude-3-5-sonnet-20240620-v1:0` |
+| `config.llms.awsBedrock.sonnet3_7ModelVersionName` | Sonnet 3.7 model version name example. Usually needs a 'us.', 'global.', or 'eu.' prefix. | `anthropic.claude-3-7-sonnet-20250219-v1:0` |
+| `config.llms.awsBedrock.sonnet4_0ModelVersionName` | Sonnet 4.0 model version name example. Usually needs a 'us.', 'global.', or 'eu.' prefix. | `anthropic.claude-sonnet-4-20250514-v1:0`   |
+| `config.llms.awsBedrock.sonnet4_5ModelVersionName` | Sonnet 4.5 model version name example. Usually needs a 'us.', 'global.', or 'eu.' prefix. | `anthropic.claude-sonnet-4-5-20250929-v1:0` |
+| `config.llms.awsBedrock.haiku3_5ModelVersionName`  | Haiku 3.5 model version name example. Usually needs a 'us.', 'global.', or 'eu.' prefix.  | `anthropic.claude-3-5-haiku-20241022-v1:0`  |
+| `config.llms.awsBedrock.haiku4_5ModelVersionName`  | Haiku 4.5 model version name example. Usually needs a 'us.', 'global.', or 'eu.' prefix.  | `anthropic.claude-haiku-4-5-20251001-v1:0`  |
+| `config.llms.awsBedrock.secret`                    | Name of the existing secret to use for the AWS Bedrock API key                            | `""`                                        |
+
+### Google Vertex AI Configuration
+
+| Name                                         | Description                                                         | Value |
+| -------------------------------------------- | ------------------------------------------------------------------- | ----- |
+| `config.llms.googleVertexAi.projectId`       | Google Vertex AI project id                                         | `""`  |
+| `config.llms.googleVertexAi.location`        | Google Vertex AI location                                           | `""`  |
+| `config.llms.googleVertexAi.credentialsJson` | Google Vertex AI credentials JSON                                   | `""`  |
+| `config.llms.googleVertexAi.secret`          | Name of the existing secret to use for the Google Vertex AI API key | `""`  |
+
+### authentication Configuration
+
+
+### Basic Auth configuration
+
+| Name                                               | Description                                           | Value   |
+| -------------------------------------------------- | ----------------------------------------------------- | ------- |
+| `config.authentication.basicAuth.enabled`          | Enable Basic Auth for the backend                     | `false` |
+| `config.authentication.basicAuth.validEmailDomain` | Valid email domain for the application                | `""`    |
+| `config.authentication.basicAuth.jwtSecret`        | JWT secret for the backend                            | `""`    |
+| `config.authentication.basicAuth.secret`           | Name of the existing secret to use for the JWT secret | `""`    |
+
+### OpenID Connect configuration
+
+| Name                                      | Description                                               | Value   |
+| ----------------------------------------- | --------------------------------------------------------- | ------- |
+| `config.authentication.oidc.enabled`      | Enable OIDC for the backend                               | `false` |
+| `config.authentication.oidc.discoveryUrl` | OIDC discovery URL                                        | `""`    |
+| `config.authentication.oidc.clientId`     | OIDC client ID                                            | `""`    |
+| `config.authentication.oidc.clientSecret` | OIDC client secret                                        | `""`    |
+| `config.authentication.oidc.secret`       | Name of the existing secret to use for OIDC configuration | `""`    |
+
+### Storage Buckets Configuration
+
+| Name                                             | Description                                                        | Value                                |
+| ------------------------------------------------ | ------------------------------------------------------------------ | ------------------------------------ |
+| `config.storageBuckets.provider`                 | Cloud storage provider                                             | `aws`                                |
+| `config.storageBuckets.extraEnvVariables`        | Extra environment variables to add to the pods for storage buckets | `{}`                                 |
+| `config.storageBuckets.parsedDocuments`          | Cloud storage bucket name                                          | `llama-platform-parsed-documents`    |
+| `config.storageBuckets.parsedEtl`                | Cloud storage bucket name                                          | `llama-platform-etl`                 |
+| `config.storageBuckets.parsedExternalComponents` | Cloud storage bucket name                                          | `llama-platform-external-components` |
+| `config.storageBuckets.parsedFileParsing`        | Cloud storage bucket name                                          | `llama-platform-file-parsing`        |
+| `config.storageBuckets.parsedRawFile`            | Cloud storage bucket name                                          | `llama-platform-raw-files`           |
+| `config.storageBuckets.parseOutput`              | Cloud storage bucket name                                          | `llama-cloud-parse-output`           |
+| `config.storageBuckets.parsedFileScreenshot`     | Cloud storage bucket name                                          | `llama-platform-file-screenshots`    |
+| `config.storageBuckets.extractOutput`            | Cloud storage bucket name                                          | `llama-platform-extract-output`      |
+| `config.storageBuckets.parseFileUpload`          | Cloud storage bucket name                                          | `llama-platform-file-parsing`        |
+| `config.storageBuckets.parseFileOutput`          | Cloud storage bucket name                                          | `llama-platform-file-parsing`        |
+
+### S3Proxy Configuration (only used when provider is set to gcp or azure, ignored for aws)
+
+| Name                                            | Description                                                                  | Value                                      |
+| ----------------------------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------ |
+| `config.storageBuckets.s3proxy.image`           | S3Proxy image                                                                | `docker.io/andrewgaul/s3proxy:sha-82e50ee` |
+| `config.storageBuckets.s3proxy.imagePullPolicy` | S3Proxy image pull policy                                                    | `IfNotPresent`                             |
+| `config.storageBuckets.s3proxy.securityContext` | Security context for the S3Proxy container                                   | `{}`                                       |
+| `config.storageBuckets.s3proxy.resources`       | Set container requests and limits for different resources like CPU or memory | `{}`                                       |
+| `config.storageBuckets.s3proxy.config`          | S3Proxy configuration ENV variables                                          | `{}`                                       |
 
 ### Frontend Configuration
 
-| Name                                                   | Description                                                                                                       | Value                            |
-| ------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------- | -------------------------------- |
-| `frontend.name`                                        | Name suffix of the Frontend related resources                                                                     | `frontend`                       |
-| `frontend.config.tls.enabled`                          | Whether to enable TLS for the Frontend                                                                            | `false`                          |
-| `frontend.config.tls.caCertSecretName`                 | Name of the secret to use for the CA certificate                                                                  | `nil`                            |
-| `frontend.config.tls.caCertConfigMapName`              | Name of the config map to use for the CA certificate                                                              | `nil`                            |
-| `frontend.config.tls.caCertMountPath`                  | Path to mount the CA certificate                                                                                  | `/etc/llamacloud-ssl/certs`      |
-| `frontend.config.tls.caCertKey`                        | Key of the CA certificate                                                                                         | `cert.pem`                       |
-| `frontend.replicas`                                    | Number of replicas of Frontend Deployment                                                                         | `1`                              |
-| `frontend.image.registry`                              | Frontend Image registry                                                                                           | `docker.io`                      |
-| `frontend.image.repository`                            | Frontend Image repository                                                                                         | `llamaindex/llamacloud-frontend` |
-| `frontend.image.tag`                                   | Frontend Image tag                                                                                                | `0.5.11`                         |
-| `frontend.image.pullPolicy`                            | Frontend Image pull policy                                                                                        | `IfNotPresent`                   |
-| `frontend.service.type`                                | Frontend Service type                                                                                             | `ClusterIP`                      |
-| `frontend.service.port`                                | Frontend Service port                                                                                             | `3000`                           |
-| `frontend.service.labels`                              | Labels to add to the service                                                                                      | `{}`                             |
-| `frontend.service.annotations`                         | Annotations to add to the service                                                                                 | `{}`                             |
-| `frontend.serviceAccount.create`                       | Whether or not to create a new service account                                                                    | `true`                           |
-| `frontend.serviceAccount.name`                         | Name of the service account                                                                                       | `""`                             |
-| `frontend.serviceAccount.labels`                       | Labels to add to the service account                                                                              | `{}`                             |
-| `frontend.serviceAccount.annotations`                  | Annotations to add to the service account                                                                         | `{}`                             |
-| `frontend.serviceAccount.automountServiceAccountToken` | Whether or not to automount the service account token                                                             | `true`                           |
-| `frontend.labels`                                      | Labels added to the Frontend Deployment.                                                                          | `{}`                             |
-| `frontend.annotations`                                 | Annotations added to the Frontend Deployment.                                                                     | `{}`                             |
-| `frontend.containerPort`                               | Port to expose on the Frontend container                                                                          | `3000`                           |
-| `frontend.extraEnvVariables`                           | Extra environment variables to add to Frontend pods                                                               | `[]`                             |
-| `frontend.podAnnotations`                              | Annotations to add to the resulting Pods of the Deployment.                                                       | `{}`                             |
-| `frontend.podLabels`                                   | Labels to add to the resulting Pods of the Deployment.                                                            | `{}`                             |
-| `frontend.podSecurityContext`                          | Annotations to add to the resulting Pods of the Deployment.                                                       | `{}`                             |
-| `frontend.securityContext`                             | Security context for the container                                                                                | `{}`                             |
-| `frontend.resources`                                   | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | `{}`                             |
-| `frontend.livenessProbe.httpGet.path`                  | Path to hit for the liveness probe                                                                                | `/api/healthz`                   |
-| `frontend.livenessProbe.httpGet.port`                  | Port to hit for the liveness probe                                                                                | `http`                           |
-| `frontend.readinessProbe.httpGet.path`                 | Path to hit for the liveness probe                                                                                | `/api/healthz`                   |
-| `frontend.readinessProbe.httpGet.port`                 | Port to hit for the liveness probe                                                                                | `http`                           |
-| `frontend.autoscaling.enabled`                         | Enable autoscaling for the Frontend Deployment                                                                    | `false`                          |
-| `frontend.autoscaling.minReplicas`                     | Minimum number of replicas for the Frontend Deployment                                                            | `1`                              |
-| `frontend.autoscaling.maxReplicas`                     | Maximum number of replicas for the Frontend Deployment                                                            | `4`                              |
-| `frontend.autoscaling.targetCPUUtilizationPercentage`  | Target CPU utilization percentage for the Frontend Deployment                                                     | `80`                             |
-| `frontend.volumes`                                     | List of volumes that can be mounted by containers belonging to the pod                                            | `[]`                             |
-| `frontend.volumeMounts`                                | List of volumeMounts that can be mounted by containers belonging to the pod                                       | `[]`                             |
-| `frontend.nodeSelector`                                | Node labels for pod assignment                                                                                    | `{}`                             |
-| `frontend.tolerations`                                 | Taints to tolerate on node assignment:                                                                            | `[]`                             |
-| `frontend.affinity`                                    | Pod scheduling constraints                                                                                        | `{}`                             |
+| Name                      | Description             | Value  |
+| ------------------------- | ----------------------- | ------ |
+| `config.frontend.enabled` | Enable Frontend service | `true` |
 
-### Backend Configuration
+### LlamaExtract Configuration
 
-| Name                                                  | Description                                                                                                       | Value                           |
-| ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------------- |
-| `backend.name`                                        | Name suffix of the Backend related resources                                                                      | `backend`                       |
-| `backend.config.logLevel`                             | Log level for the backend                                                                                         | `info`                          |
-| `backend.config.openAiApiKey`                         | OpenAI API key                                                                                                    | `""`                            |
-| `backend.config.existingOpenAiApiKeySecretName`       | Name of the existing secret to use for the OpenAI API key                                                         | `""`                            |
-| `backend.config.azureOpenAi.enabled`                  | Enable Azure OpenAI for backend (Legacy Configuration - Deprecating Soon)                                         | `false`                         |
-| `backend.config.azureOpenAi.existingSecret`           | Name of the existing secret to use for the Azure OpenAI API key                                                   | `""`                            |
-| `backend.config.azureOpenAi.key`                      | Azure OpenAI API key                                                                                              | `""`                            |
-| `backend.config.azureOpenAi.endpoint`                 | Azure OpenAI endpoint                                                                                             | `""`                            |
-| `backend.config.azureOpenAi.deploymentName`           | Azure OpenAI deployment                                                                                           | `""`                            |
-| `backend.config.azureOpenAi.apiVersion`               | Azure OpenAI API version                                                                                          | `""`                            |
-| `backend.config.basicAuth.enabled`                    | Enable Basic Auth for the backend                                                                                 | `false`                         |
-| `backend.config.basicAuth.validEmailDomain`           | Valid email domain for the application                                                                            | `nil`                           |
-| `backend.config.basicAuth.jwtSecret`                  | JWT secret for the backend                                                                                        | `documentparsingisfun1!`        |
-| `backend.config.basicAuth.existingSecretName`         | Name of the existing secret to use for the JWT secret                                                             | `nil`                           |
-| `backend.config.oidc.existingSecretName`              | Name of the existing secret to use for OIDC configuration                                                         | `""`                            |
-| `backend.config.oidc.discoveryUrl`                    | OIDC discovery URL                                                                                                | `""`                            |
-| `backend.config.oidc.clientId`                        | OIDC client ID                                                                                                    | `""`                            |
-| `backend.config.oidc.clientSecret`                    | OIDC client secret                                                                                                | `""`                            |
-| `backend.config.qdrant.enabled`                       | Enable QDRANT Data-Sink for backend                                                                               | `false`                         |
-| `backend.config.qdrant.existingSecret`                | Name of the existing secret to use for the QDRANT Data-Sink                                                       | `""`                            |
-| `backend.config.qdrant.url`                           | QDRANT Data-Sink host                                                                                             | `""`                            |
-| `backend.config.qdrant.apiKey`                        | QDRANT Data-Sink API key                                                                                          | `""`                            |
-| `backend.config.llamaExtractMultimodalModel`          | LlamaExtract multimodal model (gemini-2.0-flash, gemini-2.5-pro, openai-gpt-4-1)                                  | `gemini-2.0-flash`              |
-| `backend.config.llamaExtractSchemaGenerationModel`    | LlamaExtract schema generation model (gemini-2.0-flash, openai-gpt-4-1-mini)                                      | `gemini-2.0-flash`              |
-| `backend.config.llamaExtractMaxPages`                 | LlamaExtract max pages allowed                                                                                    | `500`                           |
-| `backend.config.llamaExtractMaxFileSizeMb`            | LlamaExtract max file size (MB) allowed                                                                           | `100`                           |
-| `backend.config.llamaExtractMaxFileSizeUiMb`          | LlamaExtract max file size (MB) allowed for UI                                                                    | `30`                            |
-| `backend.replicas`                                    | Number of replicas of Backend Deployment                                                                          | `1`                             |
-| `backend.image.registry`                              | Backend Image registry                                                                                            | `docker.io`                     |
-| `backend.image.repository`                            | Backend Image repository                                                                                          | `llamaindex/llamacloud-backend` |
-| `backend.image.tag`                                   | Backend Image tag                                                                                                 | `0.5.11`                        |
-| `backend.image.pullPolicy`                            | Backend Image pull policy                                                                                         | `IfNotPresent`                  |
-| `backend.service.type`                                | Backend Service type                                                                                              | `ClusterIP`                     |
-| `backend.service.port`                                | Backend Service port                                                                                              | `8000`                          |
-| `backend.service.labels`                              | Labels to add to the service                                                                                      | `{}`                            |
-| `backend.service.annotations`                         | Annotations to add to the service                                                                                 | `{}`                            |
-| `backend.serviceAccount.create`                       | Whether or not to create a new service account                                                                    | `true`                          |
-| `backend.serviceAccount.name`                         | Name of the service account                                                                                       | `""`                            |
-| `backend.serviceAccount.labels`                       | Labels to add to the service account                                                                              | `{}`                            |
-| `backend.serviceAccount.annotations`                  | Annotations to add to the service account                                                                         | `{}`                            |
-| `backend.serviceAccount.automountServiceAccountToken` | Whether or not to automount the service account token                                                             | `true`                          |
-| `backend.labels`                                      | Labels added to the Backend Deployment.                                                                           | `{}`                            |
-| `backend.annotations`                                 | Annotations added to the Backend Deployment.                                                                      | `{}`                            |
-| `backend.containerPort`                               | Port to expose on the Backend container                                                                           | `8000`                          |
-| `backend.extraEnvVariables`                           | Extra environment variables to add to backend pods                                                                | `[]`                            |
-| `backend.externalSecrets.enabled`                     | Enable external secrets for the Backend Deployment                                                                | `false`                         |
-| `backend.externalSecrets.secrets`                     | List of external secrets to load environment variables from                                                       | `[]`                            |
-| `backend.podAnnotations`                              | Annotations to add to the resulting Pods of the Deployment.                                                       | `{}`                            |
-| `backend.podLabels`                                   | Labels to add to the resulting Pods of the Deployment.                                                            | `{}`                            |
-| `backend.podSecurityContext`                          | Pod security context                                                                                              | `{}`                            |
-| `backend.securityContext`                             | Security context for the container                                                                                | `{}`                            |
-| `backend.resources`                                   | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | `{}`                            |
-| `backend.livenessProbe.httpGet.path`                  | Path to hit for the liveness probe                                                                                | `/api/health`                   |
-| `backend.livenessProbe.httpGet.port`                  | Port to hit for the liveness probe                                                                                | `8000`                          |
-| `backend.livenessProbe.periodSeconds`                 | How often (in seconds) to perform the probe                                                                       | `10`                            |
-| `backend.livenessProbe.timeoutSeconds`                | Number of seconds after which the probe times out                                                                 | `5`                             |
-| `backend.livenessProbe.failureThreshold`              | Minimum consecutive failures for the probe to be considered failed after having succeeded                         | `30`                            |
-| `backend.livenessProbe.initialDelaySeconds`           | Number of seconds after the container has started before the probe is initiated                                   | `30`                            |
-| `backend.readinessProbe.httpGet.path`                 | Path to hit for the readiness probe                                                                               | `/api/health`                   |
-| `backend.readinessProbe.httpGet.port`                 | Port to hit for the readiness probe                                                                               | `8000`                          |
-| `backend.readinessProbe.periodSeconds`                | How often (in seconds) to perform the probe                                                                       | `10`                            |
-| `backend.readinessProbe.timeoutSeconds`               | Number of seconds after which the probe times out                                                                 | `5`                             |
-| `backend.readinessProbe.failureThreshold`             | Minimum consecutive failures for the probe to be considered failed after having succeeded                         | `30`                            |
-| `backend.readinessProbe.initialDelaySeconds`          | Number of seconds after the container has started before the probe is initiated                                   | `30`                            |
-| `backend.startupProbe.httpGet.path`                   | Path to hit for the startup probe                                                                                 | `/api/health`                   |
-| `backend.startupProbe.httpGet.port`                   | Port to hit for the startup probe                                                                                 | `8000`                          |
-| `backend.startupProbe.periodSeconds`                  | How often (in seconds) to perform the probe                                                                       | `15`                            |
-| `backend.startupProbe.timeoutSeconds`                 | Number of seconds after which the probe times out                                                                 | `5`                             |
-| `backend.startupProbe.failureThreshold`               | Minimum consecutive failures for the probe to be considered failed after having succeeded                         | `30`                            |
-| `backend.startupProbe.initialDelaySeconds`            | Number of seconds after the container has started before the probe is initiated                                   | `30`                            |
-| `backend.autoscaling.enabled`                         | Enable autoscaling for the Backend Deployment                                                                     | `true`                          |
-| `backend.autoscaling.minReplicas`                     | Minimum number of replicas for the Backend Deployment                                                             | `1`                             |
-| `backend.autoscaling.maxReplicas`                     | Maximum number of replicas for the Backend Deployment                                                             | `8`                             |
-| `backend.autoscaling.targetCPUUtilizationPercentage`  | Target CPU utilization percentage for the Backend Deployment                                                      | `80`                            |
-| `backend.podDisruptionBudget.enabled`                 | Enable PodDisruptionBudget for the Backend Deployment                                                             | `false`                         |
-| `backend.podDisruptionBudget.maxUnavailable`          | Maximum number of pods that can be unavailable during an update                                                   | `1`                             |
-| `backend.volumes`                                     | List of volumes that can be mounted by containers belonging to the pod                                            | `[]`                            |
-| `backend.volumeMounts`                                | List of volumeMounts that can be mounted by containers belonging to the pod                                       | `[]`                            |
-| `backend.nodeSelector`                                | Node labels for pod assignment                                                                                    | `{}`                            |
-| `backend.tolerations`                                 | Taints to tolerate on node assignment:                                                                            | `[]`                            |
-| `backend.affinity`                                    | Pod scheduling constraints                                                                                        | `{}`                            |
-| `backend.metrics.enabled`                             | Enable metrics for the backend                                                                                    | `false`                         |
-| `backend.metrics.serviceMonitor.enabled`              | Enable service monitor for the backend                                                                            | `false`                         |
-| `backend.metrics.serviceMonitor.selector`             | Selector for the service monitor                                                                                  | `{}`                            |
-| `backend.metrics.serviceMonitor.additionalLabels`     | Additional labels for the service monitor                                                                         | `{}`                            |
-| `backend.metrics.serviceMonitor.annotations`          | Annotations for the service monitor                                                                               | `{}`                            |
-| `backend.metrics.serviceMonitor.interval`             | Interval for the service monitor                                                                                  | `30s`                           |
-| `backend.metrics.serviceMonitor.scrapeTimeout`        | Timeout for the service monitor                                                                                   | `15s`                           |
-| `backend.metrics.serviceMonitor.relabelings`          | Relabelings for the service monitor                                                                               | `[]`                            |
-| `backend.metrics.serviceMonitor.metricRelabelings`    | Metric relabelings for the service monitor                                                                        | `[]`                            |
-| `backend.metrics.serviceMonitor.scheme`               | Scheme for the service monitor                                                                                    | `http`                          |
-| `backend.metrics.serviceMonitor.tlsConfig`            | TLS configuration for the service monitor                                                                         | `{}`                            |
-| `backend.metrics.rules.enabled`                       | Enable prometheus rules for the backend services                                                                  | `false`                         |
-| `backend.metrics.rules.namespace`                     | Namespace for the rules                                                                                           | `""`                            |
-| `backend.metrics.rules.selector`                      | Selector for the rules                                                                                            | `{}`                            |
-| `backend.metrics.rules.additionalLabels`              | Additional labels for the rules                                                                                   | `{}`                            |
-| `backend.metrics.rules.annotations`                   | Annotations for the rules                                                                                         | `{}`                            |
-| `backend.metrics.rules.spec`                          | Rules for the backend                                                                                             | `[]`                            |
+| Name                                      | Description                                                                      | Value                 |
+| ----------------------------------------- | -------------------------------------------------------------------------------- | --------------------- |
+| `config.extraction.multimodalModel`       | LlamaExtract multimodal model (gemini-2.0-flash, gemini-2.5-pro, openai-gpt-4-1) | `openai-gpt-4-1`      |
+| `config.extraction.schemaGenerationModel` | LlamaExtract schema generation model (gemini-2.0-flash, openai-gpt-4-1-mini)     | `openai-gpt-4-1-mini` |
+| `config.extraction.maxPages`              | LlamaExtract max pages allowed                                                   | `500`                 |
+| `config.extraction.maxFileSizeMb`         | LlamaExtract max file size (MB) allowed                                          | `100`                 |
+| `config.extraction.maxFileSizeUiMb`       | LlamaExtract max file size (MB) allowed for UI                                   | `30`                  |
 
-### JobsService Configuration
+### Jobs Configuration
 
-| Name                                                      | Description                                                                                                       | Value                                |
-| --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
-| `jobsService.name`                                        | Name suffix of the JobsService related resources                                                                  | `jobs-service`                       |
-| `jobsService.config.logLevel`                             | Log level for the JobsService                                                                                     | `info`                               |
-| `jobsService.replicas`                                    | Number of replicas of JobsService Deployment                                                                      | `1`                                  |
-| `jobsService.image.registry`                              | JobsService Image registry                                                                                        | `docker.io`                          |
-| `jobsService.image.repository`                            | JobsService Image repository                                                                                      | `llamaindex/llamacloud-jobs-service` |
-| `jobsService.image.tag`                                   | JobsService Image tag                                                                                             | `0.5.11`                             |
-| `jobsService.image.pullPolicy`                            | JobsService Image pull policy                                                                                     | `IfNotPresent`                       |
-| `jobsService.service.type`                                | JobsService Service type                                                                                          | `ClusterIP`                          |
-| `jobsService.service.port`                                | JobsService Service port                                                                                          | `8002`                               |
-| `jobsService.serviceAccount.create`                       | Whether or not to create a new service account                                                                    | `true`                               |
-| `jobsService.serviceAccount.name`                         | Name of the service account                                                                                       | `""`                                 |
-| `jobsService.serviceAccount.labels`                       | Labels to add to the service account                                                                              | `{}`                                 |
-| `jobsService.serviceAccount.annotations`                  | Annotations to add to the service account                                                                         | `{}`                                 |
-| `jobsService.serviceAccount.automountServiceAccountToken` | Whether or not to automount the service account token                                                             | `true`                               |
-| `jobsService.containerPort`                               | Port to expose on the JobsService container                                                                       | `8002`                               |
-| `jobsService.extraEnvVariables`                           | Extra environment variables to add to jobsService pods                                                            | `[]`                                 |
-| `jobsService.externalSecrets.enabled`                     | Enable external secrets for the JobsService Deployment                                                            | `false`                              |
-| `jobsService.externalSecrets.secrets`                     | List of external secrets to load environment variables from                                                       | `[]`                                 |
-| `jobsService.podAnnotations`                              | Annotations to add to the resulting Pods of the Deployment.                                                       | `{}`                                 |
-| `jobsService.podLabels`                                   | Labels to add to the resulting Pods of the Deployment.                                                            | `{}`                                 |
-| `jobsService.podSecurityContext`                          | Pod security context                                                                                              | `{}`                                 |
-| `jobsService.securityContext`                             | Security context for the container                                                                                | `{}`                                 |
-| `jobsService.resources`                                   | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | `{}`                                 |
-| `jobsService.livenessProbe.httpGet.path`                  | Path to hit for the liveness probe                                                                                | `/api/health`                        |
-| `jobsService.livenessProbe.httpGet.port`                  | Port to hit for the liveness prob                                                                                 | `8002`                               |
-| `jobsService.livenessProbe.periodSeconds`                 | How often (in seconds) to perform the probe                                                                       | `15`                                 |
-| `jobsService.livenessProbe.timeoutSeconds`                | Number of seconds after which the probe times out                                                                 | `10`                                 |
-| `jobsService.livenessProbe.failureThreshold`              | Minimum consecutive failures for the probe to be considered failed after having succeeded                         | `30`                                 |
-| `jobsService.readinessProbe.httpGet.path`                 | Path to hit for the liveness probe                                                                                | `/api/health`                        |
-| `jobsService.readinessProbe.httpGet.port`                 | Port to hit for the liveness probe                                                                                | `8002`                               |
-| `jobsService.readinessProbe.periodSeconds`                | How often (in seconds) to perform the probe                                                                       | `15`                                 |
-| `jobsService.readinessProbe.timeoutSeconds`               | Number of seconds after which the probe times out                                                                 | `10`                                 |
-| `jobsService.readinessProbe.failureThreshold`             | Minimum consecutive failures for the probe to be considered failed after having succeeded                         | `30`                                 |
-| `jobsService.startupProbe.failureThreshold`               | Minimum consecutive failures for the probe to be considered failed after having succeeded                         | `30`                                 |
-| `jobsService.startupProbe.httpGet.path`                   | Path to hit for the readiness probe                                                                               | `/api/health`                        |
-| `jobsService.startupProbe.httpGet.port`                   | Port to hit for the readiness probe                                                                               | `8002`                               |
-| `jobsService.startupProbe.periodSeconds`                  | How often (in seconds) to perform the probe                                                                       | `15`                                 |
-| `jobsService.startupProbe.timeoutSeconds`                 | Number of seconds after which the probe times out                                                                 | `10`                                 |
-| `jobsService.startupProbe.initialDelaySeconds`            | Number of seconds after the container has started before the probe is initiated                                   | `30`                                 |
-| `jobsService.autoscaling.enabled`                         | Enable autoscaling for the JobsService Deployment                                                                 | `true`                               |
-| `jobsService.autoscaling.minReplicas`                     | Minimum number of replicas for the JobsService Deployment                                                         | `1`                                  |
-| `jobsService.autoscaling.maxReplicas`                     | Maximum number of replicas for the JobsService Deployment                                                         | `4`                                  |
-| `jobsService.autoscaling.targetCPUUtilizationPercentage`  | Target CPU utilization percentage for the JobsService Deployment                                                  | `80`                                 |
-| `jobsService.volumes`                                     | List of volumes that can be mounted by containers belonging to the pod                                            | `[]`                                 |
-| `jobsService.volumeMounts`                                | List of volumeMounts that can be mounted by containers belonging to the pod                                       | `[]`                                 |
-| `jobsService.nodeSelector`                                | Node labels for pod assignment                                                                                    | `{}`                                 |
-| `jobsService.tolerations`                                 | Taints to tolerate on node assignment:                                                                            | `[]`                                 |
-| `jobsService.affinity`                                    | Pod scheduling constraints                                                                                        | `{}`                                 |
-| `jobsService.metrics.enabled`                             | Enable metrics for the jobsService                                                                                | `false`                              |
-| `jobsService.metrics.serviceMonitor.enabled`              | Enable service monitor for the jobsService                                                                        | `false`                              |
-| `jobsService.metrics.serviceMonitor.selector`             | Selector for the service monitor                                                                                  | `{}`                                 |
-| `jobsService.metrics.serviceMonitor.additionalLabels`     | Additional labels for the service monitor                                                                         | `{}`                                 |
-| `jobsService.metrics.serviceMonitor.annotations`          | Annotations for the service monitor                                                                               | `{}`                                 |
-| `jobsService.metrics.serviceMonitor.interval`             | Interval for the service monitor                                                                                  | `30s`                                |
-| `jobsService.metrics.serviceMonitor.scrapeTimeout`        | Timeout for the service monitor                                                                                   | `15s`                                |
-| `jobsService.metrics.serviceMonitor.relabelings`          | Relabelings for the service monitor                                                                               | `[]`                                 |
-| `jobsService.metrics.serviceMonitor.metricRelabelings`    | Metric relabelings for the service monitor                                                                        | `[]`                                 |
-| `jobsService.metrics.serviceMonitor.scheme`               | Scheme for the service monitor                                                                                    | `http`                               |
-| `jobsService.metrics.serviceMonitor.tlsConfig`            | TLS configuration for the service monitor                                                                         | `{}`                                 |
-
-### JobsWorker Configuration
-
-| Name                                                       | Description                                                                                                       | Value                               |
-| ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
-| `jobsWorker.name`                                          | Name suffix of the JobsWorker related resources                                                                   | `jobs-worker`                       |
-| `jobsWorker.config.logLevel`                               | Log level for the JobsWorker                                                                                      | `info`                              |
-| `jobsWorker.config.maxJobsInExecutionPerJobType`           | Maximum number of jobs in execution per job type                                                                  | `10`                                |
-| `jobsWorker.config.maxIndexJobsInExecution`                | Maximum number of index jobs in execution                                                                         | `0`                                 |
-| `jobsWorker.config.maxDocumentIngestionJobsInExecution`    | Maximum number of document ingestion jobs in execution                                                            | `1`                                 |
-| `jobsWorker.config.includeJobErrorDetails`                 | Whether to always include job error details in API and the UI                                                     | `true`                              |
-| `jobsWorker.config.defaultTransformDocumentTimeoutSeconds` | Default timeout in seconds for document transformation jobs                                                       | `240`                               |
-| `jobsWorker.config.transformEmbeddingCharLimit`            | Character limit for transform embedding operations                                                                | `11520000`                          |
-| `jobsWorker.replicas`                                      | Number of replicas of JobsWorker Deployment                                                                       | `1`                                 |
-| `jobsWorker.image.registry`                                | JobsWorker Image registry                                                                                         | `docker.io`                         |
-| `jobsWorker.image.repository`                              | JobsWorker Image repository                                                                                       | `llamaindex/llamacloud-jobs-worker` |
-| `jobsWorker.image.tag`                                     | JobsWorker Image tag                                                                                              | `0.5.11`                            |
-| `jobsWorker.image.pullPolicy`                              | JobsWorker Image pull policy                                                                                      | `IfNotPresent`                      |
-| `jobsWorker.service.type`                                  | JobsWorker Service type                                                                                           | `ClusterIP`                         |
-| `jobsWorker.service.port`                                  | JobsWorker Service port                                                                                           | `8001`                              |
-| `jobsWorker.serviceAccount.create`                         | Whether or not to create a new service account                                                                    | `true`                              |
-| `jobsWorker.serviceAccount.name`                           | Name of the service account                                                                                       | `""`                                |
-| `jobsWorker.serviceAccount.labels`                         | Labels to add to the service account                                                                              | `{}`                                |
-| `jobsWorker.serviceAccount.annotations`                    | Annotations to add to the service account                                                                         | `{}`                                |
-| `jobsWorker.serviceAccount.automountServiceAccountToken`   | Whether or not to automount the service account token                                                             | `true`                              |
-| `jobsWorker.labels`                                        | Labels added to the JobsWorker Deployment.                                                                        | `{}`                                |
-| `jobsWorker.annotations`                                   | Annotations added to the JobsWorker Deployment.                                                                   | `{}`                                |
-| `jobsWorker.containerPort`                                 | Port to expose on the jobsWorker container                                                                        | `8001`                              |
-| `jobsWorker.extraEnvVariables`                             | Extra environment variables to add to jobsWorker pods                                                             | `[]`                                |
-| `jobsWorker.externalSecrets.enabled`                       | Enable external secrets for the JobsWorker Deployment                                                             | `false`                             |
-| `jobsWorker.externalSecrets.secrets`                       | List of external secrets to load environment variables from                                                       | `[]`                                |
-| `jobsWorker.externalSecrets.enabled`                       | Enable external secrets for the JobsWorker Deployment                                                             | `false`                             |
-| `jobsWorker.externalSecrets.secrets`                       | List of external secrets to load environment variables from                                                       | `[]`                                |
-| `jobsWorker.podAnnotations`                                | Annotations to add to the resulting Pods of the Deployment.                                                       | `{}`                                |
-| `jobsWorker.podLabels`                                     | Labels to add to the resulting Pods of the Deployment.                                                            | `{}`                                |
-| `jobsWorker.podSecurityContext`                            | Pod security context                                                                                              | `{}`                                |
-| `jobsWorker.securityContext`                               | Security context for the container                                                                                | `{}`                                |
-| `jobsWorker.resources`                                     | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | `{}`                                |
-| `jobsWorker.livenessProbe.httpGet.path`                    | Path to hit for the liveness probe                                                                                | `/api/health`                       |
-| `jobsWorker.livenessProbe.httpGet.port`                    | Port to hit for the liveness probe                                                                                | `8001`                              |
-| `jobsWorker.livenessProbe.periodSeconds`                   | How often (in seconds) to perform the probe                                                                       | `15`                                |
-| `jobsWorker.livenessProbe.timeoutSeconds`                  | Number of seconds after which the probe times out                                                                 | `5`                                 |
-| `jobsWorker.livenessProbe.failureThreshold`                | Minimum consecutive failures for the probe to be considered failed after having succeeded                         | `30`                                |
-| `jobsWorker.livenessProbe.initialDelaySeconds`             | Number of seconds after the container has started before the probe is initiated                                   | `30`                                |
-| `jobsWorker.readinessProbe.httpGet.path`                   | Path to hit for the liveness probe                                                                                | `/api/health`                       |
-| `jobsWorker.readinessProbe.httpGet.port`                   | Port to hit for the liveness probe                                                                                | `8001`                              |
-| `jobsWorker.readinessProbe.periodSeconds`                  | How often (in seconds) to perform the probe                                                                       | `15`                                |
-| `jobsWorker.readinessProbe.timeoutSeconds`                 | Number of seconds after which the probe times out                                                                 | `5`                                 |
-| `jobsWorker.readinessProbe.failureThreshold`               | Minimum consecutive failures for the probe to be considered failed after having succeeded                         | `30`                                |
-| `jobsWorker.readinessProbe.initialDelaySeconds`            | Number of seconds after the container has started before the probe is initiated                                   | `30`                                |
-| `jobsWorker.startupProbe.httpGet.path`                     | Path to hit for the liveness probe                                                                                | `/api/health`                       |
-| `jobsWorker.startupProbe.httpGet.port`                     | Port to hit for the liveness probe                                                                                | `8001`                              |
-| `jobsWorker.startupProbe.periodSeconds`                    | How often (in seconds) to perform the probe                                                                       | `15`                                |
-| `jobsWorker.startupProbe.timeoutSeconds`                   | Number of seconds after which the probe times out                                                                 | `5`                                 |
-| `jobsWorker.startupProbe.failureThreshold`                 | Minimum consecutive failures for the probe to be considered failed after having succeeded                         | `30`                                |
-| `jobsWorker.startupProbe.initialDelaySeconds`              | Number of seconds after the container has started before the probe is initiated                                   | `30`                                |
-| `jobsWorker.autoscaling.enabled`                           | Enable autoscaling for the JobsWorker Deployment                                                                  | `true`                              |
-| `jobsWorker.autoscaling.minReplicas`                       | Minimum number of replicas for the JobsWorker Deployment                                                          | `1`                                 |
-| `jobsWorker.autoscaling.maxReplicas`                       | Maximum number of replicas for the JobsWorker Deployment                                                          | `4`                                 |
-| `jobsWorker.autoscaling.targetCPUUtilizationPercentage`    | Target CPU utilization percentage for the JobsWorker Deployment                                                   | `80`                                |
-| `jobsWorker.volumes`                                       | List of volumes that can be mounted by containers belonging to the pod                                            | `[]`                                |
-| `jobsWorker.volumeMounts`                                  | List of volumeMounts that can be mounted by containers belonging to the pod                                       | `[]`                                |
-| `jobsWorker.nodeSelector`                                  | Node labels for pod assignment                                                                                    | `{}`                                |
-| `jobsWorker.tolerations`                                   | Taints to tolerate on node assignment:                                                                            | `[]`                                |
-| `jobsWorker.affinity`                                      | Pod scheduling constraints                                                                                        | `{}`                                |
-| `jobsWorker.metrics.enabled`                               | Enable metrics for the jobsWorker                                                                                 | `false`                             |
-| `jobsWorker.metrics.serviceMonitor.enabled`                | Enable service monitor for the jobsWorker                                                                         | `false`                             |
-| `jobsWorker.metrics.serviceMonitor.selector`               | Selector for the service monitor                                                                                  | `{}`                                |
-| `jobsWorker.metrics.serviceMonitor.additionalLabels`       | Additional labels for the service monitor                                                                         | `{}`                                |
-| `jobsWorker.metrics.serviceMonitor.annotations`            | Annotations for the service monitor                                                                               | `{}`                                |
-| `jobsWorker.metrics.serviceMonitor.interval`               | Interval for the service monitor                                                                                  | `30s`                               |
-| `jobsWorker.metrics.serviceMonitor.scrapeTimeout`          | Timeout for the service monitor                                                                                   | `15s`                               |
-| `jobsWorker.metrics.serviceMonitor.relabelings`            | Relabelings for the service monitor                                                                               | `[]`                                |
-| `jobsWorker.metrics.serviceMonitor.metricRelabelings`      | Metric relabelings for the service monitor                                                                        | `[]`                                |
-| `jobsWorker.metrics.serviceMonitor.scheme`                 | Scheme for the service monitor                                                                                    | `http`                              |
-| `jobsWorker.metrics.serviceMonitor.tlsConfig`              | TLS configuration for the service monitor                                                                         | `{}`                                |
+| Name                                                 | Description                                                   | Value      |
+| ---------------------------------------------------- | ------------------------------------------------------------- | ---------- |
+| `config.jobs.maxJobsInExecutionPerJobType`           | Maximum number of jobs in execution per job type              | `10`       |
+| `config.jobs.maxIndexJobsInExecution`                | Maximum number of index jobs in execution                     | `0`        |
+| `config.jobs.maxDocumentIngestionJobsInExecution`    | Maximum number of document ingestion jobs in execution        | `1`        |
+| `config.jobs.includeJobErrorDetails`                 | Whether to always include job error details in API and the UI | `true`     |
+| `config.jobs.defaultTransformDocumentTimeoutSeconds` | Default timeout in seconds for document transformation jobs   | `240`      |
+| `config.jobs.transformEmbeddingCharLimit`            | Character limit for transform embedding operations            | `11520000` |
 
 ### LlamaParse Configuration
 
-| Name                                                     | Description                                                                               | Value                                       |
-| -------------------------------------------------------- | ----------------------------------------------------------------------------------------- | ------------------------------------------- |
-| `llamaParse.name`                                        | Name suffix of the LlamaParse related resources                                           | `llamaparse`                                |
-| `llamaParse.config.debugMode`                            | Enable debug mode for LlamaParse                                                          | `false`                                     |
-| `llamaParse.config.maxQueueConcurrency`                  | Max number of jobs the worker can process at the same time                                | `3`                                         |
-| `llamaParse.config.openAiApiKey`                         | OpenAI API key                                                                            | `""`                                        |
-| `llamaParse.config.existingOpenAiApiKeySecretName`       | Name of the existing secret to use for the OpenAI API key                                 | `""`                                        |
-| `llamaParse.config.azureOpenAi.enabled`                  | Enable Azure OpenAI for LlamaParse                                                        | `false`                                     |
-| `llamaParse.config.azureOpenAi.existingSecret`           | Name of the existing secret to use for the Azure OpenAI API key                           | `""`                                        |
-| `llamaParse.config.azureOpenAi.key`                      | Azure OpenAI API key                                                                      | `""`                                        |
-| `llamaParse.config.azureOpenAi.endpoint`                 | Azure OpenAI endpoint                                                                     | `""`                                        |
-| `llamaParse.config.azureOpenAi.deploymentName`           | Azure OpenAI deployment                                                                   | `""`                                        |
-| `llamaParse.config.azureOpenAi.apiVersion`               | Azure OpenAI API version                                                                  | `""`                                        |
-| `llamaParse.config.anthropicApiKey`                      | Anthropic API key                                                                         | `""`                                        |
-| `llamaParse.config.existingAnthropicApiKeySecret`        | Name of the existing secret to use for the Anthropic API key                              | `""`                                        |
-| `llamaParse.config.geminiApiKey`                         | Google Gemini API key                                                                     | `""`                                        |
-| `llamaParse.config.existingGeminiApiKeySecret`           | Name of the existing secret to use for the Google Gemini API key                          | `""`                                        |
-| `llamaParse.config.awsBedrock.enabled`                   | Enable AWS Bedrock for LlamaParse                                                         | `false`                                     |
-| `llamaParse.config.awsBedrock.existingSecret`            | Name of the existing secret to use for the AWS Bedrock API key                            | `""`                                        |
-| `llamaParse.config.awsBedrock.region`                    | AWS Bedrock region                                                                        | `""`                                        |
-| `llamaParse.config.awsBedrock.accessKeyId`               | AWS Bedrock access key ID                                                                 | `""`                                        |
-| `llamaParse.config.awsBedrock.secretAccessKey`           | AWS Bedrock secret access key                                                             | `""`                                        |
-| `llamaParse.config.awsBedrock.sonnet3_5ModelVersionName` | Sonnet 3.5 model version name                                                             | `anthropic.claude-3-5-sonnet-20240620-v1:0` |
-| `llamaParse.config.awsBedrock.sonnet3_7ModelVersionName` | Sonnet 3.7 model version name                                                             | `anthropic.claude-3-7-sonnet-20250219-v1:0` |
-| `llamaParse.config.awsBedrock.sonnet4_0ModelVersionName` | Sonnet 4.0 model version name                                                             | `anthropic.claude-sonnet-4-20250514-v1:0`   |
-| `llamaParse.config.awsBedrock.haiku3_5ModelVersionName`  | Haiku 3.5 model version name                                                              | `anthropic.claude-3-5-haiku-20241022-v1:0`  |
-| `llamaParse.config.awsBedrock.haiku4_5ModelVersionName`  | Haiku 4.5 model version name                                                              | `anthropic.claude-haiku-4-5-20251001-v1:0`  |
-| `llamaParse.config.preferedPremiumModel`                 | Preferred premium model for LlamaParse                                                    | `""`                                        |
-| `llamaParse.config.googleVertexAi.enabled`               | Enable Google Vertex AI for LlamaParse                                                    | `false`                                     |
-| `llamaParse.config.googleVertexAi.existingSecret`        | Name of the existing secret to use for the Google Vertex AI API key                       | `""`                                        |
-| `llamaParse.config.googleVertexAi.projectId`             | Google Vertex AI project id                                                               | `""`                                        |
-| `llamaParse.config.googleVertexAi.location`              | Google Vertex AI location                                                                 | `""`                                        |
-| `llamaParse.config.googleVertexAi.credentialsJson`       | Google Vertex AI credentials JSON                                                         | `""`                                        |
-| `llamaParse.config.s3UploadBucket`                       | S3 bucket to upload files to                                                              | `llama-platform-file-parsing`               |
-| `llamaParse.config.s3OutputBucket`                       | S3 bucket to output files to                                                              | `llama-platform-file-parsing`               |
-| `llamaParse.replicas`                                    | Number of replicas of LlamaParse Deployment                                               | `2`                                         |
-| `llamaParse.image.registry`                              | LlamaParse Image registry                                                                 | `docker.io`                                 |
-| `llamaParse.image.repository`                            | LlamaParse Image repository                                                               | `llamaindex/llamacloud-llamaparse`          |
-| `llamaParse.image.tag`                                   | LlamaParse Image tag                                                                      | `0.5.11`                                    |
-| `llamaParse.image.pullPolicy`                            | LlamaParse Image pull policy                                                              | `IfNotPresent`                              |
-| `llamaParse.serviceAccount.create`                       | Whether or not to create a new service account                                            | `true`                                      |
-| `llamaParse.serviceAccount.name`                         | Name of the service account                                                               | `""`                                        |
-| `llamaParse.serviceAccount.labels`                       | Labels to add to the service account                                                      | `{}`                                        |
-| `llamaParse.serviceAccount.annotations`                  | Annotations to add to the service account                                                 | `{}`                                        |
-| `llamaParse.serviceAccount.automountServiceAccountToken` | Whether or not to automount the service account token                                     | `true`                                      |
-| `llamaParse.labels`                                      | Labels added to the LlamaParse Deployment.                                                | `{}`                                        |
-| `llamaParse.annotations`                                 | Annotations added to the LlamaParse Deployment.                                           | `{}`                                        |
-| `llamaParse.containerPort`                               | Port to expose on the LlamaParse container                                                | `8004`                                      |
-| `llamaParse.service.type`                                | LlamaParse Service type                                                                   | `ClusterIP`                                 |
-| `llamaParse.service.port`                                | LlamaParse Service port                                                                   | `8004`                                      |
-| `llamaParse.extraEnvVariables`                           | Extra environment variables to add to llamaParse pods                                     | `[]`                                        |
-| `llamaParse.externalSecrets.enabled`                     | Enable external secrets for the LlamaParse Deployment                                     | `false`                                     |
-| `llamaParse.externalSecrets.secrets`                     | List of external secrets to load environment variables from                               | `[]`                                        |
-| `llamaParse.externalSecrets.enabled`                     | Enable external secrets for the LlamaParse Deployment                                     | `false`                                     |
-| `llamaParse.externalSecrets.secrets`                     | List of external secrets to load environment variables from                               | `[]`                                        |
-| `llamaParse.podAnnotations`                              | Annotations to add to the resulting Pods of the Deployment.                               | `{}`                                        |
-| `llamaParse.podLabels`                                   | Labels to add to the resulting Pods of the Deployment.                                    | `{}`                                        |
-| `llamaParse.podSecurityContext`                          | Pod security context                                                                      | `{}`                                        |
-| `llamaParse.securityContext`                             | Security context for the container                                                        | `{}`                                        |
-| `llamaParse.resources.requests.memory`                   | Memory request for the LlamaParse container                                               | `6Gi`                                       |
-| `llamaParse.resources.requests.cpu`                      | CPU request for the LlamaParse container                                                  | `3`                                         |
-| `llamaParse.resources.limits.memory`                     | Memory limit for the LlamaParse container                                                 | `13Gi`                                      |
-| `llamaParse.resources.limits.cpu`                        | CPU limit for the LlamaParse container                                                    | `7`                                         |
-| `llamaParse.livenessProbe.failureThreshold`              | Minimum consecutive failures for the probe to be considered failed after having succeeded | `10`                                        |
-| `llamaParse.livenessProbe.httpGet.path`                  | Path to hit for the liveness probe                                                        | `/livez`                                    |
-| `llamaParse.livenessProbe.httpGet.port`                  | Port to hit for the liveness probe                                                        | `8004`                                      |
-| `llamaParse.livenessProbe.initialDelaySeconds`           | Number of seconds after the container has started before liveness probes are initiated    | `30`                                        |
-| `llamaParse.livenessProbe.periodSeconds`                 | How often (in seconds) to perform the probe                                               | `30`                                        |
-| `llamaParse.livenessProbe.timeoutSeconds`                | Number of seconds after which the probe times out                                         | `5`                                         |
-| `llamaParse.readinessProbe.failureThreshold`             | Minimum consecutive failures for the probe to be considered failed after having succeeded | `10`                                        |
-| `llamaParse.readinessProbe.httpGet.path`                 | Path to hit for the readiness probe                                                       | `/readyz`                                   |
-| `llamaParse.readinessProbe.httpGet.port`                 | Port to hit for the readiness probe                                                       | `8004`                                      |
-| `llamaParse.readinessProbe.initialDelaySeconds`          | Number of seconds after the container has started before readiness probes are initiated   | `30`                                        |
-| `llamaParse.readinessProbe.periodSeconds`                | How often (in seconds) to perform the probe                                               | `30`                                        |
-| `llamaParse.readinessProbe.timeoutSeconds`               | Number of seconds after which the probe times out                                         | `5`                                         |
-| `llamaParse.autoscaling.enabled`                         | Enable autoscaling for the LlamaParse Deployment                                          | `true`                                      |
-| `llamaParse.autoscaling.minReplicas`                     | Minimum number of replicas for the LlamaParse Deployment                                  | `2`                                         |
-| `llamaParse.autoscaling.maxReplicas`                     | Maximum number of replicas for the LlamaParse Deployment                                  | `10`                                        |
-| `llamaParse.autoscaling.targetCPUUtilizationPercentage`  | Target CPU utilization percentage for the LlamaParse Deployment                           | `80`                                        |
-| `llamaParse.keda.enabled`                                | Enable KEDA for the llamaParse Deployment                                                 | `false`                                     |
-| `llamaParse.keda.additionalAnnotations`                  | Additional annotations for the KEDA                                                       | `{}`                                        |
-| `llamaParse.keda.additionalLabels`                       | Additional labels for the KEDA                                                            | `{}`                                        |
-| `llamaParse.keda.pollingInterval`                        | Polling interval for the KEDA                                                             | `15`                                        |
-| `llamaParse.keda.cooldownPeriod`                         | Cooldown period for the KEDA                                                              | `120`                                       |
-| `llamaParse.keda.minReplicaCount`                        | Minimum number of replicas for the KEDA                                                   | `2`                                         |
-| `llamaParse.keda.maxReplicaCount`                        | Maximum number of replicas for the KEDA                                                   | `10`                                        |
-| `llamaParse.keda.initialCooldownPeriod`                  | Initial cooldown period for the KEDA                                                      | `0`                                         |
-| `llamaParse.keda.fallback`                               | Fallback for the KEDA                                                                     | `{}`                                        |
-| `llamaParse.keda.advanced`                               | Advanced configuration for the KEDA                                                       | `{}`                                        |
-| `llamaParse.keda.triggers`                               | Triggers for the KEDA                                                                     | `[]`                                        |
-| `llamaParse.podDisruptionBudget.enabled`                 | Enable PodDisruptionBudget for the LlamaParse Deployment                                  | `true`                                      |
-| `llamaParse.podDisruptionBudget.maxUnavailable`          | Maximum number of unavailable pods                                                        | `1`                                         |
-| `llamaParse.volumes`                                     | List of volumes that can be mounted by containers belonging to the pod                    | `[]`                                        |
-| `llamaParse.volumeMounts`                                | List of volumeMounts that can be mounted by containers belonging to the pod               | `[]`                                        |
-| `llamaParse.nodeSelector`                                | Node labels for pod assignment                                                            | `{}`                                        |
-| `llamaParse.tolerations`                                 | Taints to tolerate on node assignment:                                                    | `[]`                                        |
-| `llamaParse.affinity`                                    | Pod scheduling constraints                                                                | `{}`                                        |
-| `llamaParse.metrics.enabled`                             | Enable metrics for the llamaParse                                                         | `false`                                     |
-| `llamaParse.metrics.serviceMonitor.enabled`              | Enable service monitor for the llamaParse                                                 | `false`                                     |
-| `llamaParse.metrics.serviceMonitor.selector`             | Selector for the service monitor                                                          | `{}`                                        |
-| `llamaParse.metrics.serviceMonitor.additionalLabels`     | Additional labels for the service monitor                                                 | `{}`                                        |
-| `llamaParse.metrics.serviceMonitor.annotations`          | Annotations for the service monitor                                                       | `{}`                                        |
-| `llamaParse.metrics.serviceMonitor.interval`             | Interval for the service monitor                                                          | `30s`                                       |
-| `llamaParse.metrics.serviceMonitor.scrapeTimeout`        | Timeout for the service monitor                                                           | `15s`                                       |
-| `llamaParse.metrics.serviceMonitor.relabelings`          | Relabelings for the service monitor                                                       | `[]`                                        |
-| `llamaParse.metrics.serviceMonitor.metricRelabelings`    | Metric relabelings for the service monitor                                                | `[]`                                        |
-| `llamaParse.metrics.serviceMonitor.scheme`               | Scheme for the service monitor                                                            | `http`                                      |
-| `llamaParse.metrics.serviceMonitor.tlsConfig`            | TLS configuration for the service monitor                                                 | `{}`                                        |
-| `llamaParse.metrics.rules.enabled`                       | Enable rules for the llamaParse                                                           | `false`                                     |
-| `llamaParse.metrics.rules.namespace`                     | Namespace for the rules                                                                   | `""`                                        |
-| `llamaParse.metrics.rules.selector`                      | Selector for the rules                                                                    | `{}`                                        |
-| `llamaParse.metrics.rules.additionalLabels`              | Additional labels for the rules                                                           | `{}`                                        |
-| `llamaParse.metrics.rules.annotations`                   | Annotations for the rules                                                                 | `{}`                                        |
-| `llamaParse.metrics.rules.spec`                          | Rules for the llamaParse                                                                  | `[]`                                        |
+| Name                                                                  | Description                                                | Value   |
+| --------------------------------------------------------------------- | ---------------------------------------------------------- | ------- |
+| `config.parse.debugMode`                                              | Enable debug mode for LlamaParse                           | `false` |
+| `config.parse.maxQueueConcurrency`                                    | Max number of jobs the worker can process at the same time | `3`     |
+| `config.parse.preferedPremiumModel`                                   | Prefered premium LLM model to use for the application      | `""`    |
+| `config.parse.concurrency.accurateModeLLMConcurrency`                 | concurrency setting                                        | `""`    |
+| `config.parse.concurrency.multimodalModelConcurrency`                 | concurrency setting                                        | `""`    |
+| `config.parse.concurrency.premiumModeModelConcurrency`                | concurrency setting                                        | `""`    |
+| `config.parse.concurrency.ocrConcurrency`                             | ocr concurrency setting                                    | `""`    |
+| `config.parse.concurrency.layoutExtractionConcurrency`                | layout extraction concurrency setting                      | `""`    |
+| `config.parse.concurrency.layoutExtractionV2Concurrency`              | layout extraction v2 concurrency setting                   | `""`    |
+| `config.parse.concurrency.layoutModeBlockParseConcurrency`            | layout mode block parse concurrency setting                | `""`    |
+| `config.parse.concurrency.layoutModePageConcurrency`                  | layout mode page concurrency setting                       | `""`    |
+| `config.parse.concurrency.layoutModeReadingOrderDetectionConcurrency` | layout mode reading order detection concurrency setting    | `""`    |
+| `config.parse.concurrency.gemini25Flash`                              | gemini25Flash concurrency setting                          | `""`    |
+| `config.parse.concurrency.gemini25Pro`                                | gemini25Pro concurrency setting                            | `""`    |
+| `config.parse.concurrency.gemini20Flash`                              | gemini20Flash concurrency setting                          | `""`    |
+| `config.parse.concurrency.gemini20FlashLite`                          | gemini20FlashLite concurrency setting                      | `""`    |
+| `config.parse.concurrency.gemini15Flash`                              | gemini15Flash concurrency setting                          | `""`    |
+| `config.parse.concurrency.gemini15Pro`                                | gemini15Pro concurrency setting                            | `""`    |
+| `config.parse.concurrency.openaiGpt4oMini`                            | openaiGpt4oMini concurrency setting                        | `""`    |
+| `config.parse.concurrency.openaiGpt4o`                                | openaiGpt4o concurrency setting                            | `""`    |
+| `config.parse.concurrency.openaiGpt41`                                | openaiGpt41 concurrency setting                            | `""`    |
+| `config.parse.concurrency.openaiGpt41Mini`                            | openaiGpt41Mini concurrency setting                        | `""`    |
+| `config.parse.concurrency.openaiGpt41Nano`                            | openaiGpt41Nano concurrency setting                        | `""`    |
+| `config.parse.concurrency.openaiGpt5`                                 | openaiGpt5 concurrency setting                             | `""`    |
+| `config.parse.concurrency.openaiGpt5Mini`                             | openaiGpt5Mini concurrency setting                         | `""`    |
+| `config.parse.concurrency.openaiGpt5Nano`                             | openaiGpt5Nano concurrency setting                         | `""`    |
+| `config.parse.concurrency.openaiWhisper1`                             | openaiWhisper1 concurrency setting                         | `""`    |
+| `config.parse.concurrency.anthropicSonnet37`                          | anthropicSonnet37 concurrency setting                      | `""`    |
+| `config.parse.concurrency.anthropicSonnet35`                          | anthropicSonnet35 concurrency setting                      | `""`    |
+| `config.parse.concurrency.anthropicSonnet40`                          | anthropicSonnet40 concurrency setting                      | `""`    |
+| `config.parse.concurrency.anthropicSonnet45`                          | anthropicSonnet45 concurrency setting                      | `""`    |
+| `config.parse.concurrency.anthropicHaiku35`                           | anthropicHaiku35 concurrency setting                       | `""`    |
+| `config.parse.concurrency.anthropicHaiku45`                           | anthropicHaiku45 concurrency setting                       | `""`    |
+
+### LlamaParse-OCR Configuration
+
+| Name                                  | Description                                                                | Value   |
+| ------------------------------------- | -------------------------------------------------------------------------- | ------- |
+| `config.parseOcr.enabled`             | Enable LlamaParseOcr                                                       | `true`  |
+| `config.parseOcr.gpu`                 | Enable GPU acceleration for OCR processing (if false, uses CPU backend)    | `false` |
+| `config.parseLayoutDetection.enabled` | Enable LlamaParse Layout Detection                                         | `true`  |
+| `config.parseLayoutDetection.gpu`     | Enable GPU acceleration for Layout processing (if false, uses CPU backend) | `false` |
+
+### Temporal Configuration
+
+| Name                                                     | Description                                                                                   | Value                                   |
+| -------------------------------------------------------- | --------------------------------------------------------------------------------------------- | --------------------------------------- |
+| `config.temporal.workerRegistryProfile`                  | Temporal worker registry profile (default or consolidated)                                    | `consolidated`                          |
+| `config.temporal.namespace`                              | Temporal registered namespace                                                                 | `""`                                    |
+| `config.temporal.searchAttributesJob.enabled`            | Enable the search attributes job                                                              | `true`                                  |
+| `config.temporal.searchAttributesJob.image`              | Image for temporal admin tools                                                                | `docker.io/temporalio/admin-tools:1.29` |
+| `config.temporal.searchAttributesJob.attributes[0].name` | Name of the first search attribute                                                            | `Project`                               |
+| `config.temporal.searchAttributesJob.attributes[0].type` | Type of the first search attribute (Text, Keyword, Int, Double, Bool, Datetime, KeywordList)  | `Keyword`                               |
+| `config.temporal.searchAttributesJob.attributes[1].name` | Name of the second search attribute                                                           | `Organization`                          |
+| `config.temporal.searchAttributesJob.attributes[1].type` | Type of the second search attribute (Text, Keyword, Int, Double, Bool, Datetime, KeywordList) | `Keyword`                               |
+
+### Common Configuration
+
+| Name                | Description                                          | Value |
+| ------------------- | ---------------------------------------------------- | ----- |
+| `commonLabels`      | Labels to add to all deployed objects                | `{}`  |
+| `commonAnnotations` | Annotations to add to all deployed objects           | `{}`  |
+| `imagePullSecrets`  | Image pull secrets to use for the images string list | `[]`  |
+| `extraObjects`      |                                                      | `[]`  |
+
+### Frontend Configuration
+
+| Name                                   | Description                                                                                                       | Value                                            |
+| -------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| `frontend.horizontalPodAutoscalerSpec` | HorizontalPodAutoScaler configuration                                                                             | `{}`                                             |
+| `frontend.annotations`                 | Annotations added to the Frontend Deployment.                                                                     | `{}`                                             |
+| `frontend.image`                       | Frontend image                                                                                                    | `docker.io/llamaindex/llamacloud-frontend:0.6.0` |
+| `frontend.imagePullPolicy`             | Frontend image pull policy                                                                                        | `IfNotPresent`                                   |
+| `frontend.securityContext`             | Security context for the container                                                                                | `{}`                                             |
+| `frontend.serviceAccountAnnotations`   | Annotations to add to the service account                                                                         | `{}`                                             |
+| `frontend.nodeSelector`                | Node labels for pod assignment                                                                                    | `{}`                                             |
+| `frontend.tolerations`                 | Taints to tolerate on node assignment:                                                                            | `[]`                                             |
+| `frontend.affinity`                    | Pod scheduling constraints                                                                                        | `{}`                                             |
+| `frontend.topologySpreadConstraints`   | Topology Spread Constraints for frontend pods                                                                     | `[]`                                             |
+| `frontend.podAnnotations`              | Annotations to add to the resulting Pods of the Deployment.                                                       | `{}`                                             |
+| `frontend.podSecurityContext`          | Annotations to add to the resulting Pods of the Deployment.                                                       | `{}`                                             |
+| `frontend.resources`                   | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | `{}`                                             |
+| `frontend.extraEnvVariables`           | Extra environment variables to add to Frontend pods                                                               | `[]`                                             |
+| `frontend.volumeMounts`                | List of volumeMounts that can be mounted by containers belonging to the pod                                       | `[]`                                             |
+| `frontend.volumes`                     | List of volumes that can be mounted by containers belonging to the pod                                            | `[]`                                             |
+
+### Backend Configuration
+
+| Name                                  | Description                                                                                                       | Value                                           |
+| ------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| `backend.horizontalPodAutoscalerSpec` | HorizontalPodAutoScaler configuration                                                                             | `{}`                                            |
+| `backend.annotations`                 | Annotations added to the Backend Deployment.                                                                      | `{}`                                            |
+| `backend.image`                       | Backend image                                                                                                     | `docker.io/llamaindex/llamacloud-backend:0.6.0` |
+| `backend.imagePullPolicy`             | Backend image pull policy                                                                                         | `IfNotPresent`                                  |
+| `backend.securityContext`             | Security context for the container                                                                                | `{}`                                            |
+| `backend.serviceAccountAnnotations`   | Annotations to add to the service account                                                                         | `{}`                                            |
+| `backend.nodeSelector`                | Node labels for pod assignment                                                                                    | `{}`                                            |
+| `backend.tolerations`                 | Taints to tolerate on node assignment:                                                                            | `[]`                                            |
+| `backend.affinity`                    | Pod scheduling constraints                                                                                        | `{}`                                            |
+| `backend.topologySpreadConstraints`   | Topology Spread Constraints for backend pods                                                                      | `[]`                                            |
+| `backend.podAnnotations`              | Annotations to add to the resulting Pods of the Deployment.                                                       | `{}`                                            |
+| `backend.podSecurityContext`          | Annotations to add to the resulting Pods of the Deployment.                                                       | `{}`                                            |
+| `backend.resources`                   | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | `{}`                                            |
+| `backend.extraEnvVariables`           | Extra environment variables to add to Backend pods                                                                | `[]`                                            |
+| `backend.volumeMounts`                | List of volumeMounts that can be mounted by containers belonging to the pod                                       | `[]`                                            |
+| `backend.volumes`                     | List of volumes that can be mounted by containers belonging to the pod                                            | `[]`                                            |
+
+### JobsService Configuration
+
+| Name                                      | Description                                                                                                       | Value                                           |
+| ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| `jobsService.horizontalPodAutoscalerSpec` | HorizontalPodAutoScaler configuration                                                                             | `{}`                                            |
+| `jobsService.annotations`                 | Annotations added to the JobsService Deployment.                                                                  | `{}`                                            |
+| `jobsService.image`                       | JobsService image                                                                                                 | `docker.io/llamaindex/llamacloud-backend:0.6.0` |
+| `jobsService.imagePullPolicy`             | JobsService image pull policy                                                                                     | `IfNotPresent`                                  |
+| `jobsService.securityContext`             | Security context for the container                                                                                | `{}`                                            |
+| `jobsService.serviceAccountAnnotations`   | Annotations to add to the service account                                                                         | `{}`                                            |
+| `jobsService.nodeSelector`                | Node labels for pod assignment                                                                                    | `{}`                                            |
+| `jobsService.tolerations`                 | Taints to tolerate on node assignment:                                                                            | `[]`                                            |
+| `jobsService.affinity`                    | Pod scheduling constraints                                                                                        | `{}`                                            |
+| `jobsService.topologySpreadConstraints`   | Topology Spread Constraints for JobsService pods                                                                  | `[]`                                            |
+| `jobsService.podAnnotations`              | Annotations to add to the resulting Pods of the Deployment.                                                       | `{}`                                            |
+| `jobsService.podSecurityContext`          | Annotations to add to the resulting Pods of the Deployment.                                                       | `{}`                                            |
+| `jobsService.resources`                   | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | `{}`                                            |
+| `jobsService.extraEnvVariables`           | Extra environment variables to add to JobsService pods                                                            | `[]`                                            |
+| `jobsService.volumeMounts`                | List of volumeMounts that can be mounted by containers belonging to the pod                                       | `[]`                                            |
+| `jobsService.volumes`                     | List of volumes that can be mounted by containers belonging to the pod                                            | `[]`                                            |
+
+### JobsWorker Configuration
+
+| Name                                     | Description                                                                                                       | Value                                           |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| `jobsWorker.horizontalPodAutoscalerSpec` | HorizontalPodAutoScaler configuration                                                                             | `{}`                                            |
+| `jobsWorker.annotations`                 | Annotations added to the JobsWorker Deployment.                                                                   | `{}`                                            |
+| `jobsWorker.image`                       | JobsWorker image                                                                                                  | `docker.io/llamaindex/llamacloud-backend:0.6.0` |
+| `jobsWorker.imagePullPolicy`             | JobsWorker image pull policy                                                                                      | `IfNotPresent`                                  |
+| `jobsWorker.securityContext`             | Security context for the container                                                                                | `{}`                                            |
+| `jobsWorker.serviceAccountAnnotations`   | Annotations to add to the service account                                                                         | `{}`                                            |
+| `jobsWorker.nodeSelector`                | Node labels for pod assignment                                                                                    | `{}`                                            |
+| `jobsWorker.tolerations`                 | Taints to tolerate on node assignment:                                                                            | `[]`                                            |
+| `jobsWorker.affinity`                    | Pod scheduling constraints                                                                                        | `{}`                                            |
+| `jobsWorker.topologySpreadConstraints`   | Topology Spread Constraints for JobsWorker pods                                                                   | `[]`                                            |
+| `jobsWorker.podAnnotations`              | Annotations to add to the resulting Pods of the Deployment.                                                       | `{}`                                            |
+| `jobsWorker.podSecurityContext`          | Annotations to add to the resulting Pods of the Deployment.                                                       | `{}`                                            |
+| `jobsWorker.resources`                   | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | `{}`                                            |
+| `jobsWorker.extraEnvVariables`           | Extra environment variables to add to JobsWorker pods                                                             | `[]`                                            |
+| `jobsWorker.volumeMounts`                | List of volumeMounts that can be mounted by containers belonging to the pod                                       | `[]`                                            |
+| `jobsWorker.volumes`                     | List of volumes that can be mounted by containers belonging to the pod                                            | `[]`                                            |
+
+### LlamaParse Configuration
+
+| Name                                     | Description                                                                                                       | Value                                              |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| `llamaParse.horizontalPodAutoscalerSpec` | HorizontalPodAutoScaler configuration                                                                             | `{}`                                               |
+| `llamaParse.annotations`                 | Annotations added to the LlamaParse Deployment.                                                                   | `{}`                                               |
+| `llamaParse.image`                       | LlamaParse image                                                                                                  | `docker.io/llamaindex/llamacloud-llamaparse:0.6.0` |
+| `llamaParse.imagePullPolicy`             | LlamaParse image pull policy                                                                                      | `IfNotPresent`                                     |
+| `llamaParse.securityContext`             | Security context for the container                                                                                | `{}`                                               |
+| `llamaParse.serviceAccountAnnotations`   | Annotations to add to the service account                                                                         | `{}`                                               |
+| `llamaParse.nodeSelector`                | Node labels for pod assignment                                                                                    | `{}`                                               |
+| `llamaParse.tolerations`                 | Taints to tolerate on node assignment:                                                                            | `[]`                                               |
+| `llamaParse.affinity`                    | Pod scheduling constraints                                                                                        | `{}`                                               |
+| `llamaParse.topologySpreadConstraints`   | Topology Spread Constraints for LlamaParse pods                                                                   | `[]`                                               |
+| `llamaParse.podAnnotations`              | Annotations to add to the resulting Pods of the Deployment.                                                       | `{}`                                               |
+| `llamaParse.podSecurityContext`          | Annotations to add to the resulting Pods of the Deployment.                                                       | `{}`                                               |
+| `llamaParse.resources`                   | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | `{}`                                               |
+| `llamaParse.extraEnvVariables`           | Extra environment variables to add to LlamaParse pods                                                             | `[]`                                               |
+| `llamaParse.volumeMounts`                | List of volumeMounts that can be mounted by containers belonging to the pod                                       | `[]`                                               |
+| `llamaParse.volumes`                     | List of volumes that can be mounted by containers belonging to the pod                                            | `[]`                                               |
 
 ### LlamaParseOcr Configuration
 
-| Name                                                        | Description                                                                                 | Value                                  |
-| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------- | -------------------------------------- |
-| `llamaParseOcr.enabled`                                     | Enable LlamaParseOcr                                                                        | `true`                                 |
-| `llamaParseOcr.name`                                        | Name suffix of the LlamaParseOcr related resources                                          | `llamaparse-ocr`                       |
-| `llamaParseOcr.replicas`                                    | Number of replicas of LlamaParseOcr Deployment                                              | `2`                                    |
-| `llamaParseOcr.gpu.enabled`                                 | Enable GPU acceleration for OCR processing (if false, uses CPU backend)                     | `false`                                |
-| `llamaParseOcr.image.registry`                              | LlamaParseOcr Image registry                                                                | `docker.io`                            |
-| `llamaParseOcr.image.repository`                            | LlamaParseOcr Image repository                                                              | `llamaindex/llamacloud-llamaparse-ocr` |
-| `llamaParseOcr.image.tag`                                   | LlamaParseOcr Image tag (-cpu suffix added automatically for CPU backend)                   | `0.5.11`                               |
-| `llamaParseOcr.image.pullPolicy`                            | LlamaParseOcr Image pull policy                                                             | `IfNotPresent`                         |
-| `llamaParseOcr.service.type`                                | LlamaParseOcr Service type                                                                  | `ClusterIP`                            |
-| `llamaParseOcr.service.port`                                | LlamaParseOcr Service port                                                                  | `8080`                                 |
-| `llamaParseOcr.serviceAccount.create`                       | Whether or not to create a new service account                                              | `true`                                 |
-| `llamaParseOcr.serviceAccount.name`                         | Name of the service account                                                                 | `""`                                   |
-| `llamaParseOcr.serviceAccount.labels`                       | Labels to add to the service account                                                        | `{}`                                   |
-| `llamaParseOcr.serviceAccount.annotations`                  | Annotations to add to the service account                                                   | `{}`                                   |
-| `llamaParseOcr.serviceAccount.automountServiceAccountToken` | Whether or not to automount the service account token                                       | `true`                                 |
-| `llamaParseOcr.containerPort`                               | Port to expose on the LlamaParseOcr container                                               | `8080`                                 |
-| `llamaParseOcr.labels`                                      | Labels added to the LlamaParseOcr Deployment.                                               | `{}`                                   |
-| `llamaParseOcr.annotations`                                 | Annotations added to the LlamaParseOcr Deployment.                                          | `{}`                                   |
-| `llamaParseOcr.podAnnotations`                              | Annotations to add to the resulting Pods of the Deployment.                                 | `{}`                                   |
-| `llamaParseOcr.podLabels`                                   | Labels to add to the resulting Pods of the Deployment.                                      | `{}`                                   |
-| `llamaParseOcr.podSecurityContext`                          | Pod security context                                                                        | `{}`                                   |
-| `llamaParseOcr.securityContext`                             | Security context for the container                                                          | `{}`                                   |
-| `llamaParseOcr.extraEnvVariables`                           | Extra environment variables to add to llamaParseOcr pods                                    | `[]`                                   |
-| `llamaParseOcr.resources.requests.memory`                   | Memory request for the LlamaParse container                                                 | `12Gi`                                 |
-| `llamaParseOcr.resources.requests.cpu`                      | CPU request for the LlamaParse container                                                    | `2`                                    |
-| `llamaParseOcr.resources.limits.memory`                     | Memory limit for the LlamaParse container                                                   | `16Gi`                                 |
-| `llamaParseOcr.resources.limits.cpu`                        | CPU limit for the LlamaParse container                                                      | `4`                                    |
-| `llamaParseOcr.livenessProbe.httpGet.path`                  | Path to hit for the liveness probe                                                          | `/health_check`                        |
-| `llamaParseOcr.livenessProbe.httpGet.port`                  | Port to hit for the liveness probe                                                          | `8080`                                 |
-| `llamaParseOcr.livenessProbe.httpGet.scheme`                | Scheme to use for the liveness probe                                                        | `HTTP`                                 |
-| `llamaParseOcr.livenessProbe.initialDelaySeconds`           | Number of seconds after the container has started before liveness probes are initiated      | `10`                                   |
-| `llamaParseOcr.livenessProbe.periodSeconds`                 | How often (in seconds) to perform the probe                                                 | `15`                                   |
-| `llamaParseOcr.livenessProbe.timeoutSeconds`                | Number of seconds after which the probe times out                                           | `5`                                    |
-| `llamaParseOcr.livenessProbe.failureThreshold`              | Minimum consecutive failures for the probe to be considered failed after having succeeded   | `5`                                    |
-| `llamaParseOcr.livenessProbe.successThreshold`              | Minimum consecutive successes for the probe to be considered successful after having failed | `1`                                    |
-| `llamaParseOcr.readinessProbe.httpGet.path`                 | Path to hit for the readiness probe                                                         | `/health_check`                        |
-| `llamaParseOcr.readinessProbe.httpGet.port`                 | Port to hit for the readiness probe                                                         | `8080`                                 |
-| `llamaParseOcr.readinessProbe.httpGet.scheme`               | Scheme to use for the readiness probe                                                       | `HTTP`                                 |
-| `llamaParseOcr.readinessProbe.initialDelaySeconds`          | Number of seconds after the container has started before readiness probes are initiated     | `10`                                   |
-| `llamaParseOcr.readinessProbe.periodSeconds`                | How often (in seconds) to perform the probe                                                 | `15`                                   |
-| `llamaParseOcr.readinessProbe.timeoutSeconds`               | Number of seconds after which the probe times out                                           | `5`                                    |
-| `llamaParseOcr.readinessProbe.failureThreshold`             | Minimum consecutive failures for the probe to be considered failed after having succeeded   | `5`                                    |
-| `llamaParseOcr.readinessProbe.successThreshold`             | Minimum consecutive successes for the probe to be considered successful after having failed | `1`                                    |
-| `llamaParseOcr.autoscaling.enabled`                         | Enable autoscaling for the LlamaParseOcr Deployment                                         | `true`                                 |
-| `llamaParseOcr.autoscaling.minReplicas`                     | Minimum number of replicas for the LlamaParseOcr Deployment                                 | `2`                                    |
-| `llamaParseOcr.autoscaling.maxReplicas`                     | Maximum number of replicas for the LlamaParseOcr Deployment                                 | `10`                                   |
-| `llamaParseOcr.autoscaling.targetCPUUtilizationPercentage`  | Target CPU utilization percentage for the LlamaParseOcr Deployment                          | `80`                                   |
-| `llamaParseOcr.keda.enabled`                                | Enable KEDA for the LlamaParseOcr Deployment                                                | `false`                                |
-| `llamaParseOcr.keda.additionalAnnotations`                  | Additional annotations for the KEDA                                                         | `{}`                                   |
-| `llamaParseOcr.keda.additionalLabels`                       | Additional labels for the KEDA                                                              | `{}`                                   |
-| `llamaParseOcr.keda.pollingInterval`                        | Polling interval for the KEDA                                                               | `15`                                   |
-| `llamaParseOcr.keda.cooldownPeriod`                         | Cooldown period for the KEDA                                                                | `120`                                  |
-| `llamaParseOcr.keda.minReplicaCount`                        | Minimum number of replicas for the KEDA                                                     | `2`                                    |
-| `llamaParseOcr.keda.maxReplicaCount`                        | Maximum number of replicas for the KEDA                                                     | `10`                                   |
-| `llamaParseOcr.keda.initialCooldownPeriod`                  | Initial cooldown period for the KEDA                                                        | `0`                                    |
-| `llamaParseOcr.keda.fallback`                               | Fallback for the KEDA                                                                       | `{}`                                   |
-| `llamaParseOcr.keda.advanced`                               | Advanced configuration for the KEDA                                                         | `{}`                                   |
-| `llamaParseOcr.keda.triggers`                               | Triggers for the KEDA                                                                       | `[]`                                   |
-| `llamaParseOcr.podDisruptionBudget.enabled`                 | Enable PodDisruptionBudget for the LlamaParseOcr Deployment                                 | `true`                                 |
-| `llamaParseOcr.podDisruptionBudget.maxUnavailable`          | Maximum number of unavailable pods                                                          | `1`                                    |
-| `llamaParseOcr.volumes`                                     | List of volumes that can be mounted by containers belonging to the pod                      | `[]`                                   |
-| `llamaParseOcr.volumeMounts`                                | List of volumeMounts that can be mounted by containers belonging to the pod                 | `[]`                                   |
-| `llamaParseOcr.nodeSelector`                                | Node labels for pod assignment                                                              | `{}`                                   |
-| `llamaParseOcr.tolerations`                                 | Taints to tolerate on node assignment:                                                      | `[]`                                   |
-| `llamaParseOcr.affinity`                                    | Pod scheduling constraints                                                                  | `{}`                                   |
-| `llamaParseOcr.metrics.enabled`                             | Enable metrics for the llamaParseOcr                                                        | `false`                                |
-| `llamaParseOcr.metrics.serviceMonitor.enabled`              | Enable service monitor for the llamaParseOcr                                                | `false`                                |
-| `llamaParseOcr.metrics.serviceMonitor.selector`             | Selector for the service monitor                                                            | `{}`                                   |
-| `llamaParseOcr.metrics.serviceMonitor.additionalLabels`     | Additional labels for the service monitor                                                   | `{}`                                   |
-| `llamaParseOcr.metrics.serviceMonitor.annotations`          | Annotations for the service monitor                                                         | `{}`                                   |
-| `llamaParseOcr.metrics.serviceMonitor.interval`             | Interval for the service monitor                                                            | `30s`                                  |
-| `llamaParseOcr.metrics.serviceMonitor.scrapeTimeout`        | Timeout for the service monitor                                                             | `15s`                                  |
-| `llamaParseOcr.metrics.serviceMonitor.relabelings`          | Relabelings for the service monitor                                                         | `[]`                                   |
-| `llamaParseOcr.metrics.serviceMonitor.metricRelabelings`    | Metric relabelings for the service monitor                                                  | `[]`                                   |
-| `llamaParseOcr.metrics.serviceMonitor.scheme`               | Scheme for the service monitor                                                              | `http`                                 |
-| `llamaParseOcr.metrics.serviceMonitor.tlsConfig`            | TLS configuration for the service monitor                                                   | `{}`                                   |
+| Name                                        | Description                                                                                                       | Value                                                  |
+| ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
+| `llamaParseOcr.horizontalPodAutoscalerSpec` | HorizontalPodAutoScaler configuration                                                                             | `{}`                                                   |
+| `llamaParseOcr.annotations`                 | Annotations added to the LlamaParseOcr Deployment.                                                                | `{}`                                                   |
+| `llamaParseOcr.image`                       | LlamaParseOcr image                                                                                               | `docker.io/llamaindex/llamacloud-llamaparse-ocr:0.6.0` |
+| `llamaParseOcr.imagePullPolicy`             | LlamaParseOcr image pull policy                                                                                   | `IfNotPresent`                                         |
+| `llamaParseOcr.securityContext`             | Security context for the container                                                                                | `{}`                                                   |
+| `llamaParseOcr.serviceAccountAnnotations`   | Annotations to add to the service account                                                                         | `{}`                                                   |
+| `llamaParseOcr.nodeSelector`                | Node labels for pod assignment                                                                                    | `{}`                                                   |
+| `llamaParseOcr.tolerations`                 | Taints to tolerate on node assignment:                                                                            | `[]`                                                   |
+| `llamaParseOcr.affinity`                    | Pod scheduling constraints                                                                                        | `{}`                                                   |
+| `llamaParseOcr.topologySpreadConstraints`   | Topology Spread Constraints for LlamaParseOcr pods                                                                | `[]`                                                   |
+| `llamaParseOcr.podAnnotations`              | Annotations to add to the resulting Pods of the Deployment.                                                       | `{}`                                                   |
+| `llamaParseOcr.podSecurityContext`          | Annotations to add to the resulting Pods of the Deployment.                                                       | `{}`                                                   |
+| `llamaParseOcr.resources`                   | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | `{}`                                                   |
+| `llamaParseOcr.extraEnvVariables`           | Extra environment variables to add to LlamaParseOcr pods                                                          | `[]`                                                   |
+| `llamaParseOcr.volumeMounts`                | List of volumeMounts that can be mounted by containers belonging to the pod                                       | `[]`                                                   |
+| `llamaParseOcr.volumes`                     | List of volumes that can be mounted by containers belonging to the pod                                            | `[]`                                                   |
 
 ### LlamaParse Layout Detection API Configuration
 
-| Name                                                                       | Description                                                                                 | Value                                        |
-| -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- | -------------------------------------------- |
-| `llamaParseLayoutDetectionApi.enabled`                                     | Enable LlamaParseLayoutDetectionApi                                                         | `false`                                      |
-| `llamaParseLayoutDetectionApi.name`                                        | Name suffix of the LlamaParse Layout Detection Api related resources                        | `llamaparse-layout-detection-api`            |
-| `llamaParseLayoutDetectionApi.replicas`                                    | Number of replicas of LlamaParse Layout Detection Api Deployment                            | `1`                                          |
-| `llamaParseLayoutDetectionApi.config.logLevel`                             | Log level for the LlamaParse Layout Detection Api                                           | `INFO`                                       |
-| `llamaParseLayoutDetectionApi.image.registry`                              | LlamaParse Layout Detection Api Image registry                                              | `docker.io`                                  |
-| `llamaParseLayoutDetectionApi.image.repository`                            | LlamaParse Layout Detection Api Image repository                                            | `llamaindex/llamacloud-layout-detection-api` |
-| `llamaParseLayoutDetectionApi.image.tag`                                   | LlamaParse Layout Detection Api Image tag                                                   | `0.5.11`                                     |
-| `llamaParseLayoutDetectionApi.image.pullPolicy`                            | LlamaParse Layout Detection Api Image pull policy                                           | `IfNotPresent`                               |
-| `llamaParseLayoutDetectionApi.service.type`                                | LlamaParse Layout Detection Api Service type                                                | `ClusterIP`                                  |
-| `llamaParseLayoutDetectionApi.service.port`                                | LlamaParse Layout Detection Api Service port                                                | `8000`                                       |
-| `llamaParseLayoutDetectionApi.serviceAccount.create`                       | Whether or not to create a new service account                                              | `true`                                       |
-| `llamaParseLayoutDetectionApi.serviceAccount.name`                         | Name of the service account                                                                 | `""`                                         |
-| `llamaParseLayoutDetectionApi.serviceAccount.labels`                       | Labels to add to the service account                                                        | `{}`                                         |
-| `llamaParseLayoutDetectionApi.serviceAccount.annotations`                  | Annotations to add to the service account                                                   | `{}`                                         |
-| `llamaParseLayoutDetectionApi.serviceAccount.automountServiceAccountToken` | Whether or not to automount the service account token                                       | `true`                                       |
-| `llamaParseLayoutDetectionApi.containerPort`                               | Port to expose on the LlamaParse Layout Detection Api container                             | `8000`                                       |
-| `llamaParseLayoutDetectionApi.labels`                                      | Labels added to the LlamaParse Layout Detection Api Deployment.                             | `{}`                                         |
-| `llamaParseLayoutDetectionApi.annotations`                                 | Annotations added to the LlamaParse Layout Detection Api Deployment.                        | `{}`                                         |
-| `llamaParseLayoutDetectionApi.podAnnotations`                              | Annotations to add to the resulting Pods of the Deployment.                                 | `{}`                                         |
-| `llamaParseLayoutDetectionApi.podLabels`                                   | Labels to add to the resulting Pods of the Deployment.                                      | `{}`                                         |
-| `llamaParseLayoutDetectionApi.podSecurityContext`                          | Pod security context                                                                        | `{}`                                         |
-| `llamaParseLayoutDetectionApi.securityContext`                             | Security context for the container                                                          | `{}`                                         |
-| `llamaParseLayoutDetectionApi.extraEnvVariables`                           | Extra environment variables to add to LlamaParse Layout Detection Api pods                  | `[]`                                         |
-| `llamaParseLayoutDetectionApi.resources.requests.memory`                   | Memory request for the LlamaParse Layout Detection API Container                            | `6Gi`                                        |
-| `llamaParseLayoutDetectionApi.resources.requests.cpu`                      | CPU request for the LlamaParse Layout Detection API Container                               | `1`                                          |
-| `llamaParseLayoutDetectionApi.resources.limits.memory`                     | Memory limit for the LlamaParse Layout Detection API Container                              | `12Gi`                                       |
-| `llamaParseLayoutDetectionApi.resources.limits.cpu`                        | CPU limit for the LlamaParse Layout Detection API Container                                 | `2`                                          |
-| `llamaParseLayoutDetectionApi.livenessProbe.httpGet.path`                  | Path to hit for the liveness probe                                                          | `/health`                                    |
-| `llamaParseLayoutDetectionApi.livenessProbe.httpGet.port`                  | Port to hit for the liveness probe                                                          | `8000`                                       |
-| `llamaParseLayoutDetectionApi.livenessProbe.httpGet.scheme`                | Scheme to use for the liveness probe                                                        | `HTTP`                                       |
-| `llamaParseLayoutDetectionApi.livenessProbe.initialDelaySeconds`           | Number of seconds after the container has started before liveness probes are initiated      | `10`                                         |
-| `llamaParseLayoutDetectionApi.livenessProbe.periodSeconds`                 | How often (in seconds) to perform the probe                                                 | `15`                                         |
-| `llamaParseLayoutDetectionApi.livenessProbe.timeoutSeconds`                | Number of seconds after which the probe times out                                           | `5`                                          |
-| `llamaParseLayoutDetectionApi.livenessProbe.failureThreshold`              | Minimum consecutive failures for the probe to be considered failed after having succeeded   | `5`                                          |
-| `llamaParseLayoutDetectionApi.livenessProbe.successThreshold`              | Minimum consecutive successes for the probe to be considered successful after having failed | `1`                                          |
-| `llamaParseLayoutDetectionApi.readinessProbe.httpGet.path`                 | Path to hit for the readiness probe                                                         | `/health`                                    |
-| `llamaParseLayoutDetectionApi.readinessProbe.httpGet.port`                 | Port to hit for the readiness probe                                                         | `8000`                                       |
-| `llamaParseLayoutDetectionApi.readinessProbe.httpGet.scheme`               | Scheme to use for the readiness probe                                                       | `HTTP`                                       |
-| `llamaParseLayoutDetectionApi.readinessProbe.initialDelaySeconds`          | Number of seconds after the container has started before readiness probes are initiated     | `10`                                         |
-| `llamaParseLayoutDetectionApi.readinessProbe.periodSeconds`                | How often (in seconds) to perform the probe                                                 | `15`                                         |
-| `llamaParseLayoutDetectionApi.readinessProbe.timeoutSeconds`               | Number of seconds after which the probe times out                                           | `5`                                          |
-| `llamaParseLayoutDetectionApi.readinessProbe.failureThreshold`             | Minimum consecutive failures for the probe to be considered failed after having succeeded   | `5`                                          |
-| `llamaParseLayoutDetectionApi.readinessProbe.successThreshold`             | Minimum consecutive successes for the probe to be considered successful after having failed | `1`                                          |
-| `llamaParseLayoutDetectionApi.autoscaling.enabled`                         | Enable autoscaling for the LlamaParse Layout Detection Api Deployment                       | `false`                                      |
-| `llamaParseLayoutDetectionApi.autoscaling.minReplicas`                     | Minimum number of replicas for the LlamaParse Layout Detection Api Deployment               | `1`                                          |
-| `llamaParseLayoutDetectionApi.autoscaling.maxReplicas`                     | Maximum number of replicas for the LlamaParse Layout Detection Api Deployment               | `10`                                         |
-| `llamaParseLayoutDetectionApi.autoscaling.targetCPUUtilizationPercentage`  | Target CPU utilization percentage for the LlamaParse Layout Detection Api Deployment        | `80`                                         |
-| `llamaParseLayoutDetectionApi.podDisruptionBudget.enabled`                 | Enable PodDisruptionBudget for the LlamaParse Layout Detection Api Deployment               | `true`                                       |
-| `llamaParseLayoutDetectionApi.podDisruptionBudget.maxUnavailable`          | Maximum number of unavailable pods                                                          | `1`                                          |
-| `llamaParseLayoutDetectionApi.volumes`                                     | List of volumes that can be mounted by containers belonging to the pod                      | `[]`                                         |
-| `llamaParseLayoutDetectionApi.volumeMounts`                                | List of volumeMounts that can be mounted by containers belonging to the pod                 | `[]`                                         |
-| `llamaParseLayoutDetectionApi.nodeSelector`                                | Node labels for pod assignment                                                              | `{}`                                         |
-| `llamaParseLayoutDetectionApi.tolerations`                                 | Taints to tolerate on node assignment:                                                      | `[]`                                         |
-| `llamaParseLayoutDetectionApi.affinity`                                    | Pod scheduling constraints                                                                  | `{}`                                         |
+| Name                                                       | Description                                                                                                       | Value                                                        |
+| ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| `llamaParseLayoutDetectionApi.horizontalPodAutoscalerSpec` | HorizontalPodAutoScaler configuration                                                                             | `{}`                                                         |
+| `llamaParseLayoutDetectionApi.annotations`                 | Annotations added to the LlamaParseLayoutDetectionApi Deployment.                                                 | `{}`                                                         |
+| `llamaParseLayoutDetectionApi.image`                       | LlamaParseLayoutDetectionApi image                                                                                | `docker.io/llamaindex/llamacloud-layout-detection-api:0.6.0` |
+| `llamaParseLayoutDetectionApi.imagePullPolicy`             | LlamaParseLayoutDetectionApi image pull policy                                                                    | `IfNotPresent`                                               |
+| `llamaParseLayoutDetectionApi.securityContext`             | Security context for the container                                                                                | `{}`                                                         |
+| `llamaParseLayoutDetectionApi.serviceAccountAnnotations`   | Annotations to add to the service account                                                                         | `{}`                                                         |
+| `llamaParseLayoutDetectionApi.nodeSelector`                | Node labels for pod assignment                                                                                    | `{}`                                                         |
+| `llamaParseLayoutDetectionApi.tolerations`                 | Taints to tolerate on node assignment:                                                                            | `[]`                                                         |
+| `llamaParseLayoutDetectionApi.affinity`                    | Pod scheduling constraints                                                                                        | `{}`                                                         |
+| `llamaParseLayoutDetectionApi.topologySpreadConstraints`   | Topology Spread Constraints for LlamaParseLayoutDetectionApi pods                                                 | `[]`                                                         |
+| `llamaParseLayoutDetectionApi.podAnnotations`              | Annotations to add to the resulting Pods of the Deployment.                                                       | `{}`                                                         |
+| `llamaParseLayoutDetectionApi.podSecurityContext`          | Annotations to add to the resulting Pods of the Deployment.                                                       | `{}`                                                         |
+| `llamaParseLayoutDetectionApi.resources`                   | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | `{}`                                                         |
+| `llamaParseLayoutDetectionApi.extraEnvVariables`           | Extra environment variables to add to LlamaParseLayoutDetectionApi pods                                           | `[]`                                                         |
+| `llamaParseLayoutDetectionApi.volumeMounts`                | List of volumeMounts that can be mounted by containers belonging to the pod                                       | `[]`                                                         |
+| `llamaParseLayoutDetectionApi.volumes`                     | List of volumes that can be mounted by containers belonging to the pod                                            | `[]`                                                         |
 
 ### Usage Configuration
 
-| Name                                                                           | Description                                                                                                       | Value                                                                          |
-| ------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| `usage.name`                                                                   | Name suffix of the usage related resources                                                                        | `usage`                                                                        |
-| `usage.replicas`                                                               | Number of replicas of usage Deployment                                                                            | `1`                                                                            |
-| `usage.image.registry`                                                         | Usage Image registry                                                                                              | `docker.io`                                                                    |
-| `usage.image.repository`                                                       | Usage Image repository                                                                                            | `llamaindex/llamacloud-usage`                                                  |
-| `usage.image.tag`                                                              | Usage Image tag                                                                                                   | `0.5.11`                                                                       |
-| `usage.image.pullPolicy`                                                       | Usage Image pull policy                                                                                           | `IfNotPresent`                                                                 |
-| `usage.service.type`                                                           | Usage Service type                                                                                                | `ClusterIP`                                                                    |
-| `usage.service.port`                                                           | Usage Service port                                                                                                | `8005`                                                                         |
-| `usage.serviceAccount.create`                                                  | Whether or not to create a new service account                                                                    | `true`                                                                         |
-| `usage.serviceAccount.name`                                                    | Name of the service account                                                                                       | `""`                                                                           |
-| `usage.serviceAccount.labels`                                                  | Labels to add to the service account                                                                              | `{}`                                                                           |
-| `usage.serviceAccount.annotations`                                             | Annotations to add to the service account                                                                         | `{}`                                                                           |
-| `usage.serviceAccount.automountServiceAccountToken`                            | Whether or not to automount the service account token                                                             | `true`                                                                         |
-| `usage.containerPort`                                                          | Port to expose on the usage container                                                                             | `8005`                                                                         |
-| `usage.labels`                                                                 | Labels added to the usage Deployment.                                                                             | `{}`                                                                           |
-| `usage.annotations`                                                            | Annotations added to the usage Deployment.                                                                        | `{}`                                                                           |
-| `usage.extraEnvVariables`                                                      | Extra environment variables to add to usage pods                                                                  | `[]`                                                                           |
-| `usage.externalSecrets.enabled`                                                | Enable external secrets for the Usage Deployment                                                                  | `false`                                                                        |
-| `usage.externalSecrets.secrets`                                                | List of external secrets to load environment variables from                                                       | `[]`                                                                           |
-| `usage.podAnnotations`                                                         | Annotations to add to the resulting Pods of the Deployment.                                                       | `{}`                                                                           |
-| `usage.podLabels`                                                              | Labels to add to the resulting Pods of the Deployment.                                                            | `{}`                                                                           |
-| `usage.podSecurityContext`                                                     | Pod security context                                                                                              | `{}`                                                                           |
-| `usage.securityContext`                                                        | Security context for the container                                                                                | `{}`                                                                           |
-| `usage.resources`                                                              | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | `{}`                                                                           |
-| `usage.livenessProbe.httpGet.path`                                             | Path to hit for the liveness probe                                                                                | `/health_check`                                                                |
-| `usage.livenessProbe.httpGet.port`                                             | Port to hit for the liveness probe                                                                                | `8005`                                                                         |
-| `usage.livenessProbe.httpGet.scheme`                                           | Scheme to use for the liveness probe                                                                              | `HTTP`                                                                         |
-| `usage.livenessProbe.initialDelaySeconds`                                      | Number of seconds after the container has started before liveness probes are initiated                            | `15`                                                                           |
-| `usage.livenessProbe.periodSeconds`                                            | How often (in seconds) to perform the probe                                                                       | `15`                                                                           |
-| `usage.livenessProbe.timeoutSeconds`                                           | Number of seconds after which the probe times out                                                                 | `5`                                                                            |
-| `usage.livenessProbe.failureThreshold`                                         | Minimum consecutive failures for the probe to be considered failed after having succeeded                         | `30`                                                                           |
-| `usage.livenessProbe.successThreshold`                                         | Minimum consecutive successes for the probe to be considered successful after having failed                       | `1`                                                                            |
-| `usage.readinessProbe.httpGet.path`                                            | Path to hit for the liveness probe                                                                                | `/health_check`                                                                |
-| `usage.readinessProbe.httpGet.port`                                            | Port to hit for the liveness probe                                                                                | `8005`                                                                         |
-| `usage.readinessProbe.httpGet.scheme`                                          | Scheme to use for the liveness probe                                                                              | `HTTP`                                                                         |
-| `usage.readinessProbe.initialDelaySeconds`                                     | Number of seconds after the container has started before liveness probes are initiated                            | `15`                                                                           |
-| `usage.readinessProbe.periodSeconds`                                           | How often (in seconds) to perform the probe                                                                       | `15`                                                                           |
-| `usage.readinessProbe.timeoutSeconds`                                          | Number of seconds after which the probe times out                                                                 | `5`                                                                            |
-| `usage.readinessProbe.failureThreshold`                                        | Minimum consecutive failures for the probe to be considered failed after having succeeded                         | `30`                                                                           |
-| `usage.readinessProbe.successThreshold`                                        | Minimum consecutive successes for the probe to be considered successful after having failed                       | `1`                                                                            |
-| `usage.autoscaling.enabled`                                                    | Enable autoscaling for the Usage Deployment                                                                       | `false`                                                                        |
-| `usage.autoscaling.minReplicas`                                                | Minimum number of replicas for the Usage Deployment                                                               | `1`                                                                            |
-| `usage.autoscaling.maxReplicas`                                                | Maximum number of replicas for the Usage Deployment                                                               | `4`                                                                            |
-| `usage.autoscaling.targetCPUUtilizationPercentage`                             | Target CPU utilization percentage for the Usage Deployment                                                        | `80`                                                                           |
-| `usage.volumes`                                                                | List of volumes that can be mounted by containers belonging to the pod                                            | `[]`                                                                           |
-| `usage.volumeMounts`                                                           | List of volumeMounts that can be mounted by containers belonging to the pod                                       | `[]`                                                                           |
-| `usage.nodeSelector`                                                           | Node labels for pod assignment                                                                                    | `{}`                                                                           |
-| `usage.tolerations`                                                            | Taints to tolerate on node assignment:                                                                            | `[]`                                                                           |
-| `usage.affinity`                                                               | Pod scheduling constraints                                                                                        | `{}`                                                                           |
-| `temporalParse.llamaParse.name`                                                | Name suffix of the Temporal Parse LlamaParse related resources                                                    | `temporal-llamaparse`                                                          |
-| `temporalParse.llamaParse.config.debugMode`                                    | Enable debug mode for Temporal Parse LlamaParse                                                                   | `false`                                                                        |
-| `temporalParse.llamaParse.config.maxQueueConcurrency`                          | Max number of jobs the worker can process at the same time                                                        | `3`                                                                            |
-| `temporalParse.llamaParse.config.maxOldSpaceSize`                              | Maximum Node.js old space size in MB                                                                              | `14500`                                                                        |
-| `temporalParse.llamaParse.config.openAiApiKey`                                 | OpenAI API key                                                                                                    | `""`                                                                           |
-| `temporalParse.llamaParse.config.existingOpenAiApiKeySecretName`               | Name of the existing secret to use for the OpenAI API key                                                         | `""`                                                                           |
-| `temporalParse.llamaParse.config.azureOpenAi.enabled`                          | Enable Azure OpenAI for Temporal Parse LlamaParse                                                                 | `false`                                                                        |
-| `temporalParse.llamaParse.config.azureOpenAi.existingSecret`                   | Name of the existing secret to use for the Azure OpenAI API key                                                   | `""`                                                                           |
-| `temporalParse.llamaParse.config.azureOpenAi.key`                              | Azure OpenAI API key                                                                                              | `""`                                                                           |
-| `temporalParse.llamaParse.config.azureOpenAi.endpoint`                         | Azure OpenAI endpoint                                                                                             | `""`                                                                           |
-| `temporalParse.llamaParse.config.azureOpenAi.deploymentName`                   | Azure OpenAI deployment                                                                                           | `""`                                                                           |
-| `temporalParse.llamaParse.config.azureOpenAi.apiVersion`                       | Azure OpenAI API version                                                                                          | `""`                                                                           |
-| `temporalParse.llamaParse.config.anthropicApiKey`                              | Anthropic API key                                                                                                 | `""`                                                                           |
-| `temporalParse.llamaParse.config.existingAnthropicApiKeySecret`                | Name of the existing secret to use for the Anthropic API key                                                      | `""`                                                                           |
-| `temporalParse.llamaParse.config.geminiApiKey`                                 | Google Gemini API key                                                                                             | `""`                                                                           |
-| `temporalParse.llamaParse.config.existingGeminiApiKeySecret`                   | Name of the existing secret to use for the Google Gemini API key                                                  | `""`                                                                           |
-| `temporalParse.llamaParse.config.awsBedrock.enabled`                           | Enable AWS Bedrock for Temporal Parse LlamaParse                                                                  | `false`                                                                        |
-| `temporalParse.llamaParse.config.awsBedrock.existingSecret`                    | Name of the existing secret to use for the AWS Bedrock API key                                                    | `""`                                                                           |
-| `temporalParse.llamaParse.config.awsBedrock.region`                            | AWS Bedrock region                                                                                                | `""`                                                                           |
-| `temporalParse.llamaParse.config.awsBedrock.accessKeyId`                       | AWS Bedrock access key ID                                                                                         | `""`                                                                           |
-| `temporalParse.llamaParse.config.awsBedrock.secretAccessKey`                   | AWS Bedrock secret access key                                                                                     | `""`                                                                           |
-| `temporalParse.llamaParse.config.awsBedrock.sonnet3_5ModelVersionName`         | Sonnet 3.5 model version name                                                                                     | `anthropic.claude-3-5-sonnet-20240620-v1:0`                                    |
-| `temporalParse.llamaParse.config.awsBedrock.sonnet3_7ModelVersionName`         | Sonnet 3.7 model version name                                                                                     | `anthropic.claude-3-7-sonnet-20250219-v1:0`                                    |
-| `temporalParse.llamaParse.config.awsBedrock.sonnet4_0ModelVersionName`         | Sonnet 4.0 model version name                                                                                     | `anthropic.claude-sonnet-4-20250514-v1:0`                                      |
-| `temporalParse.llamaParse.config.awsBedrock.haiku3_5ModelVersionName`          | Haiku 3.5 model version name                                                                                      | `anthropic.claude-3-5-haiku-20241022-v1:0`                                     |
-| `temporalParse.llamaParse.config.awsBedrock.haiku4_5ModelVersionName`          | Haiku 4.5 model version name                                                                                      | `anthropic.claude-haiku-4-5-20251001-v1:0`                                     |
-| `temporalParse.llamaParse.config.preferedPremiumModel`                         | Preferred premium model for Temporal Parse LlamaParse                                                             | `""`                                                                           |
-| `temporalParse.llamaParse.config.googleVertexAi.enabled`                       | Enable Google Vertex AI for Temporal Parse LlamaParse                                                             | `false`                                                                        |
-| `temporalParse.llamaParse.config.googleVertexAi.existingSecret`                | Name of the existing secret to use for the Google Vertex AI API key                                               | `""`                                                                           |
-| `temporalParse.llamaParse.config.googleVertexAi.projectId`                     | Google Vertex AI project id                                                                                       | `""`                                                                           |
-| `temporalParse.llamaParse.config.googleVertexAi.location`                      | Google Vertex AI location                                                                                         | `""`                                                                           |
-| `temporalParse.llamaParse.config.googleVertexAi.credentialsJson`               | Google Vertex AI credentials JSON                                                                                 | `""`                                                                           |
-| `temporalParse.llamaParse.config.s3UploadBucket`                               | S3 bucket to upload files to                                                                                      | `llama-platform-file-parsing`                                                  |
-| `temporalParse.llamaParse.config.s3OutputBucket`                               | S3 bucket to output files to                                                                                      | `llama-platform-file-parsing`                                                  |
-| `temporalParse.llamaParse.replicas`                                            | Number of replicas of Temporal Parse LlamaParse Deployment                                                        | `2`                                                                            |
-| `temporalParse.llamaParse.image.registry`                                      | Temporal Parse LlamaParse Image registry                                                                          | `docker.io`                                                                    |
-| `temporalParse.llamaParse.image.repository`                                    | Temporal Parse LlamaParse Image repository                                                                        | `llamaindex/llamacloud-llamaparse`                                             |
-| `temporalParse.llamaParse.image.tag`                                           | Temporal Parse LlamaParse Image tag                                                                               | `0.5.7`                                                                        |
-| `temporalParse.llamaParse.image.pullPolicy`                                    | Temporal Parse LlamaParse Image pull policy                                                                       | `IfNotPresent`                                                                 |
-| `temporalParse.llamaParse.serviceAccount.create`                               | Whether or not to create a new service account                                                                    | `true`                                                                         |
-| `temporalParse.llamaParse.serviceAccount.name`                                 | Name of the service account                                                                                       | `""`                                                                           |
-| `temporalParse.llamaParse.serviceAccount.labels`                               | Labels to add to the service account                                                                              | `{}`                                                                           |
-| `temporalParse.llamaParse.serviceAccount.annotations`                          | Annotations to add to the service account                                                                         | `{}`                                                                           |
-| `temporalParse.llamaParse.serviceAccount.automountServiceAccountToken`         | Whether or not to automount the service account token                                                             | `true`                                                                         |
-| `temporalParse.llamaParse.labels`                                              | Labels added to the Temporal Parse LlamaParse Deployment.                                                         | `{}`                                                                           |
-| `temporalParse.llamaParse.annotations`                                         | Annotations added to the Temporal Parse LlamaParse Deployment.                                                    | `{}`                                                                           |
-| `temporalParse.llamaParse.containerPort`                                       | Port to expose on the Temporal Parse LlamaParse container                                                         | `8004`                                                                         |
-| `temporalParse.llamaParse.service.type`                                        | Temporal Parse LlamaParse Service type                                                                            | `ClusterIP`                                                                    |
-| `temporalParse.llamaParse.service.port`                                        | Temporal Parse LlamaParse Service port                                                                            | `8004`                                                                         |
-| `temporalParse.llamaParse.extraEnvVariables`                                   | Extra environment variables to add to Temporal Parse llamaParse pods                                              | `[]`                                                                           |
-| `temporalParse.llamaParse.externalSecrets.enabled`                             | Enable external secrets for the Temporal Parse LlamaParse Deployment                                              | `false`                                                                        |
-| `temporalParse.llamaParse.externalSecrets.secrets`                             | List of external secrets to load environment variables from                                                       | `[]`                                                                           |
-| `temporalParse.llamaParse.externalSecrets.enabled`                             | Enable external secrets for the Temporal Parse LlamaParse Deployment                                              | `false`                                                                        |
-| `temporalParse.llamaParse.externalSecrets.secrets`                             | List of external secrets to load environment variables from                                                       | `[]`                                                                           |
-| `temporalParse.llamaParse.podAnnotations`                                      | Annotations to add to the resulting Pods of the Deployment.                                                       | `{}`                                                                           |
-| `temporalParse.llamaParse.podLabels`                                           | Labels to add to the resulting Pods of the Deployment.                                                            | `{}`                                                                           |
-| `temporalParse.llamaParse.podSecurityContext`                                  | Pod security context                                                                                              | `{}`                                                                           |
-| `temporalParse.llamaParse.securityContext`                                     | Security context for the container                                                                                | `{}`                                                                           |
-| `temporalParse.llamaParse.resources.requests.memory`                           | Memory request for the Temporal Parse LlamaParse container                                                        | `6Gi`                                                                          |
-| `temporalParse.llamaParse.resources.requests.cpu`                              | CPU request for the Temporal Parse LlamaParse container                                                           | `3`                                                                            |
-| `temporalParse.llamaParse.resources.limits.memory`                             | Memory limit for the Temporal Parse LlamaParse container                                                          | `13Gi`                                                                         |
-| `temporalParse.llamaParse.resources.limits.cpu`                                | CPU limit for the Temporal Parse LlamaParse container                                                             | `7`                                                                            |
-| `temporalParse.llamaParse.livenessProbe.failureThreshold`                      | Minimum consecutive failures for the probe to be considered failed after having succeeded                         | `10`                                                                           |
-| `temporalParse.llamaParse.livenessProbe.httpGet.path`                          | Path to hit for the liveness probe                                                                                | `/healthcheck`                                                                 |
-| `temporalParse.llamaParse.livenessProbe.httpGet.port`                          | Port to hit for the liveness probe                                                                                | `8004`                                                                         |
-| `temporalParse.llamaParse.livenessProbe.initialDelaySeconds`                   | Number of seconds after the container has started before liveness probes are initiated                            | `30`                                                                           |
-| `temporalParse.llamaParse.livenessProbe.periodSeconds`                         | How often (in seconds) to perform the probe                                                                       | `30`                                                                           |
-| `temporalParse.llamaParse.livenessProbe.timeoutSeconds`                        | Number of seconds after which the probe times out                                                                 | `5`                                                                            |
-| `temporalParse.llamaParse.autoscaling.enabled`                                 | Enable autoscaling for the Temporal Parse LlamaParse Deployment                                                   | `true`                                                                         |
-| `temporalParse.llamaParse.autoscaling.minReplicas`                             | Minimum number of replicas for the Temporal Parse LlamaParse Deployment                                           | `2`                                                                            |
-| `temporalParse.llamaParse.autoscaling.maxReplicas`                             | Maximum number of replicas for the Temporal Parse LlamaParse Deployment                                           | `10`                                                                           |
-| `temporalParse.llamaParse.autoscaling.targetCPUUtilizationPercentage`          | Target CPU utilization percentage for the Temporal Parse LlamaParse Deployment                                    | `80`                                                                           |
-| `temporalParse.llamaParse.keda.enabled`                                        | Enable KEDA for the Temporal Parse llamaParse Deployment                                                          | `false`                                                                        |
-| `temporalParse.llamaParse.keda.additionalAnnotations`                          | Additional annotations for the KEDA                                                                               | `{}`                                                                           |
-| `temporalParse.llamaParse.keda.additionalLabels`                               | Additional labels for the KEDA                                                                                    | `{}`                                                                           |
-| `temporalParse.llamaParse.keda.pollingInterval`                                | Polling interval for the KEDA                                                                                     | `15`                                                                           |
-| `temporalParse.llamaParse.keda.cooldownPeriod`                                 | Cooldown period for the KEDA                                                                                      | `120`                                                                          |
-| `temporalParse.llamaParse.keda.minReplicaCount`                                | Minimum number of replicas for the KEDA                                                                           | `2`                                                                            |
-| `temporalParse.llamaParse.keda.maxReplicaCount`                                | Maximum number of replicas for the KEDA                                                                           | `10`                                                                           |
-| `temporalParse.llamaParse.keda.initialCooldownPeriod`                          | Initial cooldown period for the KEDA                                                                              | `0`                                                                            |
-| `temporalParse.llamaParse.keda.fallback`                                       | Fallback for the KEDA                                                                                             | `{}`                                                                           |
-| `temporalParse.llamaParse.keda.advanced`                                       | Advanced configuration for the KEDA                                                                               | `{}`                                                                           |
-| `temporalParse.llamaParse.keda.triggers[0].type`                               | Trigger type (temporal)                                                                                           | `temporal`                                                                     |
-| `temporalParse.llamaParse.keda.triggers[0].metadata.taskQueue`                 | Temporal task queue name for this worker                                                                          | `parse-activity-queue`                                                         |
-| `temporalParse.llamaParse.keda.triggers[0].metadata.targetQueueSize`           | Target queue size for scaling                                                                                     | `2`                                                                            |
-| `temporalParse.llamaParse.keda.triggers[0].metadata.activationTargetQueueSize` | Activation target queue size for scaling                                                                          | `0`                                                                            |
-| `temporalParse.llamaParse.keda.triggers[0].metadata.endpoint`                  | Temporal endpoint URL                                                                                             | `{{ printf "%s:%s" (include "temporal.host" .) (include "temporal.port" .) }}` |
-| `temporalParse.llamaParse.podDisruptionBudget.enabled`                         | Enable PodDisruptionBudget for the Temporal Parse LlamaParse Deployment                                           | `true`                                                                         |
-| `temporalParse.llamaParse.podDisruptionBudget.maxUnavailable`                  | Maximum number of unavailable pods                                                                                | `1`                                                                            |
-| `temporalParse.llamaParse.volumes`                                             | List of volumes that can be mounted by containers belonging to the pod                                            | `[]`                                                                           |
-| `temporalParse.llamaParse.volumeMounts`                                        | List of volumeMounts that can be mounted by containers belonging to the pod                                       | `[]`                                                                           |
-| `temporalParse.llamaParse.nodeSelector`                                        | Node labels for pod assignment                                                                                    | `{}`                                                                           |
-| `temporalParse.llamaParse.tolerations`                                         | Taints to tolerate on node assignment:                                                                            | `[]`                                                                           |
-| `temporalParse.llamaParse.affinity`                                            | Pod scheduling constraints                                                                                        | `{}`                                                                           |
-| `temporalParse.llamaParse.metrics.enabled`                                     | Enable metrics for the Temporal Parse llamaParse                                                                  | `false`                                                                        |
-| `temporalParse.llamaParse.metrics.serviceMonitor.enabled`                      | Enable service monitor for the Temporal Parse llamaParse                                                          | `false`                                                                        |
-| `temporalParse.llamaParse.metrics.serviceMonitor.selector`                     | Selector for the service monitor                                                                                  | `{}`                                                                           |
-| `temporalParse.llamaParse.metrics.serviceMonitor.additionalLabels`             | Additional labels for the service monitor                                                                         | `{}`                                                                           |
-| `temporalParse.llamaParse.metrics.serviceMonitor.annotations`                  | Annotations for the service monitor                                                                               | `{}`                                                                           |
-| `temporalParse.llamaParse.metrics.serviceMonitor.interval`                     | Interval for the service monitor                                                                                  | `30s`                                                                          |
-| `temporalParse.llamaParse.metrics.serviceMonitor.scrapeTimeout`                | Timeout for the service monitor                                                                                   | `15s`                                                                          |
-| `temporalParse.llamaParse.metrics.serviceMonitor.relabelings`                  | Relabelings for the service monitor                                                                               | `[]`                                                                           |
-| `temporalParse.llamaParse.metrics.serviceMonitor.metricRelabelings`            | Metric relabelings for the service monitor                                                                        | `[]`                                                                           |
-| `temporalParse.llamaParse.metrics.serviceMonitor.scheme`                       | Scheme for the service monitor                                                                                    | `http`                                                                         |
-| `temporalParse.llamaParse.metrics.serviceMonitor.tlsConfig`                    | TLS configuration for the service monitor                                                                         | `{}`                                                                           |
-| `temporalParse.llamaParse.metrics.rules.enabled`                               | Enable rules for the Temporal Parse llamaParse                                                                    | `false`                                                                        |
-| `temporalParse.llamaParse.metrics.rules.namespace`                             | Namespace for the rules                                                                                           | `""`                                                                           |
-| `temporalParse.llamaParse.metrics.rules.additionalLabels`                      | Additional labels for the rules                                                                                   | `{}`                                                                           |
-| `temporalParse.llamaParse.metrics.rules.annotations`                           | Annotations for the rules                                                                                         | `{}`                                                                           |
-| `temporalParse.llamaParse.metrics.rules.spec`                                  | Rules spec                                                                                                        | `[]`                                                                           |
-| `temporalJobsService.api.name`                                                 | Name suffix of the Temporal Jobs Service API related resources                                                    | `temporal-jobs-api`                                                            |
-| `temporalJobsService.api.command`                                              | Command to run in the container                                                                                   | `["start_jobs_api"]`                                                           |
-| `temporalJobsService.api.replicas`                                             | Number of replicas of Temporal Jobs Service API Deployment                                                        | `1`                                                                            |
-| `temporalJobsService.api.config.logLevel`                                      | Log level for the Temporal Jobs Service API                                                                       | `info`                                                                         |
-| `temporalJobsService.api.config.temporalWorkerRegistryProfile`                 | Temporal worker registry profile (default or consolidated)                                                        | `consolidated`                                                                 |
-| `temporalJobsService.api.image.registry`                                       | Temporal Jobs Service API Image registry                                                                          | `docker.io`                                                                    |
-| `temporalJobsService.api.image.repository`                                     | Temporal Jobs Service API Image repository                                                                        | `llamaindex/llamacloud-backend`                                                |
-| `temporalJobsService.api.image.tag`                                            | Temporal Jobs Service API Image tag                                                                               | `0.5.7`                                                                        |
-| `temporalJobsService.api.image.pullPolicy`                                     | Temporal Jobs Service API Image pull policy                                                                       | `IfNotPresent`                                                                 |
-| `temporalJobsService.api.serviceAccount.create`                                | Whether or not to create a new service account                                                                    | `true`                                                                         |
-| `temporalJobsService.api.serviceAccount.name`                                  | Name of the service account                                                                                       | `""`                                                                           |
-| `temporalJobsService.api.serviceAccount.labels`                                | Labels to add to the service account                                                                              | `{}`                                                                           |
-| `temporalJobsService.api.serviceAccount.annotations`                           | Annotations to add to the service account                                                                         | `{}`                                                                           |
-| `temporalJobsService.api.serviceAccount.automountServiceAccountToken`          | Whether or not to automount the service account token                                                             | `true`                                                                         |
-| `temporalJobsService.api.containerPort`                                        | Port to expose on the Temporal Jobs Service API container                                                         | `8002`                                                                         |
-| `temporalJobsService.api.service.type`                                         | Temporal Jobs Service API Service type                                                                            | `ClusterIP`                                                                    |
-| `temporalJobsService.api.service.port`                                         | Temporal Jobs Service API Service port                                                                            | `8002`                                                                         |
-| `temporalJobsService.api.service.labels`                                       | Labels to add to the service                                                                                      | `{}`                                                                           |
-| `temporalJobsService.api.service.annotations`                                  | Annotations to add to the service                                                                                 | `{}`                                                                           |
-| `temporalJobsService.api.labels`                                               | Labels added to the Temporal Jobs Service API Deployment.                                                         | `{}`                                                                           |
-| `temporalJobsService.api.annotations`                                          | Annotations added to the Temporal Jobs Service API Deployment.                                                    | `{}`                                                                           |
-| `temporalJobsService.api.extraEnvVariables`                                    | Extra environment variables to add to Temporal Jobs Service API pods                                              | `[]`                                                                           |
-| `temporalJobsService.api.externalSecrets.enabled`                              | Enable external secrets for the Temporal Jobs Service API Deployment                                              | `false`                                                                        |
-| `temporalJobsService.api.externalSecrets.secrets`                              | List of external secrets to load environment variables from                                                       | `[]`                                                                           |
-| `temporalJobsService.api.podAnnotations`                                       | Annotations to add to the resulting Pods of the Deployment.                                                       | `{}`                                                                           |
-| `temporalJobsService.api.podLabels`                                            | Labels to add to the resulting Pods of the Deployment.                                                            | `{}`                                                                           |
-| `temporalJobsService.api.podSecurityContext`                                   | Pod security context                                                                                              | `{}`                                                                           |
-| `temporalJobsService.api.securityContext`                                      | Security context for the container                                                                                | `{}`                                                                           |
-| `temporalJobsService.api.resources`                                            | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | `{}`                                                                           |
-| `temporalJobsService.api.livenessProbe.httpGet.path`                           | Path to hit for the liveness probe                                                                                | `/healthcheck`                                                                 |
-| `temporalJobsService.api.livenessProbe.httpGet.port`                           | Port to hit for the liveness probe                                                                                | `tj-api-http`                                                                  |
-| `temporalJobsService.api.readinessProbe.httpGet.path`                          | Path to hit for the readiness probe                                                                               | `/healthcheck`                                                                 |
-| `temporalJobsService.api.readinessProbe.httpGet.port`                          | Port to hit for the readiness probe                                                                               | `tj-api-http`                                                                  |
-| `temporalJobsService.api.startupProbe.httpGet.path`                            | Path to hit for the startup probe                                                                                 | `/healthcheck`                                                                 |
-| `temporalJobsService.api.startupProbe.httpGet.port`                            | Port to hit for the startup probe                                                                                 | `tj-api-http`                                                                  |
-| `temporalJobsService.api.autoscaling.enabled`                                  | Enable autoscaling for the Temporal Jobs Service API Deployment                                                   | `false`                                                                        |
-| `temporalJobsService.api.autoscaling.minReplicas`                              | Minimum number of replicas for the Temporal Jobs Service API Deployment                                           | `1`                                                                            |
-| `temporalJobsService.api.autoscaling.maxReplicas`                              | Maximum number of replicas for the Temporal Jobs Service API Deployment                                           | `4`                                                                            |
-| `temporalJobsService.api.autoscaling.targetCPUUtilizationPercentage`           | Target CPU utilization percentage for the Temporal Jobs Service API Deployment                                    | `80`                                                                           |
-| `temporalJobsService.api.volumes`                                              | List of volumes that can be mounted by containers belonging to the pod                                            | `[]`                                                                           |
-| `temporalJobsService.api.volumeMounts`                                         | List of volumeMounts that can be mounted by containers belonging to the pod                                       | `[]`                                                                           |
-| `temporalJobsService.api.nodeSelector`                                         | Node labels for pod assignment                                                                                    | `{}`                                                                           |
-| `temporalJobsService.api.tolerations`                                          | Taints to tolerate on node assignment:                                                                            | `[]`                                                                           |
-| `temporalJobsService.api.affinity`                                             | Pod scheduling constraints                                                                                        | `{}`                                                                           |
+| Name                                | Description                                                                                                       | Value                                |
+| ----------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
+| `usage.horizontalPodAutoscalerSpec` | HorizontalPodAutoScaler configuration                                                                             | `{}`                                 |
+| `usage.annotations`                 | Annotations added to the LlamaParseLayoutDetectionApi Deployment.                                                 | `{}`                                 |
+| `usage.image`                       | LlamaParseLayoutDetectionApi image                                                                                | `docker.io/llamacloud-backend:0.6.0` |
+| `usage.imagePullPolicy`             | LlamaParseLayoutDetectionApi image pull policy                                                                    | `IfNotPresent`                       |
+| `usage.securityContext`             | Security context for the container                                                                                | `{}`                                 |
+| `usage.serviceAccountAnnotations`   | Annotations to add to the service account                                                                         | `{}`                                 |
+| `usage.nodeSelector`                | Node labels for pod assignment                                                                                    | `{}`                                 |
+| `usage.tolerations`                 | Taints to tolerate on node assignment:                                                                            | `[]`                                 |
+| `usage.affinity`                    | Pod scheduling constraints                                                                                        | `{}`                                 |
+| `usage.topologySpreadConstraints`   | Topology Spread Constraints for usage pods                                                                        | `[]`                                 |
+| `usage.podAnnotations`              | Annotations to add to the resulting Pods of the Deployment.                                                       | `{}`                                 |
+| `usage.podSecurityContext`          | Annotations to add to the resulting Pods of the Deployment.                                                       | `{}`                                 |
+| `usage.resources`                   | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | `{}`                                 |
+| `usage.extraEnvVariables`           | Extra environment variables to add to LlamaParseLayoutDetectionApi pods                                           | `[]`                                 |
+| `usage.volumeMounts`                | List of volumeMounts that can be mounted by containers belonging to the pod                                       | `[]`                                 |
+| `usage.volumes`                     | List of volumes that can be mounted by containers belonging to the pod                                            | `[]`                                 |
+
+### Temporal Workloads Configuration
+
+| Name                                                        | Description                                                                                                       | Value                                              |
+| ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| `temporalWorkloads.llamaParse.horizontalPodAutoscalerSpec`  | HorizontalPodAutoScaler configuration                                                                             | `{}`                                               |
+| `temporalWorkloads.llamaParse.annotations`                  | Annotations added to the temporal llamaparse Deployment.                                                          | `{}`                                               |
+| `temporalWorkloads.llamaParse.image`                        | temporal llamaparse image                                                                                         | `docker.io/llamaindex/llamacloud-llamaparse:0.6.0` |
+| `temporalWorkloads.llamaParse.imagePullPolicy`              | temporal llamaparse image pull policy                                                                             | `IfNotPresent`                                     |
+| `temporalWorkloads.llamaParse.securityContext`              | Security context for the container                                                                                | `{}`                                               |
+| `temporalWorkloads.llamaParse.serviceAccountAnnotations`    | Annotations to add to the service account                                                                         | `{}`                                               |
+| `temporalWorkloads.llamaParse.nodeSelector`                 | Node labels for pod assignment                                                                                    | `{}`                                               |
+| `temporalWorkloads.llamaParse.tolerations`                  | Taints to tolerate on node assignment:                                                                            | `[]`                                               |
+| `temporalWorkloads.llamaParse.affinity`                     | Pod scheduling constraints                                                                                        | `{}`                                               |
+| `temporalWorkloads.llamaParse.topologySpreadConstraints`    | Topology Spread Constraints for temporal llamaparse pods                                                          | `[]`                                               |
+| `temporalWorkloads.llamaParse.podAnnotations`               | Annotations to add to the resulting Pods of the Deployment.                                                       | `{}`                                               |
+| `temporalWorkloads.llamaParse.podSecurityContext`           | Annotations to add to the resulting Pods of the Deployment.                                                       | `{}`                                               |
+| `temporalWorkloads.llamaParse.resources`                    | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | `{}`                                               |
+| `temporalWorkloads.llamaParse.extraEnvVariables`            | Extra environment variables to add to temporal llamaparse pods                                                    | `[]`                                               |
+| `temporalWorkloads.llamaParse.volumeMounts`                 | List of volumeMounts that can be mounted by containers belonging to the pod                                       | `[]`                                               |
+| `temporalWorkloads.llamaParse.volumes`                      | List of volumes that can be mounted by containers belonging to the pod                                            | `[]`                                               |
+| `temporalWorkloads.jobsService.horizontalPodAutoscalerSpec` | HorizontalPodAutoScaler configuration                                                                             | `{}`                                               |
+| `temporalWorkloads.jobsService.annotations`                 | Annotations added to the temporal jobsService Deployment.                                                         | `{}`                                               |
+| `temporalWorkloads.jobsService.image`                       | temporal jobsService image                                                                                        | `docker.io/llamaindex/llamacloud-backend:0.6.0`    |
+| `temporalWorkloads.jobsService.imagePullPolicy`             | temporal jobsService image pull policy                                                                            | `IfNotPresent`                                     |
+| `temporalWorkloads.jobsService.securityContext`             | Security context for the container                                                                                | `{}`                                               |
+| `temporalWorkloads.jobsService.serviceAccountAnnotations`   | Annotations to add to the service account                                                                         | `{}`                                               |
+| `temporalWorkloads.jobsService.nodeSelector`                | Node labels for pod assignment                                                                                    | `{}`                                               |
+| `temporalWorkloads.jobsService.tolerations`                 | Taints to tolerate on node assignment:                                                                            | `[]`                                               |
+| `temporalWorkloads.jobsService.affinity`                    | Pod scheduling constraints                                                                                        | `{}`                                               |
+| `temporalWorkloads.jobsService.topologySpreadConstraints`   | Topology Spread Constraints for temporal jobsService pods                                                         | `[]`                                               |
+| `temporalWorkloads.jobsService.podAnnotations`              | Annotations to add to the resulting Pods of the Deployment.                                                       | `{}`                                               |
+| `temporalWorkloads.jobsService.podSecurityContext`          | Annotations to add to the resulting Pods of the Deployment.                                                       | `{}`                                               |
+| `temporalWorkloads.jobsService.resources`                   | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | `{}`                                               |
+| `temporalWorkloads.jobsService.extraEnvVariables`           | Extra environment variables to add to temporal jobsService pods                                                   | `[]`                                               |
+| `temporalWorkloads.jobsService.volumeMounts`                | List of volumeMounts that can be mounted by containers belonging to the pod                                       | `[]`                                               |
+| `temporalWorkloads.jobsService.volumes`                     | List of volumes that can be mounted by containers belonging to the pod                                            | `[]`                                               |
 
 ### Temporal Workers Configuration
 
-| Name                                                                               | Description                                                                                                           | Value                                                                          |
-| ---------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| `temporalWorkers.pythonWorker.name`                                                | Name suffix of the Temporal Python Worker related resources                                                           | `temporal-python-worker`                                                       |
-| `temporalWorkers.pythonWorker.command`                                             | Command to run in the container                                                                                       | `["temporal_worker"]`                                                          |
-| `temporalWorkers.pythonWorker.replicas`                                            | Number of replicas of Temporal Python Worker Deployment                                                               | `1`                                                                            |
-| `temporalWorkers.pythonWorker.config.logLevel`                                     | Log level for the Temporal Python Worker                                                                              | `info`                                                                         |
-| `temporalWorkers.pythonWorker.config.temporalWorkerRegistryProfile`                | Temporal worker registry profile (default or consolidated)                                                            | `consolidated`                                                                 |
-| `temporalWorkers.pythonWorker.image.registry`                                      | Temporal Python Worker Image registry                                                                                 | `docker.io`                                                                    |
-| `temporalWorkers.pythonWorker.image.repository`                                    | Temporal Python Worker Image repository                                                                               | `llamaindex/llamacloud-backend`                                                |
-| `temporalWorkers.pythonWorker.image.tag`                                           | Temporal Python Worker Image tag                                                                                      | `0.5.7`                                                                        |
-| `temporalWorkers.pythonWorker.image.pullPolicy`                                    | Temporal Python Worker Image pull policy                                                                              | `IfNotPresent`                                                                 |
-| `temporalWorkers.pythonWorker.serviceAccount.create`                               | Whether or not to create a new service account                                                                        | `true`                                                                         |
-| `temporalWorkers.pythonWorker.serviceAccount.name`                                 | Name of the service account                                                                                           | `""`                                                                           |
-| `temporalWorkers.pythonWorker.serviceAccount.labels`                               | Labels to add to the service account                                                                                  | `{}`                                                                           |
-| `temporalWorkers.pythonWorker.serviceAccount.annotations`                          | Annotations to add to the service account                                                                             | `{}`                                                                           |
-| `temporalWorkers.pythonWorker.serviceAccount.automountServiceAccountToken`         | Whether or not to automount the service account token                                                                 | `true`                                                                         |
-| `temporalWorkers.pythonWorker.containerPort`                                       | Port to expose on the Temporal Python Worker container                                                                | `8000`                                                                         |
-| `temporalWorkers.pythonWorker.service.type`                                        | Temporal Python Worker Service type                                                                                   | `ClusterIP`                                                                    |
-| `temporalWorkers.pythonWorker.service.port`                                        | Temporal Python Worker Service port                                                                                   | `8000`                                                                         |
-| `temporalWorkers.pythonWorker.service.labels`                                      | Labels to add to the service                                                                                          | `{}`                                                                           |
-| `temporalWorkers.pythonWorker.service.annotations`                                 | Annotations to add to the service                                                                                     | `{}`                                                                           |
-| `temporalWorkers.pythonWorker.labels`                                              | Labels added to the Temporal Python Worker Deployment.                                                                | `{}`                                                                           |
-| `temporalWorkers.pythonWorker.annotations`                                         | Annotations added to the Temporal Python Worker Deployment.                                                           | `{}`                                                                           |
-| `temporalWorkers.pythonWorker.extraEnvVariables`                                   | Extra environment variables to add to Temporal Python Worker pods                                                     | `[]`                                                                           |
-| `temporalWorkers.pythonWorker.externalSecrets.enabled`                             | Enable external secrets for the Temporal Python Worker Deployment                                                     | `false`                                                                        |
-| `temporalWorkers.pythonWorker.externalSecrets.secrets`                             | List of external secrets to load environment variables from                                                           | `[]`                                                                           |
-| `temporalWorkers.pythonWorker.podAnnotations`                                      | Annotations to add to the resulting Pods of the Deployment.                                                           | `{}`                                                                           |
-| `temporalWorkers.pythonWorker.podLabels`                                           | Labels to add to the resulting Pods of the Deployment.                                                                | `{}`                                                                           |
-| `temporalWorkers.pythonWorker.podSecurityContext`                                  | Pod security context                                                                                                  | `{}`                                                                           |
-| `temporalWorkers.pythonWorker.securityContext`                                     | Security context for the container                                                                                    | `{}`                                                                           |
-| `temporalWorkers.pythonWorker.resources`                                           | Set container requests and limits for different resources like CPU or memory (essential for production workloads)     | `{}`                                                                           |
-| `temporalWorkers.pythonWorker.livenessProbe.httpGet.path`                          | Path to hit for the liveness probe                                                                                    | `/healthcheck`                                                                 |
-| `temporalWorkers.pythonWorker.livenessProbe.httpGet.port`                          | Port to hit for the liveness probe                                                                                    | `8000`                                                                         |
-| `temporalWorkers.pythonWorker.livenessProbe.periodSeconds`                         | How often (in seconds) to perform the probe                                                                           | `30`                                                                           |
-| `temporalWorkers.pythonWorker.livenessProbe.timeoutSeconds`                        | Number of seconds after which the probe times out                                                                     | `10`                                                                           |
-| `temporalWorkers.pythonWorker.livenessProbe.failureThreshold`                      | Minimum consecutive failures for the probe to be considered failed after having succeeded                             | `5`                                                                            |
-| `temporalWorkers.pythonWorker.autoscaling.enabled`                                 | Enable autoscaling for the Temporal Python Worker Deployment                                                          | `false`                                                                        |
-| `temporalWorkers.pythonWorker.autoscaling.minReplicas`                             | Minimum number of replicas for the Temporal Python Worker Deployment                                                  | `1`                                                                            |
-| `temporalWorkers.pythonWorker.autoscaling.maxReplicas`                             | Maximum number of replicas for the Temporal Python Worker Deployment                                                  | `10`                                                                           |
-| `temporalWorkers.pythonWorker.autoscaling.targetCPUUtilizationPercentage`          | Target CPU utilization percentage for the Temporal Python Worker Deployment                                           | `80`                                                                           |
-| `temporalWorkers.pythonWorker.keda.enabled`                                        | Enable KEDA for the Temporal Python Worker Deployment                                                                 | `false`                                                                        |
-| `temporalWorkers.pythonWorker.keda.additionalAnnotations`                          | Additional annotations for the KEDA                                                                                   | `{}`                                                                           |
-| `temporalWorkers.pythonWorker.keda.additionalLabels`                               | Additional labels for the KEDA                                                                                        | `{}`                                                                           |
-| `temporalWorkers.pythonWorker.keda.pollingInterval`                                | Polling interval for the KEDA                                                                                         | `15`                                                                           |
-| `temporalWorkers.pythonWorker.keda.cooldownPeriod`                                 | Cooldown period for the KEDA                                                                                          | `120`                                                                          |
-| `temporalWorkers.pythonWorker.keda.minReplicaCount`                                | Minimum number of replicas for the KEDA                                                                               | `1`                                                                            |
-| `temporalWorkers.pythonWorker.keda.maxReplicaCount`                                | Maximum number of replicas for the KEDA                                                                               | `10`                                                                           |
-| `temporalWorkers.pythonWorker.keda.initialCooldownPeriod`                          | Initial cooldown period for the KEDA                                                                                  | `0`                                                                            |
-| `temporalWorkers.pythonWorker.keda.fallback`                                       | Fallback configuration for the KEDA                                                                                   | `{}`                                                                           |
-| `temporalWorkers.pythonWorker.keda.advanced`                                       | Advanced configuration for the KEDA                                                                                   | `{}`                                                                           |
-| `temporalWorkers.pythonWorker.keda.triggers[0].type`                               | Trigger type (temporal)                                                                                               | `temporal`                                                                     |
-| `temporalWorkers.pythonWorker.keda.triggers[0].metadata.taskQueue`                 | Temporal task queue name for consolidated worker                                                                      | `llamacloud-all`                                                               |
-| `temporalWorkers.pythonWorker.keda.triggers[0].metadata.targetQueueSize`           | Target queue size for scaling                                                                                         | `2`                                                                            |
-| `temporalWorkers.pythonWorker.keda.triggers[0].metadata.activationTargetQueueSize` | Activation target queue size for scaling                                                                              | `0`                                                                            |
-| `temporalWorkers.pythonWorker.keda.triggers[0].metadata.endpoint`                  | Temporal endpoint URL                                                                                                 | `{{ printf "%s:%s" (include "temporal.host" .) (include "temporal.port" .) }}` |
-| `temporalWorkers.pythonWorker.metrics.enabled`                                     | Enable exposing metrics to be gathered by Prometheus                                                                  | `false`                                                                        |
-| `temporalWorkers.pythonWorker.metrics.serviceMonitor.enabled`                      | Create ServiceMonitor resource for scraping metrics using PrometheusOperator                                          | `false`                                                                        |
-| `temporalWorkers.pythonWorker.metrics.serviceMonitor.selector`                     | ServiceMonitor selector for the labels to be scraped                                                                  | `{}`                                                                           |
-| `temporalWorkers.pythonWorker.metrics.serviceMonitor.additionalLabels`             | Used to pass Labels that are used by the Prometheus installed in your cluster to select Service Monitors to work with | `{}`                                                                           |
-| `temporalWorkers.pythonWorker.metrics.serviceMonitor.annotations`                  | ServiceMonitor annotations                                                                                            | `{}`                                                                           |
-| `temporalWorkers.pythonWorker.metrics.serviceMonitor.interval`                     | Interval at which metrics should be scraped                                                                           | `30s`                                                                          |
-| `temporalWorkers.pythonWorker.metrics.serviceMonitor.scrapeTimeout`                | Specify the timeout after which the scrape is ended                                                                   | `15s`                                                                          |
-| `temporalWorkers.pythonWorker.metrics.serviceMonitor.relabelings`                  | RelabelConfigs to apply to samples before scraping                                                                    | `[]`                                                                           |
-| `temporalWorkers.pythonWorker.metrics.serviceMonitor.metricRelabelings`            | MetricRelabelConfigs to apply to samples before ingestion                                                             | `[]`                                                                           |
-| `temporalWorkers.pythonWorker.metrics.serviceMonitor.scheme`                       | HTTP scheme to use for scraping                                                                                       | `http`                                                                         |
-| `temporalWorkers.pythonWorker.metrics.serviceMonitor.tlsConfig`                    | TLS configuration to use when scraping the endpoint                                                                   | `{}`                                                                           |
-| `temporalWorkers.pythonWorker.volumes`                                             | List of volumes that can be mounted by containers belonging to the pod                                                | `[]`                                                                           |
-| `temporalWorkers.pythonWorker.volumeMounts`                                        | List of volumeMounts that can be mounted by containers belonging to the pod                                           | `[]`                                                                           |
-| `temporalWorkers.pythonWorker.nodeSelector`                                        | Node labels for pod assignment                                                                                        | `{}`                                                                           |
-| `temporalWorkers.pythonWorker.tolerations`                                         | Taints to tolerate on node assignment:                                                                                | `[]`                                                                           |
-| `temporalWorkers.pythonWorker.affinity`                                            | Pod scheduling constraints                                                                                            | `{}`                                                                           |
-
-### S3Proxy Configuration
-
-| Name                                                  | Description                                                                                                       | Value                |
-| ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | -------------------- |
-| `s3proxy.enabled`                                     | Enable s3proxy Deployment                                                                                         | `true`               |
-| `s3proxy.name`                                        | Name suffix of the s3proxy related resources                                                                      | `s3proxy`            |
-| `s3proxy.config`                                      | s3proxy configuration to enable s3proxy features                                                                  | `{}`                 |
-| `s3proxy.replicas`                                    | Number of replicas of s3proxy Deployment                                                                          | `1`                  |
-| `s3proxy.image.registry`                              | s3proxy Image registry                                                                                            | `docker.io`          |
-| `s3proxy.image.repository`                            | s3proxy Image repository                                                                                          | `andrewgaul/s3proxy` |
-| `s3proxy.image.tag`                                   | s3proxy Image tag                                                                                                 | `sha-82e50ee`        |
-| `s3proxy.image.pullPolicy`                            | s3proxy Image pull policy                                                                                         | `IfNotPresent`       |
-| `s3proxy.service.type`                                | s3proxy Service type                                                                                              | `ClusterIP`          |
-| `s3proxy.service.port`                                | s3proxy Service port                                                                                              | `80`                 |
-| `s3proxy.serviceAccount.create`                       | Whether or not to create a new service account                                                                    | `true`               |
-| `s3proxy.serviceAccount.name`                         | Name of the service account                                                                                       | `""`                 |
-| `s3proxy.serviceAccount.labels`                       | Labels to add to the service account                                                                              | `{}`                 |
-| `s3proxy.serviceAccount.annotations`                  | Annotations to add to the service account                                                                         | `{}`                 |
-| `s3proxy.serviceAccount.automountServiceAccountToken` | Whether or not to automount the service account token                                                             | `true`               |
-| `s3proxy.containerPort`                               | Port to expose on the s3proxy container                                                                           | `80`                 |
-| `s3proxy.labels`                                      | Labels added to the s3proxy Deployment.                                                                           | `{}`                 |
-| `s3proxy.annotations`                                 | Annotations added to the s3proxy Deployment.                                                                      | `{}`                 |
-| `s3proxy.extraEnvVariables`                           | Extra environment variables to add to s3proxy pods                                                                | `[]`                 |
-| `s3proxy.envFromSecretName`                           | Name of the secret to use for environment variables                                                               | `""`                 |
-| `s3proxy.envFromConfigMapName`                        | Name of the config map to use for environment variables                                                           | `""`                 |
-| `s3proxy.podAnnotations`                              | Annotations to add to the resulting Pods of the Deployment.                                                       | `{}`                 |
-| `s3proxy.podLabels`                                   | Labels to add to the resulting Pods of the Deployment.                                                            | `{}`                 |
-| `s3proxy.podSecurityContext`                          | Pod security context                                                                                              | `{}`                 |
-| `s3proxy.securityContext`                             | Security context for the container                                                                                | `{}`                 |
-| `s3proxy.resources`                                   | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | `{}`                 |
-| `s3proxy.autoscaling.enabled`                         | Enable autoscaling for the s3proxy Deployment                                                                     | `false`              |
-| `s3proxy.autoscaling.minReplicas`                     | Minimum number of replicas for the s3proxy Deployment                                                             | `1`                  |
-| `s3proxy.autoscaling.maxReplicas`                     | Maximum number of replicas for the s3proxy Deployment                                                             | `4`                  |
-| `s3proxy.autoscaling.targetCPUUtilizationPercentage`  | Target CPU utilization percentage for the s3proxy Deployment                                                      | `80`                 |
-| `s3proxy.nodeSelector`                                | Node labels for pod assignment                                                                                    | `{}`                 |
-| `s3proxy.tolerations`                                 | Taints to tolerate on node assignment:                                                                            | `[]`                 |
-| `s3proxy.affinity`                                    | Pod scheduling constraints                                                                                        | `{}`                 |
-
-### Dependencies Configuration
-
-| Name                                                                | Description                                                                                                                 | Value                      |
-| ------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
-| `postgresql.enabled`                                                | Enable PostgreSQL                                                                                                           | `true`                     |
-| `postgresql.image.registry`                                         | PostgreSQL Image registry                                                                                                   | `docker.io`                |
-| `postgresql.image.repository`                                       | PostgreSQL Image repository                                                                                                 | `bitnamilegacy/postgresql` |
-| `postgresql.auth.enabled`                                           | Enable PostgreSQL Auth                                                                                                      | `true`                     |
-| `postgresql.auth.database`                                          | Database name                                                                                                               | `llamacloud`               |
-| `postgresql.auth.username`                                          | Username                                                                                                                    | `llamacloud`               |
-| `postgresql.primary.resources.requests.cpu`                         | CPU requests                                                                                                                | `1`                        |
-| `postgresql.primary.resources.requests.memory`                      | Memory requests                                                                                                             | `1Gi`                      |
-| `postgresql.primary.resources.limits.cpu`                           | CPU limits                                                                                                                  | `2`                        |
-| `postgresql.primary.resources.limits.memory`                        | Memory limits                                                                                                               | `2Gi`                      |
-| `mongodb.enabled`                                                   | Enable MongoDB                                                                                                              | `true`                     |
-| `mongodb.image.registry`                                            | MongoDB Image registry                                                                                                      | `docker.io`                |
-| `mongodb.image.repository`                                          | MongoDB Image repository                                                                                                    | `bitnamilegacy/mongodb`    |
-| `mongodb.auth.enabled`                                              | Enable MongoDB Auth                                                                                                         | `true`                     |
-| `mongodb.auth.rootUser`                                             | Root user name                                                                                                              | `root`                     |
-| `redis.enabled`                                                     | Enable Redis                                                                                                                | `true`                     |
-| `redis.image.registry`                                              | Redis Image registry                                                                                                        | `docker.io`                |
-| `redis.image.repository`                                            | Redis Image repository                                                                                                      | `bitnamilegacy/redis`      |
-| `redis.auth.enabled`                                                | Enable Redis Auth (DO NOT ENABLE FOR NOW)                                                                                   | `false`                    |
-| `rabbitmq.enabled`                                                  | Enable RabbitMQ                                                                                                             | `true`                     |
-| `rabbitmq.image.registry`                                           | RabbitMQ Image registry                                                                                                     | `docker.io`                |
-| `rabbitmq.image.repository`                                         | RabbitMQ Image repository                                                                                                   | `bitnamilegacy/rabbitmq`   |
-| `temporal.enabled`                                                  | Enable Temporal                                                                                                             | `false`                    |
-| `temporal.cassandra.enabled`                                        | Enable Cassandra                                                                                                            | `false`                    |
-| `temporal.prometheus.enabled`                                       | Enable Prometheus                                                                                                           | `false`                    |
-| `temporal.grafana.enabled`                                          | Enable Grafana                                                                                                              | `false`                    |
-| `temporal.elasticsearch.enabled`                                    | Enable Elasticsearch                                                                                                        | `false`                    |
-| `temporal.server.config.namespaces.create`                          | Enable this to create namespaces                                                                                            | `true`                     |
-| `temporal.server.config.persistence.default.driver`                 | Persistence driver (should be "sql")                                                                                        | `sql`                      |
-| `temporal.server.config.persistence.default.sql.driver`             | SQL driver for default persistence (e.g., "postgres12")                                                                     | `postgres12`               |
-| `temporal.server.config.persistence.default.sql.host`               | SQL host for default persistence. REQUIRED: Set to "<release-name>-postgresql" when using postgresql subchart               | `""`                       |
-| `temporal.server.config.persistence.default.sql.port`               | SQL port for default persistence                                                                                            | `5432`                     |
-| `temporal.server.config.persistence.default.sql.database`           | SQL database name for default persistence                                                                                   | `temporal`                 |
-| `temporal.server.config.persistence.default.sql.user`               | SQL user for default persistence (should match postgresql.auth.username)                                                    | `llamacloud`               |
-| `temporal.server.config.persistence.default.sql.password`           | SQL password for default persistence                                                                                        | `""`                       |
-| `temporal.server.config.persistence.default.sql.existingSecret`     | Existing secret for default SQL persistence. REQUIRED: Set to "<release-name>-postgresql" when using postgresql subchart    | `""`                       |
-| `temporal.server.config.persistence.default.sql.secretName`         | Secret name for default SQL persistence (if applicable)                                                                     | `""`                       |
-| `temporal.server.config.persistence.default.sql.maxConns`           | Max SQL connections for default persistence                                                                                 | `20`                       |
-| `temporal.server.config.persistence.default.sql.maxIdleConns`       | Max idle SQL connections for default persistence                                                                            | `20`                       |
-| `temporal.server.config.persistence.default.sql.maxConnLifetime`    | Lifetime for SQL connections (default persistence)                                                                          | `1h`                       |
-| `temporal.server.config.persistence.visibility.driver`              | Persistence driver for visibility (should be "sql")                                                                         | `sql`                      |
-| `temporal.server.config.persistence.visibility.sql.driver`          | SQL driver for visibility persistence (e.g., "postgres12")                                                                  | `postgres12`               |
-| `temporal.server.config.persistence.visibility.sql.host`            | SQL host for visibility persistence. REQUIRED: Set to "<release-name>-postgresql" when using postgresql subchart            | `""`                       |
-| `temporal.server.config.persistence.visibility.sql.port`            | SQL port for visibility persistence                                                                                         | `5432`                     |
-| `temporal.server.config.persistence.visibility.sql.database`        | SQL database name for visibility persistence                                                                                | `temporal_visibility`      |
-| `temporal.server.config.persistence.visibility.sql.user`            | SQL user for visibility persistence (should match postgresql.auth.username)                                                 | `llamacloud`               |
-| `temporal.server.config.persistence.visibility.sql.password`        | SQL password for visibility persistence                                                                                     | `""`                       |
-| `temporal.server.config.persistence.visibility.sql.existingSecret`  | Existing secret for visibility SQL persistence. REQUIRED: Set to "<release-name>-postgresql" when using postgresql subchart | `""`                       |
-| `temporal.server.config.persistence.visibility.sql.secretName`      | Secret name for visibility SQL persistence (if applicable)                                                                  | `""`                       |
-| `temporal.server.config.persistence.visibility.sql.maxConns`        | Max SQL connections for visibility persistence                                                                              | `20`                       |
-| `temporal.server.config.persistence.visibility.sql.maxIdleConns`    | Max idle SQL connections for visibility persistence                                                                         | `20`                       |
-| `temporal.server.config.persistence.visibility.sql.maxConnLifetime` | Lifetime for SQL connections (visibility persistence)                                                                       | `1h`                       |
-| `temporalServer.searchAttributesJob.enabled`                        | Enable the search attributes job                                                                                            | `true`                     |
-| `temporalServer.searchAttributesJob.backoffLimit`                   | Number of retries before considering job as failed                                                                          | `3`                        |
-| `temporalServer.searchAttributesJob.enabled`                        | Enable the search attributes job                                                                                            | `true`                     |
-| `temporalServer.searchAttributesJob.backoffLimit`                   | Number of retries before considering job as failed                                                                          | `3`                        |
-| `temporalServer.searchAttributesJob.image.repository`               | Image repository for temporal admin tools                                                                                   | `temporalio/admin-tools`   |
-| `temporalServer.searchAttributesJob.image.tag`                      | Image tag for temporal admin tools                                                                                          | `1.29`                     |
-| `temporalServer.searchAttributesJob.image.pullPolicy`               | Image pull policy                                                                                                           | `IfNotPresent`             |
-| `temporalServer.searchAttributesJob.image.repository`               | Image repository for temporal admin tools                                                                                   | `temporalio/admin-tools`   |
-| `temporalServer.searchAttributesJob.image.tag`                      | Image tag for temporal admin tools                                                                                          | `1.29`                     |
-| `temporalServer.searchAttributesJob.image.pullPolicy`               | Image pull policy                                                                                                           | `IfNotPresent`             |
-| `temporalServer.searchAttributesJob.attributes[0].name`             | Name of the first search attribute                                                                                          | `Project`                  |
-| `temporalServer.searchAttributesJob.attributes[0].type`             | Type of the first search attribute (Text, Keyword, Int, Double, Bool, Datetime, KeywordList)                                | `Keyword`                  |
-| `temporalServer.searchAttributesJob.attributes[1].name`             | Name of the second search attribute                                                                                         | `Organization`             |
-| `temporalServer.searchAttributesJob.attributes[1].type`             | Type of the second search attribute (Text, Keyword, Int, Double, Bool, Datetime, KeywordList)                               | `Keyword`                  |
+| Name                                                                         | Description                                                                                                       | Value                                           |
+| ---------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| `temporalWorkloads.workers.temporal-jobs-worker.horizontalPodAutoscalerSpec` | HorizontalPodAutoScaler configuration                                                                             | `{}`                                            |
+| `temporalWorkloads.workers.temporal-jobs-worker.annotations`                 | Annotations added to the temporal-jobs-worker Deployment.                                                         | `{}`                                            |
+| `temporalWorkloads.workers.temporal-jobs-worker.image`                       | Frontend image                                                                                                    | `docker.io/llamaindex/llamacloud-backend:0.6.0` |
+| `temporalWorkloads.workers.temporal-jobs-worker.imagePullPolicy`             | Frontend image pull policy                                                                                        | `IfNotPresent`                                  |
+| `temporalWorkloads.workers.temporal-jobs-worker.command`                     | Command to run in the container                                                                                   | `[]`                                            |
+| `temporalWorkloads.workers.temporal-jobs-worker.securityContext`             | Security context for the container                                                                                | `{}`                                            |
+| `temporalWorkloads.workers.temporal-jobs-worker.serviceAccountAnnotations`   | Annotations to add to the service account                                                                         | `{}`                                            |
+| `temporalWorkloads.workers.temporal-jobs-worker.nodeSelector`                | Node labels for pod assignment                                                                                    | `{}`                                            |
+| `temporalWorkloads.workers.temporal-jobs-worker.tolerations`                 | Taints to tolerate on node assignment:                                                                            | `[]`                                            |
+| `temporalWorkloads.workers.temporal-jobs-worker.affinity`                    | Pod scheduling constraints                                                                                        | `{}`                                            |
+| `temporalWorkloads.workers.temporal-jobs-worker.topologySpreadConstraints`   | Topology Spread Constraints for temporal-jobs-worker pods                                                         | `[]`                                            |
+| `temporalWorkloads.workers.temporal-jobs-worker.podAnnotations`              | Annotations to add to the resulting Pods of the Deployment.                                                       | `{}`                                            |
+| `temporalWorkloads.workers.temporal-jobs-worker.podSecurityContext`          | Annotations to add to the resulting Pods of the Deployment.                                                       | `{}`                                            |
+| `temporalWorkloads.workers.temporal-jobs-worker.resources`                   | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | `{}`                                            |
+| `temporalWorkloads.workers.temporal-jobs-worker.extraEnvVariables`           | Extra environment variables to add to temporal-jobs-worker pods                                                   | `[]`                                            |
+| `temporalWorkloads.workers.temporal-jobs-worker.volumeMounts`                | List of volumeMounts that can be mounted by containers belonging to the pod                                       | `[]`                                            |
+| `temporalWorkloads.workers.temporal-jobs-worker.volumes`                     | List of volumes that can be mounted by containers belonging to the pod                                            | `[]`                                            |

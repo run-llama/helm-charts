@@ -1,16 +1,13 @@
 suite: llamaparse-tests
 
 templates:
-- ../templates/llamaparse/configmap.yaml
-- ../templates/llamaparse/deployment.yaml
-- ../templates/llamaparse/secret.yaml
-- ../templates/llamaparse/hpa.yaml
-- ../templates/llamaparse/pdb.yaml
-- ../templates/llamaparse/service.yaml
-- ../templates/llamaparse/serviceaccount.yaml
-- ../templates/llamaparse/servicemonitor.yaml
-- ../templates/llamaparse/prometheusrule.yaml
-- ../templates/llamaparse/keda-scaledobject.yaml
+- ../templates/llamacloud/configmaps/buckets.yaml
+- ../templates/llamacloud/deployment.yaml
+- ../templates/llamacloud/secret.yaml
+- ../templates/llamacloud/hpa.yaml
+- ../templates/llamacloud/pdb.yaml
+- ../templates/llamacloud/service.yaml
+- ../templates/llamacloud/serviceaccount.yaml
 
 release:
   name: test-release
@@ -21,8 +18,6 @@ capabilities:
   minorVersion: 31
   apiVersions:
     - apps/v1
-    - monitoring.coreos.com/v1
-    - keda.sh/v1alpha1
 
 chart:
   appVersion: 0.0.0
@@ -30,161 +25,55 @@ chart:
 tests:
 - it: should create a Deployment
   set:
-    rabbitmq.enabled: true
-    rabbitmq.auth.username: test-username
-  template: ../templates/llamaparse/deployment.yaml
+    config:
+      frontend:
+        enabled: false
+      parseOcr:
+        enabled: false
+      parseLayoutDetection:
+        enabled: false
+    llamaParse:
+      image: docker.io/llamaindex/llamacloud-llamaparse:latest
+    redis:
+      host: test-redis
+      port: "6379"
+      password: test-pass
+    postgresql:
+      host: test-pg
+      port: "5432"
+      username: test-user
+      password: test-pass
+      database: test-db
+    mongodb:
+      host: mongodb
+      username: test-mongo-user
+      password: test-mongo-pass
+    rabbitmq:
+      host: test-rabbit
+      username: test-user
+      password: test-pass
+  template: ../templates/llamacloud/deployment.yaml
+  documentIndex: 3
   asserts:
     - isKind:
         of: Deployment
     - equal:
         path: metadata.name
-        value: test-release-llamacloud-llamaparse
+        value: llamacloud-parse
     - equal:
-        path: spec.selector.matchLabels["app.kubernetes.io/component"]
-        value: test-release-llamacloud-llamaparse
+        path: spec.selector.matchLabels["app.kubernetes.io/name"]
+        value: llamacloud-parse
     - equal:
         path: spec.template.spec.containers[0].name
-        value: llamaparse
-    - equal:
-        path: .spec.template.spec.containers[0].env[?(@.name == "LLAMACLOUD_LICENSE_KEY")].valueFrom.secretKeyRef.name
-        value: test-release-llamacloud-license-key
+        value: llamacloud-parse
 
-- it: should use an external secret name for the license key if it is set
+- it: should create bucket-config ConfigMap with parse buckets
   set:
-    global.config.existingLicenseKeySecret: existing-license-key
-    rabbitmq.enabled: true
-    rabbitmq.auth.username: test-username
-  template: ../templates/llamaparse/deployment.yaml
-  asserts:
-    - equal:
-        path: .spec.template.spec.containers[0].env[?(@.name == "LLAMACLOUD_LICENSE_KEY")].valueFrom.secretKeyRef.name
-        value: existing-license-key
-
-- it: should set the Anthropic API key env var if it is set
-  set:
-    llamaParse.config.anthropicApiKey: test-anthropic-api-key
+    config.storageBuckets.parseFileUpload: test-s3-upload-bucket
+    config.storageBuckets.parseFileOutput: test-s3-output-bucket
     rabbitmq.enabled: false
-  template: ../templates/llamaparse/secret.yaml
-  asserts:
-    - equal:
-        path: .data.ANTHROPIC_API_KEY
-        value: dGVzdC1hbnRocm9waWMtYXBpLWtleQ==
-
-- it: should use an external secret name for the Anthropic API key if it is set
-  set:
-    llamaParse.config.existingAnthropicApiKeySecret: existing-anthropic-api-key-secret
-    rabbitmq.enabled: false
-  template: ../templates/llamaparse/deployment.yaml
-  asserts:
-    - equal:
-        path: .spec.template.spec.containers[0].envFrom[1].secretRef.name
-        value: existing-anthropic-api-key-secret
-
-- it: should set the Google Gemini API key env var if it is set
-  set:
-    llamaParse.config.geminiApiKey: test-gemini-api-key
-    rabbitmq.enabled: false
-  template: ../templates/llamaparse/secret.yaml
-  asserts:
-    - equal:
-        path: .data.GOOGLE_GEMINI_API_KEY
-        value: dGVzdC1nZW1pbmktYXBpLWtleQ==
-
-- it: should use an external secret name for the Google Gemini API key if it is set
-  set:
-    llamaParse.config.existingGeminiApiKeySecret: existing-gemini-api-key-secret
-    rabbitmq.enabled: false
-  template: ../templates/llamaparse/deployment.yaml
-  asserts:
-    - equal:
-        path: .spec.template.spec.containers[0].envFrom[1].secretRef.name
-        value: existing-gemini-api-key-secret
-
-- it: should use an external secret name for the AWS Bedrock API key if it is set
-  set:
-    llamaParse.config.awsBedrock.enabled: true
-    llamaParse.config.awsBedrock.existingSecret: existing-aws-bedrock-secret
-    rabbitmq.enabled: true
-    rabbitmq.auth.username: test-username
-  template: ../templates/llamaparse/deployment.yaml
-  asserts:
-    - equal:
-        path: .spec.template.spec.containers[0].envFrom[1].secretRef.name
-        value: existing-aws-bedrock-secret
-
-- it: should set the AWS Bedrock env vars if feature is enabled
-  set:
-    llamaParse.config.awsBedrock.enabled: true
-    llamaParse.config.awsBedrock.region: us-east-1
-    llamaParse.config.awsBedrock.accessKeyId: test-access-key-id
-    llamaParse.config.awsBedrock.secretAccessKey: test-secret-access-key
-    llamaParse.config.awsBedrock.sonnet3_5ModelVersionName: test-sonnet-3-5-model-version-name
-    llamaParse.config.awsBedrock.sonnet3_7ModelVersionName: test-sonnet-3-7-model-version-name
-    llamaParse.config.awsBedrock.sonnet4_0ModelVersionName: test-sonnet-4-0-model-version-name
-    llamaParse.config.awsBedrock.haiku3_5ModelVersionName: test-haiku-3-5-model-version-name
-    llamaParse.config.awsBedrock.haiku4_5ModelVersionName: test-haiku-4-5-model-version-name
-    rabbitmq.enabled: true
-    rabbitmq.auth.username: test-username
-  template: ../templates/llamaparse/secret.yaml
-  asserts:
-    - equal:
-        path: .data.AWS_BEDROCK_ENABLED
-        value: dHJ1ZQ==
-    - equal:
-        path: .data.AWS_BEDROCK_REGION
-        value: dXMtZWFzdC0x
-    - equal:
-        path: .data.AWS_BEDROCK_ACCESS_KEY
-        value: dGVzdC1hY2Nlc3Mta2V5LWlk
-    - equal:
-        path: .data.AWS_BEDROCK_SECRET_KEY
-        value: dGVzdC1zZWNyZXQtYWNjZXNzLWtleQ==
-    - equal:
-        path: .data.BEDROCK_ANTHROPIC_SONNET_3_5_VERSION_NAME
-        value: dGVzdC1zb25uZXQtMy01LW1vZGVsLXZlcnNpb24tbmFtZQ==
-    - equal:
-        path: .data.BEDROCK_ANTHROPIC_SONNET_3_7_VERSION_NAME
-        value: dGVzdC1zb25uZXQtMy03LW1vZGVsLXZlcnNpb24tbmFtZQ==
-    - equal:
-        path: .data.BEDROCK_ANTHROPIC_SONNET_4_0_VERSION_NAME
-        value: dGVzdC1zb25uZXQtNC0wLW1vZGVsLXZlcnNpb24tbmFtZQ==
-    - equal:
-        path: .data.BEDROCK_ANTHROPIC_HAIKU_3_5_VERSION_NAME
-        value: dGVzdC1oYWlrdS0zLTUtbW9kZWwtdmVyc2lvbi1uYW1l
-    - equal:
-        path: .data.BEDROCK_ANTHROPIC_HAIKU_4_5_VERSION_NAME
-        value: dGVzdC1oYWlrdS00LTUtbW9kZWwtdmVyc2lvbi1uYW1l
-
-- it: should set the Google Vertex AI env vars if feature is enabled
-  set:
-    llamaParse.config.googleVertexAi.enabled: true
-    llamaParse.config.googleVertexAi.projectId: test-project-id
-    llamaParse.config.googleVertexAi.location: test-location
-    llamaParse.config.googleVertexAi.credentialsJson: test-credentials-json
-    rabbitmq.enabled: true
-    rabbitmq.auth.username: test-username
-  template: ../templates/llamaparse/secret.yaml
-  asserts:
-    - equal:
-        path: .data.GOOGLE_VERTEX_AI_ENABLED
-        value: dHJ1ZQ==
-    - equal:
-        path: .data.GOOGLE_VERTEX_AI_PROJECT_ID
-        value: dGVzdC1wcm9qZWN0LWlk
-    - equal:
-        path: .data.GOOGLE_VERTEX_AI_LOCATION
-        value: dGVzdC1sb2NhdGlvbg==
-    - equal:
-        path: .data.GOOGLE_VERTEX_AI_CREDENTIALS_JSON
-        value: dGVzdC1jcmVkZW50aWFscy1qc29u
-
-- it: should create a ConfigMap
-  set:
-    llamaParse.config.maxPdfPages: 1000
-    llamaParse.config.s3UploadBucket: test-s3-upload-bucket
-    llamaParse.config.s3OutputBucket: test-s3-output-bucket
-    rabbitmq.enabled: false
-  template: ../templates/llamaparse/configmap.yaml
+  templates:
+    - ../templates/llamacloud/configmaps/buckets.yaml
   asserts:
     - isKind:
         of: ConfigMap
@@ -197,235 +86,3 @@ tests:
     - equal:
         path: .data.S3_OUTPUT_BUCKET
         value: test-s3-output-bucket
-    - equal:
-        path: .data.JOB_SERVICE_URL
-        value: http://test-release-llamacloud-jobs-service:8002
-    - equal:
-        path: .data.OCR_SERVER_URL
-        value: http://test-release-llamacloud-llamaparse-ocr:8080/ocr
-
-- it: should create a ServiceMonitor if metrics are enabled
-  set:
-    llamaParse.metrics.enabled: true
-    llamaParse.metrics.serviceMonitor.enabled: true
-    llamaParse.metrics.serviceMonitor.interval: 30s
-    llamaParse.metrics.serviceMonitor.scrapeTimeout: 15s
-    llamaParse.metrics.serviceMonitor.relabelings:
-      - sourceLabels: [__meta_kubernetes_service_label_app]
-        action: keep
-        regex: llamacloud-llamaParse
-    llamaParse.metrics.serviceMonitor.scheme: http
-    llamaParse.metrics.serviceMonitor.tlsConfig:
-      insecureSkipVerify: true
-    rabbitmq.enabled: false
-  template: ../templates/llamaparse/servicemonitor.yaml
-  asserts:
-    - isKind:
-        of: ServiceMonitor
-    - equal:
-        path: .spec.endpoints[0].interval
-        value: 30s
-    - equal:
-        path: .spec.endpoints[0].scrapeTimeout
-        value: 15s
-    - equal:
-        path: .spec.endpoints[0].scheme
-        value: http
-    - equal:
-        path: .spec.endpoints[0].tlsConfig.insecureSkipVerify
-        value: true
-    - equal:
-        path: .spec.selector.matchLabels["app.kubernetes.io/component"]
-        value: test-release-llamacloud-llamaparse
-
-- it: should create a PrometheusRule if rules are enabled
-  set:
-    llamaParse.metrics.enabled: true
-    llamaParse.metrics.rules.enabled: true
-    llamaParse.metrics.rules.spec:
-      - expr: llamacloud_llamaParse_request_duration_seconds
-        for: 10m
-        labels:
-          severity: error
-        annotations:
-          summary: LlamaCloud llamaParse Request Duration High
-          description: The request duration is too high.
-    rabbitmq.enabled: false
-  template: ../templates/llamaparse/prometheusrule.yaml
-  asserts:
-    - isKind:
-        of: PrometheusRule
-    - equal:
-        path: .spec.groups[0].rules[0].expr
-        value: llamacloud_llamaParse_request_duration_seconds
-    - equal:
-        path: .spec.groups[0].rules[0].for
-        value: 10m
-    - equal:
-        path: .spec.groups[0].rules[0].labels.severity
-        value: error
-    - equal:
-        path: .spec.groups[0].rules[0].annotations.summary
-        value: LlamaCloud llamaParse Request Duration High
-    - equal:
-        path: .spec.groups[0].rules[0].annotations.description
-        value: The request duration is too high.
-
-- it: should not create a KEDA if llamaParse.keda.enabled is false
-  set:
-    rabbitmq.enabled: false
-    llamaParse.enabled: true
-    llamaParse.keda.enabled: false
-  template: ../templates/llamaparse/keda-scaledobject.yaml
-  asserts:
-    - hasDocuments:
-        count: 0
-
-- it: should not create a KEDA if llamaParse.autoscaling.enabled is true
-  set:
-    rabbitmq.enabled: false
-    llamaParse.enabled: true
-    llamaParse.autoscaling.enabled: true
-  template: ../templates/llamaparse/keda-scaledobject.yaml
-  asserts:
-    - hasDocuments:
-        count: 0
-
-- it: should fail if llamaParse.keda.enabled is true and llamaParse.autoscaling.enabled is true
-  set:
-    rabbitmq.enabled: false
-    llamaParse.enabled: true
-    llamaParse.keda.enabled: true
-    llamaParse.autoscaling.enabled: true
-  template: ../templates/llamaparse/keda-scaledobject.yaml
-  asserts:
-    - failedTemplate:
-        errorMessage: "Keda configuration (`.Values.llamaParse.keda`) and HPA configurations (`.Values.llamaParse.autoscaling`) cannot be both enabled at the same time!"
-
-- it: should fail if llamaParse.keda.triggers is empty
-  set:
-    rabbitmq.enabled: false
-    llamaParse.enabled: true
-    llamaParse.autoscaling.enabled: false
-    llamaParse.keda.enabled: true
-    llamaParse.keda.triggers: []
-  template: ../templates/llamaparse/keda-scaledobject.yaml
-  asserts:
-    - failedTemplate:
-        errorMessage: "At least one element in `.Values.llamaParse.keda.triggers` is required!"
-
-- it: should create a KEDA if llamaParse.keda.enabled is true and llamaParse.autoscaling.enabled is false
-  set:
-    rabbitmq.enabled: false
-    llamaParse.enabled: true
-    llamaParse.autoscaling.enabled: false
-    llamaParse.keda.enabled: true
-    llamaParse.keda.triggers:
-      - type: prometheus
-        metricType: Value
-        metadata:
-          serverAddress: http://prometheus-kube-prometheus-prometheus.monitoring.svc.cluster.local:9090
-          query: |
-            sum(aws_amazonmq_message_count_maximum{dimension_Queue="parse_raw_file_job"}) / sum(kube_pod_container_status_running{namespace="llamaparse", container="llamaparse"})
-    llamaParse.keda.fallback:
-      failureThreshold: 3
-      replicas: 2
-    llamaParse.keda.advanced:
-      horizontalPodAutoscalerConfig:
-        behavior:
-          scaleDown:
-            stabilizationWindowSeconds: 120
-            policies:
-              - type: Pods
-                value: 1
-                periodSeconds: 30
-            selectPolicy: Min
-  template: ../templates/llamaparse/keda-scaledobject.yaml
-  asserts:
-    - hasDocuments:
-        count: 1
-    - equal:
-        path: .spec.scaleTargetRef.apiVersion
-        value: apps/v1
-    - equal:
-        path: .spec.scaleTargetRef.kind
-        value: Deployment
-    - equal:
-        path: .spec.scaleTargetRef.name
-        value: test-release-llamacloud-llamaparse
-    - equal:
-        path: .spec.pollingInterval
-        value: 15
-    - equal:
-        path: .spec.cooldownPeriod
-        value: 120
-    - equal:
-        path: .spec.minReplicaCount
-        value: 2
-    - equal:
-        path: .spec.maxReplicaCount
-        value: 10
-    - equal:
-        path: .spec.triggers[0].type
-        value: prometheus
-    - equal:
-        path: .spec.triggers[0].metricType
-        value: Value
-    - equal:
-        path: .spec.triggers[0].metadata.serverAddress
-        value: http://prometheus-kube-prometheus-prometheus.monitoring.svc.cluster.local:9090
-    - equal:
-        path: .spec.fallback.failureThreshold
-        value: 3
-    - equal:
-        path: .spec.fallback.replicas
-        value: 2
-    - equal:
-        path: .spec.advanced.horizontalPodAutoscalerConfig.behavior.scaleDown.stabilizationWindowSeconds
-        value: 120
-    - equal:
-        path: .spec.advanced.horizontalPodAutoscalerConfig.behavior.scaleDown.policies[0].type
-        value: Pods
-    - equal:
-        path: .spec.advanced.horizontalPodAutoscalerConfig.behavior.scaleDown.policies[0].value
-        value: 1
-    - equal:
-        path: .spec.advanced.horizontalPodAutoscalerConfig.behavior.scaleDown.policies[0].periodSeconds
-        value: 30
-    - equal:
-        path: .spec.advanced.horizontalPodAutoscalerConfig.behavior.scaleDown.selectPolicy
-        value: Min
-
-- it: should set replicas field when both autoscaling and KEDA are disabled
-  set:
-    llamaParse.replicas: 3
-    llamaParse.autoscaling.enabled: false
-    llamaParse.keda.enabled: false
-    rabbitmq.enabled: false
-  template: ../templates/llamaparse/deployment.yaml
-  asserts:
-    - equal:
-        path: .spec.replicas
-        value: 3
-
-- it: should not set replicas field when autoscaling is enabled
-  set:
-    llamaParse.replicas: 3
-    llamaParse.autoscaling.enabled: true
-    llamaParse.keda.enabled: false
-    rabbitmq.enabled: false
-  template: ../templates/llamaparse/deployment.yaml
-  asserts:
-    - notExists:
-        path: .spec.replicas
-
-- it: should not set replicas field when KEDA is enabled
-  set:
-    llamaParse.replicas: 3
-    llamaParse.autoscaling.enabled: false
-    llamaParse.keda.enabled: true
-    rabbitmq.enabled: false
-  template: ../templates/llamaparse/deployment.yaml
-  asserts:
-    - notExists:
-        path: .spec.replicas

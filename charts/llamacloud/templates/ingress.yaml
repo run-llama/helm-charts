@@ -1,4 +1,4 @@
-{{- if and .Values.ingress.enabled .Values.ingress.create -}}
+{{- if .Values.ingress.enabled  -}}
 {{- $ingressClassName := .Values.ingress.ingressClassName | required ".Values.ingress.ingressClassName is required" -}}
 {{- $host := .Values.ingress.host | required ".Values.ingress.host is required" -}}
 apiVersion: networking.k8s.io/v1
@@ -6,38 +6,35 @@ kind: Ingress
 metadata:
   name: {{ .Release.Name }}
   namespace: {{ .Release.Namespace }}
-  labels:
-    {{- include "llamacloud.labels" . | nindent 4 }}
-    {{- with .Values.ingress.labels }}
-      {{- toYaml . | nindent 4 }}
-    {{- end }}
-  annotations:
-    {{- include "llamacloud.annotations" . | nindent 4 }}
-    {{- with .Values.ingress.annotations }}
-      {{- toYaml . | nindent 4 }}
+  labels: {{ include "llamacloud.labels" (dict "root" $) | indent 4 }}
+  annotations: {{ include "llamacloud.annotations" (dict "root" $) | indent 4 }}
+    {{- with .Values.ingress.annotations -}}
+    {{- toYaml . | nindent 4 }}
     {{- end }}
 spec:
   ingressClassName: {{ $ingressClassName }}
   rules:
-    - host: {{ $host }}
-      http:
-        paths:
-          - backend:
-              service:
-                name: {{ include "llamacloud.fullname" . }}-{{ .Values.backend.name }}
-                port:
-                  number: {{ .Values.backend.service.port }}
-            path: "/api"
-            pathType: Prefix
-          - backend:
-              service:
-                name: {{ include "llamacloud.fullname" . }}-{{ .Values.frontend.name }}
-                port:
-                  number: {{ .Values.frontend.service.port }}
-            path: /
-            pathType: Prefix
+  - host: {{ $host }}
+    http:
+      paths:
+      - backend:
+          service:
+            name: {{ (include "llamacloud.component.backend" . | fromYaml ).name }}
+            port:
+              number: 80
+        path: "/api"
+        pathType: Prefix
+      - backend:
+          service:
+            name: {{ (include "llamacloud.component.frontend" . | fromYaml ).name }}
+            port:
+              number: 80
+        path: /
+        pathType: Prefix
+{{- if .Values.ingress.tlsSecretName }}
   tls:
-    - hosts:
-        - {{ $host }}
-      secretName: {{ .Values.ingress.tlsSecretName }}
+  - hosts:
+    - {{ $host }}
+    secretName: {{ .Values.ingress.tlsSecretName }}
+{{- end -}}
 {{- end -}}
