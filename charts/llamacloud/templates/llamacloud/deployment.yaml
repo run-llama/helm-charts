@@ -22,7 +22,7 @@ spec:
       labels: {{ include "llamacloud.labels" (dict "name" $component.name "root" $) | indent 8 }}
       annotations: {{ include "llamacloud.podAnnotations" $params | indent 8 }}
     spec:
-      imagePullSecrets: {{ $.Values.imagePullSecrets | toYaml }}
+      imagePullSecrets: {{ $.Values.imagePullSecrets | toYaml | nindent 8 }}
       serviceAccountName: {{ $component.name | quote }}
       securityContext: {{ include "llamacloud.podSecurityContext" $params | indent 8 }}
       containers:
