@@ -2,14 +2,14 @@
 S3Proxy Sidecar Container Definition.
 */}}
 {{ define "llamacloud.s3proxy.container" }}
-{{- if (not (eq (($.Values.config).storageBuckets).provider "aws")) }}
+{{- if ((($.Values.config).storageBuckets).s3proxy.enabled | default false) }}
 - name: s3proxy
   securityContext: {{ toYaml ((($.Values.config).storageBuckets).s3proxy).securityContext | indent 4}}
   image: "{{ ((($.Values.config).storageBuckets).s3proxy).image | default "docker.io/andrewgaul/s3proxy:sha-82e50ee" }}"
   imagePullPolicy: {{ ((($.Values.config).storageBuckets).s3proxy).imagePullPolicy | default "IfNotPresent" }}
   ports:
   - name: http
-    containerPort: 80
+    containerPort: {{ print (int ((($.Values.config).storageBuckets).s3proxy.containerPort | default 80))}}
     protocol: TCP
   resources:
     requests:
@@ -37,7 +37,7 @@ S3Proxy Sidecar Container Definition.
 S3Proxy Secret.
 */}}
 {{ define "llamacloud.s3proxy.secret" }}
-{{ range $key, $value := ((($.Values.config).storageBuckets).s3proxy).config }}
+{{- range $key, $value := $.Values.config.storageBuckets.s3proxy.config }}
 {{ $key }}: {{ $value | b64enc | quote }}
 {{- end }}
 {{- end }}
@@ -48,6 +48,6 @@ S3Proxy ConfigMap Data.
 {{ define "llamacloud.s3proxy.configMap" }}
 S3PROXY_AUTHORIZATION: "none"
 S3PROXY_CORS_ALLOW_ORIGINS: "*"
-S3PROXY_ENDPOINT: "http://0.0.0.0:80"
+S3PROXY_ENDPOINT: {{ printf "http://0.0.0.0:%d" (int ((($.Values.config).storageBuckets).s3proxy.containerPort | default 80)) | quote }}
 S3PROXY_IGNORE_UNKNOWN_HEADERS: "true"
 {{- end }}

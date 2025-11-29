@@ -25,6 +25,7 @@ tests:
 - it: should create s3proxy configmap when provider is gcp
   set:
     config.storageBuckets.provider: gcp
+    config.storageBuckets.s3proxy.enabled: true
   template: ../templates/llamacloud/configmaps/s3proxy.yaml
   asserts:
     - isKind:
@@ -48,6 +49,7 @@ tests:
 - it: should create s3proxy configmap when provider is azure
   set:
     config.storageBuckets.provider: azure
+    config.storageBuckets.s3proxy.enabled: true
   template: ../templates/llamacloud/configmaps/s3proxy.yaml
   asserts:
     - isKind:
@@ -56,9 +58,10 @@ tests:
         path: .metadata.name
         value: s3proxy-config
 
-- it: should not create s3proxy configmap when provider is aws
+- it: should not create s3proxy configmap when s3proxy is disabled
   set:
     config.storageBuckets.provider: aws
+    config.storageBuckets.s3proxy.enabled: false
   template: ../templates/llamacloud/configmaps/s3proxy.yaml
   asserts:
     - hasDocuments:
@@ -68,6 +71,7 @@ tests:
 - it: should create s3proxy secret when provider is gcp
   set:
     config.storageBuckets.provider: gcp
+    config.storageBuckets.s3proxy.enabled: true
     config.storageBuckets.s3proxy.config:
       JCLOUDS_PROVIDER: google-cloud-storage
       JCLOUDS_IDENTITY: test-identity
@@ -83,6 +87,7 @@ tests:
 - it: should create s3proxy secret when provider is azure
   set:
     config.storageBuckets.provider: azure
+    config.storageBuckets.s3proxy.enabled: true
     config.storageBuckets.s3proxy.config:
       JCLOUDS_PROVIDER: azureblob
       JCLOUDS_IDENTITY: test-identity
@@ -95,9 +100,10 @@ tests:
         path: .metadata.name
         value: s3proxy-secret
 
-- it: should not create s3proxy secret when provider is aws
+- it: should not create s3proxy secret when s3proxy is disabled
   set:
     config.storageBuckets.provider: aws
+    config.storageBuckets.s3proxy.enabled: false
   template: ../templates/llamacloud/secrets/s3proxy.yaml
   asserts:
     - hasDocuments:
@@ -115,6 +121,8 @@ tests:
         enabled: false
       storageBuckets:
         provider: gcp
+        s3proxy:
+          enabled: true
     redis:
       host: test-redis
       port: "6379"
@@ -181,6 +189,8 @@ tests:
         enabled: false
       storageBuckets:
         provider: azure
+        s3proxy:
+          enabled: true
     redis:
       host: test-redis
       port: "6379"
@@ -211,7 +221,7 @@ tests:
         path: .spec.template.spec.containers[1].name
         value: s3proxy
 
-- it: should not inject s3proxy sidecar into backend when provider is aws
+- it: should not inject s3proxy sidecar into backend when s3proxy is disabled
   set:
     config:
       frontend:
@@ -222,6 +232,8 @@ tests:
         enabled: false
       storageBuckets:
         provider: aws
+        s3proxy:
+          enabled: false
     redis:
       host: test-redis
       port: "6379"
@@ -267,6 +279,8 @@ tests:
         enabled: false
       storageBuckets:
         provider: gcp
+        s3proxy:
+          enabled: true
     redis:
       host: test-redis
       port: "6379"
@@ -294,7 +308,7 @@ tests:
           name: s3proxy-tmp
           emptyDir: {}
 
-- it: should not create s3proxy-tmp volume when provider is aws
+- it: should not create s3proxy-tmp volume when s3proxy is disabled
   set:
     config:
       frontend:
@@ -305,6 +319,8 @@ tests:
         enabled: false
       storageBuckets:
         provider: aws
+        s3proxy:
+          enabled: false
     redis:
       host: test-redis
       port: "6379"
@@ -330,6 +346,7 @@ tests:
         path: .spec.template.spec.volumes
         content:
           name: s3proxy-tmp
+          emptyDir: {}
 
 # Sidecar Injection Tests - Jobs Worker Component
 - it: should inject s3proxy sidecar into jobs-worker when provider is gcp
@@ -343,6 +360,8 @@ tests:
         enabled: false
       storageBuckets:
         provider: gcp
+        s3proxy:
+          enabled: true
     redis:
       host: test-redis
       port: "6379"
@@ -376,7 +395,7 @@ tests:
         path: .spec.template.spec.containers[1].image
         value: docker.io/andrewgaul/s3proxy:sha-82e50ee
 
-- it: should not inject s3proxy sidecar into jobs-worker when provider is aws
+- it: should not inject s3proxy sidecar into jobs-worker when s3proxy is disabled
   set:
     config:
       frontend:
@@ -387,6 +406,8 @@ tests:
         enabled: false
       storageBuckets:
         provider: aws
+        s3proxy:
+          enabled: false
     redis:
       host: test-redis
       port: "6379"
@@ -433,6 +454,8 @@ tests:
         enabled: false
       storageBuckets:
         provider: gcp
+        s3proxy:
+          enabled: true
     redis:
       host: test-redis
       port: "6379"
@@ -463,7 +486,7 @@ tests:
         path: .spec.template.spec.containers[1].name
         value: s3proxy
 
-- it: should not inject s3proxy sidecar into llamaparse when provider is aws
+- it: should not inject s3proxy sidecar into llamaparse when s3proxy is disabled
   set:
     config:
       frontend:
@@ -474,6 +497,8 @@ tests:
         enabled: false
       storageBuckets:
         provider: aws
+        s3proxy:
+          enabled: false
     redis:
       host: test-redis
       port: "6379"
@@ -518,6 +543,7 @@ tests:
       storageBuckets:
         provider: gcp
         s3proxy:
+          enabled: true
           image: custom-registry/s3proxy:custom-tag
     redis:
       host: test-redis
@@ -556,6 +582,7 @@ tests:
       storageBuckets:
         provider: gcp
         s3proxy:
+          enabled: true
           resources:
             requests:
               cpu: 250m
@@ -608,6 +635,8 @@ tests:
         enabled: false
       storageBuckets:
         provider: gcp
+        s3proxy:
+          enabled: true
     redis:
       host: test-redis
       port: "6379"
@@ -643,9 +672,10 @@ tests:
         value: 1Gi
 
 # S3 Endpoint URL Configuration Test
-- it: should set S3_ENDPOINT_URL in urls-config configmap when provider is not aws
+- it: should set S3_ENDPOINT_URL in urls-config configmap when s3proxy is enabled
   set:
     config.storageBuckets.provider: gcp
+    config.storageBuckets.s3proxy.enabled: true
   template: ../templates/llamacloud/configmaps/urls.yaml
   asserts:
     - isKind:
@@ -655,7 +685,7 @@ tests:
         value: "http://localhost:80"
 
 # Multiple Components Test
-- it: should inject s3proxy sidecar into all components that use S3 when provider is gcp
+- it: should inject s3proxy sidecar into all components that use S3 when s3proxy is enabled
   set:
     config:
       frontend:
@@ -666,6 +696,8 @@ tests:
         enabled: false
       storageBuckets:
         provider: gcp
+        s3proxy:
+          enabled: true
     redis:
       host: test-redis
       port: "6379"

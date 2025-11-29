@@ -174,7 +174,7 @@ Parameters:
 {{ define "llamacloud.component.backend.volumes" }}
 - emptyDir: {}
   name: tmp
-{{- if (not (eq ((.root.Values.config).storageBuckets).provider "aws")) }}
+{{- if (((.root.Values.config).storageBuckets).s3proxy.enabled | default false) }}
 - emptyDir: {}
   name: s3proxy-tmp
 {{- end }}
