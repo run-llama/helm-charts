@@ -1,5 +1,21 @@
 # CHANGELOG
 
+## [0.6.1] - 2025-11-26
+
+### LlamaSheets
+- **[New Product]** LlamaSheets is now available. Turn messy spreadsheets into AI-ready data.
+  - For more information, visit: https://www.llamaindex.ai/blog/announcing-llamasheets-turn-messy-spreadsheets-into-ai-ready-data-beta
+
+### LlamaExtract
+- **[Bug Fix]** Fixed citation generation for `PER_TABLE_ROW` extraction target
+- **[Feature]** Added natural language schema editing capabilities
+
+### Index
+- **[Feature]** Added regex filter support for SharePoint Data Sources
+
+### Platform
+- **[Feature]** Usage Metric APIs are now available
+
 ## [0.6.0] - 2025-11-20
 
 ### Infrastructure

@@ -17,9 +17,7 @@ data:
   {{- if and ($.Values.ingress).enabled ($.Values.ingress).host }}
   LLAMACLOUD_INGRESS_URL: {{ print (include "llamacloud.ingress.scheme" .) "://" (.Values.ingress).host | quote }}
   {{- end }}
-  {{- if not (eq (($.Values.config).storageBuckets).provider "aws") }}
-  S3_ENDPOINT_URL: {{ printf "http://localhost:80" | quote }}
-  {{- end }}
+  S3_ENDPOINT_URL: {{ printf "http://localhost:%d" (int ((($.Values.config).storageBuckets).s3proxy.containerPort | default 80)) | quote }}
   {{- if .Values.config.parseOcr.enabled }}
   OCR_SERVER_URL: {{ printf "http://%s:%d/ocr" (include "llamacloud.component.llamaParseOcr" $ | fromYaml).name ( "80" | int) | quote }}
   {{- end }}

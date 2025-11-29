@@ -9,8 +9,6 @@ Parameters:
 {{- if .root.Values.commonLabels }}
 {{ .root.Values.commonLabels | toYaml }}
 {{- end }}
-helm.sh/chart: {{ printf "%s-%s" .root.Chart.Name .root.Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
-app.kubernetes.io/version: {{ .root.Chart.AppVersion | quote }}
 app.kubernetes.io/instance: {{ .root.Release.Name }}
 app.kubernetes.io/managed-by: {{ .root.Release.Service }}
 {{- if .name }}
@@ -62,6 +60,8 @@ Parameters:
 */}}
 {{ define "llamacloud.podSecurityContext" }}
 {{- if not .component.podSecurityContext }}
+runAsUser: 1000
+runAsGroup: 1000
 fsGroup: 1000
 seccompProfile:
   type: RuntimeDefault

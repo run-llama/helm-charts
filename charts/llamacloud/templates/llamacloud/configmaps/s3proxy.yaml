@@ -1,4 +1,5 @@
-{{- if not (eq .Values.config.storageBuckets.provider "aws") }}
+{{- if ((($.Values.config).storageBuckets).s3proxy.enabled | default false) }}
+---
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -7,5 +8,5 @@ metadata:
   labels: {{ include "llamacloud.labels" (dict "root" $) | indent 4 }}
   annotations: {{ include "llamacloud.annotations" (dict "root" $) | indent 4 }}
 data:
-  {{- include "llamacloud.s3proxy.configMap" . | indent 2 }}
+  {{- include "llamacloud.s3proxy.configMap" $ | indent 2 }}
 {{- end }}
