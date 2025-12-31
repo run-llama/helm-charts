@@ -1,5 +1,21 @@
 # CHANGELOG
 
+## [0.6.2] - 2025-12-31
+
+### Index
+- **[Bug Fix]** SharePoint bug fixes
+- **[Stability]** Stability improvements
+
+### LlamaParse
+- **[New Release]** LlamaParse v2 is now available!
+  - For more information, visit: https://www.llamaindex.ai/blog/introducing-llamaparse-v2-simpler-better-cheaper
+- **[Feature]** Cost Optimizer: When toggling on Agentic or Agentic Plus tier, LlamaParse will automatically use Cost Effective on simpler pages
+
+### Split API
+- **[New Product]** Split API is now available in BYOC deployments
+  - For documentation on how to enable, please reach out to support
+  - API Reference: https://developers.llamaindex.ai/cloud-api-reference/category/split
+
 ## [0.6.1] - 2025-11-26
 
 ### LlamaSheets
@@ -150,7 +166,6 @@
 - More settings available to configure for allowed files (size and pages):
   - `backend.config.llamaExtractMaxPages`
   - `backend.config.llamaExtractMaxFileSizeMb`
-  - `backend.config.llamaExtractMaxFileSizeUiMb`
 
 ## [0.5.1] - 2025-07-31
 
