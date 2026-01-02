@@ -19,17 +19,17 @@ spec:
       paths:
       - backend:
           service:
-            name: {{ (include "llamacloud.component.backend" . | fromYaml ).name }}
-            port:
-              number: 80
-        path: "/api"
-        pathType: Prefix
-      - backend:
-          service:
             name: {{ (include "llamacloud.component.frontend" . | fromYaml ).name }}
             port:
               number: 80
         path: /
+        pathType: Prefix
+      - backend:
+          service:
+            name: {{ (include "llamacloud.component.backend" . | fromYaml ).name }}
+            port:
+              number: 80
+        path: "/api"
         pathType: Prefix
 {{- if .Values.ingress.tlsSecretName }}
   tls:

@@ -41,7 +41,7 @@ tests:
         value: "*"
     - equal:
         path: .data.S3PROXY_ENDPOINT
-        value: "http://0.0.0.0:80"
+        value: "http://0.0.0.0:8080"
     - equal:
         path: .data.S3PROXY_IGNORE_UNKNOWN_HEADERS
         value: "true"
@@ -157,7 +157,7 @@ tests:
         value: docker.io/andrewgaul/s3proxy:sha-82e50ee
     - equal:
         path: .spec.template.spec.containers[1].ports[0].containerPort
-        value: 80
+        value: 8080
     - contains:
         path: .spec.template.spec.containers[1].envFrom
         content:
@@ -682,7 +682,7 @@ tests:
         of: ConfigMap
     - equal:
         path: .data.S3_ENDPOINT_URL
-        value: "http://localhost:80"
+        value: "http://localhost:8080"
 
 # Multiple Components Test
 - it: should inject s3proxy sidecar into all components that use S3 when s3proxy is enabled

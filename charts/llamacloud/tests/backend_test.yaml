@@ -223,9 +223,6 @@ tests:
     - equal:
         path: .data.LLAMA_EXTRACT_MAX_FILE_SIZE_MB
         value: "100"
-    - equal:
-        path: .data.LLAMA_EXTRACT_MAX_FILE_SIZE_UI_MB
-        value: "30"
 
 - it: should set custom LLAMA_EXTRACT settings when specified
   set:
@@ -233,7 +230,6 @@ tests:
     config.extraction.schemaGenerationModel: "openai-gpt-4-1-mini"
     config.extraction.maxPages: 1000
     config.extraction.maxFileSizeMb: 200
-    config.extraction.maxFileSizeUiMb: 50
   templates:
     - ../templates/llamacloud/configmaps/extract.yaml
   asserts:
@@ -249,9 +245,6 @@ tests:
     - equal:
         path: .data.LLAMA_EXTRACT_MAX_FILE_SIZE_MB
         value: "200"
-    - equal:
-        path: .data.LLAMA_EXTRACT_MAX_FILE_SIZE_UI_MB
-        value: "50"
 
 - it: backend deployment should have LOG_LEVEL env var set correctly
   documentIndex: 0
