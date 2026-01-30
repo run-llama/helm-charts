@@ -2,6 +2,32 @@ apiVersion: v1
 entries:
   llamacloud:
   - apiVersion: v2
+    appVersion: 0.6.3
+    created: "2026-01-30T23:49:19.4680666Z"
+    description: A Helm chart to deploy LlamaCloud and all of its necessary services.
+    digest: 13b8caa9e07da0693c297f965fb4b18f80e2e672b1d81bd270af72d4be67ec76
+    home: https://github.com/run-llama/helm-charts
+    keywords:
+    - llamaindex
+    - llamacloud
+    - rag
+    maintainers:
+    - email: jerry@runllama.ai
+      name: Jerry Liu
+      url: https://github.com/jerryjliu
+    - email: simon@runllama.ai
+      name: Simon Suo
+      url: https://github.com/Disiok
+    - email: jonathan@runllama.ai
+      name: Jonathan Whitaker
+      url: https://github.com/jonathan-whitaker
+    name: llamacloud
+    sources:
+    - https://github.com/run-llama/helm-charts
+    urls:
+    - https://github.com/run-llama/helm-charts/releases/download/llamacloud-0.6.3/llamacloud-0.6.3.tgz
+    version: 0.6.3
+  - apiVersion: v2
     appVersion: 0.6.2
     created: "2026-01-02T05:37:00.391824883Z"
     description: A Helm chart to deploy LlamaCloud and all of its necessary services.
@@ -4043,4 +4069,4 @@ entries:
     urls:
     - https://github.com/run-llama/helm-charts/releases/download/llamacloud-0.1.1/llamacloud-0.1.1.tgz
     version: 0.1.1
-generated: "2026-01-02T05:37:00.392110387Z"
+generated: "2026-01-30T23:49:19.468347375Z"
