@@ -1,5 +1,21 @@
 # CHANGELOG
 
+## [0.6.3] - 2026-01-30
+
+### Platform
+- **[Feature]** Temporal queueing
+
+### LlamaParse
+- **[New Release]** Parse V2 UI and API Release
+  - For more information, visit: https://www.llamaindex.ai/blog/announcing-new-llamacloud-sdks-and-parse-api-v2
+
+### LlamaExtract
+- **[Improvement]** Improved citation scalability — citations should work on much larger schemas/files without resulting in data loss
+- **[Bug Fix]** Fixed bug in schema generation on pre-loaded files from history
+
+### LlamaClassify
+- **[Improvement]** Output partial results for multiple files in case of partial failures instead of failing the full batch
+
 ## [0.6.2] - 2025-12-31
 
 ### Index

@@ -27,3 +27,6 @@ data:
   LAYOUT_EXTRACTION_ENDPOINT: {{ printf "http://%s:%d" (include "llamacloud.component.llamaParseLayoutDetectionApi" $ | fromYaml).name ( "80" | int) | quote }}
   LAYOUT_EXTRACTION_V2_ENDPOINT: {{ printf "http://%s:%d" (include "llamacloud.component.llamaParseLayoutDetectionApi" $ | fromYaml).name ( "80" | int) | quote }}
   {{- end }}
+  {{- if .Values.config.parseLayoutDetectionV3.enabled }}
+  LAYOUT_EXTRACTION_V3_ENDPOINT: {{ printf "http://%s:%d" (include "llamacloud.component.llamaParseLayoutDetectionApiV3" $ | fromYaml).name ( "80" | int) | quote }}
+  {{- end }}

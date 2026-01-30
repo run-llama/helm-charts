@@ -111,6 +111,9 @@ Activated Components
 {{- if (($.Values.config).parseLayoutDetection).enabled }}
 {{- $activated = set $activated "llamaParseLayoutDetectionApi" (include "llamacloud.component.llamaParseLayoutDetectionApi" . | fromYaml) }}
 {{- end }}
+{{- if (($.Values.config).parseLayoutDetectionV3).enabled }}
+{{- $activated = set $activated "llamaParseLayoutDetectionApiV3" (include "llamacloud.component.llamaParseLayoutDetectionApiV3" . | fromYaml) }}
+{{- end }}
 {{- if and ($.Values.temporal).enabled ($.Values.temporal).host ($.Values.temporal).port }}
 {{- $activated = set $activated "temporalJobsService" (include "llamacloud.component.temporal.jobsService" . | fromYaml) }}
 {{- $activated = set $activated "temporalLlamaParse" (include "llamacloud.component.temporal.llamaParse" . | fromYaml) }}
