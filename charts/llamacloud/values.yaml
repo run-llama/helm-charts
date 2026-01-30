@@ -120,6 +120,8 @@ config:
       apiKey: ""
       ## @param config.llms.openAi.secret Name of the existing secret to use for the OpenAI API key
       secret: ""
+      ## @param config.llms.openAi.baseUrl OpenAI base URL
+      baseUrl: ""
 
     ## @section Anthropic Configuration
     anthropic:
@@ -400,6 +402,14 @@ config:
     ## GPU configuration for Layout processing
     gpu: false
 
+  ## @section Layout Detection V3 (BYOC Self-Hosted) Configuration
+  parseLayoutDetectionV3:
+    ## @param config.parseLayoutDetectionV3.enabled Enable Layout V3 Detection (self-hosted RT-DETRv2 model)
+    ## Note: This is for BYOC deployments that cannot access HuggingFace inference endpoints
+    enabled: false
+    ## @param config.parseLayoutDetectionV3.gpu Enable GPU acceleration for Layout V3 processing
+    gpu: false
+
   ## @section Temporal Configuration
   temporal:
     ## @param config.temporal.workerRegistryProfile Temporal worker registry profile (default or consolidated)
@@ -457,7 +467,7 @@ frontend:
   annotations: {}
 
   ## @param frontend.image Frontend image
-  image: docker.io/llamaindex/llamacloud-frontend:0.6.2
+  image: docker.io/llamaindex/llamacloud-frontend:0.6.3
 
   ## @param frontend.imagePullPolicy Frontend image pull policy
   imagePullPolicy: IfNotPresent
@@ -519,7 +529,7 @@ backend:
   annotations: {}
 
   ## @param backend.image Backend image
-  image: docker.io/llamaindex/llamacloud-backend:0.6.2
+  image: docker.io/llamaindex/llamacloud-backend:0.6.3
 
   ## @param backend.imagePullPolicy Backend image pull policy
   imagePullPolicy: IfNotPresent
@@ -581,7 +591,7 @@ jobsService:
   annotations: {}
 
   ## @param jobsService.image JobsService image
-  image: docker.io/llamaindex/llamacloud-backend:0.6.2
+  image: docker.io/llamaindex/llamacloud-backend:0.6.3
 
   ## @param jobsService.imagePullPolicy JobsService image pull policy
   imagePullPolicy: IfNotPresent
@@ -643,7 +653,7 @@ jobsWorker:
   annotations: {}
 
   ## @param jobsWorker.image JobsWorker image
-  image: docker.io/llamaindex/llamacloud-backend:0.6.2
+  image: docker.io/llamaindex/llamacloud-backend:0.6.3
 
   ## @param jobsWorker.imagePullPolicy JobsWorker image pull policy
   imagePullPolicy: IfNotPresent
@@ -705,7 +715,7 @@ llamaParse:
   annotations: {}
 
   ## @param llamaParse.image LlamaParse image
-  image: docker.io/llamaindex/llamacloud-llamaparse:0.6.2
+  image: docker.io/llamaindex/llamacloud-llamaparse:0.6.3
 
   ## @param llamaParse.imagePullPolicy LlamaParse image pull policy
   imagePullPolicy: IfNotPresent
@@ -767,7 +777,7 @@ llamaParseOcr:
   annotations: {}
 
   ## @param llamaParseOcr.image LlamaParseOcr image
-  image: docker.io/llamaindex/llamacloud-llamaparse-ocr:0.6.2
+  image: docker.io/llamaindex/llamacloud-llamaparse-ocr:0.6.3
 
   ## @param llamaParseOcr.imagePullPolicy LlamaParseOcr image pull policy
   imagePullPolicy: IfNotPresent
@@ -829,7 +839,7 @@ llamaParseLayoutDetectionApi:
   annotations: {}
 
   ## @param llamaParseLayoutDetectionApi.image LlamaParseLayoutDetectionApi image
-  image: docker.io/llamaindex/llamacloud-layout-detection-api:0.6.2
+  image: docker.io/llamaindex/llamacloud-layout-detection-api:0.6.3
 
   ## @param llamaParseLayoutDetectionApi.imagePullPolicy LlamaParseLayoutDetectionApi image pull policy
   imagePullPolicy: IfNotPresent
@@ -881,6 +891,69 @@ llamaParseLayoutDetectionApi:
   ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-volume-storage/
   volumes: []
 
+## @section LlamaParse Layout Detection API V3 Configuration (BYOC)
+llamaParseLayoutDetectionApiV3:
+  ## @param llamaParseLayoutDetectionApiV3.horizontalPodAutoscalerSpec HorizontalPodAutoScaler configuration
+  ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/
+  horizontalPodAutoscalerSpec: {}
+
+  ## @param llamaParseLayoutDetectionApiV3.annotations Annotations added to the LlamaParseLayoutDetectionApiV3 Deployment.
+  annotations: {}
+
+  ## @param llamaParseLayoutDetectionApiV3.image LlamaParseLayoutDetectionApiV3 image (RT-DETRv2 + figure classifier)
+  ## Leave empty to use default: docker.io/llamaindex/llamacloud-layout-detection-api-v3:<chart-version>
+  image: ""
+
+  ## @param llamaParseLayoutDetectionApiV3.imagePullPolicy LlamaParseLayoutDetectionApiV3 image pull policy
+  imagePullPolicy: IfNotPresent
+
+  ## @param llamaParseLayoutDetectionApiV3.securityContext Security context for the container
+  securityContext: {}
+
+  ## @param llamaParseLayoutDetectionApiV3.serviceAccountAnnotations Annotations to add to the service account
+  serviceAccountAnnotations: {}
+
+  ## @param llamaParseLayoutDetectionApiV3.nodeSelector Node labels for pod assignment
+  ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
+  nodeSelector: {}
+
+  ## @param llamaParseLayoutDetectionApiV3.tolerations Taints to tolerate on node assignment:
+  ## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+  tolerations: []
+
+  ## @param llamaParseLayoutDetectionApiV3.affinity Pod scheduling constraints
+  ## Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
+  affinity: {}
+
+  ## @param llamaParseLayoutDetectionApiV3.topologySpreadConstraints Topology Spread Constraints for LlamaParseLayoutDetectionApiV3 pods
+  topologySpreadConstraints: []
+
+  ## @param llamaParseLayoutDetectionApiV3.podAnnotations Annotations to add to the resulting Pods of the Deployment.
+  podAnnotations: {}
+
+  ## @param llamaParseLayoutDetectionApiV3.podSecurityContext Annotations to add to the resulting Pods of the Deployment.
+  podSecurityContext: {}
+
+  ## @param llamaParseLayoutDetectionApiV3.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
+  ## Ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+  resources: {}
+
+  ## @param llamaParseLayoutDetectionApiV3.extraEnvVariables Extra environment variables to add to LlamaParseLayoutDetectionApiV3 pods
+  ## Example:
+  ## extraEnvVars:
+  ##   - name: FOO
+  ##     value: BAR
+  ##
+  extraEnvVariables: []
+
+  ## @param llamaParseLayoutDetectionApiV3.volumeMounts List of volumeMounts that can be mounted by containers belonging to the pod
+  ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-volume-storage/
+  volumeMounts: []
+
+  ## @param llamaParseLayoutDetectionApiV3.volumes List of volumes that can be mounted by containers belonging to the pod
+  ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-volume-storage/
+  volumes: []
+
 ## @section Usage Configuration
 usage:
   ## @param usage.horizontalPodAutoscalerSpec HorizontalPodAutoScaler configuration
@@ -891,7 +964,7 @@ usage:
   annotations: {}
 
   ## @param usage.image LlamaParseLayoutDetectionApi image
-  image: docker.io/llamaindex/llamacloud-backend:0.6.2
+  image: docker.io/llamaindex/llamacloud-backend:0.6.3
 
   ## @param usage.imagePullPolicy LlamaParseLayoutDetectionApi image pull policy
   imagePullPolicy: IfNotPresent
@@ -955,7 +1028,7 @@ temporalWorkloads:
     annotations: {}
 
     ## @param temporalWorkloads.llamaParse.image temporal llamaparse image
-    image: docker.io/llamaindex/llamacloud-llamaparse:0.6.2
+    image: docker.io/llamaindex/llamacloud-llamaparse:0.6.3
 
     ## @param temporalWorkloads.llamaParse.imagePullPolicy temporal llamaparse image pull policy
     imagePullPolicy: IfNotPresent
@@ -1016,7 +1089,7 @@ temporalWorkloads:
     annotations: {}
 
     ## @param temporalWorkloads.jobsService.image temporal jobsService image
-    image: docker.io/llamaindex/llamacloud-backend:0.6.2
+    image: docker.io/llamaindex/llamacloud-backend:0.6.3
 
     ## @param temporalWorkloads.jobsService.imagePullPolicy temporal jobsService image pull policy
     imagePullPolicy: IfNotPresent
@@ -1083,7 +1156,7 @@ temporalWorkloads:
       annotations: {}
 
       ## @param temporalWorkloads.workers.temporal-jobs-worker.image Frontend image
-      image: docker.io/llamaindex/llamacloud-backend:0.6.2
+      image: docker.io/llamaindex/llamacloud-backend:0.6.3
 
       ## @param temporalWorkloads.workers.temporal-jobs-worker.imagePullPolicy Frontend image pull policy
       imagePullPolicy: IfNotPresent
