@@ -9,47 +9,51 @@ capabilities:
   majorVersion: 1
   minorVersion: 28
 tests:
-  # Test that standard deployments are created regardless of temporal.enabled
-  - it: should create standard deployments when temporal is disabled
+  # Test that standard deployments are created with external temporal
+  - it: should create standard deployments with external temporal
     set:
-      temporal.enabled: false
+      temporal.deploy: false
+      temporal.host: "temporal.example.com"
+      temporal.port: 7233
       config.frontend.enabled: false
       config.parseOcr.enabled: false
       config.parseLayoutDetection.enabled: false
     template: ../templates/llamacloud/deployment.yaml
     asserts:
       - hasDocuments:
-          count: 5
+          count: 8
 
-  - it: should create standard deployments when temporal is enabled
+  - it: should create standard deployments with subchart temporal
     set:
-      temporal.enabled: true
+      temporal.deploy: true
       config.frontend.enabled: false
       config.parseOcr.enabled: false
       config.parseLayoutDetection.enabled: false
     template: ../templates/llamacloud/deployment.yaml
     asserts:
       - hasDocuments:
-          count: 5
+          count: 8
 
-  - it: should create standard services when temporal is disabled
+  - it: should create standard services with external temporal
     set:
-      temporal.enabled: false
+      temporal.deploy: false
+      temporal.host: "temporal.example.com"
+      temporal.port: 7233
       config.frontend.enabled: false
       config.parseOcr.enabled: false
       config.parseLayoutDetection.enabled: false
     template: ../templates/llamacloud/service.yaml
     asserts:
       - hasDocuments:
-          count: 5
+          count: 8
 
-  - it: should create standard services when temporal is enabled
+  - it: should create standard services with subchart temporal
     set:
-      temporal.enabled: true
+      temporal.deploy: true
       config.frontend.enabled: false
       config.parseOcr.enabled: false
       config.parseLayoutDetection.enabled: false
     template: ../templates/llamacloud/service.yaml
     asserts:
       - hasDocuments:
-          count: 5
+          count: 8

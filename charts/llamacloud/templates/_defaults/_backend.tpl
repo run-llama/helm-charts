@@ -100,7 +100,7 @@ Parameters:
     name: extract-config
 - configMapRef:
     name: urls-config
-{{- if and (.root.Values.temporal).enabled (.root.Values.temporal).host (.root.Values.temporal).port }}
+{{- if not .root.Values.temporal.disabled }}
 - configMapRef:
     name: temporal-connection-config
 {{- end }}

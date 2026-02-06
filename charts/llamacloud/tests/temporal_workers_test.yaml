@@ -9,25 +9,29 @@ capabilities:
   majorVersion: 1
   minorVersion: 28
 tests:
-  # Test deployments
-  - it: should create standard deployments when temporal is disabled
+  # Test deployments with external temporal
+  - it: should create deployments with external temporal
     set:
-      temporal.enabled: false
+      temporal.deploy: false
+      temporal.host: "temporal.example.com"
+      temporal.port: 7233
       config.frontend.enabled: false
       config.parseOcr.enabled: false
       config.parseLayoutDetection.enabled: false
     template: ../templates/llamacloud/deployment.yaml
     asserts:
       - hasDocuments:
-          count: 5
+          count: 8
 
-  - it: should create standard services when temporal is disabled
+  - it: should create services with external temporal
     set:
-      temporal.enabled: false
+      temporal.deploy: false
+      temporal.host: "temporal.example.com"
+      temporal.port: 7233
       config.frontend.enabled: false
       config.parseOcr.enabled: false
       config.parseLayoutDetection.enabled: false
     template: ../templates/llamacloud/service.yaml
     asserts:
       - hasDocuments:
-          count: 5
+          count: 8

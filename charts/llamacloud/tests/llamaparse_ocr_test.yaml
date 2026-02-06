@@ -73,6 +73,10 @@ tests:
         enabled: false
       parseLayoutDetection:
         enabled: false
+    temporal:
+      deploy: false
+      host: test-temporal
+      port: 7233
     redis:
       host: test-redis
       port: "6379"
@@ -94,7 +98,7 @@ tests:
   template: ../templates/llamacloud/deployment.yaml
   asserts:
     - hasDocuments:
-        count: 5
+        count: 8
 
 - it: should not create a service if llamaParseOcr.enabled is false
   set:
@@ -105,6 +109,10 @@ tests:
         enabled: false
       parseLayoutDetection:
         enabled: false
+    temporal:
+      deploy: false
+      host: test-temporal
+      port: 7233
     redis:
       host: test-redis
       port: "6379"
@@ -126,7 +134,7 @@ tests:
   template: ../templates/llamacloud/service.yaml
   asserts:
     - hasDocuments:
-        count: 5
+        count: 8
 
 - it: should not create a HPA if llamaParseOcr has no horizontalPodAutoscalerSpec
   set:
