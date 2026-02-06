@@ -85,14 +85,109 @@ qdrant:
   ## @param qdrant.secret Name of the existing secret to use for the QDRANT Data-Sink
   secret: ""
 
-## @section Optional Temporal configuration
+## @section Temporal configuration (required) - either deploy Temporal as a subchart or connect to an external Temporal instance
 temporal:
-  ## @param temporal.enabled Enable Temporal for backend
-  enabled: false
-  ## @param temporal.host Temporal host
+  ## @param temporal.disabled Completely disable Temporal and all Temporal workloads (configmaps, jobs, workers). temporal.deploy must be false when this is true.
+  disabled: false
+  ## @param temporal.deploy Deploy Temporal as a subchart (if false, use external Temporal)
+  deploy: false
+  ## @param temporal.host Temporal host (ignored when deploy is true, auto-configured to subchart)
   host: ""
-  ## @param temporal.port Temporal port
+  ## @param temporal.port Temporal port (ignored when deploy is true, auto-configured to subchart)
   port: 7233
+
+## @section Temporal Subchart Configuration
+## Configuration for the Temporal subchart (only used when temporal.deploy is true)
+## Temporal reuses the main postgresql configuration - just set postgresql.* values above
+## and temporal will use the same host/port/username/password with separate databases.
+## See https://github.com/temporalio/helm-charts for all available options
+temporal-subchart:
+  serviceAccount:
+    ## @param temporal-subchart.serviceAccount.create Create a service account for Temporal
+    create: true
+    ## @param temporal-subchart.serviceAccount.name Name of the service account for Temporal
+    name: temporal-server
+  web:
+    ## @param temporal-subchart.web.enabled Enable Temporal Web UI
+    enabled: true
+    service:
+      ## @param temporal-subchart.web.service.port Port for Temporal Web UI service
+      port: 80
+  server:
+    config:
+      persistence:
+        default:
+          ## @param temporal-subchart.server.config.persistence.default.driver Persistence driver for default store
+          driver: sql
+          sql:
+            ## @param temporal-subchart.server.config.persistence.default.sql.driver SQL driver for default store
+            driver: postgres12
+            ## @param temporal-subchart.server.config.persistence.default.sql.host PostgreSQL host (use same as postgresql.host)
+            host: ""
+            ## @param temporal-subchart.server.config.persistence.default.sql.port PostgreSQL port (use same as postgresql.port)
+            port: 5432
+            ## @param temporal-subchart.server.config.persistence.default.sql.database Database name for temporal (created automatically)
+            database: temporal
+            ## @param temporal-subchart.server.config.persistence.default.sql.user PostgreSQL user (use same as postgresql.username)
+            user: ""
+            ## @param temporal-subchart.server.config.persistence.default.sql.existingSecret Use existing secret for password (auto-created from postgresql.password)
+            existingSecret: temporal-postgresql-secret
+            ## @param temporal-subchart.server.config.persistence.default.sql.maxConns Maximum number of connections for default store
+            maxConns: 20
+            ## @param temporal-subchart.server.config.persistence.default.sql.maxIdleConns Maximum number of idle connections for default store
+            maxIdleConns: 20
+            ## @param temporal-subchart.server.config.persistence.default.sql.maxConnLifetime Maximum connection lifetime for default store
+            maxConnLifetime: "1h"
+        visibility:
+          ## @param temporal-subchart.server.config.persistence.visibility.driver Persistence driver for visibility store
+          driver: sql
+          sql:
+            ## @param temporal-subchart.server.config.persistence.visibility.sql.driver SQL driver for visibility store
+            driver: postgres12
+            ## @param temporal-subchart.server.config.persistence.visibility.sql.host PostgreSQL host (use same as postgresql.host)
+            host: ""
+            ## @param temporal-subchart.server.config.persistence.visibility.sql.port PostgreSQL port (use same as postgresql.port)
+            port: 5432
+            ## @param temporal-subchart.server.config.persistence.visibility.sql.database Database name for temporal visibility (created automatically)
+            database: temporal_visibility
+            ## @param temporal-subchart.server.config.persistence.visibility.sql.user PostgreSQL user (use same as postgresql.username)
+            user: ""
+            ## @param temporal-subchart.server.config.persistence.visibility.sql.existingSecret Use existing secret for password (auto-created from postgresql.password)
+            existingSecret: temporal-postgresql-secret
+            ## @param temporal-subchart.server.config.persistence.visibility.sql.maxConns Maximum number of connections for visibility store
+            maxConns: 20
+            ## @param temporal-subchart.server.config.persistence.visibility.sql.maxIdleConns Maximum number of idle connections for visibility store
+            maxIdleConns: 20
+            ## @param temporal-subchart.server.config.persistence.visibility.sql.maxConnLifetime Maximum connection lifetime for visibility store
+            maxConnLifetime: "1h"
+  schema:
+    createDatabase:
+      ## @param temporal-subchart.schema.createDatabase.enabled Enable automatic database creation for Temporal
+      enabled: true
+    setup:
+      ## @param temporal-subchart.schema.setup.enabled Enable schema setup for Temporal
+      enabled: true
+    update:
+      ## @param temporal-subchart.schema.update.enabled Enable schema updates for Temporal
+      enabled: true
+  ## @param temporal-subchart.prometheus.enabled Enable Prometheus for Temporal (disabled, use main monitoring)
+  prometheus:
+    enabled: false
+  ## @param temporal-subchart.grafana.enabled Enable Grafana for Temporal (disabled, use main monitoring)
+  grafana:
+    enabled: false
+  ## @param temporal-subchart.elasticsearch.enabled Enable Elasticsearch for Temporal
+  elasticsearch:
+    enabled: false
+  ## @param temporal-subchart.cassandra.enabled Enable Cassandra for Temporal
+  cassandra:
+    enabled: false
+  ## @param temporal-subchart.mysql.enabled Enable MySQL for Temporal
+  mysql:
+    enabled: false
+  ## @param temporal-subchart.postgresql.enabled Enable bundled PostgreSQL for Temporal (disabled, use external)
+  postgresql:
+    enabled: false
 
 ## @section Ingress Configuration
 ingress:
@@ -467,7 +562,7 @@ frontend:
   annotations: {}
 
   ## @param frontend.image Frontend image
-  image: docker.io/llamaindex/llamacloud-frontend:0.6.3
+  image: docker.io/llamaindex/llamacloud-frontend:0.7.0
 
   ## @param frontend.imagePullPolicy Frontend image pull policy
   imagePullPolicy: IfNotPresent
@@ -529,7 +624,7 @@ backend:
   annotations: {}
 
   ## @param backend.image Backend image
-  image: docker.io/llamaindex/llamacloud-backend:0.6.3
+  image: docker.io/llamaindex/llamacloud-backend:0.7.0
 
   ## @param backend.imagePullPolicy Backend image pull policy
   imagePullPolicy: IfNotPresent
@@ -591,7 +686,7 @@ jobsService:
   annotations: {}
 
   ## @param jobsService.image JobsService image
-  image: docker.io/llamaindex/llamacloud-backend:0.6.3
+  image: docker.io/llamaindex/llamacloud-backend:0.7.0
 
   ## @param jobsService.imagePullPolicy JobsService image pull policy
   imagePullPolicy: IfNotPresent
@@ -653,7 +748,7 @@ jobsWorker:
   annotations: {}
 
   ## @param jobsWorker.image JobsWorker image
-  image: docker.io/llamaindex/llamacloud-backend:0.6.3
+  image: docker.io/llamaindex/llamacloud-backend:0.7.0
 
   ## @param jobsWorker.imagePullPolicy JobsWorker image pull policy
   imagePullPolicy: IfNotPresent
@@ -715,7 +810,7 @@ llamaParse:
   annotations: {}
 
   ## @param llamaParse.image LlamaParse image
-  image: docker.io/llamaindex/llamacloud-llamaparse:0.6.3
+  image: docker.io/llamaindex/llamacloud-llamaparse:0.7.0
 
   ## @param llamaParse.imagePullPolicy LlamaParse image pull policy
   imagePullPolicy: IfNotPresent
@@ -777,7 +872,7 @@ llamaParseOcr:
   annotations: {}
 
   ## @param llamaParseOcr.image LlamaParseOcr image
-  image: docker.io/llamaindex/llamacloud-llamaparse-ocr:0.6.3
+  image: docker.io/llamaindex/llamacloud-llamaparse-ocr:0.7.0
 
   ## @param llamaParseOcr.imagePullPolicy LlamaParseOcr image pull policy
   imagePullPolicy: IfNotPresent
@@ -839,7 +934,7 @@ llamaParseLayoutDetectionApi:
   annotations: {}
 
   ## @param llamaParseLayoutDetectionApi.image LlamaParseLayoutDetectionApi image
-  image: docker.io/llamaindex/llamacloud-layout-detection-api:0.6.3
+  image: docker.io/llamaindex/llamacloud-layout-detection-api:0.7.0
 
   ## @param llamaParseLayoutDetectionApi.imagePullPolicy LlamaParseLayoutDetectionApi image pull policy
   imagePullPolicy: IfNotPresent
@@ -964,7 +1059,7 @@ usage:
   annotations: {}
 
   ## @param usage.image LlamaParseLayoutDetectionApi image
-  image: docker.io/llamaindex/llamacloud-backend:0.6.3
+  image: docker.io/llamaindex/llamacloud-backend:0.7.0
 
   ## @param usage.imagePullPolicy LlamaParseLayoutDetectionApi image pull policy
   imagePullPolicy: IfNotPresent
@@ -1028,7 +1123,7 @@ temporalWorkloads:
     annotations: {}
 
     ## @param temporalWorkloads.llamaParse.image temporal llamaparse image
-    image: docker.io/llamaindex/llamacloud-llamaparse:0.6.3
+    image: docker.io/llamaindex/llamacloud-llamaparse:0.7.0
 
     ## @param temporalWorkloads.llamaParse.imagePullPolicy temporal llamaparse image pull policy
     imagePullPolicy: IfNotPresent
@@ -1089,7 +1184,7 @@ temporalWorkloads:
     annotations: {}
 
     ## @param temporalWorkloads.jobsService.image temporal jobsService image
-    image: docker.io/llamaindex/llamacloud-backend:0.6.3
+    image: docker.io/llamaindex/llamacloud-backend:0.7.0
 
     ## @param temporalWorkloads.jobsService.imagePullPolicy temporal jobsService image pull policy
     imagePullPolicy: IfNotPresent
@@ -1156,7 +1251,7 @@ temporalWorkloads:
       annotations: {}
 
       ## @param temporalWorkloads.workers.temporal-jobs-worker.image Frontend image
-      image: docker.io/llamaindex/llamacloud-backend:0.6.3
+      image: docker.io/llamaindex/llamacloud-backend:0.7.0
 
       ## @param temporalWorkloads.workers.temporal-jobs-worker.imagePullPolicy Frontend image pull policy
       imagePullPolicy: IfNotPresent

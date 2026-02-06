@@ -114,7 +114,8 @@ Activated Components
 {{- if (($.Values.config).parseLayoutDetectionV3).enabled }}
 {{- $activated = set $activated "llamaParseLayoutDetectionApiV3" (include "llamacloud.component.llamaParseLayoutDetectionApiV3" . | fromYaml) }}
 {{- end }}
-{{- if and ($.Values.temporal).enabled ($.Values.temporal).host ($.Values.temporal).port }}
+{{- /* Temporal workloads - skip when temporal is disabled */}}
+{{- if not $.Values.temporal.disabled }}
 {{- $activated = set $activated "temporalJobsService" (include "llamacloud.component.temporal.jobsService" . | fromYaml) }}
 {{- $activated = set $activated "temporalLlamaParse" (include "llamacloud.component.temporal.llamaParse" . | fromYaml) }}
 {{- range $workerName, $workerConfig := .Values.temporalWorkloads.workers }}

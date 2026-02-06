@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## [0.7.0] - 2026-02-05
+
+### Platform
+- **[Security]** Security updates
+- **[Docs]** Updated Temporal Integration instructions
+
+### LlamaParse
+- **[Feature]** Parsing V2 field updates (text_full)
+
 ## [0.6.3] - 2026-01-30
 
 ### Platform

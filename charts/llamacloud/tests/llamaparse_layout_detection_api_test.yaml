@@ -107,6 +107,10 @@ tests:
         enabled: false
       parseLayoutDetection:
         enabled: false
+    temporal:
+      deploy: false
+      host: test-temporal
+      port: 7233
     redis:
       host: test-redis
       port: "6379"
@@ -129,7 +133,7 @@ tests:
   asserts:
     - matchRegex:
         path: metadata.name
-        pattern: ^(llamacloud|llamacloud-operator|llamacloud-worker|llamacloud-parse|llamacloud-telemetry)$
+        pattern: ^(llamacloud|llamacloud-operator|llamacloud-worker|llamacloud-parse|llamacloud-telemetry|llamacloud-temporal-operator|llamacloud-temporal-parse|temporal-jobs-worker)$
 
 - it: should create a service if config.parseLayoutDetection.enabled is true
   set:
