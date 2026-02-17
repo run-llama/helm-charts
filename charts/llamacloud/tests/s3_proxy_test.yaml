@@ -154,7 +154,7 @@ tests:
         value: s3proxy
     - equal:
         path: .spec.template.spec.containers[1].image
-        value: docker.io/andrewgaul/s3proxy:sha-82e50ee
+        value: docker.io/andrewgaul/s3proxy:sha-001d042
     - equal:
         path: .spec.template.spec.containers[1].ports[0].containerPort
         value: 8080
@@ -393,7 +393,7 @@ tests:
         value: s3proxy
     - equal:
         path: .spec.template.spec.containers[1].image
-        value: docker.io/andrewgaul/s3proxy:sha-82e50ee
+        value: docker.io/andrewgaul/s3proxy:sha-001d042
 
 - it: should not inject s3proxy sidecar into jobs-worker when s3proxy is disabled
   set:

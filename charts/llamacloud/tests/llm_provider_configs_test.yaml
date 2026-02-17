@@ -1,0 +1,188 @@
+suite: llm-provider-configs-tests
+
+templates:
+- ../templates/llamacloud/secrets/llm.provider-configs.yaml
+- ../templates/llamacloud/deployment.yaml
+
+release:
+  name: test-release
+  namespace: test-namespace
+
+capabilities:
+  majorVersion: 1
+  minorVersion: 31
+  apiVersions:
+    - apps/v1
+
+chart:
+  appVersion: 0.0.0
+
+tests:
+- it: should create llm-provider-configs-secret when providerConfigs is set
+  set:
+    config.llms.providerConfigs:
+      - id: "test-openai"
+        provider: "openai"
+        model_id: "openai-gpt-4o"
+        enabled: true
+        priority: 200
+        tags:
+          - "product:llamaparse"
+        credentials:
+          api_key: "sk-test-key"
+    config.frontend.enabled: false
+    config.parseOcr.enabled: false
+    config.parseLayoutDetection.enabled: false
+  template: ../templates/llamacloud/secrets/llm.provider-configs.yaml
+  asserts:
+    - isKind:
+        of: Secret
+    - equal:
+        path: .metadata.name
+        value: llm-provider-configs-secret
+    - isNotEmpty:
+        path: .data.LLM_PROVIDER_CONFIGS_JSON
+
+- it: should create secret with multiple provider configs
+  set:
+    config.llms.providerConfigs:
+      - id: "openai-primary"
+        provider: "openai"
+        model_id: "openai-gpt-4o"
+        priority: 200
+        credentials:
+          api_key: "sk-test"
+          base_url: "https://api.openai.com/v1"
+      - id: "azure-fallback"
+        provider: "azure"
+        model_id: "openai-gpt-4o-mini"
+        priority: 100
+        credentials:
+          api_key: "azure-key"
+          endpoint: "https://test.openai.azure.com"
+          deployment_id: "gpt-4o-mini"
+          api_version: "2024-08-06"
+      - id: "anthropic-secondary"
+        provider: "anthropic"
+        model_id: "anthropic-sonnet-4.5"
+        credentials:
+          api_key: "sk-ant-test"
+    config.frontend.enabled: false
+    config.parseOcr.enabled: false
+    config.parseLayoutDetection.enabled: false
+  template: ../templates/llamacloud/secrets/llm.provider-configs.yaml
+  asserts:
+    - isKind:
+        of: Secret
+    - isNotEmpty:
+        path: .data.LLM_PROVIDER_CONFIGS_JSON
+
+- it: should not create secret when providerConfigs is empty
+  set:
+    config.llms.providerConfigs: []
+    config.frontend.enabled: false
+    config.parseOcr.enabled: false
+    config.parseLayoutDetection.enabled: false
+  template: ../templates/llamacloud/secrets/llm.provider-configs.yaml
+  asserts:
+    - hasDocuments:
+        count: 0
+
+- it: should include llm-provider-configs-secret in jobs-service envFrom
+  set:
+    config.llms.providerConfigs:
+      - provider: "openai"
+        model_id: "openai-gpt-4o"
+        credentials:
+          api_key: "test"
+    config.frontend.enabled: false
+    config.parseOcr.enabled: false
+    config.parseLayoutDetection.enabled: false
+  template: ../templates/llamacloud/deployment.yaml
+  documentIndex: 1
+  asserts:
+    - contains:
+        path: .spec.template.spec.containers[0].envFrom
+        content:
+          secretRef:
+            name: llm-provider-configs-secret
+
+- it: should include llm-provider-configs-secret in jobs-worker envFrom
+  set:
+    config.llms.providerConfigs:
+      - provider: "anthropic"
+        model_id: "anthropic-sonnet-4.5"
+        credentials:
+          api_key: "test"
+    config.frontend.enabled: false
+    config.parseOcr.enabled: false
+    config.parseLayoutDetection.enabled: false
+  template: ../templates/llamacloud/deployment.yaml
+  documentIndex: 2
+  asserts:
+    - contains:
+        path: .spec.template.spec.containers[0].envFrom
+        content:
+          secretRef:
+            name: llm-provider-configs-secret
+
+- it: should include llm-provider-configs-secret in backend envFrom
+  set:
+    config.llms.providerConfigs:
+      - provider: "vertexai"
+        model_id: "anthropic-sonnet-4.5"
+        credentials:
+          project_id: "test-project"
+          location: "us-central1"
+          credentials: "{}"
+    config.frontend.enabled: false
+    config.parseOcr.enabled: false
+    config.parseLayoutDetection.enabled: false
+  template: ../templates/llamacloud/deployment.yaml
+  documentIndex: 0
+  asserts:
+    - contains:
+        path: .spec.template.spec.containers[0].envFrom
+        content:
+          secretRef:
+            name: llm-provider-configs-secret
+
+- it: should support bedrock credentials with all optional fields
+  set:
+    config.llms.providerConfigs:
+      - provider: "bedrock"
+        model_id: "anthropic-sonnet-4.5"
+        credentials:
+          access_key_id: "AKIATEST"
+          secret_access_key: "test-secret"
+          region: "us-east-1"
+          base_url: "https://bedrock.us-east-1.amazonaws.com"
+    config.frontend.enabled: false
+    config.parseOcr.enabled: false
+    config.parseLayoutDetection.enabled: false
+  template: ../templates/llamacloud/secrets/llm.provider-configs.yaml
+  asserts:
+    - isKind:
+        of: Secret
+    - isNotEmpty:
+        path: .data.LLM_PROVIDER_CONFIGS_JSON
+
+- it: should support configs with custom headers
+  set:
+    config.llms.providerConfigs:
+      - provider: "openai"
+        model_id: "openai-gpt-4o"
+        credentials:
+          api_key: "test"
+        headers:
+          X-Custom-Header: "custom-value"
+          X-Request-ID: "test-request"
+    config.frontend.enabled: false
+    config.parseOcr.enabled: false
+    config.parseLayoutDetection.enabled: false
+  template: ../templates/llamacloud/secrets/llm.provider-configs.yaml
+  asserts:
+    - isKind:
+        of: Secret
+    - isNotEmpty:
+        path: .data.LLM_PROVIDER_CONFIGS_JSON

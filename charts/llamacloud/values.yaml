@@ -278,6 +278,54 @@ config:
       ## @param config.llms.googleVertexAi.secret Name of the existing secret to use for the Google Vertex AI API key
       secret: ""
 
+    ## @section Custom LLM Provider Configurations
+    ## @param config.llms.providerConfigs Custom LLM provider configurations as structured data (array of provider config entries)
+    ##
+    ## Configure multiple LLM provider instances with custom credentials, priority-based routing,
+    ## and product-specific tags. Configs are validated and merged with environment-based configs at runtime.
+    ##
+    ## Valid provider values: openai, azure, anthropic, vertexai, bedrock
+    ##
+    ## Valid model_id values:
+    ##   OpenAI: openai-gpt-4o, openai-gpt-4o-mini, openai-gpt-4-1, openai-gpt-4-1-mini,
+    ##           openai-gpt-4-1-nano, openai-gpt-5, openai-gpt-5-mini, openai-gpt-5-nano
+    ##   Anthropic: anthropic-sonnet-3.5, anthropic-sonnet-3.5-v2, anthropic-sonnet-3.7,
+    ##              anthropic-sonnet-4.0, anthropic-sonnet-4.5, anthropic-haiku-4.5
+    ##
+    ## Credentials schema by provider (? indicates optional field):
+    ##   openai: {api_key, org_id?, base_url?}
+    ##   azure: {api_key, endpoint, deployment_id?, api_version?}
+    ##   anthropic: {api_key, base_url?}
+    ##   vertexai: {project_id?, location?, credentials?, base_url?}
+    ##   bedrock: {access_key_id?, secret_access_key?, region?, base_url?}
+    ##
+    ## Example:
+    ## providerConfigs:
+    ##   - id: "byoc-openai-primary"
+    ##     provider: "openai"
+    ##     model_id: "openai-gpt-4o"
+    ##     enabled: true
+    ##     priority: 200
+    ##     tags:
+    ##       - "product:llamaparse"
+    ##       - "customer:acme"
+    ##     credentials:
+    ##       api_key: "sk-..."
+    ##       base_url: "https://api.openai.com/v1"  # optional
+    ##     headers:
+    ##       X-Custom-Header: "value"  # optional
+    ##   - id: "byoc-azure-fallback"
+    ##     provider: "azure"
+    ##     model_id: "openai-gpt-4o-mini"
+    ##     enabled: true
+    ##     priority: 100
+    ##     credentials:
+    ##       api_key: "..."
+    ##       endpoint: "https://your-resource.openai.azure.com"
+    ##       deployment_id: "gpt-4o-mini"
+    ##       api_version: "2024-08-06"
+    providerConfigs: []
+
   ## @section authentication Configuration
   ## Choose either Basic Auth or OIDC for backend authentication
   authentication:
@@ -349,7 +397,7 @@ config:
       ## @param config.storageBuckets.s3proxy.enabled S3Proxy image
       enabled: false
       ## @param config.storageBuckets.s3proxy.image S3Proxy image
-      image: "docker.io/andrewgaul/s3proxy:sha-82e50ee"
+      image: "docker.io/andrewgaul/s3proxy:sha-001d042"
       ## @param config.storageBuckets.s3proxy.imagePullPolicy S3Proxy image pull policy
       imagePullPolicy: "IfNotPresent"
       ## @param config.storageBuckets.s3proxy.containerPort S3Proxy container port
@@ -515,6 +563,11 @@ config:
     ## See https://github.com/temporalio/helm-charts?tab=readme-ov-file#running-temporal-cli-from-the-admin-tools-container
     namespace: ""
 
+    ## Job Cleanup Hook
+    jobCleanup:
+      ## @param config.temporal.jobCleanup.image Image for the kubectl job cleanup hook
+      image: "bitnami/kubectl:latest"
+
     ## Search Attributes Job
     searchAttributesJob:
       ## @param config.temporal.searchAttributesJob.enabled Enable the search attributes job
@@ -562,7 +615,7 @@ frontend:
   annotations: {}
 
   ## @param frontend.image Frontend image
-  image: docker.io/llamaindex/llamacloud-frontend:0.7.0
+  image: docker.io/llamaindex/llamacloud-frontend:0.7.1
 
   ## @param frontend.imagePullPolicy Frontend image pull policy
   imagePullPolicy: IfNotPresent
@@ -624,7 +677,7 @@ backend:
   annotations: {}
 
   ## @param backend.image Backend image
-  image: docker.io/llamaindex/llamacloud-backend:0.7.0
+  image: docker.io/llamaindex/llamacloud-backend:0.7.1
 
   ## @param backend.imagePullPolicy Backend image pull policy
   imagePullPolicy: IfNotPresent
@@ -686,7 +739,7 @@ jobsService:
   annotations: {}
 
   ## @param jobsService.image JobsService image
-  image: docker.io/llamaindex/llamacloud-backend:0.7.0
+  image: docker.io/llamaindex/llamacloud-backend:0.7.1
 
   ## @param jobsService.imagePullPolicy JobsService image pull policy
   imagePullPolicy: IfNotPresent
@@ -748,7 +801,7 @@ jobsWorker:
   annotations: {}
 
   ## @param jobsWorker.image JobsWorker image
-  image: docker.io/llamaindex/llamacloud-backend:0.7.0
+  image: docker.io/llamaindex/llamacloud-backend:0.7.1
 
   ## @param jobsWorker.imagePullPolicy JobsWorker image pull policy
   imagePullPolicy: IfNotPresent
@@ -810,7 +863,7 @@ llamaParse:
   annotations: {}
 
   ## @param llamaParse.image LlamaParse image
-  image: docker.io/llamaindex/llamacloud-llamaparse:0.7.0
+  image: docker.io/llamaindex/llamacloud-llamaparse:0.7.1
 
   ## @param llamaParse.imagePullPolicy LlamaParse image pull policy
   imagePullPolicy: IfNotPresent
@@ -872,7 +925,7 @@ llamaParseOcr:
   annotations: {}
 
   ## @param llamaParseOcr.image LlamaParseOcr image
-  image: docker.io/llamaindex/llamacloud-llamaparse-ocr:0.7.0
+  image: docker.io/llamaindex/llamacloud-llamaparse-ocr:0.7.1
 
   ## @param llamaParseOcr.imagePullPolicy LlamaParseOcr image pull policy
   imagePullPolicy: IfNotPresent
@@ -934,7 +987,7 @@ llamaParseLayoutDetectionApi:
   annotations: {}
 
   ## @param llamaParseLayoutDetectionApi.image LlamaParseLayoutDetectionApi image
-  image: docker.io/llamaindex/llamacloud-layout-detection-api:0.7.0
+  image: docker.io/llamaindex/llamacloud-layout-detection-api:0.7.1
 
   ## @param llamaParseLayoutDetectionApi.imagePullPolicy LlamaParseLayoutDetectionApi image pull policy
   imagePullPolicy: IfNotPresent
@@ -1059,7 +1112,7 @@ usage:
   annotations: {}
 
   ## @param usage.image LlamaParseLayoutDetectionApi image
-  image: docker.io/llamaindex/llamacloud-backend:0.7.0
+  image: docker.io/llamaindex/llamacloud-backend:0.7.1
 
   ## @param usage.imagePullPolicy LlamaParseLayoutDetectionApi image pull policy
   imagePullPolicy: IfNotPresent
@@ -1123,7 +1176,7 @@ temporalWorkloads:
     annotations: {}
 
     ## @param temporalWorkloads.llamaParse.image temporal llamaparse image
-    image: docker.io/llamaindex/llamacloud-llamaparse:0.7.0
+    image: docker.io/llamaindex/llamacloud-llamaparse:0.7.1
 
     ## @param temporalWorkloads.llamaParse.imagePullPolicy temporal llamaparse image pull policy
     imagePullPolicy: IfNotPresent
@@ -1184,7 +1237,7 @@ temporalWorkloads:
     annotations: {}
 
     ## @param temporalWorkloads.jobsService.image temporal jobsService image
-    image: docker.io/llamaindex/llamacloud-backend:0.7.0
+    image: docker.io/llamaindex/llamacloud-backend:0.7.1
 
     ## @param temporalWorkloads.jobsService.imagePullPolicy temporal jobsService image pull policy
     imagePullPolicy: IfNotPresent
@@ -1251,7 +1304,7 @@ temporalWorkloads:
       annotations: {}
 
       ## @param temporalWorkloads.workers.temporal-jobs-worker.image Frontend image
-      image: docker.io/llamaindex/llamacloud-backend:0.7.0
+      image: docker.io/llamaindex/llamacloud-backend:0.7.1
 
       ## @param temporalWorkloads.workers.temporal-jobs-worker.imagePullPolicy Frontend image pull policy
       imagePullPolicy: IfNotPresent

@@ -5,7 +5,7 @@ S3Proxy Sidecar Container Definition.
 {{- if ((($.Values.config).storageBuckets).s3proxy.enabled | default false) }}
 - name: s3proxy
   securityContext: {{ toYaml ((($.Values.config).storageBuckets).s3proxy).securityContext | indent 4}}
-  image: "{{ ((($.Values.config).storageBuckets).s3proxy).image | default "docker.io/andrewgaul/s3proxy:sha-82e50ee" }}"
+  image: "{{ ((($.Values.config).storageBuckets).s3proxy).image | default "docker.io/andrewgaul/s3proxy:sha-001d042" }}"
   imagePullPolicy: {{ ((($.Values.config).storageBuckets).s3proxy).imagePullPolicy | default "IfNotPresent" }}
   ports:
   - name: http
@@ -20,7 +20,9 @@ S3Proxy Sidecar Container Definition.
       memory: {{ ((((($.Values.config).storageBuckets).s3proxy).resources).limits).memory | default "1Gi" }}
   env:
   - name: LOG_LEVEL
-    value: {{ ($.Values.config).logLevel | default "info" }}
+    value: {{ ((($.Values.config).storageBuckets).s3proxy).logLevel | default ($.Values.config).logLevel | default "info" }}
+  - name: S3PROXY_LOG_LEVEL
+    value: {{ ((($.Values.config).storageBuckets).s3proxy).logLevel | default ($.Values.config).logLevel | default "info" }}
   envFrom:
   - configMapRef:
       name: s3proxy-config
