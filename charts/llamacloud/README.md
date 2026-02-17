@@ -119,12 +119,12 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 
 ### Temporal configuration (required) - either deploy Temporal as a subchart or connect to an external Temporal instance
 
-| Name                | Description                                                                        | Value   |
-| ------------------- | ---------------------------------------------------------------------------------- | ------- |
-| `temporal.disabled` | Completely disable Temporal and all Temporal workloads (configmaps, jobs, workers) | `false` |
-| `temporal.deploy`   | Deploy Temporal as a subchart (if false, use external Temporal)                    | `false` |
-| `temporal.host`     | Temporal host (ignored when deploy is true, auto-configured to subchart)           | `""`    |
-| `temporal.port`     | Temporal port (ignored when deploy is true, auto-configured to subchart)           | `7233`  |
+| Name                | Description                                                                                                                          | Value   |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | ------- |
+| `temporal.disabled` | Completely disable Temporal and all Temporal workloads (configmaps, jobs, workers). temporal.deploy must be false when this is true. | `false` |
+| `temporal.deploy`   | Deploy Temporal as a subchart (if false, use external Temporal)                                                                      | `false` |
+| `temporal.host`     | Temporal host (ignored when deploy is true, auto-configured to subchart)                                                             | `""`    |
+| `temporal.port`     | Temporal port (ignored when deploy is true, auto-configured to subchart)                                                             | `7233`  |
 
 ### Temporal Subchart Configuration
 
@@ -236,6 +236,12 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 | `config.llms.googleVertexAi.credentialsJson` | Google Vertex AI credentials JSON                                   | `""`  |
 | `config.llms.googleVertexAi.secret`          | Name of the existing secret to use for the Google Vertex AI API key | `""`  |
 
+### Custom LLM Provider Configurations
+
+| Name                          | Description                                                                              | Value |
+| ----------------------------- | ---------------------------------------------------------------------------------------- | ----- |
+| `config.llms.providerConfigs` | Custom LLM provider configurations as structured data (array of provider config entries) | `[]`  |
+
 ### authentication Configuration
 
 
@@ -280,7 +286,7 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 | Name                                            | Description                                                                  | Value                                      |
 | ----------------------------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------ |
 | `config.storageBuckets.s3proxy.enabled`         | S3Proxy image                                                                | `false`                                    |
-| `config.storageBuckets.s3proxy.image`           | S3Proxy image                                                                | `docker.io/andrewgaul/s3proxy:sha-82e50ee` |
+| `config.storageBuckets.s3proxy.image`           | S3Proxy image                                                                | `docker.io/andrewgaul/s3proxy:sha-001d042` |
 | `config.storageBuckets.s3proxy.imagePullPolicy` | S3Proxy image pull policy                                                    | `IfNotPresent`                             |
 | `config.storageBuckets.s3proxy.containerPort`   | S3Proxy container port                                                       | `8080`                                     |
 | `config.storageBuckets.s3proxy.securityContext` | Security context for the S3Proxy container                                   | `{}`                                       |
@@ -373,6 +379,7 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 | -------------------------------------------------------- | --------------------------------------------------------------------------------------------- | --------------------------------------- |
 | `config.temporal.workerRegistryProfile`                  | Temporal worker registry profile (default or consolidated)                                    | `consolidated`                          |
 | `config.temporal.namespace`                              | Temporal registered namespace                                                                 | `""`                                    |
+| `config.temporal.jobCleanup.image`                       | Image for the kubectl job cleanup hook                                                        | `bitnami/kubectl:latest`                |
 | `config.temporal.searchAttributesJob.enabled`            | Enable the search attributes job                                                              | `true`                                  |
 | `config.temporal.searchAttributesJob.image`              | Image for temporal admin tools                                                                | `docker.io/temporalio/admin-tools:1.29` |
 | `config.temporal.searchAttributesJob.attributes[0].name` | Name of the first search attribute                                                            | `Project`                               |
@@ -395,7 +402,7 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 | -------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
 | `frontend.horizontalPodAutoscalerSpec` | HorizontalPodAutoScaler configuration                                                                             | `{}`                                             |
 | `frontend.annotations`                 | Annotations added to the Frontend Deployment.                                                                     | `{}`                                             |
-| `frontend.image`                       | Frontend image                                                                                                    | `docker.io/llamaindex/llamacloud-frontend:0.7.0` |
+| `frontend.image`                       | Frontend image                                                                                                    | `docker.io/llamaindex/llamacloud-frontend:0.7.1` |
 | `frontend.imagePullPolicy`             | Frontend image pull policy                                                                                        | `IfNotPresent`                                   |
 | `frontend.securityContext`             | Security context for the container                                                                                | `{}`                                             |
 | `frontend.serviceAccountAnnotations`   | Annotations to add to the service account                                                                         | `{}`                                             |
@@ -416,7 +423,7 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 | ------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
 | `backend.horizontalPodAutoscalerSpec` | HorizontalPodAutoScaler configuration                                                                             | `{}`                                            |
 | `backend.annotations`                 | Annotations added to the Backend Deployment.                                                                      | `{}`                                            |
-| `backend.image`                       | Backend image                                                                                                     | `docker.io/llamaindex/llamacloud-backend:0.7.0` |
+| `backend.image`                       | Backend image                                                                                                     | `docker.io/llamaindex/llamacloud-backend:0.7.1` |
 | `backend.imagePullPolicy`             | Backend image pull policy                                                                                         | `IfNotPresent`                                  |
 | `backend.securityContext`             | Security context for the container                                                                                | `{}`                                            |
 | `backend.serviceAccountAnnotations`   | Annotations to add to the service account                                                                         | `{}`                                            |
@@ -437,7 +444,7 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 | ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
 | `jobsService.horizontalPodAutoscalerSpec` | HorizontalPodAutoScaler configuration                                                                             | `{}`                                            |
 | `jobsService.annotations`                 | Annotations added to the JobsService Deployment.                                                                  | `{}`                                            |
-| `jobsService.image`                       | JobsService image                                                                                                 | `docker.io/llamaindex/llamacloud-backend:0.7.0` |
+| `jobsService.image`                       | JobsService image                                                                                                 | `docker.io/llamaindex/llamacloud-backend:0.7.1` |
 | `jobsService.imagePullPolicy`             | JobsService image pull policy                                                                                     | `IfNotPresent`                                  |
 | `jobsService.securityContext`             | Security context for the container                                                                                | `{}`                                            |
 | `jobsService.serviceAccountAnnotations`   | Annotations to add to the service account                                                                         | `{}`                                            |
@@ -458,7 +465,7 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 | ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
 | `jobsWorker.horizontalPodAutoscalerSpec` | HorizontalPodAutoScaler configuration                                                                             | `{}`                                            |
 | `jobsWorker.annotations`                 | Annotations added to the JobsWorker Deployment.                                                                   | `{}`                                            |
-| `jobsWorker.image`                       | JobsWorker image                                                                                                  | `docker.io/llamaindex/llamacloud-backend:0.7.0` |
+| `jobsWorker.image`                       | JobsWorker image                                                                                                  | `docker.io/llamaindex/llamacloud-backend:0.7.1` |
 | `jobsWorker.imagePullPolicy`             | JobsWorker image pull policy                                                                                      | `IfNotPresent`                                  |
 | `jobsWorker.securityContext`             | Security context for the container                                                                                | `{}`                                            |
 | `jobsWorker.serviceAccountAnnotations`   | Annotations to add to the service account                                                                         | `{}`                                            |
@@ -479,7 +486,7 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 | ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
 | `llamaParse.horizontalPodAutoscalerSpec` | HorizontalPodAutoScaler configuration                                                                             | `{}`                                               |
 | `llamaParse.annotations`                 | Annotations added to the LlamaParse Deployment.                                                                   | `{}`                                               |
-| `llamaParse.image`                       | LlamaParse image                                                                                                  | `docker.io/llamaindex/llamacloud-llamaparse:0.7.0` |
+| `llamaParse.image`                       | LlamaParse image                                                                                                  | `docker.io/llamaindex/llamacloud-llamaparse:0.7.1` |
 | `llamaParse.imagePullPolicy`             | LlamaParse image pull policy                                                                                      | `IfNotPresent`                                     |
 | `llamaParse.securityContext`             | Security context for the container                                                                                | `{}`                                               |
 | `llamaParse.serviceAccountAnnotations`   | Annotations to add to the service account                                                                         | `{}`                                               |
@@ -500,7 +507,7 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 | ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
 | `llamaParseOcr.horizontalPodAutoscalerSpec` | HorizontalPodAutoScaler configuration                                                                             | `{}`                                                   |
 | `llamaParseOcr.annotations`                 | Annotations added to the LlamaParseOcr Deployment.                                                                | `{}`                                                   |
-| `llamaParseOcr.image`                       | LlamaParseOcr image                                                                                               | `docker.io/llamaindex/llamacloud-llamaparse-ocr:0.7.0` |
+| `llamaParseOcr.image`                       | LlamaParseOcr image                                                                                               | `docker.io/llamaindex/llamacloud-llamaparse-ocr:0.7.1` |
 | `llamaParseOcr.imagePullPolicy`             | LlamaParseOcr image pull policy                                                                                   | `IfNotPresent`                                         |
 | `llamaParseOcr.securityContext`             | Security context for the container                                                                                | `{}`                                                   |
 | `llamaParseOcr.serviceAccountAnnotations`   | Annotations to add to the service account                                                                         | `{}`                                                   |
@@ -521,7 +528,7 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 | ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
 | `llamaParseLayoutDetectionApi.horizontalPodAutoscalerSpec` | HorizontalPodAutoScaler configuration                                                                             | `{}`                                                         |
 | `llamaParseLayoutDetectionApi.annotations`                 | Annotations added to the LlamaParseLayoutDetectionApi Deployment.                                                 | `{}`                                                         |
-| `llamaParseLayoutDetectionApi.image`                       | LlamaParseLayoutDetectionApi image                                                                                | `docker.io/llamaindex/llamacloud-layout-detection-api:0.7.0` |
+| `llamaParseLayoutDetectionApi.image`                       | LlamaParseLayoutDetectionApi image                                                                                | `docker.io/llamaindex/llamacloud-layout-detection-api:0.7.1` |
 | `llamaParseLayoutDetectionApi.imagePullPolicy`             | LlamaParseLayoutDetectionApi image pull policy                                                                    | `IfNotPresent`                                               |
 | `llamaParseLayoutDetectionApi.securityContext`             | Security context for the container                                                                                | `{}`                                                         |
 | `llamaParseLayoutDetectionApi.serviceAccountAnnotations`   | Annotations to add to the service account                                                                         | `{}`                                                         |
@@ -563,7 +570,7 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 | ----------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
 | `usage.horizontalPodAutoscalerSpec` | HorizontalPodAutoScaler configuration                                                                             | `{}`                                            |
 | `usage.annotations`                 | Annotations added to the LlamaParseLayoutDetectionApi Deployment.                                                 | `{}`                                            |
-| `usage.image`                       | LlamaParseLayoutDetectionApi image                                                                                | `docker.io/llamaindex/llamacloud-backend:0.7.0` |
+| `usage.image`                       | LlamaParseLayoutDetectionApi image                                                                                | `docker.io/llamaindex/llamacloud-backend:0.7.1` |
 | `usage.imagePullPolicy`             | LlamaParseLayoutDetectionApi image pull policy                                                                    | `IfNotPresent`                                  |
 | `usage.securityContext`             | Security context for the container                                                                                | `{}`                                            |
 | `usage.serviceAccountAnnotations`   | Annotations to add to the service account                                                                         | `{}`                                            |
@@ -584,7 +591,7 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 | ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
 | `temporalWorkloads.llamaParse.horizontalPodAutoscalerSpec`  | HorizontalPodAutoScaler configuration                                                                             | `{}`                                               |
 | `temporalWorkloads.llamaParse.annotations`                  | Annotations added to the temporal llamaparse Deployment.                                                          | `{}`                                               |
-| `temporalWorkloads.llamaParse.image`                        | temporal llamaparse image                                                                                         | `docker.io/llamaindex/llamacloud-llamaparse:0.7.0` |
+| `temporalWorkloads.llamaParse.image`                        | temporal llamaparse image                                                                                         | `docker.io/llamaindex/llamacloud-llamaparse:0.7.1` |
 | `temporalWorkloads.llamaParse.imagePullPolicy`              | temporal llamaparse image pull policy                                                                             | `IfNotPresent`                                     |
 | `temporalWorkloads.llamaParse.securityContext`              | Security context for the container                                                                                | `{}`                                               |
 | `temporalWorkloads.llamaParse.serviceAccountAnnotations`    | Annotations to add to the service account                                                                         | `{}`                                               |
@@ -600,7 +607,7 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 | `temporalWorkloads.llamaParse.volumes`                      | List of volumes that can be mounted by containers belonging to the pod                                            | `[]`                                               |
 | `temporalWorkloads.jobsService.horizontalPodAutoscalerSpec` | HorizontalPodAutoScaler configuration                                                                             | `{}`                                               |
 | `temporalWorkloads.jobsService.annotations`                 | Annotations added to the temporal jobsService Deployment.                                                         | `{}`                                               |
-| `temporalWorkloads.jobsService.image`                       | temporal jobsService image                                                                                        | `docker.io/llamaindex/llamacloud-backend:0.7.0`    |
+| `temporalWorkloads.jobsService.image`                       | temporal jobsService image                                                                                        | `docker.io/llamaindex/llamacloud-backend:0.7.1`    |
 | `temporalWorkloads.jobsService.imagePullPolicy`             | temporal jobsService image pull policy                                                                            | `IfNotPresent`                                     |
 | `temporalWorkloads.jobsService.securityContext`             | Security context for the container                                                                                | `{}`                                               |
 | `temporalWorkloads.jobsService.serviceAccountAnnotations`   | Annotations to add to the service account                                                                         | `{}`                                               |
@@ -621,7 +628,7 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 | ---------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
 | `temporalWorkloads.workers.temporal-jobs-worker.horizontalPodAutoscalerSpec` | HorizontalPodAutoScaler configuration                                                                             | `{}`                                            |
 | `temporalWorkloads.workers.temporal-jobs-worker.annotations`                 | Annotations added to the temporal-jobs-worker Deployment.                                                         | `{}`                                            |
-| `temporalWorkloads.workers.temporal-jobs-worker.image`                       | Frontend image                                                                                                    | `docker.io/llamaindex/llamacloud-backend:0.7.0` |
+| `temporalWorkloads.workers.temporal-jobs-worker.image`                       | Frontend image                                                                                                    | `docker.io/llamaindex/llamacloud-backend:0.7.1` |
 | `temporalWorkloads.workers.temporal-jobs-worker.imagePullPolicy`             | Frontend image pull policy                                                                                        | `IfNotPresent`                                  |
 | `temporalWorkloads.workers.temporal-jobs-worker.command`                     | Command to run in the container                                                                                   | `[]`                                            |
 | `temporalWorkloads.workers.temporal-jobs-worker.securityContext`             | Security context for the container                                                                                | `{}`                                            |

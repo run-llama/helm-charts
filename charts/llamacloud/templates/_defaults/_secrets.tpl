@@ -179,3 +179,13 @@ Google Vertex AI Secret envFrom
     name: "google-vertex-ai-api-key-secret"
 {{- end }}
 {{- end }}
+
+{{/*
+LLM Provider Configs Secret envFrom
+*/}}
+{{ define "llamacloud.secrets.llmProviderConfigs" }}
+{{- if (((.Values.config).llms).providerConfigs) }}
+- secretRef:
+    name: "llm-provider-configs-secret"
+{{- end }}
+{{- end }}

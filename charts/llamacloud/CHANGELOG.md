@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## [0.7.1] - 2026-02-16
+
+### Platform
+- **[Security]** Security updates
+- **[Feature]** Centralized LLM configuration controls
+
+### LlamaExtract
+- **[Feature]** Add citations bounding boxes in the UI/API
+
 ## [0.7.0] - 2026-02-05
 
 ### Platform

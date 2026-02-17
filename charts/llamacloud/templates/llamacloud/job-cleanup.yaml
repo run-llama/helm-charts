@@ -25,7 +25,7 @@ spec:
       serviceAccountName: {{ .Release.Name }}-job-cleanup
       containers:
       - name: cleanup
-        image: bitnami/kubectl:latest
+        image: {{ (((.Values.config).temporal).jobCleanup).image | default "bitnami/kubectl:latest" }}
         command:
           - /bin/sh
           - -c
