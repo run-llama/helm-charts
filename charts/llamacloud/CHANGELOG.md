@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## [0.7.2] - 2026-03-02
+
+### Platform
+- **[Security]** Security updates
+
+### LlamaParse
+- **[Feature]** New Parse fields available (markdown_full, text_full)
+- **[New Release]** New Parse Versions released
+- **[Improvement]** Improved image rotation handling
+
 ## [0.7.1] - 2026-02-16
 
 ### Platform

@@ -615,7 +615,7 @@ frontend:
   annotations: {}
 
   ## @param frontend.image Frontend image
-  image: docker.io/llamaindex/llamacloud-frontend:0.7.1
+  image: docker.io/llamaindex/llamacloud-frontend:0.7.2
 
   ## @param frontend.imagePullPolicy Frontend image pull policy
   imagePullPolicy: IfNotPresent
@@ -677,7 +677,7 @@ backend:
   annotations: {}
 
   ## @param backend.image Backend image
-  image: docker.io/llamaindex/llamacloud-backend:0.7.1
+  image: docker.io/llamaindex/llamacloud-backend:0.7.2
 
   ## @param backend.imagePullPolicy Backend image pull policy
   imagePullPolicy: IfNotPresent
@@ -739,7 +739,7 @@ jobsService:
   annotations: {}
 
   ## @param jobsService.image JobsService image
-  image: docker.io/llamaindex/llamacloud-backend:0.7.1
+  image: docker.io/llamaindex/llamacloud-backend:0.7.2
 
   ## @param jobsService.imagePullPolicy JobsService image pull policy
   imagePullPolicy: IfNotPresent
@@ -801,7 +801,7 @@ jobsWorker:
   annotations: {}
 
   ## @param jobsWorker.image JobsWorker image
-  image: docker.io/llamaindex/llamacloud-backend:0.7.1
+  image: docker.io/llamaindex/llamacloud-backend:0.7.2
 
   ## @param jobsWorker.imagePullPolicy JobsWorker image pull policy
   imagePullPolicy: IfNotPresent
@@ -863,7 +863,7 @@ llamaParse:
   annotations: {}
 
   ## @param llamaParse.image LlamaParse image
-  image: docker.io/llamaindex/llamacloud-llamaparse:0.7.1
+  image: docker.io/llamaindex/llamacloud-llamaparse:0.7.2
 
   ## @param llamaParse.imagePullPolicy LlamaParse image pull policy
   imagePullPolicy: IfNotPresent
@@ -925,7 +925,7 @@ llamaParseOcr:
   annotations: {}
 
   ## @param llamaParseOcr.image LlamaParseOcr image
-  image: docker.io/llamaindex/llamacloud-llamaparse-ocr:0.7.1
+  image: docker.io/llamaindex/llamacloud-llamaparse-ocr:0.7.2
 
   ## @param llamaParseOcr.imagePullPolicy LlamaParseOcr image pull policy
   imagePullPolicy: IfNotPresent
@@ -987,7 +987,7 @@ llamaParseLayoutDetectionApi:
   annotations: {}
 
   ## @param llamaParseLayoutDetectionApi.image LlamaParseLayoutDetectionApi image
-  image: docker.io/llamaindex/llamacloud-layout-detection-api:0.7.1
+  image: docker.io/llamaindex/llamacloud-layout-detection-api:0.7.2
 
   ## @param llamaParseLayoutDetectionApi.imagePullPolicy LlamaParseLayoutDetectionApi image pull policy
   imagePullPolicy: IfNotPresent
@@ -1112,7 +1112,7 @@ usage:
   annotations: {}
 
   ## @param usage.image LlamaParseLayoutDetectionApi image
-  image: docker.io/llamaindex/llamacloud-backend:0.7.1
+  image: docker.io/llamaindex/llamacloud-backend:0.7.2
 
   ## @param usage.imagePullPolicy LlamaParseLayoutDetectionApi image pull policy
   imagePullPolicy: IfNotPresent
@@ -1176,7 +1176,7 @@ temporalWorkloads:
     annotations: {}
 
     ## @param temporalWorkloads.llamaParse.image temporal llamaparse image
-    image: docker.io/llamaindex/llamacloud-llamaparse:0.7.1
+    image: docker.io/llamaindex/llamacloud-llamaparse:0.7.2
 
     ## @param temporalWorkloads.llamaParse.imagePullPolicy temporal llamaparse image pull policy
     imagePullPolicy: IfNotPresent
@@ -1237,7 +1237,7 @@ temporalWorkloads:
     annotations: {}
 
     ## @param temporalWorkloads.jobsService.image temporal jobsService image
-    image: docker.io/llamaindex/llamacloud-backend:0.7.1
+    image: docker.io/llamaindex/llamacloud-backend:0.7.2
 
     ## @param temporalWorkloads.jobsService.imagePullPolicy temporal jobsService image pull policy
     imagePullPolicy: IfNotPresent
@@ -1304,7 +1304,7 @@ temporalWorkloads:
       annotations: {}
 
       ## @param temporalWorkloads.workers.temporal-jobs-worker.image Frontend image
-      image: docker.io/llamaindex/llamacloud-backend:0.7.1
+      image: docker.io/llamaindex/llamacloud-backend:0.7.2
 
       ## @param temporalWorkloads.workers.temporal-jobs-worker.imagePullPolicy Frontend image pull policy
       imagePullPolicy: IfNotPresent
