@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## [0.7.3] - 2026-03-12
+
+### Platform
+- **[Security]** Security updates
+
+### Parse v2
+- **[Improvement]** Scaling and stability improvements
+
+### Extract v2 / Classify v2
+- **[Beta]** Available in beta testing
+
 ## [0.7.2] - 2026-03-02
 
 ### Platform
