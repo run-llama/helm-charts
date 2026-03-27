@@ -161,7 +161,7 @@ AWS Bedrock Secret envFrom
 {{- if (((.Values.config).llms).awsBedrock).secret }}
 - secretRef:
     name: {{ .Values.config.llms.awsBedrock.secret }}
-{{- else if and (((.Values.config).llms).awsBedrock).accessKeyId (((.Values.config).llms).awsBedrock).secretAccessKey (((.Values.config).llms).awsBedrock).region }}
+{{- else if (((.Values.config).llms).awsBedrock).region }}
 - secretRef:
     name: "aws-bedrock-api-key-secret"
 {{- end }}

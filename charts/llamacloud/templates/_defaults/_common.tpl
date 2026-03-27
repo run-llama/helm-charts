@@ -116,7 +116,6 @@ Activated Components
 {{- end }}
 {{- /* Temporal workloads - skip when temporal is disabled */}}
 {{- if not $.Values.temporal.disabled }}
-{{- $activated = set $activated "temporalJobsService" (include "llamacloud.component.temporal.jobsService" . | fromYaml) }}
 {{- $activated = set $activated "temporalLlamaParse" (include "llamacloud.component.temporal.llamaParse" . | fromYaml) }}
 {{- range $workerName, $workerConfig := .Values.temporalWorkloads.workers }}
 {{- $activated = set $activated $workerName (include "llamacloud.component.temporal.worker" (dict "name" $workerName "component" $workerConfig "appVersion" $.Chart.AppVersion) | fromYaml) }}

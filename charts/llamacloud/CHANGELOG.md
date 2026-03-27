@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## [0.7.4] - 2026-03-27
+
+### Platform
+- **[Security]** Security updates
+
+### Parse v2
+- **[Improvement]** Latency and quality improvements
+
+### Sheets
+- **[Breaking]** Now requires Temporal
+- **[Improvement]** Improved async concurrency
+
 ## [0.7.3] - 2026-03-12
 
 ### Platform

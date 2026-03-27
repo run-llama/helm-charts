@@ -78,6 +78,19 @@ spec:
               sleep $RETRY_INTERVAL
             done
 
+            echo "Waiting for namespace to be queryable..."
+            for i in $(seq 1 30); do
+              if temporal operator search-attribute list --namespace "$TEMPORAL_NAMESPACE" >/dev/null 2>&1; then
+                echo "Namespace is queryable"
+                break
+              fi
+              if [ $i -eq 30 ]; then
+                echo "ERROR: Namespace not queryable after 30 attempts"
+                exit 1
+              fi
+              sleep 1
+            done
+
             echo "Ensuring search attributes exist..."
             {{- range (((.Values.config).temporal).searchAttributesJob).attributes }}
             echo "Ensuring search attribute exists: {{ .name }} ({{ .type }})"
@@ -88,7 +101,8 @@ spec:
               if temporal operator search-attribute create --namespace "$TEMPORAL_NAMESPACE" --name {{ .name }} --type {{ .type }} 2>&1; then
                 echo "Search attribute {{ .name }} created successfully"
               else
-                echo "Warning: Failed to create search attribute {{ .name }}, it may already exist"
+                echo "ERROR: Failed to create search attribute {{ .name }}"
+                exit 1
               fi
             fi
             {{- end }}

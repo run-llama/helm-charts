@@ -28,5 +28,4 @@ data:
   TEMPORAL_PORT: {{ $temporalPort | quote }}
   TEMPORAL_NAMESPACE: {{ ((.Values.config).temporal).namespace | default $.Release.Namespace | quote }}
   TEMPORAL_WORKER_REGISTRY_PROFILE: {{ (.Values.config).workerRegistryProfile | default "consolidated" | quote }}
-  TEMPORAL_JOB_SERVICE_URL: {{ printf "http://%s:%d" (include "llamacloud.component.temporal.jobsService" $ | fromYaml).name ( "80" | int) | quote }}
 {{- end }}

@@ -8,7 +8,7 @@ S3Proxy Sidecar Container Definition.
   image: "{{ ((($.Values.config).storageBuckets).s3proxy).image | default "docker.io/andrewgaul/s3proxy:sha-001d042" }}"
   imagePullPolicy: {{ ((($.Values.config).storageBuckets).s3proxy).imagePullPolicy | default "IfNotPresent" }}
   ports:
-  - name: http
+  - name: s3proxy
     containerPort: {{ print (int ((($.Values.config).storageBuckets).s3proxy.containerPort | default 80))}}
     protocol: TCP
   resources:

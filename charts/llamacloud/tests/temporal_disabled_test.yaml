@@ -178,7 +178,7 @@ tests:
     template: ../templates/llamacloud/deployment.yaml
     asserts:
       - hasDocuments:
-          count: 8
+          count: 7
 
   - it: should create standard services with external temporal
     set:
@@ -191,4 +191,4 @@ tests:
     template: ../templates/llamacloud/service.yaml
     asserts:
       - hasDocuments:
-          count: 8
+          count: 7
