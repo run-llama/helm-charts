@@ -22,9 +22,15 @@ Parameters:
 requests:
   cpu: {{ (((.component).resources).requests).cpu | default "500m" }}
   memory: {{ (((.component).resources).requests).memory | default "512Mi" }}
+  {{- with ((((.component).resources).requests)) }}{{- with (index . "ephemeral-storage") }}
+  ephemeral-storage: {{ . }}
+  {{- end }}{{- end }}
 limits:
   cpu: {{ (((.component).resources).limits).cpu | default "1" }}
   memory: {{ (((.component).resources).limits).memory | default "1Gi" }}
+  {{- with ((((.component).resources).limits)) }}{{- with (index . "ephemeral-storage") }}
+  ephemeral-storage: {{ . }}
+  {{- end }}{{- end }}
 {{- end }}
 
 {{/*
@@ -119,6 +125,7 @@ Parameters:
 */}}
 {{ define "llamacloud.component.frontend.configMap" }}
 HOSTNAME: 0.0.0.0
+IS_INDEX_V1_ENABLED: "true"
 {{- if (.root.Values.qdrant).enabled }}
 NEXT_PUBLIC_BYOC_HAS_MANAGED_QDRANT: "true"
 {{- end }}

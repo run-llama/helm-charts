@@ -4,7 +4,9 @@ S3Proxy Sidecar Container Definition.
 {{ define "llamacloud.s3proxy.container" }}
 {{- if ((($.Values.config).storageBuckets).s3proxy.enabled | default false) }}
 - name: s3proxy
-  securityContext: {{ toYaml ((($.Values.config).storageBuckets).s3proxy).securityContext | indent 4}}
+  {{- with ((($.Values.config).storageBuckets).s3proxy).securityContext }}
+  securityContext: {{ toYaml . | nindent 4 }}
+  {{- end }}
   image: "{{ ((($.Values.config).storageBuckets).s3proxy).image | default "docker.io/andrewgaul/s3proxy:sha-001d042" }}"
   imagePullPolicy: {{ ((($.Values.config).storageBuckets).s3proxy).imagePullPolicy | default "IfNotPresent" }}
   ports:

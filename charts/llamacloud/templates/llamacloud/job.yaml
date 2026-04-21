@@ -15,7 +15,7 @@ kind: Job
 metadata:
   name: {{ .Release.Name }}-temporal-search-attributes
   labels: {{ include "llamacloud.labels" (dict "root" $) | indent 4 }}
-  annotations: {{ include "llamacloud.labels" (dict "root" $) | indent 4 }}
+  annotations: {{ include "llamacloud.annotations" (dict "root" $) | indent 4 }}
     {{- if not $isTemporalDeployed }}
     {{- /* Only use hooks when connecting to external Temporal server */}}
     "helm.sh/hook": pre-install,pre-upgrade

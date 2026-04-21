@@ -23,9 +23,15 @@ Parameters:
 requests:
   cpu: {{ (((.root.Values.usage).resources).requests).cpu | default "1" }}
   memory: {{ (((.root.Values.usage).resources).requests).memory | default "1Gi" }}
+  {{- with (((.root.Values.usage).resources).requests) }}{{- with (index . "ephemeral-storage") }}
+  ephemeral-storage: {{ . }}
+  {{- end }}{{- end }}
 limits:
   cpu: {{ (((.root.Values.usage).resources).limits).cpu | default "2" }}
   memory: {{ (((.root.Values.usage).resources).limits).memory | default "2Gi" }}
+  {{- with (((.root.Values.usage).resources).limits) }}{{- with (index . "ephemeral-storage") }}
+  ephemeral-storage: {{ . }}
+  {{- end }}{{- end }}
 {{- end }}
 
 {{/*

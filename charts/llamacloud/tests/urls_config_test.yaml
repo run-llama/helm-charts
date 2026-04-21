@@ -1,0 +1,117 @@
+suite: urls-config-tests
+
+templates:
+- ../templates/llamacloud/configmaps/urls.yaml
+
+release:
+  name: test-release
+  namespace: test-namespace
+
+capabilities:
+  majorVersion: 1
+  minorVersion: 31
+  apiVersions:
+    - v1
+
+chart:
+  appVersion: 0.0.0
+
+tests:
+- it: should render urls configmap without optional components
+  set:
+    ingress:
+      host: app.example.com
+    config:
+      parseOcr:
+        enabled: false
+      parseLayoutDetection:
+        enabled: false
+      parseLayoutDetectionV3:
+        enabled: false
+  template: ../templates/llamacloud/configmaps/urls.yaml
+  asserts:
+    - isKind:
+        of: ConfigMap
+    - equal:
+        path: .metadata.name
+        value: urls-config
+    - equal:
+        path: .data.BACKEND_URL
+        value: "http://app.example.com"
+    - equal:
+        path: .data.LLAMACLOUD_INGRESS_URL
+        value: "http://app.example.com"
+    - equal:
+        path: .data.PUBLIC_BACKEND_URL
+        value: "http://app.example.com"
+    # Optional components should not be present
+    - isNull:
+        path: .data.OCR_SERVER_URL
+    - isNull:
+        path: .data.LAYOUT_EXTRACTION_ENDPOINT
+    - isNull:
+        path: .data.LAYOUT_EXTRACTION_V3_ENDPOINT
+
+- it: should set PUBLIC_BACKEND_URL to the ingress URL when host is localhost (Tilt-style dev)
+  set:
+    ingress:
+      host: localhost
+  template: ../templates/llamacloud/configmaps/urls.yaml
+  asserts:
+    - equal:
+        path: .data.PUBLIC_BACKEND_URL
+        value: "http://localhost"
+
+- it: should not error when parseOcr config is explicitly omitted
+  set:
+    ingress:
+      host: app.example.com
+    config:
+      parseOcr:
+        enabled: false
+      parseLayoutDetection:
+        enabled: false
+  template: ../templates/llamacloud/configmaps/urls.yaml
+  asserts:
+    - isKind:
+        of: ConfigMap
+    - isNull:
+        path: .data.OCR_SERVER_URL
+
+- it: should include OCR url when parseOcr is enabled
+  set:
+    ingress:
+      host: app.example.com
+    config:
+      parseOcr:
+        enabled: true
+  template: ../templates/llamacloud/configmaps/urls.yaml
+  asserts:
+    - isNotNull:
+        path: .data.OCR_SERVER_URL
+
+- it: should include layout endpoints when parseLayoutDetection is enabled
+  set:
+    ingress:
+      host: app.example.com
+    config:
+      parseLayoutDetection:
+        enabled: true
+  template: ../templates/llamacloud/configmaps/urls.yaml
+  asserts:
+    - isNotNull:
+        path: .data.LAYOUT_EXTRACTION_ENDPOINT
+    - isNotNull:
+        path: .data.LAYOUT_EXTRACTION_V2_ENDPOINT
+
+- it: should include layout v3 endpoint when parseLayoutDetectionV3 is enabled
+  set:
+    ingress:
+      host: app.example.com
+    config:
+      parseLayoutDetectionV3:
+        enabled: true
+  template: ../templates/llamacloud/configmaps/urls.yaml
+  asserts:
+    - isNotNull:
+        path: .data.LAYOUT_EXTRACTION_V3_ENDPOINT

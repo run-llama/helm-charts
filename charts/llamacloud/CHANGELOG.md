@@ -1,5 +1,26 @@
 # CHANGELOG
 
+## [0.7.5] - 2026-04-20
+
+### Platform
+- **[Security]** Security updates
+- **[Feature]** Added gemini API improvements
+- **[Feature]** Latency Charts added to settings
+- **[Improvement]** Usage tracking improvements
+- **[Improvement]** UI Updates
+
+### Index (pipeline)
+- **[Bug Fix]** Index V1 UI - restored with environment variable controls
+
+### Parse
+- **[Improvement]** Latency and quality improvements
+
+### Extract
+- **[Feature]** V2 API Release - Introducing streamlined tier controls
+
+### Configuration
+- **[Improvement]** Standardized configuration APIs across all products
+
 ## [0.7.4] - 2026-03-27
 
 ### Platform

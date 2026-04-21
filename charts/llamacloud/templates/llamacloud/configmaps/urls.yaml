@@ -17,16 +17,19 @@ data:
   {{- if ($.Values.ingress).host }}
   LLAMACLOUD_INGRESS_URL: {{ print (include "llamacloud.ingress.scheme" .) "://" (.Values.ingress).host | quote }}
   {{- end }}
+  {{- if ($.Values.ingress).host }}
+  PUBLIC_BACKEND_URL: {{ print (include "llamacloud.ingress.scheme" .) "://" (.Values.ingress).host | quote }}
+  {{- end }}
   {{- if (((.Values.config).storageBuckets).s3proxy.enabled | default false) }}
   S3_ENDPOINT_URL: {{ printf "http://localhost:%d" (int ((($.Values.config).storageBuckets).s3proxy.containerPort | default 80)) | quote }}
   {{- end }}
-  {{- if .Values.config.parseOcr.enabled }}
+  {{- if (((.Values.config).parseOcr).enabled) }}
   OCR_SERVER_URL: {{ printf "http://%s:%d/ocr" (include "llamacloud.component.llamaParseOcr" $ | fromYaml).name ( "80" | int) | quote }}
   {{- end }}
-  {{- if .Values.config.parseLayoutDetection.enabled }}
+  {{- if (((.Values.config).parseLayoutDetection).enabled) }}
   LAYOUT_EXTRACTION_ENDPOINT: {{ printf "http://%s:%d" (include "llamacloud.component.llamaParseLayoutDetectionApi" $ | fromYaml).name ( "80" | int) | quote }}
   LAYOUT_EXTRACTION_V2_ENDPOINT: {{ printf "http://%s:%d" (include "llamacloud.component.llamaParseLayoutDetectionApi" $ | fromYaml).name ( "80" | int) | quote }}
   {{- end }}
-  {{- if .Values.config.parseLayoutDetectionV3.enabled }}
+  {{- if (((.Values.config).parseLayoutDetectionV3).enabled) }}
   LAYOUT_EXTRACTION_V3_ENDPOINT: {{ printf "http://%s:%d" (include "llamacloud.component.llamaParseLayoutDetectionApiV3" $ | fromYaml).name ( "80" | int) | quote }}
   {{- end }}

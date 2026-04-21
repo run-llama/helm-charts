@@ -530,6 +530,96 @@ tests:
         path: .spec.template.spec.containers
         count: 1
 
+# SecurityContext Tests
+- it: should not render securityContext key when not specified
+  set:
+    config:
+      frontend:
+        enabled: false
+      parseOcr:
+        enabled: false
+      parseLayoutDetection:
+        enabled: false
+      storageBuckets:
+        provider: gcp
+        s3proxy:
+          enabled: true
+    redis:
+      host: test-redis
+      port: "6379"
+      password: test-pass
+    postgresql:
+      host: test-pg
+      port: "5432"
+      username: test-user
+      password: test-pass
+      database: test-db
+    mongodb:
+      host: mongodb
+      username: test-mongo-user
+      password: test-mongo-pass
+    rabbitmq:
+      host: test-rabbit
+      username: test-user
+      password: test-pass
+  documentIndex: 0
+  template: ../templates/llamacloud/deployment.yaml
+  asserts:
+    - equal:
+        path: .spec.template.spec.containers[1].name
+        value: s3proxy
+    - isNull:
+        path: .spec.template.spec.containers[1].securityContext
+
+- it: should render s3proxy securityContext correctly when specified
+  set:
+    config:
+      frontend:
+        enabled: false
+      parseOcr:
+        enabled: false
+      parseLayoutDetection:
+        enabled: false
+      storageBuckets:
+        provider: gcp
+        s3proxy:
+          enabled: true
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+    redis:
+      host: test-redis
+      port: "6379"
+      password: test-pass
+    postgresql:
+      host: test-pg
+      port: "5432"
+      username: test-user
+      password: test-pass
+      database: test-db
+    mongodb:
+      host: mongodb
+      username: test-mongo-user
+      password: test-mongo-pass
+    rabbitmq:
+      host: test-rabbit
+      username: test-user
+      password: test-pass
+  documentIndex: 0
+  template: ../templates/llamacloud/deployment.yaml
+  asserts:
+    - equal:
+        path: .spec.template.spec.containers[1].name
+        value: s3proxy
+    - equal:
+        path: .spec.template.spec.containers[1].securityContext.allowPrivilegeEscalation
+        value: false
+    - equal:
+        path: .spec.template.spec.containers[1].securityContext.capabilities.drop[0]
+        value: ALL
+
 # Sidecar Resource Configuration Tests
 - it: should use custom s3proxy image when specified
   set:

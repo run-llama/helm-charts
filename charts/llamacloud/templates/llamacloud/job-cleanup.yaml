@@ -9,7 +9,7 @@ kind: Job
 metadata:
   name: {{ .Release.Name }}-temporal-job-cleanup
   labels: {{ include "llamacloud.labels" (dict "root" $) | indent 4 }}
-  annotations: {{ include "llamacloud.labels" (dict "root" $) | indent 4 }}
+  annotations: {{ include "llamacloud.annotations" (dict "root" $) | indent 4 }}
     "helm.sh/hook": pre-upgrade
     "helm.sh/hook-weight": "-5"
     "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
@@ -53,7 +53,7 @@ kind: ServiceAccount
 metadata:
   name: {{ .Release.Name }}-job-cleanup
   labels: {{ include "llamacloud.labels" (dict "root" $) | indent 4 }}
-  annotations: {{ include "llamacloud.labels" (dict "root" $) | indent 4 }}
+  annotations: {{ include "llamacloud.annotations" (dict "root" $) | indent 4 }}
     "helm.sh/hook": pre-upgrade
     "helm.sh/hook-weight": "-10"
     "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
@@ -63,7 +63,7 @@ kind: Role
 metadata:
   name: {{ .Release.Name }}-job-cleanup
   labels: {{ include "llamacloud.labels" (dict "root" $) | indent 4 }}
-  annotations: {{ include "llamacloud.labels" (dict "root" $) | indent 4 }}
+  annotations: {{ include "llamacloud.annotations" (dict "root" $) | indent 4 }}
     "helm.sh/hook": pre-upgrade
     "helm.sh/hook-weight": "-10"
     "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
@@ -77,7 +77,7 @@ kind: RoleBinding
 metadata:
   name: {{ .Release.Name }}-job-cleanup
   labels: {{ include "llamacloud.labels" (dict "root" $) | indent 4 }}
-  annotations: {{ include "llamacloud.labels" (dict "root" $) | indent 4 }}
+  annotations: {{ include "llamacloud.annotations" (dict "root" $) | indent 4 }}
     "helm.sh/hook": pre-upgrade
     "helm.sh/hook-weight": "-10"
     "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
