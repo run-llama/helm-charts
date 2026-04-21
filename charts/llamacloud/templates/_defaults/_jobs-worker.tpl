@@ -24,9 +24,15 @@ Parameters:
 requests:
   cpu: {{ (((.component).resources).requests).cpu | default "500m" }}
   memory: {{ (((.component).resources).requests).memory | default "4Gi" }}
+  {{- with ((((.component).resources).requests)) }}{{- with (index . "ephemeral-storage") }}
+  ephemeral-storage: {{ . }}
+  {{- end }}{{- end }}
 limits:
   cpu: {{ (((.component).resources).limits).cpu | default "2" }}
   memory: {{ (((.component).resources).limits).memory | default "6Gi" }}
+  {{- with ((((.component).resources).limits)) }}{{- with (index . "ephemeral-storage") }}
+  ephemeral-storage: {{ . }}
+  {{- end }}{{- end }}
 {{- end }}
 
 {{/*

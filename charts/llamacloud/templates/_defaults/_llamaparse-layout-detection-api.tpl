@@ -22,12 +22,18 @@ Parameters:
 requests:
   cpu: {{ (((.component).resources).requests).cpu | default "1" }}
   memory: {{ (((.component).resources).requests).memory | default "6Gi" }}
+  {{- with ((((.component).resources).requests)) }}{{- with (index . "ephemeral-storage") }}
+  ephemeral-storage: {{ . }}
+  {{- end }}{{- end }}
   {{- if ((.root.Values.config).parseLayoutDetection).gpu }}
   nvidia.com/gpu: 1
   {{- end }}
 limits:
   cpu: {{ (((.component).resources).limits).cpu | default "2" }}
   memory: {{ (((.component).resources).limits).memory | default "12Gi" }}
+  {{- with ((((.component).resources).limits)) }}{{- with (index . "ephemeral-storage") }}
+  ephemeral-storage: {{ . }}
+  {{- end }}{{- end }}
   {{- if ((.root.Values.config).parseLayoutDetection).gpu }}
   nvidia.com/gpu: 1
   {{- end }}

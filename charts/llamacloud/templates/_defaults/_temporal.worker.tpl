@@ -7,16 +7,27 @@ Parameters:
 - appVersion: The application version
 */}}
 {{ define "llamacloud.component.temporal.worker" }}
-{{- .name | required "You must provide a name for the component." }}
-{{- .component | required "You must provide a component for configuration" }}
-{{- $appVersion := .appVersion | required "You must provide the Helm Chart AppVersion" }}
-{{- $component := .component }}
+{{- /*
+  Validate params via `:=` capture so `required` is used for its error side
+  effect without also emitting the value into the template output. The prior
+  `{{- .name | required ... }}` / `{{- .component | required ... }}` pattern
+  emitted the raw value into the output stream, which `| toYaml` downstream
+  then concatenated with — producing a corrupted YAML stream that `fromYaml`
+  either silently mis-parsed or (when the leaked content contained nested
+  brackets, e.g. `resources: {requests: {...}, limits: {...}}`) returned nil
+  for. A nil component breaks every downstream template that resolves
+  `$component.prefix`.
+*/}}
+{{- $name := required "You must provide a name for the component." .name -}}
+{{- $inputComponent := required "You must provide a component for configuration" .component -}}
+{{- $appVersion := required "You must provide the Helm Chart AppVersion" .appVersion -}}
+{{- $component := $inputComponent }}
 {{- $component = set $component "prefix" "llamacloud.component.temporal.worker" }}
-{{- $component = set $component "name" .name }}
-{{- $component = set $component "image" .component.image | default ( print "docker.io/llamaindex/llamacloud-backend:" .appVersion ) }}
-{{- $component = set $component "imagePullPolicy" ( .component.imagePullPolicy | default "IfNotPresent" ) }}
+{{- $component = set $component "name" $name }}
+{{- $component = set $component "image" ($inputComponent.image | default (print "docker.io/llamaindex/llamacloud-backend:" $appVersion)) }}
+{{- $component = set $component "imagePullPolicy" ($inputComponent.imagePullPolicy | default "IfNotPresent") }}
 {{- $component = set $component "port" 8000 }}
-{{- $component = set $component "command" (.component.command | default (list "temporal_worker")) }}
+{{- $component = set $component "command" ($inputComponent.command | default (list "temporal_worker")) }}
 {{- $component = set $component "usesS3" "true" }}
 {{- $component | toYaml }}
 {{- end }}
@@ -32,9 +43,15 @@ Parameters:
 requests:
   cpu: {{ (((.component).resources).requests).cpu | default "500m" }}
   memory: {{ (((.component).resources).requests).memory | default "4Gi" }}
+  {{- with ((((.component).resources).requests)) }}{{- with (index . "ephemeral-storage") }}
+  ephemeral-storage: {{ . }}
+  {{- end }}{{- end }}
 limits:
   cpu: {{ (((.component).resources).limits).cpu | default "2" }}
   memory: {{ (((.component).resources).limits).memory | default "6Gi" }}
+  {{- with ((((.component).resources).limits)) }}{{- with (index . "ephemeral-storage") }}
+  ephemeral-storage: {{ . }}
+  {{- end }}{{- end }}
 {{- end }}
 
 {{/*
