@@ -1,0 +1,153 @@
+suite: temporal-workloads-tests
+
+# Covers the temporalWorkloads section: the temporal.llamaParse worker and
+# the dynamic `temporalWorkloads.workers` map (one Deployment per entry).
+
+templates:
+- ../templates/llamacloud/deployment.yaml
+- ../templates/llamacloud/service.yaml
+- ../templates/llamacloud/serviceaccount.yaml
+
+release:
+  name: test-release
+  namespace: test-namespace
+
+capabilities:
+  majorVersion: 1
+  minorVersion: 31
+  apiVersions:
+    - apps/v1
+    - v1
+
+chart:
+  appVersion: 0.0.0
+
+tests:
+- it: temporal.llamaParse deployment renders as llamacloud-temporal-parse when temporal is enabled
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-temporal-parse
+  asserts:
+    - isKind:
+        of: Deployment
+
+- it: temporal.llamaParse deployment does NOT render when temporal is disabled
+  set:
+    temporal:
+      disabled: true
+      deploy: false
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-temporal-parse
+    skipEmptyTemplates: true
+  asserts:
+    - hasDocuments:
+        count: 0
+
+- it: default workers map produces a Deployment named temporal-jobs-worker
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: temporal-jobs-worker
+  asserts:
+    - isKind:
+        of: Deployment
+
+- it: adding a new worker to temporalWorkloads.workers produces an additional Deployment
+  set:
+    temporalWorkloads:
+      workers:
+        temporal-jobs-worker:
+          image: docker.io/llamaindex/llamacloud-backend:custom
+        my-custom-worker:
+          image: docker.io/llamaindex/llamacloud-backend:custom
+          command:
+            - temporal_worker
+            - --queue
+            - my-queue
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: my-custom-worker
+  asserts:
+    - isKind:
+        of: Deployment
+    - contains:
+        path: .spec.template.spec.containers[0].command
+        content: --queue
+    - contains:
+        path: .spec.template.spec.containers[0].command
+        content: my-queue
+
+- it: worker Deployment defaults command to ["temporal_worker"] when command is empty
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: temporal-jobs-worker
+  asserts:
+    - equal:
+        path: .spec.template.spec.containers[0].command[0]
+        value: temporal_worker
+
+- it: worker Deployment image override propagates to container
+  set:
+    temporalWorkloads:
+      workers:
+        temporal-jobs-worker:
+          image: docker.io/llamaindex/llamacloud-backend:custom-1.0.0
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: temporal-jobs-worker
+  asserts:
+    - equal:
+        path: .spec.template.spec.containers[0].image
+        value: docker.io/llamaindex/llamacloud-backend:custom-1.0.0
+
+- it: worker Service is created per worker
+  template: ../templates/llamacloud/service.yaml
+  documentSelector:
+    path: metadata.name
+    value: temporal-jobs-worker
+  asserts:
+    - isKind:
+        of: Service
+
+- it: worker ServiceAccount is created per worker
+  template: ../templates/llamacloud/serviceaccount.yaml
+  documentSelector:
+    path: metadata.name
+    value: temporal-jobs-worker
+  asserts:
+    - isKind:
+        of: ServiceAccount
+
+- it: temporalWorkloads.llamaParse image override propagates
+  set:
+    temporalWorkloads:
+      llamaParse:
+        image: docker.io/llamaindex/llamacloud-llamaparse:custom-2.0.0
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-temporal-parse
+  asserts:
+    - equal:
+        path: .spec.template.spec.containers[0].image
+        value: docker.io/llamaindex/llamacloud-llamaparse:custom-2.0.0
+
+- it: no temporal worker deployments render when temporal is disabled
+  set:
+    temporal:
+      disabled: true
+      deploy: false
+  template: ../templates/llamacloud/deployment.yaml
+  asserts:
+    # With temporal disabled, 8 non-temporal components remain:
+    # backend, jobsService, jobsWorker, llamaParse, usage (always),
+    # plus frontend, llamaParseOcr, llamaParseLayoutDetectionApi (default enabled).
+    # The temporal.llamaParse worker and every temporalWorkloads.workers entry are absent.
+    - hasDocuments:
+        count: 8

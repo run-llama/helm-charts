@@ -6,7 +6,7 @@ This is for BYOC deployments using the self-hosted RT-DETRv2 model.
 {{- $component := .Values.llamaParseLayoutDetectionApiV3 }}
 {{- $component = set $component "prefix" "llamacloud.component.llamaParseLayoutDetectionApiV3" }}
 {{- $component = set $component "name" "llamacloud-layout-v3" }}
-{{- $component = set $component "image" ($.Values.llamaParseLayoutDetectionApiV3).image | default ( print "docker.io/llamaindex/llamacloud-layout-detection-api-v3:" .Chart.AppVersion ) }}
+{{- $component = set $component "image" ( ($.Values.llamaParseLayoutDetectionApiV3).image | default ( print "docker.io/llamaindex/llamacloud-layout-detection-api-v3:" .Chart.AppVersion ) ) }}
 {{- $component = set $component "imagePullPolicy" ( ($.Values.llamaParseLayoutDetectionApiV3).imagePullPolicy | default "IfNotPresent" ) }}
 {{- $component = set $component "port" 8000 }}
 {{- $component | toYaml }}

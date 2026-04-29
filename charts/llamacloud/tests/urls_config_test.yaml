@@ -37,7 +37,7 @@ tests:
         value: urls-config
     - equal:
         path: .data.BACKEND_URL
-        value: "http://app.example.com"
+        value: "http://llamacloud:80"
     - equal:
         path: .data.LLAMACLOUD_INGRESS_URL
         value: "http://app.example.com"
@@ -115,3 +115,32 @@ tests:
   asserts:
     - isNotNull:
         path: .data.LAYOUT_EXTRACTION_V3_ENDPOINT
+
+- it: should default AGENT_DEPLOYMENT_USE_PUBLIC_BACKEND_URL to false
+  set:
+    ingress:
+      host: app.example.com
+  template: ../templates/llamacloud/configmaps/urls.yaml
+  asserts:
+    - equal:
+        path: .data.AGENT_DEPLOYMENT_USE_PUBLIC_BACKEND_URL
+        value: "false"
+
+- it: should set AGENT_DEPLOYMENT_USE_PUBLIC_BACKEND_URL to true when llamaAgents.useBackendPublicUrl is true
+  set:
+    ingress:
+      host: app.example.com
+    llamaAgents:
+      useBackendPublicUrl: true
+  template: ../templates/llamacloud/configmaps/urls.yaml
+  asserts:
+    - equal:
+        path: .data.AGENT_DEPLOYMENT_USE_PUBLIC_BACKEND_URL
+        value: "true"
+
+- it: should emit AGENT_DEPLOYMENT_USE_PUBLIC_BACKEND_URL even when ingress is unset
+  template: ../templates/llamacloud/configmaps/urls.yaml
+  asserts:
+    - equal:
+        path: .data.AGENT_DEPLOYMENT_USE_PUBLIC_BACKEND_URL
+        value: "false"

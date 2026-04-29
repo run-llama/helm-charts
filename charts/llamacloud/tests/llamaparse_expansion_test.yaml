@@ -1,0 +1,226 @@
+suite: llamaparse-expansion-tests
+
+# Complements llamaparse_test.yaml with coverage for image defaults/overrides,
+# imagePullPolicy, port, env propagation, SA annotations, and resource overrides.
+
+templates:
+- ../templates/llamacloud/deployment.yaml
+- ../templates/llamacloud/service.yaml
+- ../templates/llamacloud/serviceaccount.yaml
+
+release:
+  name: test-release
+  namespace: test-namespace
+
+capabilities:
+  majorVersion: 1
+  minorVersion: 31
+  apiVersions:
+    - apps/v1
+    - v1
+
+chart:
+  appVersion: 1.2.3
+
+tests:
+- it: image defaults to the values.yaml pinned image when llamaParse.image is left unset
+  # values.yaml ships a concrete image tag (0.7.5 at time of writing) — the template's
+  # chart.AppVersion fallback only kicks in when the user explicitly empties the value.
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-parse
+  asserts:
+    - matchRegex:
+        path: .spec.template.spec.containers[0].image
+        pattern: ^docker\.io/llamaindex/llamacloud-llamaparse:[0-9]+\.[0-9]+\.[0-9]+$
+
+- it: explicitly emptying llamaParse.image falls back to the chart.AppVersion default
+  # The component helper wraps `(.Values.llamaParse).image | default ...` in parens
+  # so the `| default` fallback is reached when the user empties the value.
+  set:
+    llamaParse:
+      image: ""
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-parse
+  asserts:
+    - equal:
+        path: .spec.template.spec.containers[0].image
+        value: docker.io/llamaindex/llamacloud-llamaparse:1.2.3
+
+- it: explicit llamaParse.image overrides the default image
+  set:
+    llamaParse:
+      image: my-registry.example.com/llamaparse:custom-5.0
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-parse
+  asserts:
+    - equal:
+        path: .spec.template.spec.containers[0].image
+        value: my-registry.example.com/llamaparse:custom-5.0
+
+- it: imagePullPolicy defaults to IfNotPresent
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-parse
+  asserts:
+    - equal:
+        path: .spec.template.spec.containers[0].imagePullPolicy
+        value: IfNotPresent
+
+- it: imagePullPolicy override propagates
+  set:
+    llamaParse:
+      imagePullPolicy: Always
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-parse
+  asserts:
+    - equal:
+        path: .spec.template.spec.containers[0].imagePullPolicy
+        value: Always
+
+- it: container exposes port 8004
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-parse
+  asserts:
+    - equal:
+        path: .spec.template.spec.containers[0].ports[0].containerPort
+        value: 8004
+
+- it: service targets container port 8004
+  template: ../templates/llamacloud/service.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-parse
+  asserts:
+    - isKind:
+        of: Service
+    - equal:
+        path: .spec.ports[0].targetPort
+        value: 8004
+
+- it: extraEnvVariables propagate to container env
+  set:
+    llamaParse:
+      extraEnvVariables:
+        - name: CUSTOM_FLAG
+          value: enabled
+        - name: FEATURE_X
+          valueFrom:
+            secretKeyRef:
+              name: other-secret
+              key: xkey
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-parse
+  asserts:
+    - equal:
+        path: .spec.template.spec.containers[0].env[?(@.name == "CUSTOM_FLAG")].value
+        value: enabled
+    - equal:
+        path: .spec.template.spec.containers[0].env[?(@.name == "FEATURE_X")].valueFrom.secretKeyRef.name
+        value: other-secret
+
+- it: nodeSelector propagates to pod spec
+  set:
+    llamaParse:
+      nodeSelector:
+        workload: parse
+        gpu-class: a100
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-parse
+  asserts:
+    - equal:
+        path: .spec.template.spec.nodeSelector.workload
+        value: parse
+    - equal:
+        path: .spec.template.spec.nodeSelector["gpu-class"]
+        value: a100
+
+- it: tolerations propagate to pod spec
+  set:
+    llamaParse:
+      tolerations:
+        - key: workload
+          operator: Equal
+          value: parse
+          effect: NoSchedule
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-parse
+  asserts:
+    - equal:
+        path: .spec.template.spec.tolerations[0].key
+        value: workload
+    - equal:
+        path: .spec.template.spec.tolerations[0].effect
+        value: NoSchedule
+
+- it: podAnnotations propagate to pod template metadata
+  set:
+    llamaParse:
+      podAnnotations:
+        my-annotation/key: my-value
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-parse
+  asserts:
+    - equal:
+        path: .spec.template.metadata.annotations["my-annotation/key"]
+        value: my-value
+
+- it: serviceAccountAnnotations propagate to ServiceAccount
+  set:
+    llamaParse:
+      serviceAccountAnnotations:
+        eks.amazonaws.com/role-arn: arn:aws:iam::123456789012:role/parse-role
+  template: ../templates/llamacloud/serviceaccount.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-parse
+  asserts:
+    - equal:
+        path: .metadata.annotations["eks.amazonaws.com/role-arn"]
+        value: arn:aws:iam::123456789012:role/parse-role
+
+- it: resources overrides propagate to container resources
+  set:
+    llamaParse:
+      resources:
+        requests:
+          cpu: "2000m"
+          memory: "4Gi"
+        limits:
+          cpu: "4000m"
+          memory: "8Gi"
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-parse
+  asserts:
+    - equal:
+        path: .spec.template.spec.containers[0].resources.requests.cpu
+        value: 2000m
+    - equal:
+        path: .spec.template.spec.containers[0].resources.requests.memory
+        value: 4Gi
+    - equal:
+        path: .spec.template.spec.containers[0].resources.limits.cpu
+        value: 4000m
+    - equal:
+        path: .spec.template.spec.containers[0].resources.limits.memory
+        value: 8Gi

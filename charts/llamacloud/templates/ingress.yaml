@@ -7,10 +7,10 @@ metadata:
   name: {{ .Release.Name }}
   namespace: {{ .Release.Namespace }}
   labels: {{ include "llamacloud.labels" (dict "root" $) | indent 4 }}
-  annotations: {{ include "llamacloud.annotations" (dict "root" $) | indent 4 }}
-    {{- with .Values.ingress.annotations -}}
-    {{- toYaml . | nindent 4 }}
-    {{- end }}
+  {{- /* Synthesize a pseudo-component so ingress.annotations go through the
+         dedup-aware llamacloud.annotations helper with the same precedence rules
+         (ingress-specific wins over commonAnnotations on collision). */}}
+  annotations: {{ include "llamacloud.annotations" (dict "root" $ "component" (dict "annotations" .Values.ingress.annotations)) | indent 4 }}
 spec:
   ingressClassName: {{ $ingressClassName }}
   rules:
@@ -30,6 +30,13 @@ spec:
             port:
               number: 80
         path: "/api"
+        pathType: Prefix
+      - backend:
+          service:
+            name: {{ (include "llamacloud.component.backend" . | fromYaml ).name }}
+            port:
+              number: 80
+        path: "/deployments"
         pathType: Prefix
 {{- if .Values.ingress.tlsSecretName }}
   tls:

@@ -7,7 +7,7 @@ Backend Component Settings.
 {{- $component := .Values.backend }}
 {{- $component = set $component "prefix" "llamacloud.component.backend" }}
 {{- $component = set $component "name" "llamacloud" }}
-{{- $component = set $component "image" ($.Values.backend).image | default ( print "docker.io/llamaindex/llamacloud-backend:" .Chart.AppVersion ) }}
+{{- $component = set $component "image" ( ($.Values.backend).image | default ( print "docker.io/llamaindex/llamacloud-backend:" .Chart.AppVersion ) ) }}
 {{- $component = set $component "imagePullPolicy" ( ($.Values.backend).imagePullPolicy | default "IfNotPresent" ) }}
 {{- $component = set $component "port" 8000 }}
 {{- $component = set $component "command" (list "start_platform_api") }}
@@ -105,10 +105,18 @@ Parameters:
 - configMapRef:
     name: extract-config
 - configMapRef:
+    name: rate-limits-config
+- configMapRef:
     name: urls-config
 {{- if not .root.Values.temporal.disabled }}
 - configMapRef:
     name: temporal-connection-config
+{{- end }}
+- configMapRef:
+    name: feature-config
+{{- if ne (include "llamacloud.llamaAgents.url" .root) "" }}
+- configMapRef:
+    name: llama-agents-config
 {{- end }}
 {{- if (include "llamacloud.component.backend.configMap" $) }}
 - configMapRef:

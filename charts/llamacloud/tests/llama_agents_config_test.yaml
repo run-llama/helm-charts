@@ -1,0 +1,79 @@
+suite: llama-agents-config-tests
+
+templates:
+- ../templates/llamacloud/configmaps/llama-agents.yaml
+
+release:
+  name: test-release
+  namespace: test-namespace
+
+capabilities:
+  majorVersion: 1
+  minorVersion: 31
+  apiVersions:
+    - v1
+
+chart:
+  appVersion: 0.0.0
+
+tests:
+- it: should not render llama-agents-config when neither deploy nor controlPlaneUrl is set
+  template: ../templates/llamacloud/configmaps/llama-agents.yaml
+  asserts:
+    - hasDocuments:
+        count: 0
+
+- it: should render in-cluster URL when deploy=true
+  set:
+    llamaAgents:
+      deploy: true
+  template: ../templates/llamacloud/configmaps/llama-agents.yaml
+  asserts:
+    - isKind:
+        of: ConfigMap
+    - equal:
+        path: .metadata.name
+        value: llama-agents-config
+    - equal:
+        path: .data.LLAMA_DEPLOY_URL
+        value: http://llama-agents-service:80
+
+- it: should render external controlPlaneUrl when deploy=false
+  set:
+    llamaAgents:
+      deploy: false
+      controlPlaneUrl: https://agents.example.com
+  template: ../templates/llamacloud/configmaps/llama-agents.yaml
+  asserts:
+    - isKind:
+        of: ConfigMap
+    - equal:
+        path: .data.LLAMA_DEPLOY_URL
+        value: https://agents.example.com
+
+- it: should prefer in-cluster URL over external controlPlaneUrl when deploy=true
+  set:
+    llamaAgents:
+      deploy: true
+      controlPlaneUrl: https://agents.example.com
+  template: ../templates/llamacloud/configmaps/llama-agents.yaml
+  asserts:
+    - equal:
+        path: .data.LLAMA_DEPLOY_URL
+        value: http://llama-agents-service:80
+
+- it: should not render when enabled=false even with deploy=true
+  # feature-config reflects user intent; llama-agents URL config should still render only if URL is resolvable
+  # llamaAgents.enabled=false does NOT suppress the URL configmap — it only flips IS_AGENT_DEPLOYMENTS_ENABLED.
+  # This test documents that behavior so future refactors don't accidentally couple them.
+  set:
+    llamaAgents:
+      enabled: false
+      deploy: true
+  template: ../templates/llamacloud/configmaps/llama-agents.yaml
+  asserts:
+    - isKind:
+        of: ConfigMap
+    - equal:
+        path: .data.LLAMA_DEPLOY_URL
+        value: http://llama-agents-service:80

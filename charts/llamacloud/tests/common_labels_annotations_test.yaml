@@ -1,0 +1,200 @@
+suite: common-labels-annotations-tests
+
+# Verifies that chart-wide `commonLabels` and `commonAnnotations` from values.yaml
+# flow through the `llamacloud.labels` / `llamacloud.annotations` helpers and
+# appear on rendered Deployments, Services, ConfigMaps, and Secrets. This is the
+# type of plumbing that quietly regresses when a new resource template is added
+# without calling the helpers.
+
+templates:
+- ../templates/llamacloud/deployment.yaml
+- ../templates/llamacloud/service.yaml
+- ../templates/llamacloud/serviceaccount.yaml
+- ../templates/llamacloud/configmaps/common.yaml
+- ../templates/llamacloud/configmaps/features.yaml
+- ../templates/llamacloud/secrets/license.yaml
+
+release:
+  name: test-release
+  namespace: test-namespace
+
+capabilities:
+  majorVersion: 1
+  minorVersion: 31
+  apiVersions:
+    - apps/v1
+    - v1
+
+chart:
+  appVersion: 0.0.0
+
+tests:
+- it: commonLabels appear on component Deployments
+  set:
+    commonLabels:
+      environment: prod
+      team: platform
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud
+  asserts:
+    - equal:
+        path: .metadata.labels.environment
+        value: prod
+    - equal:
+        path: .metadata.labels.team
+        value: platform
+
+- it: commonLabels appear on component Services
+  set:
+    commonLabels:
+      environment: prod
+      team: platform
+  template: ../templates/llamacloud/service.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud
+  asserts:
+    - equal:
+        path: .metadata.labels.environment
+        value: prod
+    - equal:
+        path: .metadata.labels.team
+        value: platform
+
+- it: commonLabels appear on ServiceAccounts
+  set:
+    commonLabels:
+      environment: prod
+  template: ../templates/llamacloud/serviceaccount.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud
+  asserts:
+    - equal:
+        path: .metadata.labels.environment
+        value: prod
+
+- it: commonLabels appear on shared ConfigMaps
+  set:
+    commonLabels:
+      environment: prod
+  template: ../templates/llamacloud/configmaps/common.yaml
+  asserts:
+    - equal:
+        path: .metadata.labels.environment
+        value: prod
+
+- it: commonLabels appear on feature-config ConfigMap
+  set:
+    commonLabels:
+      environment: prod
+  template: ../templates/llamacloud/configmaps/features.yaml
+  asserts:
+    - equal:
+        path: .metadata.labels.environment
+        value: prod
+
+- it: commonLabels appear on top-level Secrets
+  set:
+    license:
+      key: test-license
+    commonLabels:
+      environment: prod
+  template: ../templates/llamacloud/secrets/license.yaml
+  asserts:
+    - equal:
+        path: .metadata.labels.environment
+        value: prod
+
+- it: commonAnnotations appear on component Deployments
+  set:
+    commonAnnotations:
+      cost-center: engineering
+      compliance/scope: pii
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud
+  asserts:
+    - equal:
+        path: .metadata.annotations["cost-center"]
+        value: engineering
+    - equal:
+        path: .metadata.annotations["compliance/scope"]
+        value: pii
+
+- it: commonAnnotations merge with per-component annotations
+  set:
+    commonAnnotations:
+      shared/key: shared-value
+    backend:
+      annotations:
+        backend-only/key: backend-value
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud
+  asserts:
+    - equal:
+        path: .metadata.annotations["shared/key"]
+        value: shared-value
+    - equal:
+        path: .metadata.annotations["backend-only/key"]
+        value: backend-value
+
+- it: per-component annotations win over commonAnnotations on key collision
+  set:
+    commonAnnotations:
+      shared/key: from-common
+      only-common/key: common-only-value
+    backend:
+      annotations:
+        shared/key: from-backend
+        only-backend/key: backend-only-value
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud
+  asserts:
+    - equal:
+        path: .metadata.annotations["shared/key"]
+        value: from-backend
+    - equal:
+        path: .metadata.annotations["only-common/key"]
+        value: common-only-value
+    - equal:
+        path: .metadata.annotations["only-backend/key"]
+        value: backend-only-value
+
+- it: per-component podAnnotations win over commonAnnotations on key collision
+  set:
+    commonAnnotations:
+      shared/key: from-common
+    backend:
+      podAnnotations:
+        shared/key: from-pod
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud
+  asserts:
+    - equal:
+        path: .spec.template.metadata.annotations["shared/key"]
+        value: from-pod
+
+- it: default labels (app.kubernetes.io/instance, managed-by, name) are present even without commonLabels
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud
+  asserts:
+    - equal:
+        path: .metadata.labels["app.kubernetes.io/instance"]
+        value: test-release
+    - equal:
+        path: .metadata.labels["app.kubernetes.io/name"]
+        value: llamacloud
+    - isNotEmpty:
+        path: .metadata.labels["app.kubernetes.io/managed-by"]

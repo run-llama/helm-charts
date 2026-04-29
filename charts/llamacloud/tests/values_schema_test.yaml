@@ -1,0 +1,112 @@
+suite: values-schema-tests
+
+# Asserts that values.schema.json rejects clearly invalid inputs.
+# values.schema.json is generated from values.yaml via the helm-schema plugin.
+# Any field listed here should match the plugin-inferred type in values.yaml.
+# When the schema drifts, these tests fail first and localize the regression.
+
+templates:
+- ../templates/llamacloud/secrets/license.yaml
+
+release:
+  name: test-release
+  namespace: test-namespace
+
+capabilities:
+  majorVersion: 1
+  minorVersion: 31
+  apiVersions:
+    - v1
+
+chart:
+  appVersion: 0.0.0
+
+tests:
+- it: rejects integer for string-typed license.key
+  set:
+    license:
+      key: 12345
+  template: ../templates/llamacloud/secrets/license.yaml
+  asserts:
+    - failedTemplate:
+        errorPattern: "at '/license/key': got number, want string"
+
+- it: rejects integer for string-typed postgresql.port
+  set:
+    postgresql:
+      port: 5432
+  template: ../templates/llamacloud/secrets/license.yaml
+  asserts:
+    - failedTemplate:
+        errorPattern: "at '/postgresql/port': got number, want string"
+
+- it: rejects string for boolean-typed qdrant.enabled
+  set:
+    qdrant:
+      enabled: "true"
+  template: ../templates/llamacloud/secrets/license.yaml
+  asserts:
+    - failedTemplate:
+        errorPattern: "at '/qdrant/enabled': got string, want boolean"
+
+- it: rejects string for integer-typed temporal.port
+  set:
+    temporal:
+      port: "7233"
+  template: ../templates/llamacloud/secrets/license.yaml
+  asserts:
+    - failedTemplate:
+        errorPattern: "at '/temporal/port': got string, want integer"
+
+- it: rejects string for array-typed imagePullSecrets
+  set:
+    imagePullSecrets: my-secret
+  template: ../templates/llamacloud/secrets/license.yaml
+  asserts:
+    - failedTemplate:
+        errorPattern: "at '/imagePullSecrets': got string, want array"
+
+- it: rejects string for object-typed backend.horizontalPodAutoscalerSpec
+  set:
+    backend:
+      horizontalPodAutoscalerSpec: "not-an-object"
+  template: ../templates/llamacloud/secrets/license.yaml
+  asserts:
+    - failedTemplate:
+        errorPattern: "at '/backend/horizontalPodAutoscalerSpec': got string, want object"
+
+- it: rejects string for tri-state llamaAgents.enabled (must be boolean or null)
+  set:
+    llamaAgents:
+      enabled: "maybe"
+  template: ../templates/llamacloud/secrets/license.yaml
+  asserts:
+    - failedTemplate:
+        errorPattern: "at '/llamaAgents/enabled'"
+
+- it: accepts null for tri-state llamaAgents.enabled
+  set:
+    llamaAgents:
+      enabled: null
+  template: ../templates/llamacloud/secrets/license.yaml
+  asserts:
+    - isKind:
+        of: Secret
+
+- it: accepts true for tri-state llamaAgents.enabled
+  set:
+    llamaAgents:
+      enabled: true
+  template: ../templates/llamacloud/secrets/license.yaml
+  asserts:
+    - isKind:
+        of: Secret
+
+- it: accepts false for tri-state llamaAgents.enabled
+  set:
+    llamaAgents:
+      enabled: false
+  template: ../templates/llamacloud/secrets/license.yaml
+  asserts:
+    - isKind:
+        of: Secret

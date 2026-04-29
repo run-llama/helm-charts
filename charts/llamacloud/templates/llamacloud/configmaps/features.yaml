@@ -1,0 +1,17 @@
+{{- /* llamaAgents.enabled: explicit override, else derived from resolvable URL. */ -}}
+{{- $llamaAgentsEnabled := false -}}
+{{- if kindIs "bool" .Values.llamaAgents.enabled -}}
+{{-   $llamaAgentsEnabled = .Values.llamaAgents.enabled -}}
+{{- else -}}
+{{-   $llamaAgentsEnabled = (ne (include "llamacloud.llamaAgents.url" .) "") -}}
+{{- end -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: feature-config
+  namespace: {{ $.Release.Namespace | quote }}
+  labels: {{ include "llamacloud.labels" (dict "root" $) | indent 4 }}
+  annotations: {{ include "llamacloud.annotations" (dict "root" $) | indent 4 }}
+data:
+  ## Read by frontend (server-only, non-NEXT_PUBLIC) and backend FeatureFlagSettings
+  IS_AGENT_DEPLOYMENTS_ENABLED: {{ $llamaAgentsEnabled | quote }}

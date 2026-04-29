@@ -5,7 +5,7 @@ Jobs Service Component Settings.
 {{- $component := .Values.jobsService }}
 {{- $component = set $component "prefix" "llamacloud.component.jobsService" }}
 {{- $component = set $component "name" "llamacloud-operator" }}
-{{- $component = set $component "image" ($.Values.jobsService).image | default ( print "docker.io/llamaindex/llamacloud-backend:" .Chart.AppVersion ) }}
+{{- $component = set $component "image" ( ($.Values.jobsService).image | default ( print "docker.io/llamaindex/llamacloud-backend:" .Chart.AppVersion ) ) }}
 {{- $component = set $component "imagePullPolicy" ( ($.Values.jobsService).imagePullPolicy | default "IfNotPresent" ) }}
 {{- $component = set $component "port" 8002 }}
 {{- $component = set $component "command" (list "start_job_service") }}

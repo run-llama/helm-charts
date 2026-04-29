@@ -1,0 +1,82 @@
+suite: rate-limits-config-tests
+
+templates:
+- ../templates/llamacloud/configmaps/rate-limits.yaml
+
+release:
+  name: test-release
+  namespace: test-namespace
+
+capabilities:
+  majorVersion: 1
+  minorVersion: 31
+  apiVersions:
+    - v1
+
+chart:
+  appVersion: 0.0.0
+
+tests:
+- it: should always render rate-limits-config ConfigMap
+  template: ../templates/llamacloud/configmaps/rate-limits.yaml
+  asserts:
+    - isKind:
+        of: ConfigMap
+    - equal:
+        path: .metadata.name
+        value: rate-limits-config
+
+- it: should emit documented defaults when no overrides set
+  template: ../templates/llamacloud/configmaps/rate-limits.yaml
+  asserts:
+    - equal:
+        path: .data.PARSE_RATE_LIMIT_DEFAULT_QUERIES
+        value: "500"
+    - equal:
+        path: .data.PARSE_RATE_LIMIT_DEFAULT_SECONDS
+        value: "10"
+    - equal:
+        path: .data.DEFAULT_PARSE_API_QUERY_QPS
+        value: "80"
+    - equal:
+        path: .data.DEFAULT_PARSE_API_LIST_QPS
+        value: "5"
+    - equal:
+        path: .data.DEFAULT_EXTRACT_API_CREATION_QPS
+        value: "40"
+    - equal:
+        path: .data.DEFAULT_CLASSIFY_API_CREATION_QPS
+        value: "40"
+    - equal:
+        path: .data.DEFAULT_SPREADSHEET_CREATION_QPM
+        value: "60"
+    - equal:
+        path: .data.DEFAULT_USAGE_API_QUERY_QPS
+        value: "20"
+
+- it: should apply overrides to specific limits
+  set:
+    config:
+      rateLimits:
+        parseApiCreationQueries: 1000
+        parseApiCreationSeconds: 5
+        extractApiQueryQps: 200
+        usageApiQueryQps: 50
+  template: ../templates/llamacloud/configmaps/rate-limits.yaml
+  asserts:
+    - equal:
+        path: .data.PARSE_RATE_LIMIT_DEFAULT_QUERIES
+        value: "1000"
+    - equal:
+        path: .data.PARSE_RATE_LIMIT_DEFAULT_SECONDS
+        value: "5"
+    - equal:
+        path: .data.DEFAULT_EXTRACT_API_QUERY_QPS
+        value: "200"
+    - equal:
+        path: .data.DEFAULT_USAGE_API_QUERY_QPS
+        value: "50"
+    # unset keys should still fall back to defaults
+    - equal:
+        path: .data.DEFAULT_PARSE_API_QUERY_QPS
+        value: "80"

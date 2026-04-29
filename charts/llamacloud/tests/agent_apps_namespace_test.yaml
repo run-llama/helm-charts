@@ -1,0 +1,66 @@
+suite: agent-apps-namespace-tests
+
+templates:
+- ../templates/agent-apps-namespace.yaml
+
+release:
+  name: test-release
+  namespace: test-namespace
+
+chart:
+  appVersion: 0.0.0
+
+tests:
+- it: renders the apps namespace by default when llamaAgents.deploy is true
+  set:
+    llamaAgents:
+      deploy: true
+  asserts:
+    - isKind:
+        of: Namespace
+    - equal:
+        path: .metadata.name
+        value: llama-agents
+    - equal:
+        path: .metadata.annotations["helm.sh/resource-policy"]
+        value: keep
+
+- it: does not render when llamaAgents.deploy is false
+  set:
+    llamaAgents:
+      deploy: false
+  asserts:
+    - hasDocuments:
+        count: 0
+
+- it: does not render when createAppsNamespace is false
+  set:
+    llamaAgents:
+      deploy: true
+      createAppsNamespace: false
+  asserts:
+    - hasDocuments:
+        count: 0
+
+- it: does not render when apps namespace equals the release namespace
+  set:
+    llamaAgents:
+      deploy: true
+    llama-agents-subchart:
+      apps:
+        namespace: test-namespace
+  asserts:
+    - hasDocuments:
+        count: 0
+
+- it: uses the configured subchart apps namespace
+  set:
+    llamaAgents:
+      deploy: true
+    llama-agents-subchart:
+      apps:
+        namespace: llama-agents-byoc
+  asserts:
+    - equal:
+        path: .metadata.name
+        value: llama-agents-byoc

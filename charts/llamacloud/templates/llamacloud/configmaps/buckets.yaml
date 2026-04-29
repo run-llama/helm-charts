@@ -19,3 +19,7 @@ data:
 
   S3_UPLOAD_BUCKET: {{ required ".Values.config.storageBuckets.parseFileUpload is required" ((.Values.config).storageBuckets).parseFileUpload }}
   S3_OUTPUT_BUCKET: {{ required ".Values.config.storageBuckets.parseFileOutput is required" ((.Values.config).storageBuckets).parseFileOutput }}
+
+  {{- with ((.Values.config).storageBuckets).signatureVersion }}
+  S3_SIGNATURE_VERSION: {{ . | quote }}
+  {{- end }}

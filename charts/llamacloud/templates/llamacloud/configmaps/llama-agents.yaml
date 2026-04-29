@@ -1,0 +1,12 @@
+{{- $llamaAgentsUrl := include "llamacloud.llamaAgents.url" . -}}
+{{- if $llamaAgentsUrl }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: llama-agents-config
+  namespace: {{ $.Release.Namespace | quote }}
+  labels: {{ include "llamacloud.labels" (dict "root" $) | indent 4 }}
+  annotations: {{ include "llamacloud.annotations" (dict "root" $) | indent 4 }}
+data:
+  LLAMA_DEPLOY_URL: {{ $llamaAgentsUrl | quote }}
+{{- end }}

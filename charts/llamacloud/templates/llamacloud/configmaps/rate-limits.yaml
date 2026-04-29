@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rate-limits-config
+  namespace: {{ $.Release.Namespace | quote }}
+  labels: {{ include "llamacloud.labels" (dict "root" $) | indent 4 }}
+  annotations: {{ include "llamacloud.annotations" (dict "root" $) | indent 4 }}
+data:
+  PARSE_RATE_LIMIT_DEFAULT_QUERIES: {{ (($.Values.config).rateLimits).parseApiCreationQueries | default "500" | quote }}
+  PARSE_RATE_LIMIT_DEFAULT_SECONDS: {{ (($.Values.config).rateLimits).parseApiCreationSeconds | default "10" | quote }}
+  DEFAULT_PARSE_API_QUERY_QPS: {{ (($.Values.config).rateLimits).parseApiQueryQps | default "80" | quote }}
+  DEFAULT_PARSE_API_LIST_QPS: {{ (($.Values.config).rateLimits).parseApiListQps | default "5" | quote }}
+  DEFAULT_EXTRACT_API_CREATION_QPS: {{ (($.Values.config).rateLimits).extractApiCreationQps | default "40" | quote }}
+  DEFAULT_EXTRACT_API_QUERY_QPS: {{ (($.Values.config).rateLimits).extractApiQueryQps | default "80" | quote }}
+  DEFAULT_EXTRACT_API_LIST_QPS: {{ (($.Values.config).rateLimits).extractApiListQps | default "5" | quote }}
+  DEFAULT_EXTRACT_AGENT_CREATION_QPS: {{ (($.Values.config).rateLimits).extractAgentCreationQps | default "10" | quote }}
+  DEFAULT_CLASSIFY_API_CREATION_QPS: {{ (($.Values.config).rateLimits).classifyApiCreationQps | default "40" | quote }}
+  DEFAULT_CLASSIFY_API_QUERY_QPS: {{ (($.Values.config).rateLimits).classifyApiQueryQps | default "80" | quote }}
+  DEFAULT_CLASSIFY_API_LIST_QPS: {{ (($.Values.config).rateLimits).classifyApiListQps | default "5" | quote }}
+  DEFAULT_SPLIT_CREATION_QPS: {{ (($.Values.config).rateLimits).splitApiCreationQps | default "40" | quote }}
+  DEFAULT_SPLIT_QUERY_QPS: {{ (($.Values.config).rateLimits).splitApiQueryQps | default "80" | quote }}
+  DEFAULT_SPREADSHEET_CREATION_QPM: {{ (($.Values.config).rateLimits).spreadsheetCreationQpm | default "60" | quote }}
+  DEFAULT_SPREADSHEET_API_QUERY_QPS: {{ (($.Values.config).rateLimits).spreadsheetApiQueryQps | default "80" | quote }}
+  DEFAULT_SPREADSHEET_API_LIST_QPS: {{ (($.Values.config).rateLimits).spreadsheetApiListQps | default "5" | quote }}
+  DEFAULT_USAGE_API_QUERY_QPS: {{ (($.Values.config).rateLimits).usageApiQueryQps | default "20" | quote }}

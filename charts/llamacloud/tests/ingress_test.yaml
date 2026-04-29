@@ -28,7 +28,7 @@ tests:
         path: .spec.ingressClassName
         value: "default-ingress-class"
 
-- it: should set BACKEND_URL to use https when tlsSecretName is provided
+- it: should set PUBLIC_BACKEND_URL to use https when tlsSecretName is provided
   set:
     ingress.enabled: true
     ingress.ingressClassName: "default-ingress-class"
@@ -37,10 +37,13 @@ tests:
   template: ../templates/llamacloud/configmaps/urls.yaml
   asserts:
     - equal:
-        path: .data.BACKEND_URL
+        path: .data.PUBLIC_BACKEND_URL
         value: "https://llamacloud.example.com"
+    - equal:
+        path: .data.BACKEND_URL
+        value: "http://llamacloud:80"
 
-- it: should set BACKEND_URL to use http when tlsSecretName is not provided
+- it: should set PUBLIC_BACKEND_URL to use http when tlsSecretName is not provided
   set:
     ingress.enabled: true
     ingress.ingressClassName: "default-ingress-class"
@@ -48,8 +51,11 @@ tests:
   template: ../templates/llamacloud/configmaps/urls.yaml
   asserts:
     - equal:
-        path: .data.BACKEND_URL
+        path: .data.PUBLIC_BACKEND_URL
         value: "http://llamacloud.example.com"
+    - equal:
+        path: .data.BACKEND_URL
+        value: "http://llamacloud:80"
 
 - it: should not create an ingress if ingress.enabled is false
   set:
@@ -58,3 +64,20 @@ tests:
   asserts:
     - hasDocuments:
         count: 0
+
+- it: should route /deployments to the backend service
+  set:
+    ingress.enabled: true
+    ingress.ingressClassName: "default-ingress-class"
+    ingress.host: "llamacloud.example.com"
+  template: ../templates/ingress.yaml
+  asserts:
+    - equal:
+        path: .spec.rules[0].http.paths[?(@.path == "/deployments")].pathType
+        value: Prefix
+    - equal:
+        path: .spec.rules[0].http.paths[?(@.path == "/deployments")].backend.service.name
+        value: llamacloud
+    - equal:
+        path: .spec.rules[0].http.paths[?(@.path == "/api")].backend.service.name
+        value: llamacloud

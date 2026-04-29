@@ -1,0 +1,158 @@
+suite: umbrella-configmap-tests
+
+# Covers templates/llamacloud/configmap.yaml, which iterates over all components
+# in `llamacloud.components` and renders a ConfigMap for each whose `.configMap`
+# helper returns non-empty content.
+
+templates:
+- ../templates/llamacloud/configmap.yaml
+
+release:
+  name: test-release
+  namespace: test-namespace
+
+capabilities:
+  majorVersion: 1
+  minorVersion: 31
+  apiVersions:
+    - v1
+
+chart:
+  appVersion: 0.0.0
+
+tests:
+- it: renders one ConfigMap per component whose .configMap helper is non-empty
+  # Default set of components with non-empty .configMap helpers:
+  # frontend (enabled by default), jobsWorker, llamaParse,
+  # temporal.llamaParse, and one temporal worker (first entry in temporalWorkloads.workers).
+  template: ../templates/llamacloud/configmap.yaml
+  asserts:
+    - hasDocuments:
+        count: 5
+
+- it: renders the frontend ConfigMap with HOSTNAME and feature defaults
+  template: ../templates/llamacloud/configmap.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-web
+  asserts:
+    - isKind:
+        of: ConfigMap
+    - equal:
+        path: .data.HOSTNAME
+        value: "0.0.0.0"
+    - equal:
+        path: .data.IS_INDEX_V1_ENABLED
+        value: "true"
+    - isNull:
+        path: .data.NEXT_PUBLIC_BYOC_HAS_MANAGED_QDRANT
+
+- it: frontend ConfigMap exposes NEXT_PUBLIC_BYOC_HAS_MANAGED_QDRANT when qdrant is enabled
+  set:
+    qdrant:
+      enabled: true
+      url: https://qdrant.example.com
+      apiKey: abc
+  template: ../templates/llamacloud/configmap.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-web
+  asserts:
+    - equal:
+        path: .data.NEXT_PUBLIC_BYOC_HAS_MANAGED_QDRANT
+        value: "true"
+
+- it: frontend ConfigMap is not rendered when frontend is disabled
+  set:
+    config:
+      frontend:
+        enabled: false
+  template: ../templates/llamacloud/configmap.yaml
+  asserts:
+    # 4 remaining: jobsWorker, llamaParse, temporal.llamaParse, one temporal worker.
+    # The missing one is llamacloud-web (frontend); count alone validates absence.
+    - hasDocuments:
+        count: 4
+
+- it: renders jobsWorker ConfigMap with documented job defaults
+  template: ../templates/llamacloud/configmap.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-worker
+  asserts:
+    - equal:
+        path: .data.JOB_CONSUMER_PORT
+        value: "80"
+    - equal:
+        path: .data.MAX_JOBS_IN_EXECUTION_PER_JOB_TYPE
+        value: "10"
+    - equal:
+        path: .data.MAX_DOCUMENT_INGESTION_JOBS_IN_EXECUTION
+        value: "1"
+    - equal:
+        path: .data.DEFAULT_TRANSFORM_DOCUMENT_TIMEOUT_SECONDS
+        value: "240"
+
+- it: jobsWorker ConfigMap should apply config.jobs overrides
+  set:
+    config:
+      jobs:
+        maxJobsInExecutionPerJobType: 25
+        maxIndexJobsInExecution: 4
+        defaultTransformDocumentTimeoutSeconds: "600"
+  template: ../templates/llamacloud/configmap.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-worker
+  asserts:
+    - equal:
+        path: .data.MAX_JOBS_IN_EXECUTION_PER_JOB_TYPE
+        value: "25"
+    - equal:
+        path: .data.MAX_INDEX_JOBS_IN_EXECUTION
+        value: "4"
+    - equal:
+        path: .data.DEFAULT_TRANSFORM_DOCUMENT_TIMEOUT_SECONDS
+        value: "600"
+
+- it: renders llamaParse ConfigMap with debug and concurrency defaults
+  template: ../templates/llamacloud/configmap.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-parse
+  asserts:
+    - equal:
+        path: .data.DEBUG_MODE
+        value: "false"
+    - isNotNullOrEmpty:
+        path: .data.MAX_QUEUE_CONCURRENCY
+    - isNull:
+        path: .data.PREFERED_PREMIUM_MODE_MODEL
+
+- it: llamaParse ConfigMap exposes PREFERED_PREMIUM_MODE_MODEL when set
+  set:
+    config:
+      parse:
+        preferedPremiumModel: openai-gpt-4o
+  template: ../templates/llamacloud/configmap.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-parse
+  asserts:
+    - equal:
+        path: .data.PREFERED_PREMIUM_MODE_MODEL
+        value: openai-gpt-4o
+
+- it: no ConfigMaps when temporal is disabled AND frontend is disabled
+  set:
+    config:
+      frontend:
+        enabled: false
+    temporal:
+      disabled: true
+      deploy: false
+  template: ../templates/llamacloud/configmap.yaml
+  asserts:
+    # jobsWorker (non-temporal) and llamaParse (non-temporal) remain
+    - hasDocuments:
+        count: 2

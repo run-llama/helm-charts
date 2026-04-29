@@ -1,0 +1,48 @@
+suite: common-config-tests
+
+templates:
+- ../templates/llamacloud/configmaps/common.yaml
+
+release:
+  name: test-release
+  namespace: test-namespace
+
+capabilities:
+  majorVersion: 1
+  minorVersion: 31
+  apiVersions:
+    - v1
+
+chart:
+  appVersion: 0.0.0
+
+tests:
+- it: always renders common-config ConfigMap with BYOC deployment markers
+  template: ../templates/llamacloud/configmaps/common.yaml
+  asserts:
+    - isKind:
+        of: ConfigMap
+    - equal:
+        path: .metadata.name
+        value: common-config
+    - equal:
+        path: .data.IS_DEPLOYED
+        value: "true"
+    - equal:
+        path: .data.DEPLOYMENT_MODE
+        value: "prod"
+    - equal:
+        path: .data.PARSE_PREMIUM
+        value: "true"
+    - equal:
+        path: .data.ALLOWED_INDEX
+        value: "true"
+
+- it: is scoped to release namespace
+  release:
+    namespace: my-ns
+  template: ../templates/llamacloud/configmaps/common.yaml
+  asserts:
+    - equal:
+        path: .metadata.namespace
+        value: my-ns

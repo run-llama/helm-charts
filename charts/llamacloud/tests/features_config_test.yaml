@@ -1,0 +1,86 @@
+suite: features-config-tests
+
+templates:
+- ../templates/llamacloud/configmaps/features.yaml
+
+release:
+  name: test-release
+  namespace: test-namespace
+
+capabilities:
+  majorVersion: 1
+  minorVersion: 31
+  apiVersions:
+    - v1
+
+chart:
+  appVersion: 0.0.0
+
+tests:
+- it: should always render feature-config ConfigMap
+  template: ../templates/llamacloud/configmaps/features.yaml
+  asserts:
+    - isKind:
+        of: ConfigMap
+    - equal:
+        path: .metadata.name
+        value: feature-config
+
+- it: IS_AGENT_DEPLOYMENTS_ENABLED is false by default (no deploy, no controlPlaneUrl, enabled=null)
+  template: ../templates/llamacloud/configmaps/features.yaml
+  asserts:
+    - equal:
+        path: .data.IS_AGENT_DEPLOYMENTS_ENABLED
+        value: "false"
+
+- it: IS_AGENT_DEPLOYMENTS_ENABLED is derived true when llamaAgents.deploy=true and enabled=null
+  set:
+    llamaAgents:
+      deploy: true
+  template: ../templates/llamacloud/configmaps/features.yaml
+  asserts:
+    - equal:
+        path: .data.IS_AGENT_DEPLOYMENTS_ENABLED
+        value: "true"
+
+- it: IS_AGENT_DEPLOYMENTS_ENABLED is derived true when controlPlaneUrl is set and enabled=null
+  set:
+    llamaAgents:
+      controlPlaneUrl: https://agents.example.com
+  template: ../templates/llamacloud/configmaps/features.yaml
+  asserts:
+    - equal:
+        path: .data.IS_AGENT_DEPLOYMENTS_ENABLED
+        value: "true"
+
+- it: explicit llamaAgents.enabled=true overrides derived state even without URL
+  set:
+    llamaAgents:
+      enabled: true
+  template: ../templates/llamacloud/configmaps/features.yaml
+  asserts:
+    - equal:
+        path: .data.IS_AGENT_DEPLOYMENTS_ENABLED
+        value: "true"
+
+- it: explicit llamaAgents.enabled=false overrides derived state even when deploy=true
+  set:
+    llamaAgents:
+      enabled: false
+      deploy: true
+  template: ../templates/llamacloud/configmaps/features.yaml
+  asserts:
+    - equal:
+        path: .data.IS_AGENT_DEPLOYMENTS_ENABLED
+        value: "false"
+
+- it: explicit llamaAgents.enabled=false overrides derived state even when controlPlaneUrl is set
+  set:
+    llamaAgents:
+      enabled: false
+      controlPlaneUrl: https://agents.example.com
+  template: ../templates/llamacloud/configmaps/features.yaml
+  asserts:
+    - equal:
+        path: .data.IS_AGENT_DEPLOYMENTS_ENABLED
+        value: "false"

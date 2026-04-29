@@ -5,10 +5,14 @@ Temporal Parse Component Settings.
 {{- $component := ($.Values.temporalWorkloads).llamaParse }}
 {{- $component = set $component "prefix" "llamacloud.component.temporal.llamaParse" }}
 {{- $component = set $component "name" "llamacloud-temporal-parse" }}
-{{- $component = set $component "image" (($.Values.temporalWorkloads).llamaParse).image | default ( print "docker.io/llamaindex/llamacloud-llamaparse:" .Chart.AppVersion ) }}
+{{- $component = set $component "image" ( (($.Values.temporalWorkloads).llamaParse).image | default ( print "docker.io/llamaindex/llamacloud-llamaparse:" .Chart.AppVersion ) ) }}
 {{- $component = set $component "imagePullPolicy" ( (($.Values.temporalWorkloads).llamaParse).imagePullPolicy | default "IfNotPresent" ) }}
 {{- $component = set $component "port" 8003 }}
-{{- $component = set $component "command" (list "/bin/bash" "-c" "exec node --max-old-space-size=$MAX_OLD_SPACE_SIZE dist/worker/temporal/worker.js") }}
+{{/* LD_PRELOAD is scoped to the node process (not a container ENV) so
+     jemalloc isn't inherited by Chromium-based children (calibre's
+     ebook-convert, puppeteer's chromium) which SIGSEGV when a foreign
+     allocator is preloaded into their address space. */}}
+{{- $component = set $component "command" (list "/bin/bash" "-c" "LD_PRELOAD=$JEMALLOC_PATH exec node --max-old-space-size=$MAX_OLD_SPACE_SIZE dist/worker/temporal/worker.js") }}
 {{- $component = set $component "usesS3" "true" }}
 {{- $component | toYaml }}
 {{- end }}

@@ -1,0 +1,97 @@
+suite: concurrency-config-tests
+
+templates:
+- ../templates/llamacloud/configmaps/concurrency.yaml
+
+release:
+  name: test-release
+  namespace: test-namespace
+
+capabilities:
+  majorVersion: 1
+  minorVersion: 31
+  apiVersions:
+    - v1
+
+chart:
+  appVersion: 0.0.0
+
+tests:
+- it: should always render concurrency-config ConfigMap
+  template: ../templates/llamacloud/configmaps/concurrency.yaml
+  asserts:
+    - isKind:
+        of: ConfigMap
+    - equal:
+        path: .metadata.name
+        value: concurrency-config
+
+- it: should render no concurrency keys by default
+  template: ../templates/llamacloud/configmaps/concurrency.yaml
+  asserts:
+    - isEmpty:
+        path: .data
+
+- it: should render ocrConcurrency when set
+  set:
+    config:
+      parse:
+        concurrency:
+          ocrConcurrency: "32"
+  template: ../templates/llamacloud/configmaps/concurrency.yaml
+  asserts:
+    - equal:
+        path: .data.OCR_CONCURRENCY
+        value: "32"
+
+- it: should render layoutExtractionConcurrency keys when set
+  set:
+    config:
+      parse:
+        concurrency:
+          layoutExtractionConcurrency: "8"
+          layoutExtractionV2Concurrency: "16"
+  template: ../templates/llamacloud/configmaps/concurrency.yaml
+  asserts:
+    - equal:
+        path: .data.LAYOUT_EXTRACTION_CONCURRENCY
+        value: "8"
+    - equal:
+        path: .data.LAYOUT_EXTRACTION_V2_CONCURRENCY
+        value: "16"
+
+- it: should render accurateModeLLMConcurrency and model-specific keys when set
+  set:
+    config:
+      parse:
+        concurrency:
+          accurateModeLLMConcurrency: "4"
+          openaiGpt4o: "12"
+          anthropicSonnet45: "7"
+          gemini25Pro: "5"
+  template: ../templates/llamacloud/configmaps/concurrency.yaml
+  asserts:
+    - equal:
+        path: .data.ACCURATE_MODE_LLM_CONCURRENCY
+        value: "4"
+    - equal:
+        path: .data.OPENAI_GPT_4O_CONCURRENCY
+        value: "12"
+    - equal:
+        path: .data.ANTHROPIC_SONNET_4_5_CONCURRENCY
+        value: "7"
+    - equal:
+        path: .data.GEMINI_2_5_PRO_CONCURRENCY
+        value: "5"
+
+- it: should omit keys whose values are empty strings (templates check truthy)
+  set:
+    config:
+      parse:
+        concurrency:
+          ocrConcurrency: ""
+          openaiGpt5: ""
+  template: ../templates/llamacloud/configmaps/concurrency.yaml
+  asserts:
+    - isEmpty:
+        path: .data
