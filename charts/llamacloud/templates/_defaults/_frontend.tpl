@@ -96,6 +96,8 @@ Parameters:
 {{- include "llamacloud.secrets.license" .root}}
 - configMapRef:
     name: urls-config
+- configMapRef:
+    name: feature-config
 {{- if (include "llamacloud.component.frontend.configMap" $) }}
 - configMapRef:
     name: {{ .component.name }}

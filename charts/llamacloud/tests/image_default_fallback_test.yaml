@@ -1,0 +1,158 @@
+suite: image-default-fallback-tests
+
+# Asserts that every component helper correctly falls back to
+# docker.io/llamaindex/<name>:<chart.AppVersion> when the user explicitly
+# empties the `.image` value.
+#
+# Historical context: these component helpers previously had the pattern
+# `set $component "image" X.image | default Y` which Go's operator precedence
+# parsed as `(set ... X.image) | default Y` — making the fallback unreachable.
+# The fallback is now wrapped in parens (`set $component "image" ( X.image | default Y )`)
+# so emptying `X.image` correctly produces the chart.AppVersion default.
+
+templates:
+- ../templates/llamacloud/deployment.yaml
+
+release:
+  name: test-release
+  namespace: test-namespace
+
+capabilities:
+  majorVersion: 1
+  minorVersion: 31
+  apiVersions:
+    - apps/v1
+
+chart:
+  appVersion: 9.9.9
+
+tests:
+- it: backend image falls back to chart.AppVersion when backend.image is emptied
+  set:
+    backend:
+      image: ""
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud
+  asserts:
+    - equal:
+        path: .spec.template.spec.containers[0].image
+        value: docker.io/llamaindex/llamacloud-backend:9.9.9
+
+- it: frontend image falls back to chart.AppVersion when frontend.image is emptied
+  set:
+    frontend:
+      image: ""
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-web
+  asserts:
+    - equal:
+        path: .spec.template.spec.containers[0].image
+        value: docker.io/llamaindex/llamacloud-frontend:9.9.9
+
+- it: jobsService image falls back to chart.AppVersion when jobsService.image is emptied
+  set:
+    jobsService:
+      image: ""
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-operator
+  asserts:
+    - equal:
+        path: .spec.template.spec.containers[0].image
+        value: docker.io/llamaindex/llamacloud-backend:9.9.9
+
+- it: jobsWorker image falls back to chart.AppVersion when jobsWorker.image is emptied
+  set:
+    jobsWorker:
+      image: ""
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-worker
+  asserts:
+    - equal:
+        path: .spec.template.spec.containers[0].image
+        value: docker.io/llamaindex/llamacloud-backend:9.9.9
+
+- it: usage image falls back to chart.AppVersion when usage.image is emptied
+  set:
+    usage:
+      image: ""
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-telemetry
+  asserts:
+    - equal:
+        path: .spec.template.spec.containers[0].image
+        value: docker.io/llamaindex/llamacloud-backend:9.9.9
+
+- it: llamaParseLayoutDetectionApi image falls back to chart.AppVersion when emptied
+  set:
+    config:
+      parseLayoutDetection:
+        enabled: true
+    llamaParseLayoutDetectionApi:
+      image: ""
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-layout
+  asserts:
+    - equal:
+        path: .spec.template.spec.containers[0].image
+        value: docker.io/llamaindex/llamacloud-layout-detection-api:9.9.9
+
+- it: llamaParseLayoutDetectionApiV3 image falls back to chart.AppVersion when emptied
+  set:
+    config:
+      parseLayoutDetectionV3:
+        enabled: true
+    llamaParseLayoutDetectionApiV3:
+      image: ""
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-layout-v3
+  asserts:
+    - equal:
+        path: .spec.template.spec.containers[0].image
+        value: docker.io/llamaindex/llamacloud-layout-detection-api-v3:9.9.9
+
+- it: temporalWorkloads.llamaParse image falls back to chart.AppVersion when emptied
+  set:
+    temporalWorkloads:
+      llamaParse:
+        image: ""
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-temporal-parse
+  asserts:
+    - equal:
+        path: .spec.template.spec.containers[0].image
+        value: docker.io/llamaindex/llamacloud-llamaparse:9.9.9
+
+- it: llamaParseOcr image falls back to chart.AppVersion when emptied (via explicit empty-branch logic)
+  # llamaParseOcr uses an explicit if/else in its helper rather than `| default`,
+  # so it never had the bug — but verify the fallback still works.
+  set:
+    config:
+      parseOcr:
+        enabled: true
+    llamaParseOcr:
+      image: ""
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-ocr
+  asserts:
+    # The OCR helper appends a `-cpu` suffix when parseOcr.gpu is unset/false.
+    - equal:
+        path: .spec.template.spec.containers[0].image
+        value: docker.io/llamaindex/llamacloud-llamaparse-ocr:9.9.9-cpu

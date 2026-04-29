@@ -23,8 +23,8 @@ keywords:
 - llamacloud
 - rag
 
-version: 0.7.5
-appVersion: "0.7.5"
+version: 0.7.6
+appVersion: "0.7.6"
 
 dependencies:
   - name: temporal
@@ -32,3 +32,8 @@ dependencies:
     repository: https://go.temporal.io/helm-charts
     condition: temporal.deploy
     alias: temporal-subchart
+  - name: llama-agents
+    version: ~0.12.0
+    repository: oci://registry-1.docker.io/llamaindex
+    condition: llamaAgents.deploy
+    alias: llama-agents-subchart

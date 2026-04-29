@@ -9,17 +9,17 @@ data:
   JOB_API_SERVICE_PORT: "80"
   JOB_SERVICE_URL: {{ printf "http://%s:%d" (include "llamacloud.component.jobsService" $ | fromYaml).name ( "80" | int) | quote }}
   TRACKING_SERVICE_URL: {{ printf "http://%s:%d" (include "llamacloud.component.usage" $ | fromYaml).name ( "80" | int) | quote }}
-  {{- if ( not (eq (.Values.ingress).host "localhost") )}}
-  BACKEND_URL: {{ print (include "llamacloud.ingress.scheme" .) "://" (.Values.ingress).host | quote }}
-  {{- else }}
+  # BACKEND_URL is the in-cluster backend Service URL. It is consumed only by
+  # server-side code (SSR outbound fetches and the /api /deployments proxy
+  # route handlers). Browser-destined URLs read PUBLIC_BACKEND_URL instead.
   BACKEND_URL: {{ printf "http://%s:%d" (include "llamacloud.component.backend" $ | fromYaml).name ( "80" | int) | quote }}
-  {{- end }}
   {{- if ($.Values.ingress).host }}
   LLAMACLOUD_INGRESS_URL: {{ print (include "llamacloud.ingress.scheme" .) "://" (.Values.ingress).host | quote }}
   {{- end }}
   {{- if ($.Values.ingress).host }}
   PUBLIC_BACKEND_URL: {{ print (include "llamacloud.ingress.scheme" .) "://" (.Values.ingress).host | quote }}
   {{- end }}
+  AGENT_DEPLOYMENT_USE_PUBLIC_BACKEND_URL: {{ .Values.llamaAgents.useBackendPublicUrl | quote }}
   {{- if (((.Values.config).storageBuckets).s3proxy.enabled | default false) }}
   S3_ENDPOINT_URL: {{ printf "http://localhost:%d" (int ((($.Values.config).storageBuckets).s3proxy.containerPort | default 80)) | quote }}
   {{- end }}

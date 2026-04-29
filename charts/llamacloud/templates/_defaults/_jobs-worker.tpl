@@ -5,7 +5,7 @@ Jobs Worker Component Settings.
 {{- $component := .Values.jobsWorker }}
 {{- $component = set $component "prefix" "llamacloud.component.jobsWorker" }}
 {{- $component = set $component "name" "llamacloud-worker" }}
-{{- $component = set $component "image" ($.Values.jobsWorker).image | default ( print "docker.io/llamaindex/llamacloud-backend:" .Chart.AppVersion ) }}
+{{- $component = set $component "image" ( ($.Values.jobsWorker).image | default ( print "docker.io/llamaindex/llamacloud-backend:" .Chart.AppVersion ) ) }}
 {{- $component = set $component "imagePullPolicy" ( ($.Values.jobsWorker).imagePullPolicy | default "IfNotPresent" ) }}
 {{- $component = set $component "port" 8001 }}
 {{- $component = set $component "command" (list "start_consumer") }}

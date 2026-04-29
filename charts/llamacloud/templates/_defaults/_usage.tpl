@@ -5,7 +5,7 @@ Usage Component Settings.
 {{- $component := .Values.usage }}
 {{- $component = set $component "prefix" "llamacloud.component.usage" }}
 {{- $component = set $component "name" "llamacloud-telemetry" }}
-{{- $component = set $component "image" ($.Values.usage).image | default ( print "docker.io/llamaindex/llamacloud-backend:" .Chart.AppVersion ) }}
+{{- $component = set $component "image" ( ($.Values.usage).image | default ( print "docker.io/llamaindex/llamacloud-backend:" .Chart.AppVersion ) ) }}
 {{- $component = set $component "imagePullPolicy" ( ($.Values.usage).imagePullPolicy | default "IfNotPresent" ) }}
 {{- $component = set $component "port" 8005 }}
 {{- $component = set $component "command" (list "start_usage_service") }}

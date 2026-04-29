@@ -5,7 +5,7 @@ Parse Layout Detection Component Settings.
 {{- $component := .Values.llamaParseLayoutDetectionApi }}
 {{- $component = set $component "prefix" "llamacloud.component.llamaParseLayoutDetectionApi" }}
 {{- $component = set $component "name" "llamacloud-layout" }}
-{{- $component = set $component "image" ($.Values.llamaParseLayoutDetectionApi).image | default ( print "docker.io/llamaindex/llamacloud-layout-detection-api:" .Chart.AppVersion ) }}
+{{- $component = set $component "image" ( ($.Values.llamaParseLayoutDetectionApi).image | default ( print "docker.io/llamaindex/llamacloud-layout-detection-api:" .Chart.AppVersion ) ) }}
 {{- $component = set $component "imagePullPolicy" ( ($.Values.llamaParseLayoutDetectionApi).imagePullPolicy | default "IfNotPresent" ) }}
 {{- $component = set $component "port" 8000 }}
 {{- $component | toYaml }}

@@ -1,0 +1,140 @@
+suite: usage-tests
+
+# Covers the `usage` (telemetry) service, which renders as the `llamacloud-telemetry`
+# component via the shared deployment.yaml/service.yaml/serviceaccount.yaml templates.
+
+templates:
+- ../templates/llamacloud/deployment.yaml
+- ../templates/llamacloud/service.yaml
+- ../templates/llamacloud/serviceaccount.yaml
+
+release:
+  name: test-release
+  namespace: test-namespace
+
+capabilities:
+  majorVersion: 1
+  minorVersion: 31
+  apiVersions:
+    - apps/v1
+    - v1
+
+chart:
+  appVersion: 0.0.0
+
+tests:
+- it: renders a Deployment named llamacloud-telemetry
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-telemetry
+  asserts:
+    - isKind:
+        of: Deployment
+
+- it: Deployment uses the configured usage image
+  set:
+    usage:
+      image: custom-registry.example.com/llamacloud-telemetry:1.2.3
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-telemetry
+  asserts:
+    - equal:
+        path: .spec.template.spec.containers[0].image
+        value: custom-registry.example.com/llamacloud-telemetry:1.2.3
+
+- it: Deployment defaults imagePullPolicy to IfNotPresent
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-telemetry
+  asserts:
+    - equal:
+        path: .spec.template.spec.containers[0].imagePullPolicy
+        value: IfNotPresent
+
+- it: Deployment runs start_usage_service as its command
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-telemetry
+  asserts:
+    - equal:
+        path: .spec.template.spec.containers[0].command[0]
+        value: start_usage_service
+
+- it: Deployment exposes container port 8005
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-telemetry
+  asserts:
+    - equal:
+        path: .spec.template.spec.containers[0].ports[0].containerPort
+        value: 8005
+
+- it: Service is created for usage and targets port 8005
+  template: ../templates/llamacloud/service.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-telemetry
+  asserts:
+    - isKind:
+        of: Service
+    - equal:
+        path: .spec.ports[0].targetPort
+        value: 8005
+
+- it: ServiceAccount is created for usage
+  template: ../templates/llamacloud/serviceaccount.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-telemetry
+  asserts:
+    - isKind:
+        of: ServiceAccount
+
+- it: serviceAccountAnnotations on usage propagate to the ServiceAccount
+  set:
+    usage:
+      serviceAccountAnnotations:
+        eks.amazonaws.com/role-arn: arn:aws:iam::123456789012:role/telemetry-role
+  template: ../templates/llamacloud/serviceaccount.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-telemetry
+  asserts:
+    - equal:
+        path: .metadata.annotations["eks.amazonaws.com/role-arn"]
+        value: arn:aws:iam::123456789012:role/telemetry-role
+
+- it: nodeSelector on usage propagates to the Deployment pod spec
+  set:
+    usage:
+      nodeSelector:
+        workload: telemetry
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-telemetry
+  asserts:
+    - equal:
+        path: .spec.template.spec.nodeSelector.workload
+        value: telemetry
+
+- it: extraEnvVariables on usage propagate to the container env
+  set:
+    usage:
+      extraEnvVariables:
+        - name: EXTRA_FOO
+          value: extra-bar
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-telemetry
+  asserts:
+    - equal:
+        path: .spec.template.spec.containers[0].env[?(@.name == "EXTRA_FOO")].value
+        value: extra-bar

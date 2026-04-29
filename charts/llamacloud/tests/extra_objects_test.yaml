@@ -1,0 +1,104 @@
+suite: extra-objects-tests
+
+templates:
+- ../templates/llamacloud/extra-objects.yaml
+
+release:
+  name: test-release
+  namespace: test-namespace
+
+capabilities:
+  majorVersion: 1
+  minorVersion: 31
+  apiVersions:
+    - v1
+    - networking.k8s.io/v1
+
+chart:
+  appVersion: 0.0.0
+
+tests:
+- it: should render no documents when extraObjects is empty
+  template: ../templates/llamacloud/extra-objects.yaml
+  asserts:
+    - hasDocuments:
+        count: 0
+
+- it: should render a single injected object
+  set:
+    extraObjects:
+      - apiVersion: v1
+        kind: ConfigMap
+        metadata:
+          name: extra-one
+        data:
+          foo: bar
+  template: ../templates/llamacloud/extra-objects.yaml
+  asserts:
+    - hasDocuments:
+        count: 1
+    - isKind:
+        of: ConfigMap
+    - equal:
+        path: .metadata.name
+        value: extra-one
+    - equal:
+        path: .data.foo
+        value: bar
+
+- it: should render multiple injected objects
+  set:
+    extraObjects:
+      - apiVersion: v1
+        kind: ConfigMap
+        metadata:
+          name: extra-one
+        data:
+          key: a
+      - apiVersion: v1
+        kind: Secret
+        metadata:
+          name: extra-two
+        stringData:
+          key: b
+      - apiVersion: networking.k8s.io/v1
+        kind: NetworkPolicy
+        metadata:
+          name: extra-three
+        spec:
+          podSelector: {}
+  template: ../templates/llamacloud/extra-objects.yaml
+  asserts:
+    - hasDocuments:
+        count: 3
+    - isKind:
+        of: ConfigMap
+      documentIndex: 0
+    - isKind:
+        of: Secret
+      documentIndex: 1
+    - isKind:
+        of: NetworkPolicy
+      documentIndex: 2
+
+- it: should evaluate Go templates inside extra objects (llamacloud.render)
+  release:
+    namespace: my-ns
+    name: my-release
+  set:
+    extraObjects:
+      - apiVersion: v1
+        kind: ConfigMap
+        metadata:
+          name: templated
+          namespace: "{{ .Release.Namespace }}"
+        data:
+          release: "{{ .Release.Name }}"
+  template: ../templates/llamacloud/extra-objects.yaml
+  asserts:
+    - equal:
+        path: .metadata.namespace
+        value: my-ns
+    - equal:
+        path: .data.release
+        value: my-release

@@ -5,7 +5,7 @@ Parse Component Settings.
 {{- $component := .Values.llamaParse }}
 {{- $component = set $component "prefix" "llamacloud.component.llamaParse" }}
 {{- $component = set $component "name" "llamacloud-parse" }}
-{{- $component = set $component "image" ($.Values.llamaParse).image | default ( print "docker.io/llamaindex/llamacloud-llamaparse:" .Chart.AppVersion ) }}
+{{- $component = set $component "image" ( ($.Values.llamaParse).image | default ( print "docker.io/llamaindex/llamacloud-llamaparse:" .Chart.AppVersion ) ) }}
 {{- $component = set $component "imagePullPolicy" ( ($.Values.llamaParse).imagePullPolicy | default "IfNotPresent" ) }}
 {{- $component = set $component "port" 8004 }}
 {{- $component = set $component "usesS3" "true" }}

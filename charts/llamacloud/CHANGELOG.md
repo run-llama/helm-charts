@@ -1,5 +1,19 @@
 # CHANGELOG
 
+## [0.7.6] - 2026-04-28
+
+### Platform
+- **[Security]** Security updates
+- **[Improvement]** Improved bucket telemetry and signing controls
+
+### Parse
+- **[Improvement]** Improved agentic plus capabilities
+- **[Feature]** Support of GPT5.4 nano model
+
+### Agents
+- **[Feature]** Agent deployments are now optionally available in BYOC
+
+
 ## [0.7.5] - 2026-04-20
 
 ### Platform
@@ -20,6 +34,10 @@
 
 ### Configuration
 - **[Improvement]** Standardized configuration APIs across all products
+
+### Agents
+- **[Feature]** Added llama-agents support.
+
 
 ## [0.7.4] - 2026-03-27
 

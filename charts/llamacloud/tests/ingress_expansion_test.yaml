@@ -1,0 +1,139 @@
+suite: ingress-expansion-tests
+
+# Complements ingress_test.yaml with coverage for TLS absence, required-field
+# failures, custom annotations, and full routing-path structure.
+
+templates:
+- ../templates/ingress.yaml
+
+release:
+  name: test-release
+  namespace: test-namespace
+
+capabilities:
+  majorVersion: 1
+  minorVersion: 31
+  apiVersions:
+    - networking.k8s.io/v1
+
+chart:
+  appVersion: 0.0.0
+
+tests:
+- it: should omit the tls block when tlsSecretName is empty
+  set:
+    ingress:
+      enabled: true
+      host: llamacloud.example.com
+      ingressClassName: nginx
+  template: ../templates/ingress.yaml
+  asserts:
+    - isKind:
+        of: Ingress
+    - isNull:
+        path: .spec.tls
+
+- it: should fail when ingressClassName is missing
+  set:
+    ingress:
+      enabled: true
+      host: llamacloud.example.com
+      ingressClassName: ""
+  template: ../templates/ingress.yaml
+  asserts:
+    - failedTemplate:
+        errorMessage: .Values.ingress.ingressClassName is required
+
+- it: should fail when host is missing
+  set:
+    ingress:
+      enabled: true
+      host: ""
+      ingressClassName: nginx
+  template: ../templates/ingress.yaml
+  asserts:
+    - failedTemplate:
+        errorMessage: .Values.ingress.host is required
+
+- it: should merge custom annotations on the Ingress
+  set:
+    ingress:
+      enabled: true
+      host: llamacloud.example.com
+      ingressClassName: nginx
+      annotations:
+        cert-manager.io/cluster-issuer: letsencrypt-prod
+        nginx.ingress.kubernetes.io/proxy-body-size: 100m
+  template: ../templates/ingress.yaml
+  asserts:
+    - equal:
+        path: .metadata.annotations["cert-manager.io/cluster-issuer"]
+        value: letsencrypt-prod
+    - equal:
+        path: .metadata.annotations["nginx.ingress.kubernetes.io/proxy-body-size"]
+        value: 100m
+
+- it: should route / to the frontend service
+  set:
+    ingress:
+      enabled: true
+      host: llamacloud.example.com
+      ingressClassName: nginx
+  template: ../templates/ingress.yaml
+  asserts:
+    - equal:
+        path: .spec.rules[0].http.paths[?(@.path == "/")].backend.service.name
+        value: llamacloud-web
+    - equal:
+        path: .spec.rules[0].http.paths[?(@.path == "/")].backend.service.port.number
+        value: 80
+
+- it: should define exactly three paths (/ , /api, /deployments)
+  set:
+    ingress:
+      enabled: true
+      host: llamacloud.example.com
+      ingressClassName: nginx
+  template: ../templates/ingress.yaml
+  asserts:
+    - lengthEqual:
+        path: .spec.rules[0].http.paths
+        count: 3
+
+- it: should target the release namespace
+  release:
+    namespace: prod-byoc
+  set:
+    ingress:
+      enabled: true
+      host: llamacloud.example.com
+      ingressClassName: nginx
+  template: ../templates/ingress.yaml
+  asserts:
+    - equal:
+        path: .metadata.namespace
+        value: prod-byoc
+
+- it: ingress.annotations win over commonAnnotations on key collision (deduped)
+  set:
+    commonAnnotations:
+      shared/key: from-common
+      only-common/key: common-only
+    ingress:
+      enabled: true
+      host: llamacloud.example.com
+      ingressClassName: nginx
+      annotations:
+        shared/key: from-ingress
+        nginx.ingress.kubernetes.io/proxy-body-size: 100m
+  template: ../templates/ingress.yaml
+  asserts:
+    - equal:
+        path: .metadata.annotations["shared/key"]
+        value: from-ingress
+    - equal:
+        path: .metadata.annotations["only-common/key"]
+        value: common-only
+    - equal:
+        path: .metadata.annotations["nginx.ingress.kubernetes.io/proxy-body-size"]
+        value: 100m

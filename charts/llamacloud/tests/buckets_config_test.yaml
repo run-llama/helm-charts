@@ -1,0 +1,188 @@
+suite: buckets-config-tests
+
+templates:
+- ../templates/llamacloud/configmaps/buckets.yaml
+
+release:
+  name: test-release
+  namespace: test-namespace
+
+capabilities:
+  majorVersion: 1
+  minorVersion: 31
+  apiVersions:
+    - v1
+
+chart:
+  appVersion: 0.0.0
+
+tests:
+- it: renders bucket-config ConfigMap with documented values.yaml defaults
+  # All ten bucket-name keys are pre-populated in values.yaml, so the default
+  # render is a happy path with no overrides needed.
+  template: ../templates/llamacloud/configmaps/buckets.yaml
+  asserts:
+    - isKind:
+        of: ConfigMap
+    - equal:
+        path: .metadata.name
+        value: bucket-config
+    - equal:
+        path: .data.CLOUD_PROVIDER
+        value: aws
+    - equal:
+        path: .data.S3_DOCUMENT_BUCKET_NAME
+        value: llama-platform-parsed-documents
+    - equal:
+        path: .data.S3_ETL_BUCKET_NAME
+        value: llama-platform-etl
+    - equal:
+        path: .data.S3_EXTERNAL_COMPONENTS_BUCKET_NAME
+        value: llama-platform-external-components
+    - equal:
+        path: .data.S3_FILE_PARSING_BUCKET_NAME
+        value: llama-platform-file-parsing
+    - equal:
+        path: .data.S3_RAW_FILE_BUCKET_NAME
+        value: llama-platform-raw-files
+    - equal:
+        path: .data.S3_LLAMA_CLOUD_PARSE_OUTPUT_BUCKET_NAME
+        value: llama-cloud-parse-output
+    - equal:
+        path: .data.S3_FILE_SCREENSHOT_BUCKET_NAME
+        value: llama-platform-file-screenshots
+    - equal:
+        path: .data.S3_LLAMA_EXTRACT_OUTPUT_BUCKET_NAME
+        value: llama-platform-extract-output
+    - equal:
+        path: .data.S3_UPLOAD_BUCKET
+        value: llama-platform-file-parsing
+    - equal:
+        path: .data.S3_OUTPUT_BUCKET
+        value: llama-platform-file-parsing
+
+- it: honors explicit CLOUD_PROVIDER override
+  set:
+    config:
+      storageBuckets:
+        provider: gcp
+  template: ../templates/llamacloud/configmaps/buckets.yaml
+  asserts:
+    - equal:
+        path: .data.CLOUD_PROVIDER
+        value: gcp
+
+- it: honors explicit bucket-name overrides
+  set:
+    config:
+      storageBuckets:
+        parsedDocuments: custom-docs
+        extractOutput: custom-extract
+  template: ../templates/llamacloud/configmaps/buckets.yaml
+  asserts:
+    - equal:
+        path: .data.S3_DOCUMENT_BUCKET_NAME
+        value: custom-docs
+    - equal:
+        path: .data.S3_LLAMA_EXTRACT_OUTPUT_BUCKET_NAME
+        value: custom-extract
+
+- it: fails when parsedDocuments is explicitly emptied
+  set:
+    config:
+      storageBuckets:
+        parsedDocuments: ""
+  template: ../templates/llamacloud/configmaps/buckets.yaml
+  asserts:
+    - failedTemplate:
+        errorMessage: .Values.config.storageBuckets.parsedDocuments is required
+
+- it: fails when parsedEtl is explicitly emptied
+  set:
+    config:
+      storageBuckets:
+        parsedEtl: ""
+  template: ../templates/llamacloud/configmaps/buckets.yaml
+  asserts:
+    - failedTemplate:
+        errorMessage: .Values.config.storageBuckets.parsedEtl is required
+
+- it: fails when parsedExternalComponents is explicitly emptied
+  set:
+    config:
+      storageBuckets:
+        parsedExternalComponents: ""
+  template: ../templates/llamacloud/configmaps/buckets.yaml
+  asserts:
+    - failedTemplate:
+        errorMessage: .Values.config.storageBuckets.parsedExternalComponents is required
+
+- it: fails when parsedFileParsing is explicitly emptied
+  set:
+    config:
+      storageBuckets:
+        parsedFileParsing: ""
+  template: ../templates/llamacloud/configmaps/buckets.yaml
+  asserts:
+    - failedTemplate:
+        errorMessage: .Values.config.storageBuckets.parsedFileParsing is required
+
+- it: fails when parsedRawFile is explicitly emptied
+  set:
+    config:
+      storageBuckets:
+        parsedRawFile: ""
+  template: ../templates/llamacloud/configmaps/buckets.yaml
+  asserts:
+    - failedTemplate:
+        errorMessage: .Values.config.storageBuckets.parsedRawFile is required
+
+- it: fails when parseOutput is explicitly emptied
+  set:
+    config:
+      storageBuckets:
+        parseOutput: ""
+  template: ../templates/llamacloud/configmaps/buckets.yaml
+  asserts:
+    - failedTemplate:
+        errorMessage: .Values.config.storageBuckets.parseOutput is required
+
+- it: fails when parsedFileScreenshot is explicitly emptied
+  set:
+    config:
+      storageBuckets:
+        parsedFileScreenshot: ""
+  template: ../templates/llamacloud/configmaps/buckets.yaml
+  asserts:
+    - failedTemplate:
+        errorMessage: .Values.config.storageBuckets.parsedFileScreenshot is required
+
+- it: fails when extractOutput is explicitly emptied
+  set:
+    config:
+      storageBuckets:
+        extractOutput: ""
+  template: ../templates/llamacloud/configmaps/buckets.yaml
+  asserts:
+    - failedTemplate:
+        errorMessage: .Values.config.storageBuckets.extractOutput is required
+
+- it: fails when parseFileUpload is explicitly emptied
+  set:
+    config:
+      storageBuckets:
+        parseFileUpload: ""
+  template: ../templates/llamacloud/configmaps/buckets.yaml
+  asserts:
+    - failedTemplate:
+        errorMessage: .Values.config.storageBuckets.parseFileUpload is required
+
+- it: fails when parseFileOutput is explicitly emptied
+  set:
+    config:
+      storageBuckets:
+        parseFileOutput: ""
+  template: ../templates/llamacloud/configmaps/buckets.yaml
+  asserts:
+    - failedTemplate:
+        errorMessage: .Values.config.storageBuckets.parseFileOutput is required

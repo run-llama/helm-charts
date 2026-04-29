@@ -24,13 +24,20 @@ Parameters:
 - root: $
 */}}
 {{ define "llamacloud.annotations" }}
+{{- /* Merge commonAnnotations + per-component annotations with component taking
+       precedence on collision. Emitting both in sequence without dedup (prior
+       behavior) produced duplicate YAML mapping keys and broke downstream parsers. */}}
+{{- $merged := dict }}
 {{- range $key, $value := .root.Values.commonAnnotations }}
-{{ $key }}: {{ $value | quote }}
+{{-   $merged = set $merged $key $value }}
 {{- end }}
 {{- if .component }}
-{{- range $key, $value := .component.annotations }}
-{{ $key }}: {{ $value | quote }}
+{{-   range $key, $value := .component.annotations }}
+{{-     $merged = set $merged $key $value }}
+{{-   end }}
 {{- end }}
+{{- range $key, $value := $merged }}
+{{ $key }}: {{ $value | quote }}
 {{- end }}
 {{- end }}
 
@@ -42,13 +49,18 @@ Parameters:
 - root: $
 */}}
 {{ define "llamacloud.podAnnotations" }}
+{{- /* See llamacloud.annotations above for dedup rationale. */}}
+{{- $merged := dict }}
 {{- range $key, $value := .root.Values.commonAnnotations }}
-{{ $key }}: {{ $value | quote }}
+{{-   $merged = set $merged $key $value }}
 {{- end }}
 {{- if .component }}
-{{- range $key, $value := .component.podAnnotations }}
-{{ $key }}: {{ $value | quote }}
+{{-   range $key, $value := .component.podAnnotations }}
+{{-     $merged = set $merged $key $value }}
+{{-   end }}
 {{- end }}
+{{- range $key, $value := $merged }}
+{{ $key }}: {{ $value | quote }}
 {{- end }}
 {{- end }}
 
@@ -138,4 +150,17 @@ Renders a complete tree, even values that contains template.
   {{ else }}
     {{- tpl (.value | toYaml) .context }}
   {{- end }}
+{{- end }}
+
+{{/*
+Resolves the llama-agents control plane URL, or empty string when not configured.
+Prefers deploy=true (in-cluster service) over controlPlaneUrl (external).
+Usage: include "llamacloud.llamaAgents.url" .  (or .root when nested)
+*/}}
+{{- define "llamacloud.llamaAgents.url" -}}
+{{- if .Values.llamaAgents.deploy -}}
+http://llama-agents-service:80
+{{- else if .Values.llamaAgents.controlPlaneUrl -}}
+{{- .Values.llamaAgents.controlPlaneUrl -}}
+{{- end -}}
 {{- end }}

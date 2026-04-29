@@ -1,0 +1,83 @@
+suite: extract-config-tests
+
+templates:
+- ../templates/llamacloud/configmaps/extract.yaml
+
+release:
+  name: test-release
+  namespace: test-namespace
+
+capabilities:
+  majorVersion: 1
+  minorVersion: 31
+  apiVersions:
+    - v1
+
+chart:
+  appVersion: 0.0.0
+
+tests:
+- it: renders extract-config ConfigMap
+  template: ../templates/llamacloud/configmaps/extract.yaml
+  asserts:
+    - isKind:
+        of: ConfigMap
+    - equal:
+        path: .metadata.name
+        value: extract-config
+
+- it: uses values.yaml defaults when no overrides are set
+  # values.yaml pins these defaults; the template also has `| default` fallbacks
+  # in case a user zeroes them out, but for the shipped defaults values.yaml wins.
+  template: ../templates/llamacloud/configmaps/extract.yaml
+  asserts:
+    - equal:
+        path: .data.LLAMA_EXTRACT_MULTIMODAL_MODEL
+        value: openai-gpt-4-1
+    - equal:
+        path: .data.LLAMA_EXTRACT_SCHEMA_GENERATION_MODEL
+        value: openai-gpt-4-1-mini
+    - equal:
+        path: .data.LLAMA_EXTRACT_MAX_PAGES
+        value: "500"
+    - equal:
+        path: .data.LLAMA_EXTRACT_MAX_FILE_SIZE_MB
+        value: "100"
+
+- it: falls back to gemini-2.0-flash when multimodalModel is explicitly emptied
+  set:
+    config:
+      extraction:
+        multimodalModel: ""
+        schemaGenerationModel: ""
+  template: ../templates/llamacloud/configmaps/extract.yaml
+  asserts:
+    - equal:
+        path: .data.LLAMA_EXTRACT_MULTIMODAL_MODEL
+        value: gemini-2.0-flash
+    - equal:
+        path: .data.LLAMA_EXTRACT_SCHEMA_GENERATION_MODEL
+        value: gemini-2.0-flash
+
+- it: applies config.extraction overrides
+  set:
+    config:
+      extraction:
+        multimodalModel: openai-gpt-4o
+        schemaGenerationModel: openai-gpt-4-1
+        maxPages: 1000
+        maxFileSizeMb: 250
+  template: ../templates/llamacloud/configmaps/extract.yaml
+  asserts:
+    - equal:
+        path: .data.LLAMA_EXTRACT_MULTIMODAL_MODEL
+        value: openai-gpt-4o
+    - equal:
+        path: .data.LLAMA_EXTRACT_SCHEMA_GENERATION_MODEL
+        value: openai-gpt-4-1
+    - equal:
+        path: .data.LLAMA_EXTRACT_MAX_PAGES
+        value: "1000"
+    - equal:
+        path: .data.LLAMA_EXTRACT_MAX_FILE_SIZE_MB
+        value: "250"

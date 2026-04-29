@@ -1,0 +1,33 @@
+{{- /*
+Agent deployment pods are locked down by the llama-agents subchart's default
+security policy (no egress). This NetworkPolicy punches a hole that allows
+egress to the llamacloud backend pods so deployed agents can reach
+LLAMA_CLOUD_BASE_URL over the internal cluster network. Disable
+llamaAgents.allowBackendEgress to author your own instead.
+*/ -}}
+{{- if and .Values.llamaAgents.deploy .Values.llamaAgents.allowBackendEgress }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ .Release.Name }}-agent-backend-egress
+  namespace: {{ index .Values "llama-agents-subchart" "apps" "namespace" | default .Release.Namespace }}
+  labels: {{ include "llamacloud.labels" (dict "name" "agent-backend-egress" "root" $) | indent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/managed-by: llama-deploy-operator
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: {{ .Release.Namespace }}
+      podSelector:
+        matchLabels:
+          app.kubernetes.io/name: llamacloud
+          app.kubernetes.io/instance: {{ .Release.Name }}
+    ports:
+    - protocol: TCP
+      port: 8000
+{{- end }}

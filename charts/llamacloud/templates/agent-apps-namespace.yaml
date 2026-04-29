@@ -1,0 +1,10 @@
+{{- $appsNs := index .Values "llama-agents-subchart" "apps" "namespace" -}}
+{{- if and .Values.llamaAgents.deploy .Values.llamaAgents.createAppsNamespace $appsNs (ne $appsNs .Release.Namespace) }}
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ $appsNs | quote }}
+  annotations:
+    helm.sh/resource-policy: keep
+  labels: {{ include "llamacloud.labels" (dict "name" "agent-apps-namespace" "root" $) | indent 4 }}
+{{- end }}

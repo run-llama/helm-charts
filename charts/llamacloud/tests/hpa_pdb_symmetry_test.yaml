@@ -1,0 +1,280 @@
+suite: hpa-pdb-symmetry-tests
+
+templates:
+- ../templates/llamacloud/hpa.yaml
+- ../templates/llamacloud/pdb.yaml
+
+release:
+  name: test-release
+  namespace: test-namespace
+
+capabilities:
+  majorVersion: 1
+  minorVersion: 31
+  apiVersions:
+    - autoscaling/v2
+    - policy/v1
+
+chart:
+  appVersion: 0.0.0
+
+tests:
+- it: no HPAs are created when no components define horizontalPodAutoscalerSpec
+  template: ../templates/llamacloud/hpa.yaml
+  asserts:
+    - hasDocuments:
+        count: 0
+
+- it: no PDBs are created when no components define horizontalPodAutoscalerSpec
+  template: ../templates/llamacloud/pdb.yaml
+  asserts:
+    - hasDocuments:
+        count: 0
+
+- it: frontend HPA renders when frontend.horizontalPodAutoscalerSpec is set and frontend is enabled
+  set:
+    config:
+      frontend:
+        enabled: true
+    frontend:
+      horizontalPodAutoscalerSpec:
+        minReplicas: 2
+        maxReplicas: 5
+        metrics:
+          - type: Resource
+            resource:
+              name: cpu
+              target:
+                type: Utilization
+                averageUtilization: 80
+  template: ../templates/llamacloud/hpa.yaml
+  asserts:
+    - hasDocuments:
+        count: 1
+    - isKind:
+        of: HorizontalPodAutoscaler
+    - equal:
+        path: .metadata.name
+        value: llamacloud-web
+    - equal:
+        path: .spec.minReplicas
+        value: 2
+    - equal:
+        path: .spec.maxReplicas
+        value: 5
+
+- it: jobsService HPA renders as llamacloud-operator
+  set:
+    jobsService:
+      horizontalPodAutoscalerSpec:
+        minReplicas: 3
+        maxReplicas: 7
+  template: ../templates/llamacloud/hpa.yaml
+  asserts:
+    - hasDocuments:
+        count: 1
+    - equal:
+        path: .metadata.name
+        value: llamacloud-operator
+    - equal:
+        path: .spec.minReplicas
+        value: 3
+    - equal:
+        path: .spec.maxReplicas
+        value: 7
+
+- it: jobsWorker HPA renders as llamacloud-worker
+  set:
+    jobsWorker:
+      horizontalPodAutoscalerSpec:
+        minReplicas: 1
+        maxReplicas: 10
+  template: ../templates/llamacloud/hpa.yaml
+  asserts:
+    - hasDocuments:
+        count: 1
+    - equal:
+        path: .metadata.name
+        value: llamacloud-worker
+
+- it: llamaParse HPA renders as llamacloud-parse
+  set:
+    llamaParse:
+      horizontalPodAutoscalerSpec:
+        minReplicas: 1
+        maxReplicas: 4
+  template: ../templates/llamacloud/hpa.yaml
+  asserts:
+    - hasDocuments:
+        count: 1
+    - equal:
+        path: .metadata.name
+        value: llamacloud-parse
+
+- it: llamaParseOcr HPA renders only when parseOcr feature is enabled
+  set:
+    config:
+      parseOcr:
+        enabled: true
+    llamaParseOcr:
+      horizontalPodAutoscalerSpec:
+        minReplicas: 1
+        maxReplicas: 8
+  template: ../templates/llamacloud/hpa.yaml
+  asserts:
+    - hasDocuments:
+        count: 1
+    - equal:
+        path: .metadata.name
+        value: llamacloud-ocr
+
+- it: llamaParseOcr HPA does NOT render when parseOcr feature is disabled even if spec is set
+  set:
+    config:
+      parseOcr:
+        enabled: false
+    llamaParseOcr:
+      horizontalPodAutoscalerSpec:
+        minReplicas: 1
+        maxReplicas: 8
+  template: ../templates/llamacloud/hpa.yaml
+  asserts:
+    - hasDocuments:
+        count: 0
+
+- it: llamaParseLayoutDetectionApi HPA renders as llamacloud-layout when parseLayoutDetection is enabled
+  set:
+    config:
+      parseLayoutDetection:
+        enabled: true
+    llamaParseLayoutDetectionApi:
+      horizontalPodAutoscalerSpec:
+        minReplicas: 1
+        maxReplicas: 3
+  template: ../templates/llamacloud/hpa.yaml
+  asserts:
+    - hasDocuments:
+        count: 1
+    - equal:
+        path: .metadata.name
+        value: llamacloud-layout
+
+- it: multiple components emit independent HPAs
+  set:
+    backend:
+      horizontalPodAutoscalerSpec:
+        minReplicas: 2
+        maxReplicas: 10
+    jobsService:
+      horizontalPodAutoscalerSpec:
+        minReplicas: 1
+        maxReplicas: 5
+    jobsWorker:
+      horizontalPodAutoscalerSpec:
+        minReplicas: 1
+        maxReplicas: 5
+  template: ../templates/llamacloud/hpa.yaml
+  asserts:
+    - hasDocuments:
+        count: 3
+
+- it: corresponding PDB is created for each component with an HPA spec
+  set:
+    jobsService:
+      horizontalPodAutoscalerSpec:
+        minReplicas: 1
+        maxReplicas: 5
+  template: ../templates/llamacloud/pdb.yaml
+  asserts:
+    - hasDocuments:
+        count: 1
+    - isKind:
+        of: PodDisruptionBudget
+    - equal:
+        path: .metadata.name
+        value: llamacloud-operator
+    - equal:
+        path: .spec.maxUnavailable
+        value: 1
+
+- it: PDB selector labels match the component it protects
+  set:
+    jobsWorker:
+      horizontalPodAutoscalerSpec:
+        minReplicas: 1
+        maxReplicas: 5
+  template: ../templates/llamacloud/pdb.yaml
+  asserts:
+    - equal:
+        path: .spec.selector.matchLabels["app.kubernetes.io/name"]
+        value: llamacloud-worker
+
+- it: setting spec to null explicitly prevents HPA/PDB from rendering
+  set:
+    backend:
+      horizontalPodAutoscalerSpec: null
+  templates:
+    - ../templates/llamacloud/hpa.yaml
+    - ../templates/llamacloud/pdb.yaml
+  asserts:
+    - hasDocuments:
+        count: 0
+
+- it: HPA auto-injects scaleTargetRef pointing at the component Deployment when user omits it
+  set:
+    backend:
+      horizontalPodAutoscalerSpec:
+        minReplicas: 2
+        maxReplicas: 10
+        metrics:
+          - type: Resource
+            resource:
+              name: cpu
+              target:
+                type: Utilization
+                averageUtilization: 80
+  template: ../templates/llamacloud/hpa.yaml
+  asserts:
+    - equal:
+        path: .spec.scaleTargetRef.apiVersion
+        value: apps/v1
+    - equal:
+        path: .spec.scaleTargetRef.kind
+        value: Deployment
+    - equal:
+        path: .spec.scaleTargetRef.name
+        value: llamacloud
+
+- it: HPA auto-injects scaleTargetRef with the correct component name for non-backend components
+  set:
+    jobsWorker:
+      horizontalPodAutoscalerSpec:
+        minReplicas: 1
+        maxReplicas: 5
+  template: ../templates/llamacloud/hpa.yaml
+  asserts:
+    - equal:
+        path: .spec.scaleTargetRef.name
+        value: llamacloud-worker
+
+- it: user-provided scaleTargetRef is preserved and NOT overridden by auto-injection
+  set:
+    backend:
+      horizontalPodAutoscalerSpec:
+        minReplicas: 2
+        maxReplicas: 10
+        scaleTargetRef:
+          apiVersion: argoproj.io/v1alpha1
+          kind: Rollout
+          name: custom-rollout-target
+  template: ../templates/llamacloud/hpa.yaml
+  asserts:
+    - equal:
+        path: .spec.scaleTargetRef.apiVersion
+        value: argoproj.io/v1alpha1
+    - equal:
+        path: .spec.scaleTargetRef.kind
+        value: Rollout
+    - equal:
+        path: .spec.scaleTargetRef.name
+        value: custom-rollout-target
