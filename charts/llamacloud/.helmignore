@@ -21,5 +21,9 @@
 .idea/
 *.tmproj
 .vscode/
+# Claude Code skills — shipped via the helm-charts git repo, not bundled
+# into the runtime tarball that `helm install` downloads.
+.claude/
 
 tests/
+deployment_tests/

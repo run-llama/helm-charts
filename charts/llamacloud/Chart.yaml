@@ -23,8 +23,8 @@ keywords:
 - llamacloud
 - rag
 
-version: 0.7.6
-appVersion: "0.7.6"
+version: 0.7.7
+appVersion: "0.7.7"
 
 dependencies:
   - name: temporal

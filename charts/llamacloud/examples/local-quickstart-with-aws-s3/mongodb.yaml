@@ -12,6 +12,10 @@ auth:
   rootUser: root
   rootPassword: password
 
+pdb:
+  create: true
+  maxUnavailable: 1
+
 global:
   security:
     allowInsecureImages: true

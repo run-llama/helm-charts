@@ -166,7 +166,6 @@ config:
     schemaGenerationModel: "openai-gpt-4-1-mini"
     maxPages: 500
     maxFileSizeMb: 100
-    maxFileSizeUiMb: 30
 
   jobs:
     maxJobsInExecutionPerJobType: 10
@@ -279,18 +278,6 @@ usage:
 temporalWorkloads:
   llamaParse:
     image: docker.io/llamaindex/llamacloud-llamaparse:0.5.11
-    resources:
-      requests:
-        cpu: "250m"
-        memory: "256Mi"
-    extraEnvVariables:
-    - name: AWS_ACCESS_KEY_ID
-      value: "<REPLACE>"
-    - name: AWS_SECRET_ACCESS_KEY
-      value: "<REPLACE>"
-
-  jobsService:
-    image: docker.io/llamaindex/llamacloud-backend:0.5.11
     resources:
       requests:
         cpu: "250m"

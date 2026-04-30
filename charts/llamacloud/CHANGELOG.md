@@ -1,5 +1,19 @@
 # CHANGELOG
 
+## [0.7.7] - 2026-04-29
+
+### Platform
+- **[Security]** Security updates
+
+### Parse
+- **[Feature]** Support for HEIC and HEIF image formats
+- **[Improvement]** Improved large-document throughput
+- **[Bug Fix]** Caching and image handling reliability
+
+### Agents
+- **[Feature]** MCP and skills setup in agent deployment panel
+
+
 ## [0.7.6] - 2026-04-28
 
 ### Platform

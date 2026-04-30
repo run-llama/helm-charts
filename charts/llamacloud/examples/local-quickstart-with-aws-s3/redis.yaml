@@ -9,6 +9,11 @@ auth:
 
 architecture: standalone
 
+master:
+  pdb:
+    create: true
+    maxUnavailable: 1
+
 global:
   security:
     allowInsecureImages: true
