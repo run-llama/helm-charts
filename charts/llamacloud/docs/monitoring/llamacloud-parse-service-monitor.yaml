@@ -1,0 +1,25 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+#
+# NOTE: Update namespaces to match your environment.
+#
+metadata:
+  name: llamacloud-parse
+  namespace: llamacloud
+  labels:
+    release: kube-prometheus-stack
+spec:
+  namespaceSelector:
+    matchNames:
+      - llamacloud
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: llamacloud
+      app.kubernetes.io/name: llamacloud-parse
+      app.kubernetes.io/managed-by: Helm
+  endpoints:
+    - port: http      
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
+

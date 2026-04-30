@@ -6,3 +6,15 @@ grafana:
 
 alertmanager:
   enabled: true
+
+#
+# NOTE: You can disable the node exporter if you don't want to scrape host metrics.
+#       If you do so, you will want to disable the defaultRules as well.
+#
+
+# nodeExporter:
+#   enabled: false
+# defaultRules:
+#   rules:
+#     nodeExporterAlerting: false
+#     nodeExporterRecording: false

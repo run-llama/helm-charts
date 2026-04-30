@@ -52,16 +52,58 @@ backend:
 
 ### ServiceMonitors
 
-If using the Prometheus Operator, you can create a ServiceMontior to scrape the metrics from the service. This can be done by adding the following to the `values.yaml` file:
+If using the Prometheus Operator, you can create a ServiceMontior to scrape the metrics from the service. This can be done by creating a `ServiceMonitor` object.
+
+First, make sure you enable metrics for the service you want to monitor, e.g. backend (aka llamacloud).
 
 ```yaml
 # example
 backend:
   metrics:
     enabled: true
-    serviceMonitor:
-      enabled: true
 ```
+
+```yaml
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  # 👇 Could be anything but by convention just give it the name of the service you want to monitor.
+  name: llamacloud
+  # 👇 Namespace where the ServiceMonitor object itself lives. For kube-prometheus-stack this is usually 
+  # the same namespace where you installed the chart (e.g. "monitoring").
+  namespace: <kube-prometheus-stack-namespace>
+  labels:
+    # 👇 MUST match kube-prometheus-stack's .Values.prometheus.prometheusSpec.serviceMonitorSelector
+    # Typically this is the same namespace as above
+    release: kube-prometheus-stack
+spec:
+  namespaceSelector:
+    matchNames:
+      - <namespace-where-llamacloud-service-lives>
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: llamacloud
+      app.kubernetes.io/name: llamacloud
+      app.kubernetes.io/managed-by: Helm
+  endpoints:
+    - port: http          # matches .spec.ports[].name in your Service
+      path: /metrics      # change if your app exposes metrics elsewhere
+      interval: 30s
+      scrapeTimeout: 10s
+```
+
+Refer to the sample `ServiceMonitor` objects which you can `kubectl apply`:
+- [LlamaCloud Service Monitor](./llamacloud-service-monitor.yaml)
+- [LlamaCloud Parse Service Monitor](./llamacloud-parse-service-monitor.yaml)
+
+The main services to monitor are:
+- `backend`
+- `jobsService`
+- `jobsWorker`
+- `llamaParse`
+- `llamaParseOcr`
+
+You can simply copy-paste the above samples to create monitors these other services. Only the names change.
 
 ## Dashboards
 

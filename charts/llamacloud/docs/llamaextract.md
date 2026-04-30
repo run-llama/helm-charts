@@ -2,7 +2,7 @@
 
 LlamaExtract is a component of LlamaCloud that enables you to extract structured data from unstructured documents. It is available as a web UI, a Python SDK, and a REST API.
 
-For in-depth information about how LlamaExtract, please refer to our [public docs](https://docs.cloud.llamaindex.ai/llamaextract/getting_started).
+For in-depth information about how LlamaExtract, please refer to our [public docs](https://developers.llamaindex.ai/python/cloud/llamaextract/getting_started).
 
 ## Setup
 

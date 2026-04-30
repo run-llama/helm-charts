@@ -14,4 +14,8 @@ auth:
   password: password
   erlangCookie: secretcookie
 
+pdb:
+  create: true
+  maxUnavailable: 1
+
 resourcesPreset: micro
