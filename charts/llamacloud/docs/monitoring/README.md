@@ -21,11 +21,60 @@ The kube-prometheus-stack Helm chart provides a complete monitoring solution tha
 - kube-state-metrics for Kubernetes object metrics
 - Prometheus Operator for managing Prometheus instances
 
-Here is a very basic example of how to deploy the kube-prometheus-stack Helm chart using the `kube-prometheus-stack-example-values.yaml` file located in this directory.
+### Option A: Bundled subchart (recommended for greenfield BYOC)
+
+This chart ships `kube-prometheus-stack` as an optional dependency. To install Prometheus + Grafana + AlertManager + Prometheus Operator alongside LlamaCloud, set in your values:
+
+```yaml
+monitoring:
+  deploy: true
+  serviceMonitors:
+    enabled: true
+
+# Required on a fresh cluster with no pre-existing Prometheus Operator CRDs.
+# Leave false (default) if the CRDs are already installed.
+kube-prometheus-stack-subchart:
+  crds:
+    enabled: true
+```
+
+`monitoring.serviceMonitors.enabled: true` makes this chart render a `ServiceMonitor` for every deployed component that exposes `/metrics`:
+
+- `backend` (always)
+- `jobsService` (always)
+- `jobsWorker` (always)
+- `llamaParse` (always)
+- `usage` (always)
+- `llamaParseOcr` (only when `config.parseOcr.enabled: true` — default `true`)
+
+If `bifrost.deploy` is also `true`, a separate `ServiceMonitor` for the Bifrost gateway is rendered too (targets the Bifrost Service's `/metrics` endpoint on port `http`/8080).
+
+The `llamaParseLayoutDetectionApi` / `llamaParseLayoutDetectionApiV3` and `frontend` components do not expose Prometheus metrics today and are intentionally excluded; same for the Temporal workers.
+
+Override subchart settings under the `kube-prometheus-stack-subchart` key — see the [upstream README](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack) for the full set of supported values.
+
+### Option B: Bring your own Prometheus Operator
+
+If your cluster already runs a Prometheus Operator, leave `monitoring.deploy: false` and just enable the ServiceMonitors:
+
+```yaml
+monitoring:
+  deploy: false
+  serviceMonitors:
+    enabled: true
+    # Must match your Prometheus instance's serviceMonitorSelector.
+    release: kube-prometheus-stack
+```
+
+### Option C: Manual install (standalone)
+
+Install kube-prometheus-stack as a separate release using the example values in this directory:
 
 ```bash
 helm install kube-prometheus-stack prometheus-community/kube-prometheus-stack -f kube-prometheus-stack-example-values.yaml
 ```
+
+You can then either enable `monitoring.serviceMonitors.enabled` to have this chart render the ServiceMonitor objects, or manually apply the sample YAMLs shown below.
 
 For more information about the kube-prometheus-stack Helm chart, please refer to the [kube-prometheus-stack README](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack).
 

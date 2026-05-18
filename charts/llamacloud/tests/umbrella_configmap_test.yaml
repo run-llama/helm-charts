@@ -143,6 +143,62 @@ tests:
         path: .data.PREFERED_PREMIUM_MODE_MODEL
         value: openai-gpt-4o
 
+- it: temporal-jobs-worker ConfigMap renders default cleanup retention envs
+  template: ../templates/llamacloud/configmap.yaml
+  documentSelector:
+    path: metadata.name
+    value: temporal-jobs-worker
+  asserts:
+    - equal:
+        path: .data.CLEANUP_PARSE_V2_RETENTION_DAYS
+        value: "30"
+    - equal:
+        path: .data.CLEANUP_EXTRACT_V2_RETENTION_DAYS
+        value: "14"
+    - equal:
+        path: .data.CLEANUP_CLASSIFY_V2_RETENTION_DAYS
+        value: "14"
+
+- it: explicit retentionDays=0 passes through (disables cleanup, does not fall back to default)
+  set:
+    config:
+      jobCleanup:
+        parse:
+          retentionDays: 0
+        extract:
+          retentionDays: 0
+        classify:
+          retentionDays: 0
+  template: ../templates/llamacloud/configmap.yaml
+  documentSelector:
+    path: metadata.name
+    value: temporal-jobs-worker
+  asserts:
+    - equal:
+        path: .data.CLEANUP_PARSE_V2_RETENTION_DAYS
+        value: "0"
+    - equal:
+        path: .data.CLEANUP_EXTRACT_V2_RETENTION_DAYS
+        value: "0"
+    - equal:
+        path: .data.CLEANUP_CLASSIFY_V2_RETENTION_DAYS
+        value: "0"
+
+- it: positive override propagates to cleanup retention envs
+  set:
+    config:
+      jobCleanup:
+        parse:
+          retentionDays: 90
+  template: ../templates/llamacloud/configmap.yaml
+  documentSelector:
+    path: metadata.name
+    value: temporal-jobs-worker
+  asserts:
+    - equal:
+        path: .data.CLEANUP_PARSE_V2_RETENTION_DAYS
+        value: "90"
+
 - it: no ConfigMaps when temporal is disabled AND frontend is disabled
   set:
     config:

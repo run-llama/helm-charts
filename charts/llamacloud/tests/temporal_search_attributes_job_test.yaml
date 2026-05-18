@@ -1,0 +1,57 @@
+suite: temporal-search-attributes-job-tests
+
+templates:
+- ../templates/llamacloud/job.yaml
+
+release:
+  name: test-release
+  namespace: test-namespace
+
+capabilities:
+  majorVersion: 1
+  minorVersion: 31
+  apiVersions:
+    - v1
+
+chart:
+  appVersion: 0.0.0
+
+tests:
+# Regression: first install of the chart deadlocked because the search-attributes
+# Job hardcoded `/bin/bash` as the entrypoint, but the configured image
+# (temporalio/admin-tools:1.31.0) ships only busybox sh. The container crash-
+# looped with `exec: "/bin/bash": stat /bin/bash: no such file or directory`,
+# the Temporal namespace (named after $Release.Namespace) never got created,
+# and the temporal-parse worker hung on "Namespace ... is not found." The script
+# body is POSIX-compatible, so /bin/sh is the correct shell.
+- it: should invoke /bin/sh, not /bin/bash (admin-tools image is busybox-only)
+  set:
+    config:
+      temporal:
+        searchAttributesJob:
+          enabled: true
+          image: "temporalio/admin-tools:1.31.0"
+          attributes:
+          - name: Project
+            type: Keyword
+  template: ../templates/llamacloud/job.yaml
+  asserts:
+    - isKind:
+        of: Job
+    - equal:
+        path: .spec.template.spec.containers[0].command[0]
+        value: /bin/sh
+    - notEqual:
+        path: .spec.template.spec.containers[0].command[0]
+        value: /bin/bash
+
+- it: should not render when searchAttributesJob is disabled
+  set:
+    config:
+      temporal:
+        searchAttributesJob:
+          enabled: false
+  template: ../templates/llamacloud/job.yaml
+  asserts:
+    - hasDocuments:
+        count: 0

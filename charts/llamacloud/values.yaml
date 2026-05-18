@@ -116,78 +116,80 @@ temporal-subchart:
   server:
     config:
       persistence:
-        default:
-          ## @param temporal-subchart.server.config.persistence.default.driver Persistence driver for default store
-          driver: sql
-          sql:
-            ## @param temporal-subchart.server.config.persistence.default.sql.driver SQL driver for default store
-            driver: postgres12
-            ## @param temporal-subchart.server.config.persistence.default.sql.host PostgreSQL host (use same as postgresql.host)
-            host: ""
-            ## @param temporal-subchart.server.config.persistence.default.sql.port PostgreSQL port (use same as postgresql.port)
-            port: 5432
-            ## @param temporal-subchart.server.config.persistence.default.sql.database Database name for temporal (created automatically)
-            database: temporal
-            ## @param temporal-subchart.server.config.persistence.default.sql.user PostgreSQL user (use same as postgresql.username)
-            user: ""
-            ## @param temporal-subchart.server.config.persistence.default.sql.existingSecret Use existing secret for password (auto-created from postgresql.password)
-            existingSecret: temporal-postgresql-secret
-            ## @param temporal-subchart.server.config.persistence.default.sql.maxConns Maximum number of connections for default store
-            maxConns: 20
-            ## @param temporal-subchart.server.config.persistence.default.sql.maxIdleConns Maximum number of idle connections for default store
-            maxIdleConns: 20
-            ## @param temporal-subchart.server.config.persistence.default.sql.maxConnLifetime Maximum connection lifetime for default store
-            maxConnLifetime: "1h"
-        visibility:
-          ## @param temporal-subchart.server.config.persistence.visibility.driver Persistence driver for visibility store
-          driver: sql
-          sql:
-            ## @param temporal-subchart.server.config.persistence.visibility.sql.driver SQL driver for visibility store
-            driver: postgres12
-            ## @param temporal-subchart.server.config.persistence.visibility.sql.host PostgreSQL host (use same as postgresql.host)
-            host: ""
-            ## @param temporal-subchart.server.config.persistence.visibility.sql.port PostgreSQL port (use same as postgresql.port)
-            port: 5432
-            ## @param temporal-subchart.server.config.persistence.visibility.sql.database Database name for temporal visibility (created automatically)
-            database: temporal_visibility
-            ## @param temporal-subchart.server.config.persistence.visibility.sql.user PostgreSQL user (use same as postgresql.username)
-            user: ""
-            ## @param temporal-subchart.server.config.persistence.visibility.sql.existingSecret Use existing secret for password (auto-created from postgresql.password)
-            existingSecret: temporal-postgresql-secret
-            ## @param temporal-subchart.server.config.persistence.visibility.sql.maxConns Maximum number of connections for visibility store
-            maxConns: 20
-            ## @param temporal-subchart.server.config.persistence.visibility.sql.maxIdleConns Maximum number of idle connections for visibility store
-            maxIdleConns: 20
-            ## @param temporal-subchart.server.config.persistence.visibility.sql.maxConnLifetime Maximum connection lifetime for visibility store
-            maxConnLifetime: "1h"
-  schema:
-    createDatabase:
-      ## @param temporal-subchart.schema.createDatabase.enabled Enable automatic database creation for Temporal
-      enabled: true
-    setup:
-      ## @param temporal-subchart.schema.setup.enabled Enable schema setup for Temporal
-      enabled: true
-    update:
-      ## @param temporal-subchart.schema.update.enabled Enable schema updates for Temporal
-      enabled: true
-  ## @param temporal-subchart.prometheus.enabled Enable Prometheus for Temporal (disabled, use main monitoring)
-  prometheus:
-    enabled: false
-  ## @param temporal-subchart.grafana.enabled Enable Grafana for Temporal (disabled, use main monitoring)
-  grafana:
-    enabled: false
-  ## @param temporal-subchart.elasticsearch.enabled Enable Elasticsearch for Temporal
-  elasticsearch:
-    enabled: false
-  ## @param temporal-subchart.cassandra.enabled Enable Cassandra for Temporal
-  cassandra:
-    enabled: false
-  ## @param temporal-subchart.mysql.enabled Enable MySQL for Temporal
-  mysql:
-    enabled: false
-  ## @param temporal-subchart.postgresql.enabled Enable bundled PostgreSQL for Temporal (disabled, use external)
-  postgresql:
-    enabled: false
+        ## @param temporal-subchart.server.config.persistence.defaultStore Name of the datastore used as default
+        defaultStore: default
+        ## @param temporal-subchart.server.config.persistence.visibilityStore Name of the datastore used for visibility
+        visibilityStore: visibility
+        datastores:
+          default:
+            sql:
+              ## @param temporal-subchart.server.config.persistence.datastores.default.sql.pluginName SQL plugin name (postgres12, postgres12_pgx, mysql8)
+              pluginName: postgres12
+              ## @param temporal-subchart.server.config.persistence.datastores.default.sql.driverName SQL driver name (matches pluginName)
+              driverName: postgres12
+              ## @param temporal-subchart.server.config.persistence.datastores.default.sql.connectAddr PostgreSQL host:port (override at deploy time; required for the schema-management job)
+              connectAddr: ""
+              ## @param temporal-subchart.server.config.persistence.datastores.default.sql.connectProtocol Network protocol used to reach the SQL server (tcp for postgres-over-network)
+              connectProtocol: "tcp"
+              ## @param temporal-subchart.server.config.persistence.datastores.default.sql.databaseName Database name for temporal default store
+              databaseName: temporal
+              ## @param temporal-subchart.server.config.persistence.datastores.default.sql.user PostgreSQL user (use same as postgresql.username)
+              user: ""
+              ## @param temporal-subchart.server.config.persistence.datastores.default.sql.existingSecret Existing secret containing the password (Helm-only, stripped before rendering)
+              existingSecret: temporal-postgresql-secret
+              ## @param temporal-subchart.server.config.persistence.datastores.default.sql.secretKey Key inside existingSecret holding the password (defaults to "password")
+              secretKey: password
+              ## @param temporal-subchart.server.config.persistence.datastores.default.sql.createDatabase Have the chart's schema job create the database if missing (Helm-only)
+              createDatabase: true
+              ## @param temporal-subchart.server.config.persistence.datastores.default.sql.manageSchema Have the chart's schema job set up and update the schema (Helm-only)
+              manageSchema: true
+              ## @param temporal-subchart.server.config.persistence.datastores.default.sql.maxConns Maximum number of connections for default store
+              maxConns: 20
+              ## @param temporal-subchart.server.config.persistence.datastores.default.sql.maxIdleConns Maximum number of idle connections for default store
+              maxIdleConns: 20
+              ## @param temporal-subchart.server.config.persistence.datastores.default.sql.maxConnLifetime Maximum connection lifetime for default store
+              maxConnLifetime: "1h"
+          visibility:
+            sql:
+              ## @param temporal-subchart.server.config.persistence.datastores.visibility.sql.pluginName SQL plugin name for visibility store
+              pluginName: postgres12
+              ## @param temporal-subchart.server.config.persistence.datastores.visibility.sql.driverName SQL driver name for visibility store
+              driverName: postgres12
+              ## @param temporal-subchart.server.config.persistence.datastores.visibility.sql.connectAddr PostgreSQL host:port (override at deploy time)
+              connectAddr: ""
+              ## @param temporal-subchart.server.config.persistence.datastores.visibility.sql.connectProtocol Network protocol used to reach the SQL server (tcp for postgres-over-network)
+              connectProtocol: "tcp"
+              ## @param temporal-subchart.server.config.persistence.datastores.visibility.sql.databaseName Database name for temporal visibility store
+              databaseName: temporal_visibility
+              ## @param temporal-subchart.server.config.persistence.datastores.visibility.sql.user PostgreSQL user
+              user: ""
+              ## @param temporal-subchart.server.config.persistence.datastores.visibility.sql.existingSecret Existing secret containing the password
+              existingSecret: temporal-postgresql-secret
+              ## @param temporal-subchart.server.config.persistence.datastores.visibility.sql.secretKey Key inside existingSecret holding the password
+              secretKey: password
+              ## @param temporal-subchart.server.config.persistence.datastores.visibility.sql.createDatabase Have the chart's schema job create the database if missing
+              createDatabase: true
+              ## @param temporal-subchart.server.config.persistence.datastores.visibility.sql.manageSchema Have the chart's schema job set up and update the schema
+              manageSchema: true
+              ## @param temporal-subchart.server.config.persistence.datastores.visibility.sql.maxConns Maximum number of connections for visibility store
+              maxConns: 20
+              ## @param temporal-subchart.server.config.persistence.datastores.visibility.sql.maxIdleConns Maximum number of idle connections for visibility store
+              maxIdleConns: 20
+              ## @param temporal-subchart.server.config.persistence.datastores.visibility.sql.maxConnLifetime Maximum connection lifetime for visibility store
+              maxConnLifetime: "1h"
+    # Standalone Activities — requires transition history and CHASM
+    # (Temporal Server >= 1.28). All three flags must be enabled together.
+    ## @param temporal-subchart.server.dynamicConfig [object] Temporal dynamic config overrides. Enables Standalone Activities (requires Temporal Server >= 1.28); the three flags must be set together.
+    dynamicConfig:
+      history.enableTransitionHistory:
+        - value: true
+          constraints: {}
+      history.enableChasm:
+        - value: true
+          constraints: {}
+      activity.enableStandalone:
+        - value: true
+          constraints: {}
 
 ## @section Llama Agents Configuration
 llamaAgents:
@@ -216,6 +218,51 @@ llama-agents-subchart:
   apps:
     ## @param llama-agents-subchart.apps.namespace Target namespace for operator-managed LlamaDeployment CRs + their child resources. Operator + control plane stay in the release namespace.
     namespace: llama-agents
+
+## @section Bifrost (LLM gateway) Configuration
+## Optional subchart that deploys the maximhq/bifrost LLM gateway. Disabled by default;
+## intended for BYOC installs that want a one-shot install of Bifrost alongside LlamaCloud.
+bifrost:
+  ## @param bifrost.deploy Deploy the bifrost subchart. Disabled by default.
+  deploy: false
+
+## @section Bifrost Subchart Configuration
+## Pass-through values for the bifrost subchart (aliased in Chart.yaml).
+## Only used when bifrost.deploy is true. See the upstream chart for the full set of
+## supported values: https://github.com/maximhq/bifrost/tree/main/helm-charts/bifrost
+bifrost-subchart:
+  image:
+    ## @param bifrost-subchart.image.tag Bifrost container image tag. Defaults to the appVersion of the pinned bifrost chart. Override to track a different Bifrost release independently of the chart version.
+    tag: "v1.5.0"
+  bifrost:
+    client:
+      ## @param bifrost-subchart.bifrost.client.enforceAuthOnInference Require a Bifrost virtual key (sk-bf-*) on inference requests. Defaults to false so the happy-path LlamaCloud integration (configure provider keys under bifrost-subchart.bifrost.providers, then point LlamaCloud at Bifrost via config.llms.providerConfigs with any non-empty placeholder api_key) works out of the box. Set true if you intend to issue per-tenant virtual keys and pass them via the x-bf-vk header.
+      enforceAuthOnInference: false
+
+## @section Monitoring (Prometheus + Grafana) Configuration
+## Optional kube-prometheus-stack subchart and LlamaCloud ServiceMonitors. Disabled by
+## default; intended for BYOC installs.
+monitoring:
+  ## @param monitoring.deploy Deploy the kube-prometheus-stack subchart (Prometheus Operator, Prometheus, Grafana, AlertManager). Disabled by default. If a Prometheus Operator is already present in the cluster, leave this false and use serviceMonitors.enabled below to register LlamaCloud's ServiceMonitors against it.
+  deploy: false
+  serviceMonitors:
+    ## @param monitoring.serviceMonitors.enabled Render ServiceMonitor objects for LlamaCloud services. Requires the Prometheus Operator CRDs (monitoring.coreos.com/v1) to be present in the cluster — either via monitoring.deploy=true, or via an externally-managed operator. Templates no-op cleanly if the CRDs are not installed.
+    enabled: false
+    ## @param monitoring.serviceMonitors.release Value of the `release` label set on ServiceMonitor objects. Must match the Prometheus instance's serviceMonitorSelector (kube-prometheus-stack defaults to "kube-prometheus-stack").
+    release: kube-prometheus-stack
+    ## @param monitoring.serviceMonitors.interval Scrape interval for ServiceMonitor endpoints.
+    interval: 30s
+    ## @param monitoring.serviceMonitors.scrapeTimeout Scrape timeout for ServiceMonitor endpoints.
+    scrapeTimeout: 10s
+
+## @section kube-prometheus-stack Subchart Configuration
+## Pass-through values for the kube-prometheus-stack subchart (aliased in Chart.yaml).
+## Only used when monitoring.deploy is true. See the upstream chart for the full set of
+## supported values: https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack
+kube-prometheus-stack-subchart:
+  crds:
+    ## @param kube-prometheus-stack-subchart.crds.enabled Have the subchart install Prometheus Operator CRDs. Defaults to false so installs into clusters that already have a Prometheus Operator (and its CRDs) do not conflict. Set to true on a fresh cluster with no pre-existing Prometheus Operator.
+    enabled: false
 
 ## @section Ingress Configuration
 ingress:
@@ -333,7 +380,7 @@ config:
     ##   openai: {api_key, org_id?, base_url?}
     ##   azure: {api_key, endpoint, deployment_id?, api_version?}
     ##   anthropic: {api_key, base_url?}
-    ##   vertexai: {project_id?, location?, credentials?, base_url?}
+    ##   vertexai: {credentials_type?, project_id?, location?, credentials?, base_url?}
     ##   bedrock: {access_key_id?, secret_access_key?, region?, base_url?}
     ##   gemini: {api_key, base_url?}
     ##
@@ -631,7 +678,7 @@ config:
 
   ## @section Layout Detection V3 (BYOC Self-Hosted) Configuration
   parseLayoutDetectionV3:
-    ## @param config.parseLayoutDetectionV3.enabled Enable Layout V3 Detection (self-hosted RT-DETRv2 model)
+    ## @param config.parseLayoutDetectionV3.enabled Enable Layout V3 Detection (self-hosted layout detection model)
     ## Note: This is for BYOC deployments that cannot access HuggingFace inference endpoints
     enabled: false
     ## @param config.parseLayoutDetectionV3.gpu Enable GPU acceleration for Layout V3 processing
@@ -658,7 +705,7 @@ config:
       enabled: true
 
       ## @param config.temporal.searchAttributesJob.image Image for temporal admin tools
-      image: "docker.io/temporalio/admin-tools:1.29"
+      image: "docker.io/temporalio/admin-tools:1.31.0"
 
       ## config.temporal.searchAttributesJob.attributes: Search attributes to be created in Temporal
       ## Each attribute should have a name and type (Text, Keyword, Int, Double, Bool, Datetime, KeywordList)
@@ -671,6 +718,32 @@ config:
         type: Keyword
       - name: Organization
         type: Keyword
+
+  ## @section Job Cleanup Configuration
+  ## Scheduled Temporal workflows that delete completed jobs past their retention period.
+  ## Each service (parse, extract, classify) has its own cleanup schedule.
+  ## Set retentionDays to 0 (or any value <= 0) to disable cleanup for that service.
+  jobCleanup:
+    ## @section Parse Job Cleanup
+    parse:
+      ## @param config.jobCleanup.parse.retentionDays Number of days to retain completed parse jobs before deletion. Set to 0 to disable.
+      retentionDays: 30
+      ## @param config.jobCleanup.parse.batchSize Number of jobs to delete per batch during cleanup
+      batchSize: 100
+
+    ## @section Extract Job Cleanup
+    extract:
+      ## @param config.jobCleanup.extract.retentionDays Number of days to retain completed extract jobs before deletion. Set to 0 to disable.
+      retentionDays: 14
+      ## @param config.jobCleanup.extract.batchSize Number of jobs to delete per batch during cleanup
+      batchSize: 100
+
+    ## @section Classify Job Cleanup
+    classify:
+      ## @param config.jobCleanup.classify.retentionDays Number of days to retain completed classify jobs before deletion. Set to 0 to disable.
+      retentionDays: 14
+      ## @param config.jobCleanup.classify.batchSize Number of jobs to delete per batch during cleanup
+      batchSize: 100
 
 ## @section Common Configuration
 
@@ -699,7 +772,7 @@ frontend:
   annotations: {}
 
   ## @param frontend.image Frontend image
-  image: docker.io/llamaindex/llamacloud-frontend:0.7.7
+  image: docker.io/llamaindex/llamacloud-frontend:0.8.0
 
   ## @param frontend.imagePullPolicy Frontend image pull policy
   imagePullPolicy: IfNotPresent
@@ -761,7 +834,7 @@ backend:
   annotations: {}
 
   ## @param backend.image Backend image
-  image: docker.io/llamaindex/llamacloud-backend:0.7.7
+  image: docker.io/llamaindex/llamacloud-backend:0.8.0
 
   ## @param backend.imagePullPolicy Backend image pull policy
   imagePullPolicy: IfNotPresent
@@ -823,7 +896,7 @@ jobsService:
   annotations: {}
 
   ## @param jobsService.image JobsService image
-  image: docker.io/llamaindex/llamacloud-backend:0.7.7
+  image: docker.io/llamaindex/llamacloud-backend:0.8.0
 
   ## @param jobsService.imagePullPolicy JobsService image pull policy
   imagePullPolicy: IfNotPresent
@@ -885,7 +958,7 @@ jobsWorker:
   annotations: {}
 
   ## @param jobsWorker.image JobsWorker image
-  image: docker.io/llamaindex/llamacloud-backend:0.7.7
+  image: docker.io/llamaindex/llamacloud-backend:0.8.0
 
   ## @param jobsWorker.imagePullPolicy JobsWorker image pull policy
   imagePullPolicy: IfNotPresent
@@ -947,7 +1020,7 @@ llamaParse:
   annotations: {}
 
   ## @param llamaParse.image LlamaParse image
-  image: docker.io/llamaindex/llamacloud-llamaparse:0.7.7
+  image: docker.io/llamaindex/llamacloud-llamaparse:0.8.0
 
   ## @param llamaParse.imagePullPolicy LlamaParse image pull policy
   imagePullPolicy: IfNotPresent
@@ -1009,7 +1082,7 @@ llamaParseOcr:
   annotations: {}
 
   ## @param llamaParseOcr.image LlamaParseOcr image
-  image: docker.io/llamaindex/llamacloud-llamaparse-ocr:0.7.7
+  image: docker.io/llamaindex/llamacloud-llamaparse-ocr:0.8.0
 
   ## @param llamaParseOcr.imagePullPolicy LlamaParseOcr image pull policy
   imagePullPolicy: IfNotPresent
@@ -1071,7 +1144,7 @@ llamaParseLayoutDetectionApi:
   annotations: {}
 
   ## @param llamaParseLayoutDetectionApi.image LlamaParseLayoutDetectionApi image
-  image: docker.io/llamaindex/llamacloud-layout-detection-api:0.7.7
+  image: docker.io/llamaindex/llamacloud-layout-detection-api:0.8.0
 
   ## @param llamaParseLayoutDetectionApi.imagePullPolicy LlamaParseLayoutDetectionApi image pull policy
   imagePullPolicy: IfNotPresent
@@ -1132,7 +1205,7 @@ llamaParseLayoutDetectionApiV3:
   ## @param llamaParseLayoutDetectionApiV3.annotations Annotations added to the LlamaParseLayoutDetectionApiV3 Deployment.
   annotations: {}
 
-  ## @param llamaParseLayoutDetectionApiV3.image LlamaParseLayoutDetectionApiV3 image (RT-DETRv2 + figure classifier)
+  ## @param llamaParseLayoutDetectionApiV3.image LlamaParseLayoutDetectionApiV3 image (layout detection + figure classifier)
   ## Leave empty to use default: docker.io/llamaindex/llamacloud-layout-detection-api-v3:<chart-version>
   image: ""
 
@@ -1196,7 +1269,7 @@ usage:
   annotations: {}
 
   ## @param usage.image LlamaParseLayoutDetectionApi image
-  image: docker.io/llamaindex/llamacloud-backend:0.7.7
+  image: docker.io/llamaindex/llamacloud-backend:0.8.0
 
   ## @param usage.imagePullPolicy LlamaParseLayoutDetectionApi image pull policy
   imagePullPolicy: IfNotPresent
@@ -1260,7 +1333,7 @@ temporalWorkloads:
     annotations: {}
 
     ## @param temporalWorkloads.llamaParse.image temporal llamaparse image
-    image: docker.io/llamaindex/llamacloud-llamaparse:0.7.7
+    image: docker.io/llamaindex/llamacloud-llamaparse:0.8.0
 
     ## @param temporalWorkloads.llamaParse.imagePullPolicy temporal llamaparse image pull policy
     imagePullPolicy: IfNotPresent
@@ -1326,7 +1399,7 @@ temporalWorkloads:
       annotations: {}
 
       ## @param temporalWorkloads.workers.temporal-jobs-worker.image Frontend image
-      image: docker.io/llamaindex/llamacloud-backend:0.7.7
+      image: docker.io/llamaindex/llamacloud-backend:0.8.0
 
       ## @param temporalWorkloads.workers.temporal-jobs-worker.imagePullPolicy Frontend image pull policy
       imagePullPolicy: IfNotPresent

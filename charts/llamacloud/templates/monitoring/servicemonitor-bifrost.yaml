@@ -1,0 +1,25 @@
+{{- if and .Values.monitoring.serviceMonitors.enabled .Values.bifrost.deploy }}
+{{- if .Capabilities.APIVersions.Has "monitoring.coreos.com/v1" }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: bifrost
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    release: {{ .Values.monitoring.serviceMonitors.release | quote }}
+spec:
+  namespaceSelector:
+    matchNames:
+      - {{ .Release.Namespace | quote }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: bifrost-subchart
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: {{ .Values.monitoring.serviceMonitors.interval | quote }}
+      scrapeTimeout: {{ .Values.monitoring.serviceMonitors.scrapeTimeout | quote }}
+{{- end }}
+{{- end }}

@@ -30,7 +30,7 @@ tests:
       temporal.host: "temporal.example.com"
       temporal.port: 7233
       config.temporal.searchAttributesJob.enabled: true
-      config.temporal.searchAttributesJob.image: "temporalio/admin-tools:latest"
+      config.temporal.searchAttributesJob.image: "temporalio/admin-tools:1.31.0"
       config.temporal.searchAttributesJob.attributes:
         - name: "CustomStringAttr"
           type: "Keyword"
@@ -54,7 +54,7 @@ tests:
       temporal.host: "temporal.example.com"
       temporal.port: 7233
       config.temporal.searchAttributesJob.enabled: true
-      config.temporal.searchAttributesJob.image: "temporalio/admin-tools:latest"
+      config.temporal.searchAttributesJob.image: "temporalio/admin-tools:1.31.0"
       config.temporal.searchAttributesJob.attributes:
         - name: "CustomStringAttr"
           type: "Keyword"
@@ -72,7 +72,7 @@ tests:
     set:
       temporal.deploy: true
       config.temporal.searchAttributesJob.enabled: true
-      config.temporal.searchAttributesJob.image: "temporalio/admin-tools:latest"
+      config.temporal.searchAttributesJob.image: "temporalio/admin-tools:1.31.0"
       config.temporal.searchAttributesJob.attributes:
         - name: "Project"
           type: "Keyword"
@@ -94,7 +94,7 @@ tests:
     set:
       temporal.deploy: true
       config.temporal.searchAttributesJob.enabled: true
-      config.temporal.searchAttributesJob.image: "temporalio/admin-tools:latest"
+      config.temporal.searchAttributesJob.image: "temporalio/admin-tools:1.31.0"
       config.temporal.searchAttributesJob.attributes:
         - name: "Project"
           type: "Keyword"
@@ -112,7 +112,7 @@ tests:
     set:
       temporal.deploy: true
       config.temporal.searchAttributesJob.enabled: true
-      config.temporal.searchAttributesJob.image: "temporalio/admin-tools:latest"
+      config.temporal.searchAttributesJob.image: "temporalio/admin-tools:1.31.0"
       config.temporal.searchAttributesJob.attributes:
         - name: "Project"
           type: "Keyword"
@@ -127,7 +127,7 @@ tests:
     set:
       temporal.disabled: true
       config.temporal.searchAttributesJob.enabled: true
-      config.temporal.searchAttributesJob.image: "temporalio/admin-tools:latest"
+      config.temporal.searchAttributesJob.image: "temporalio/admin-tools:1.31.0"
       config.temporal.searchAttributesJob.attributes:
         - name: "Project"
           type: "Keyword"
@@ -171,7 +171,7 @@ tests:
     set:
       temporal.deploy: true
       config.temporal.searchAttributesJob.enabled: true
-      config.temporal.searchAttributesJob.image: "temporalio/admin-tools:latest"
+      config.temporal.searchAttributesJob.image: "temporalio/admin-tools:1.31.0"
       config.temporal.searchAttributesJob.attributes:
         - name: "Project"
           type: "Keyword"
@@ -194,7 +194,7 @@ tests:
     set:
       temporal.deploy: true
       config.temporal.searchAttributesJob.enabled: true
-      config.temporal.searchAttributesJob.image: "temporalio/admin-tools:latest"
+      config.temporal.searchAttributesJob.image: "temporalio/admin-tools:1.31.0"
       config.temporal.searchAttributesJob.attributes:
         - name: "Project"
           type: "Keyword"

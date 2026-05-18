@@ -1,5 +1,20 @@
 # CHANGELOG
 
+## [0.8.0] - 2026-05-16
+
+### Platform
+- **[Breaking]** New configurations for updated infrastructure
+- **[Security]** Security updates
+- **[Feature]** Support unique Portkey authentication schemes
+
+### Parse
+- **[Improvement]** Improved throughput capabilities
+- **[Feature]** Granular quota controls
+
+### Index
+- **[Improvement]** Stability improvements
+
+
 ## [0.7.7] - 2026-04-29
 
 ### Platform
