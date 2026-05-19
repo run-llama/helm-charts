@@ -186,6 +186,20 @@ MAX_DOCUMENT_INGESTION_JOBS_IN_EXECUTION: {{ ((.root.Values.config).jobs).maxDoc
 INCLUDE_JOB_ERROR_DETAILS: {{ ((.root.Values.config).jobs).includeJobErrorDetails | default "true" | quote }}
 DEFAULT_TRANSFORM_DOCUMENT_TIMEOUT_SECONDS: {{ ((.root.Values.config).jobs).defaultTransformDocumentTimeoutSeconds | default "240" | quote }}
 TRANSFORM_EMBEDDING_CHAR_LIMIT: {{ ((.root.Values.config).jobs).transformEmbeddingCharLimit | default "11520000" | quote }}
+{{- /* Use `kindIs "invalid"` (nil check) instead of `default`, so explicit 0
+       passes through and disables cleanup. `default` treats 0 as empty. */ -}}
+{{- $parseRetention := (((.root.Values.config).jobCleanup).parse).retentionDays }}
+{{- if kindIs "invalid" $parseRetention }}{{- $parseRetention = 30 }}{{- end }}
+{{- $extractRetention := (((.root.Values.config).jobCleanup).extract).retentionDays }}
+{{- if kindIs "invalid" $extractRetention }}{{- $extractRetention = 14 }}{{- end }}
+{{- $classifyRetention := (((.root.Values.config).jobCleanup).classify).retentionDays }}
+{{- if kindIs "invalid" $classifyRetention }}{{- $classifyRetention = 14 }}{{- end }}
+CLEANUP_PARSE_V2_RETENTION_DAYS: {{ $parseRetention | quote }}
+CLEANUP_PARSE_V2_BATCH_SIZE: {{ (((.root.Values.config).jobCleanup).parse).batchSize | default 100 | quote }}
+CLEANUP_EXTRACT_V2_RETENTION_DAYS: {{ $extractRetention | quote }}
+CLEANUP_EXTRACT_V2_BATCH_SIZE: {{ (((.root.Values.config).jobCleanup).extract).batchSize | default 100 | quote }}
+CLEANUP_CLASSIFY_V2_RETENTION_DAYS: {{ $classifyRetention | quote }}
+CLEANUP_CLASSIFY_V2_BATCH_SIZE: {{ (((.root.Values.config).jobCleanup).classify).batchSize | default 100 | quote }}
 {{- end }}
 
 {{/*

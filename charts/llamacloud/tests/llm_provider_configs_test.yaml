@@ -167,6 +167,33 @@ tests:
     - isNotEmpty:
         path: .data.LLM_PROVIDER_CONFIGS_JSON
 
+- it: should preserve vertex proxy credentials type in provider configs secret
+  set:
+    config.llms.providerConfigs:
+      - id: "portkey-vertex-gemini-2.5-flash"
+        provider: "vertexai"
+        model_id: "gemini-2.5-flash"
+        provider_model_name: "gemini-2.5-flash"
+        credentials:
+          credentials_type: "proxy"
+          project_id: "test-project"
+          location: "us-central1"
+          base_url: "https://api.portkey.ai/v1"
+        headers:
+          x-portkey-api-key: "pk-test"
+          x-portkey-provider: "@portkey-vertex"
+          x-portkey-strict-open-ai-compliance: "false"
+    config.frontend.enabled: false
+    config.parseOcr.enabled: false
+    config.parseLayoutDetection.enabled: false
+  template: ../templates/llamacloud/secrets/llm.provider-configs.yaml
+  asserts:
+    - isKind:
+        of: Secret
+    - equal:
+        path: .data.LLM_PROVIDER_CONFIGS_JSON
+        value: W3siY3JlZGVudGlhbHMiOnsiYmFzZV91cmwiOiJodHRwczovL2FwaS5wb3J0a2V5LmFpL3YxIiwiY3JlZGVudGlhbHNfdHlwZSI6InByb3h5IiwibG9jYXRpb24iOiJ1cy1jZW50cmFsMSIsInByb2plY3RfaWQiOiJ0ZXN0LXByb2plY3QifSwiaGVhZGVycyI6eyJ4LXBvcnRrZXktYXBpLWtleSI6InBrLXRlc3QiLCJ4LXBvcnRrZXktcHJvdmlkZXIiOiJAcG9ydGtleS12ZXJ0ZXgiLCJ4LXBvcnRrZXktc3RyaWN0LW9wZW4tYWktY29tcGxpYW5jZSI6ImZhbHNlIn0sImlkIjoicG9ydGtleS12ZXJ0ZXgtZ2VtaW5pLTIuNS1mbGFzaCIsIm1vZGVsX2lkIjoiZ2VtaW5pLTIuNS1mbGFzaCIsInByb3ZpZGVyIjoidmVydGV4YWkiLCJwcm92aWRlcl9tb2RlbF9uYW1lIjoiZ2VtaW5pLTIuNS1mbGFzaCJ9XQ==
+
 - it: should support configs with custom headers
   set:
     config.llms.providerConfigs:

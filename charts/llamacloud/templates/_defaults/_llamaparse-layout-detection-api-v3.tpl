@@ -1,6 +1,6 @@
 {{/*
 Parse Layout Detection V3 Component Settings.
-This is for BYOC deployments using the self-hosted RT-DETRv2 model.
+This is for BYOC deployments using the self-hosted layout detection model.
 */}}
 {{ define "llamacloud.component.llamaParseLayoutDetectionApiV3" }}
 {{- $component := .Values.llamaParseLayoutDetectionApiV3 }}

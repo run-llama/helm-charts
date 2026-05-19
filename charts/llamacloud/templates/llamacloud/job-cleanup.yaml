@@ -1,8 +1,9 @@
 {{- if and (((.Values.config).temporal).searchAttributesJob).enabled .Values.temporal.deploy (not .Values.temporal.disabled) }}
 {{- /*
-  Migration hook: Delete old temporal-search-attributes job if it exists with hook annotations.
-  This is needed because the job was previously created as a helm hook, but is now a regular resource
-  when temporal.deploy=true. Helm cannot adopt the old job, so we delete it first.
+  Pre-upgrade cleanup hook: Delete the existing temporal-search-attributes job before each upgrade.
+  Job.spec.template is immutable, so any change to the job's pod template (e.g. an admin-tools
+  image bump) makes Helm fail with `field is immutable` when it tries to patch the existing
+  resource in place. Deleting the job here lets Helm re-create it cleanly in the main release.
 */}}
 apiVersion: batch/v1
 kind: Job
@@ -33,19 +34,12 @@ spec:
             JOB_NAME="{{ .Release.Name }}-temporal-search-attributes"
             NAMESPACE="{{ .Release.Namespace }}"
 
-            echo "Checking for old temporal-search-attributes job..."
-            if kubectl get job "$JOB_NAME" -n "$NAMESPACE" 2>/dev/null; then
-              # Check if it has the old hook annotations
-              HOOK_ANNOTATION=$(kubectl get job "$JOB_NAME" -n "$NAMESPACE" -o jsonpath='{.metadata.annotations.helm\.sh/hook}' 2>/dev/null || echo "")
-              if [ -n "$HOOK_ANNOTATION" ]; then
-                echo "Found old job with hook annotations, deleting..."
-                kubectl delete job "$JOB_NAME" -n "$NAMESPACE" --ignore-not-found=true
-                echo "Old job deleted successfully"
-              else
-                echo "Job exists but doesn't have hook annotations, skipping"
-              fi
+            if kubectl get job "$JOB_NAME" -n "$NAMESPACE" >/dev/null 2>&1; then
+              echo "Deleting existing $JOB_NAME so Helm can recreate it (spec.template is immutable)..."
+              kubectl delete job "$JOB_NAME" -n "$NAMESPACE" --ignore-not-found=true
+              echo "Deleted $JOB_NAME"
             else
-              echo "No old job found, nothing to clean up"
+              echo "No existing $JOB_NAME, nothing to clean up"
             fi
 ---
 apiVersion: v1

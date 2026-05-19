@@ -31,8 +31,11 @@ jobs:
       - name: Set up chart-testing
         uses: helm/chart-testing-action@v2.6.1
 
-      - name: Add Temporal Helm Repository
-        run: helm repo add temporal https://go.temporal.io/helm-charts
+      - name: Add Helm Repositories
+        run: |
+          helm repo add temporal https://go.temporal.io/helm-charts
+          helm repo add bifrost https://maximhq.github.io/bifrost/helm-charts
+          helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 
       - name: Lint
         id: lint-charts

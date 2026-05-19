@@ -55,6 +55,40 @@
                 }
             }
         },
+        "bifrost": {
+            "type": "object",
+            "properties": {
+                "deploy": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "bifrost-subchart": {
+            "type": "object",
+            "properties": {
+                "bifrost": {
+                    "type": "object",
+                    "properties": {
+                        "client": {
+                            "type": "object",
+                            "properties": {
+                                "enforceAuthOnInference": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    }
+                },
+                "image": {
+                    "type": "object",
+                    "properties": {
+                        "tag": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "commonAnnotations": {
             "type": "object"
         },
@@ -128,6 +162,44 @@
                     "properties": {
                         "enabled": {
                             "type": "boolean"
+                        }
+                    }
+                },
+                "jobCleanup": {
+                    "type": "object",
+                    "properties": {
+                        "classify": {
+                            "type": "object",
+                            "properties": {
+                                "batchSize": {
+                                    "type": "integer"
+                                },
+                                "retentionDays": {
+                                    "type": "integer"
+                                }
+                            }
+                        },
+                        "extract": {
+                            "type": "object",
+                            "properties": {
+                                "batchSize": {
+                                    "type": "integer"
+                                },
+                                "retentionDays": {
+                                    "type": "integer"
+                                }
+                            }
+                        },
+                        "parse": {
+                            "type": "object",
+                            "properties": {
+                                "batchSize": {
+                                    "type": "integer"
+                                },
+                                "retentionDays": {
+                                    "type": "integer"
+                                }
+                            }
                         }
                     }
                 },
@@ -772,6 +844,19 @@
                 }
             }
         },
+        "kube-prometheus-stack-subchart": {
+            "type": "object",
+            "properties": {
+                "crds": {
+                    "type": "object",
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean"
+                        }
+                    }
+                }
+            }
+        },
         "license": {
             "type": "object",
             "properties": {
@@ -1063,6 +1148,31 @@
                 }
             }
         },
+        "monitoring": {
+            "type": "object",
+            "properties": {
+                "deploy": {
+                    "type": "boolean"
+                },
+                "serviceMonitors": {
+                    "type": "object",
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean"
+                        },
+                        "interval": {
+                            "type": "string"
+                        },
+                        "release": {
+                            "type": "string"
+                        },
+                        "scrapeTimeout": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "postgresql": {
             "type": "object",
             "properties": {
@@ -1175,83 +1285,6 @@
         "temporal-subchart": {
             "type": "object",
             "properties": {
-                "cassandra": {
-                    "type": "object",
-                    "properties": {
-                        "enabled": {
-                            "type": "boolean"
-                        }
-                    }
-                },
-                "elasticsearch": {
-                    "type": "object",
-                    "properties": {
-                        "enabled": {
-                            "type": "boolean"
-                        }
-                    }
-                },
-                "grafana": {
-                    "type": "object",
-                    "properties": {
-                        "enabled": {
-                            "type": "boolean"
-                        }
-                    }
-                },
-                "mysql": {
-                    "type": "object",
-                    "properties": {
-                        "enabled": {
-                            "type": "boolean"
-                        }
-                    }
-                },
-                "postgresql": {
-                    "type": "object",
-                    "properties": {
-                        "enabled": {
-                            "type": "boolean"
-                        }
-                    }
-                },
-                "prometheus": {
-                    "type": "object",
-                    "properties": {
-                        "enabled": {
-                            "type": "boolean"
-                        }
-                    }
-                },
-                "schema": {
-                    "type": "object",
-                    "properties": {
-                        "createDatabase": {
-                            "type": "object",
-                            "properties": {
-                                "enabled": {
-                                    "type": "boolean"
-                                }
-                            }
-                        },
-                        "setup": {
-                            "type": "object",
-                            "properties": {
-                                "enabled": {
-                                    "type": "boolean"
-                                }
-                            }
-                        },
-                        "update": {
-                            "type": "object",
-                            "properties": {
-                                "enabled": {
-                                    "type": "boolean"
-                                }
-                            }
-                        }
-                    }
-                },
                 "server": {
                     "type": "object",
                     "properties": {
@@ -1261,84 +1294,160 @@
                                 "persistence": {
                                     "type": "object",
                                     "properties": {
-                                        "default": {
+                                        "datastores": {
                                             "type": "object",
                                             "properties": {
-                                                "driver": {
-                                                    "type": "string"
-                                                },
-                                                "sql": {
+                                                "default": {
                                                     "type": "object",
                                                     "properties": {
-                                                        "database": {
-                                                            "type": "string"
-                                                        },
-                                                        "driver": {
-                                                            "type": "string"
-                                                        },
-                                                        "existingSecret": {
-                                                            "type": "string"
-                                                        },
-                                                        "host": {
-                                                            "type": "string"
-                                                        },
-                                                        "maxConnLifetime": {
-                                                            "type": "string"
-                                                        },
-                                                        "maxConns": {
-                                                            "type": "integer"
-                                                        },
-                                                        "maxIdleConns": {
-                                                            "type": "integer"
-                                                        },
-                                                        "port": {
-                                                            "type": "integer"
-                                                        },
-                                                        "user": {
-                                                            "type": "string"
+                                                        "sql": {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "connectAddr": {
+                                                                    "type": "string"
+                                                                },
+                                                                "connectProtocol": {
+                                                                    "type": "string"
+                                                                },
+                                                                "createDatabase": {
+                                                                    "type": "boolean"
+                                                                },
+                                                                "databaseName": {
+                                                                    "type": "string"
+                                                                },
+                                                                "driverName": {
+                                                                    "type": "string"
+                                                                },
+                                                                "existingSecret": {
+                                                                    "type": "string"
+                                                                },
+                                                                "manageSchema": {
+                                                                    "type": "boolean"
+                                                                },
+                                                                "maxConnLifetime": {
+                                                                    "type": "string"
+                                                                },
+                                                                "maxConns": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "maxIdleConns": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "pluginName": {
+                                                                    "type": "string"
+                                                                },
+                                                                "secretKey": {
+                                                                    "type": "string"
+                                                                },
+                                                                "user": {
+                                                                    "type": "string"
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                "visibility": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "sql": {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "connectAddr": {
+                                                                    "type": "string"
+                                                                },
+                                                                "connectProtocol": {
+                                                                    "type": "string"
+                                                                },
+                                                                "createDatabase": {
+                                                                    "type": "boolean"
+                                                                },
+                                                                "databaseName": {
+                                                                    "type": "string"
+                                                                },
+                                                                "driverName": {
+                                                                    "type": "string"
+                                                                },
+                                                                "existingSecret": {
+                                                                    "type": "string"
+                                                                },
+                                                                "manageSchema": {
+                                                                    "type": "boolean"
+                                                                },
+                                                                "maxConnLifetime": {
+                                                                    "type": "string"
+                                                                },
+                                                                "maxConns": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "maxIdleConns": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "pluginName": {
+                                                                    "type": "string"
+                                                                },
+                                                                "secretKey": {
+                                                                    "type": "string"
+                                                                },
+                                                                "user": {
+                                                                    "type": "string"
+                                                                }
+                                                            }
                                                         }
                                                     }
                                                 }
                                             }
                                         },
-                                        "visibility": {
-                                            "type": "object",
-                                            "properties": {
-                                                "driver": {
-                                                    "type": "string"
-                                                },
-                                                "sql": {
-                                                    "type": "object",
-                                                    "properties": {
-                                                        "database": {
-                                                            "type": "string"
-                                                        },
-                                                        "driver": {
-                                                            "type": "string"
-                                                        },
-                                                        "existingSecret": {
-                                                            "type": "string"
-                                                        },
-                                                        "host": {
-                                                            "type": "string"
-                                                        },
-                                                        "maxConnLifetime": {
-                                                            "type": "string"
-                                                        },
-                                                        "maxConns": {
-                                                            "type": "integer"
-                                                        },
-                                                        "maxIdleConns": {
-                                                            "type": "integer"
-                                                        },
-                                                        "port": {
-                                                            "type": "integer"
-                                                        },
-                                                        "user": {
-                                                            "type": "string"
-                                                        }
-                                                    }
-                                                }
+                                        "defaultStore": {
+                                            "type": "string"
+                                        },
+                                        "visibilityStore": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "dynamicConfig": {
+                            "type": "object",
+                            "properties": {
+                                "activity.enableStandalone": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "constraints": {
+                                                "type": "object"
+                                            },
+                                            "value": {
+                                                "type": "boolean"
+                                            }
+                                        }
+                                    }
+                                },
+                                "history.enableChasm": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "constraints": {
+                                                "type": "object"
+                                            },
+                                            "value": {
+                                                "type": "boolean"
+                                            }
+                                        }
+                                    }
+                                },
+                                "history.enableTransitionHistory": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "constraints": {
+                                                "type": "object"
+                                            },
+                                            "value": {
+                                                "type": "boolean"
                                             }
                                         }
                                     }

@@ -36,7 +36,10 @@ spec:
         image: {{ (((.Values.config).temporal).searchAttributesJob).image | quote }}
         imagePullPolicy: IfNotPresent
         command:
-          - /bin/bash
+          # Use /bin/sh, not /bin/bash: the configured image
+          # (temporalio/admin-tools:1.31.0 by default) ships only busybox sh.
+          # The script body below is POSIX-compatible.
+          - /bin/sh
           - -c
           - |
             set -e
