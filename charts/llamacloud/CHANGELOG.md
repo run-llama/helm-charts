@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## [0.8.1] - 2026-05-21
+
+### Frontend
+- Login redirect fixes and stability improvements
+
 ## [0.8.0] - 2026-05-16
 
 ### Platform
