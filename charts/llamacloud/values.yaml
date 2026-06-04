@@ -412,7 +412,7 @@ config:
     providerConfigs: []
 
   ## @section authentication Configuration
-  ## Choose either Basic Auth or OIDC for backend authentication
+  ## Choose exactly one backend authentication mode: Basic Auth, OIDC, or customer-configured WorkOS.
   authentication:
     ## @section Basic Auth configuration
     basicAuth:
@@ -436,6 +436,32 @@ config:
       ## @param config.authentication.oidc.clientSecret OIDC client secret
       clientSecret: ""
       ## @param config.authentication.oidc.secret Name of the existing secret to use for OIDC configuration
+      secret: ""
+
+    ## @section Customer-configured WorkOS configuration
+    customerConfigured:
+      ## @param config.authentication.customerConfigured.enabled Enable customer-configured WorkOS authentication for the backend
+      enabled: false
+      ## @param config.authentication.customerConfigured.oidcDiscoveryUrl WorkOS/AuthKit OIDC discovery URL
+      oidcDiscoveryUrl: ""
+      ## @param config.authentication.customerConfigured.cliClientId WorkOS CLI client ID
+      cliClientId: ""
+      ## @param config.authentication.customerConfigured.webClientId WorkOS web client ID
+      webClientId: ""
+      ## @param config.authentication.customerConfigured.cookiePassword Password for sealing WorkOS session cookies
+      cookiePassword: ""
+      ## @param config.authentication.customerConfigured.apiKey WorkOS API key
+      apiKey: ""
+      ## @param config.authentication.customerConfigured.redirectUri WorkOS OAuth callback URI
+      redirectUri: ""
+      ## @param config.authentication.customerConfigured.frontendUrl Browser-facing frontend URL for auth redirects
+      frontendUrl: ""
+      ## @param config.authentication.customerConfigured.baseUrl Optional WorkOS API base URL override
+      baseUrl: ""
+      ## @param config.authentication.customerConfigured.secret Name of the existing secret to use for customer-configured WorkOS configuration
+      ## Existing secrets must provide BYOC_AUTH_MODE, WORKOS_OIDC_DISCOVERY_URL, WORKOS_CLI_CLIENT_ID,
+      ## WORKOS_WEB_CLIENT_ID, WORKOS_COOKIE_PASSWORD, WORKOS_API_KEY, WORKOS_REDIRECT_URI,
+      ## WORKOS_FRONTEND_URL, FRONTEND_URL, and optionally WORKOS_BASE_URL.
       secret: ""
 
   ## @section Storage Buckets Configuration
@@ -694,6 +720,15 @@ config:
     ## See https://github.com/temporalio/helm-charts?tab=readme-ov-file#running-temporal-cli-from-the-admin-tools-container
     namespace: ""
 
+    ## Temporal external payload storage
+    externalPayloadStorage:
+      ## @param config.temporal.externalPayloadStorage.enabled Store oversized Temporal payloads outside workflow history
+      enabled: false
+      ## @param config.temporal.externalPayloadStorage.bucketName S3 bucket for external Temporal payloads
+      bucketName: ""
+      ## @param config.temporal.externalPayloadStorage.thresholdBytes Serialized payload size threshold. Empty uses the Temporal SDK default.
+      thresholdBytes: ""
+
     ## Job Cleanup Hook
     jobCleanup:
       ## @param config.temporal.jobCleanup.image Image for the kubectl job cleanup hook
@@ -772,7 +807,7 @@ frontend:
   annotations: {}
 
   ## @param frontend.image Frontend image
-  image: docker.io/llamaindex/llamacloud-frontend:0.8.1
+  image: docker.io/llamaindex/llamacloud-frontend:0.8.2
 
   ## @param frontend.imagePullPolicy Frontend image pull policy
   imagePullPolicy: IfNotPresent
@@ -834,7 +869,7 @@ backend:
   annotations: {}
 
   ## @param backend.image Backend image
-  image: docker.io/llamaindex/llamacloud-backend:0.8.1
+  image: docker.io/llamaindex/llamacloud-backend:0.8.2
 
   ## @param backend.imagePullPolicy Backend image pull policy
   imagePullPolicy: IfNotPresent
@@ -896,7 +931,7 @@ jobsService:
   annotations: {}
 
   ## @param jobsService.image JobsService image
-  image: docker.io/llamaindex/llamacloud-backend:0.8.1
+  image: docker.io/llamaindex/llamacloud-backend:0.8.2
 
   ## @param jobsService.imagePullPolicy JobsService image pull policy
   imagePullPolicy: IfNotPresent
@@ -958,7 +993,7 @@ jobsWorker:
   annotations: {}
 
   ## @param jobsWorker.image JobsWorker image
-  image: docker.io/llamaindex/llamacloud-backend:0.8.1
+  image: docker.io/llamaindex/llamacloud-backend:0.8.2
 
   ## @param jobsWorker.imagePullPolicy JobsWorker image pull policy
   imagePullPolicy: IfNotPresent
@@ -1020,7 +1055,7 @@ llamaParse:
   annotations: {}
 
   ## @param llamaParse.image LlamaParse image
-  image: docker.io/llamaindex/llamacloud-llamaparse:0.8.1
+  image: docker.io/llamaindex/llamacloud-llamaparse:0.8.2
 
   ## @param llamaParse.imagePullPolicy LlamaParse image pull policy
   imagePullPolicy: IfNotPresent
@@ -1082,7 +1117,7 @@ llamaParseOcr:
   annotations: {}
 
   ## @param llamaParseOcr.image LlamaParseOcr image
-  image: docker.io/llamaindex/llamacloud-llamaparse-ocr:0.8.1
+  image: docker.io/llamaindex/llamacloud-llamaparse-ocr:0.8.2
 
   ## @param llamaParseOcr.imagePullPolicy LlamaParseOcr image pull policy
   imagePullPolicy: IfNotPresent
@@ -1144,7 +1179,7 @@ llamaParseLayoutDetectionApi:
   annotations: {}
 
   ## @param llamaParseLayoutDetectionApi.image LlamaParseLayoutDetectionApi image
-  image: docker.io/llamaindex/llamacloud-layout-detection-api:0.8.1
+  image: docker.io/llamaindex/llamacloud-layout-detection-api:0.8.2
 
   ## @param llamaParseLayoutDetectionApi.imagePullPolicy LlamaParseLayoutDetectionApi image pull policy
   imagePullPolicy: IfNotPresent
@@ -1269,7 +1304,7 @@ usage:
   annotations: {}
 
   ## @param usage.image LlamaParseLayoutDetectionApi image
-  image: docker.io/llamaindex/llamacloud-backend:0.8.1
+  image: docker.io/llamaindex/llamacloud-backend:0.8.2
 
   ## @param usage.imagePullPolicy LlamaParseLayoutDetectionApi image pull policy
   imagePullPolicy: IfNotPresent
@@ -1333,7 +1368,7 @@ temporalWorkloads:
     annotations: {}
 
     ## @param temporalWorkloads.llamaParse.image temporal llamaparse image
-    image: docker.io/llamaindex/llamacloud-llamaparse:0.8.1
+    image: docker.io/llamaindex/llamacloud-llamaparse:0.8.2
 
     ## @param temporalWorkloads.llamaParse.imagePullPolicy temporal llamaparse image pull policy
     imagePullPolicy: IfNotPresent
@@ -1399,7 +1434,7 @@ temporalWorkloads:
       annotations: {}
 
       ## @param temporalWorkloads.workers.temporal-jobs-worker.image Frontend image
-      image: docker.io/llamaindex/llamacloud-backend:0.8.1
+      image: docker.io/llamaindex/llamacloud-backend:0.8.2
 
       ## @param temporalWorkloads.workers.temporal-jobs-worker.imagePullPolicy Frontend image pull policy
       imagePullPolicy: IfNotPresent

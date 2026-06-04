@@ -121,6 +121,7 @@ Parameters:
 {{- include "llamacloud.secrets.qdrant" .root }}
 {{- include "llamacloud.secrets.basicAuth" .root }}
 {{- include "llamacloud.secrets.oidc" .root }}
+{{- include "llamacloud.secrets.customerConfiguredAuth" .root }}
 {{- include "llamacloud.secrets.openAi" .root }}
 {{- include "llamacloud.secrets.anthropic" .root }}
 {{- include "llamacloud.secrets.gemini" .root }}

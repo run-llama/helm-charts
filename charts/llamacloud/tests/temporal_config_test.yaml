@@ -1,0 +1,48 @@
+suite: temporal-config-tests
+templates:
+  - ../templates/llamacloud/configmaps/temporal.yaml
+release:
+  name: llamacloud
+  namespace: default
+capabilities:
+  majorVersion: 1
+  minorVersion: 28
+tests:
+  - it: should render external payload storage disabled by default
+    set:
+      temporal.deploy: false
+      temporal.host: "temporal.example.com"
+      temporal.port: 7233
+    template: ../templates/llamacloud/configmaps/temporal.yaml
+    asserts:
+      - equal:
+          path: data.TEMPORAL_EXTERNAL_PAYLOAD_STORAGE_ENABLED
+          value: "false"
+      - isNull:
+          path: data.TEMPORAL_EXTERNAL_PAYLOAD_STORAGE_BUCKET_NAME
+      - isNull:
+          path: data.TEMPORAL_EXTERNAL_PAYLOAD_STORAGE_THRESHOLD_BYTES
+      - isNull:
+          path: data.TEMPORAL_EXTERNAL_PAYLOAD_STORAGE_BYPASS_WORKFLOW_TYPES
+
+  - it: should render external payload storage configuration
+    set:
+      temporal.deploy: false
+      temporal.host: "temporal.example.com"
+      temporal.port: 7233
+      config.temporal.externalPayloadStorage.enabled: true
+      config.temporal.externalPayloadStorage.bucketName: "llama-platform-temporal-payloads"
+      config.temporal.externalPayloadStorage.thresholdBytes: "1048576"
+    template: ../templates/llamacloud/configmaps/temporal.yaml
+    asserts:
+      - equal:
+          path: data.TEMPORAL_EXTERNAL_PAYLOAD_STORAGE_ENABLED
+          value: "true"
+      - equal:
+          path: data.TEMPORAL_EXTERNAL_PAYLOAD_STORAGE_BUCKET_NAME
+          value: "llama-platform-temporal-payloads"
+      - equal:
+          path: data.TEMPORAL_EXTERNAL_PAYLOAD_STORAGE_THRESHOLD_BYTES
+          value: "1048576"
+      - isNull:
+          path: data.TEMPORAL_EXTERNAL_PAYLOAD_STORAGE_BYPASS_WORKFLOW_TYPES

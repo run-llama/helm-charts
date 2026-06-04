@@ -6,6 +6,14 @@
 - **[Feature]** Bump bifrost subchart from `~2.1.16` to `~2.1.21`. Enables airgapped deployments by exposing `bifrost-subchart.bifrost.framework.pricing.modelParametersUrl` (added in bifrost subchart 2.1.17), which lets operators point bifrost at locally-mounted pricing/model-parameters JSON via `file://` URLs without a sidecar mirror pod.
 - **[Feature]** Bump default `bifrost-subchart.image.tag` from `v1.5.0` to `v1.5.8`. v1.5.0 does not support `file://` URLs for pricing data (boot fails with `unsupported protocol scheme "file"`); v1.5.8 does.
 
+### Platform
+- **[Security]** Security updates
+- **[Feature]** Support large external payloads in queue system
+
+### Parse
+- **[Improvement]** OCR improvements
+- **[Improvement]** Scaling optimizations
+
 ## [0.8.1] - 2026-05-21
 
 ### Frontend
