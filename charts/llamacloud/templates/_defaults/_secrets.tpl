@@ -103,6 +103,19 @@ OIDC Secret envFrom
 {{- end }}
 
 {{/*
+Customer-configured WorkOS Secret envFrom
+*/}}
+{{ define "llamacloud.secrets.customerConfiguredAuth" }}
+{{- if ( and (((.Values.config).authentication).customerConfigured).enabled (((.Values.config).authentication).customerConfigured).secret ) }}
+- secretRef:
+    name: {{ .Values.config.authentication.customerConfigured.secret }}
+{{- else if (((.Values.config).authentication).customerConfigured).enabled }}
+- secretRef:
+    name: "customer-configured-auth-secret"
+{{- end }}
+{{- end }}
+
+{{/*
 OpenAI Secret envFrom
 */}}
 {{ define "llamacloud.secrets.openAi" }}

@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## [0.8.2] - 2026-05-29
+
+### Platform
+- **[Security]** Security updates
+- **[Feature]** Support large external payloads in queue system
+
+### Parse
+- **[Improvement]** OCR improvements
+- **[Improvement]** Scaling optimizations
+
 ## [0.8.1] - 2026-05-21
 
 ### Frontend

@@ -28,4 +28,11 @@ data:
   TEMPORAL_PORT: {{ $temporalPort | quote }}
   TEMPORAL_NAMESPACE: {{ ((.Values.config).temporal).namespace | default $.Release.Namespace | quote }}
   TEMPORAL_WORKER_REGISTRY_PROFILE: {{ (.Values.config).workerRegistryProfile | default "consolidated" | quote }}
+  TEMPORAL_EXTERNAL_PAYLOAD_STORAGE_ENABLED: {{ (((.Values.config).temporal).externalPayloadStorage).enabled | default false | quote }}
+{{- with (((.Values.config).temporal).externalPayloadStorage).bucketName }}
+  TEMPORAL_EXTERNAL_PAYLOAD_STORAGE_BUCKET_NAME: {{ . | quote }}
+{{- end }}
+{{- with (((.Values.config).temporal).externalPayloadStorage).thresholdBytes }}
+  TEMPORAL_EXTERNAL_PAYLOAD_STORAGE_THRESHOLD_BYTES: {{ . | quote }}
+{{- end }}
 {{- end }}
