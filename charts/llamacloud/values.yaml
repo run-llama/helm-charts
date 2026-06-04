@@ -233,7 +233,7 @@ bifrost:
 bifrost-subchart:
   image:
     ## @param bifrost-subchart.image.tag Bifrost container image tag. Defaults to the appVersion of the pinned bifrost chart. Override to track a different Bifrost release independently of the chart version.
-    tag: "v1.5.0"
+    tag: "v1.5.8"
   bifrost:
     client:
       ## @param bifrost-subchart.bifrost.client.enforceAuthOnInference Require a Bifrost virtual key (sk-bf-*) on inference requests. Defaults to false so the happy-path LlamaCloud integration (configure provider keys under bifrost-subchart.bifrost.providers, then point LlamaCloud at Bifrost via config.llms.providerConfigs with any non-empty placeholder api_key) works out of the box. Set true if you intend to issue per-tenant virtual keys and pass them via the x-bf-vk header.
