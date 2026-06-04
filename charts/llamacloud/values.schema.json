@@ -118,6 +118,41 @@
                                 }
                             }
                         },
+                        "customerConfigured": {
+                            "type": "object",
+                            "properties": {
+                                "apiKey": {
+                                    "type": "string"
+                                },
+                                "baseUrl": {
+                                    "type": "string"
+                                },
+                                "cliClientId": {
+                                    "type": "string"
+                                },
+                                "cookiePassword": {
+                                    "type": "string"
+                                },
+                                "enabled": {
+                                    "type": "boolean"
+                                },
+                                "frontendUrl": {
+                                    "type": "string"
+                                },
+                                "oidcDiscoveryUrl": {
+                                    "type": "string"
+                                },
+                                "redirectUri": {
+                                    "type": "string"
+                                },
+                                "secret": {
+                                    "type": "string"
+                                },
+                                "webClientId": {
+                                    "type": "string"
+                                }
+                            }
+                        },
                         "oidc": {
                             "type": "object",
                             "properties": {
@@ -616,6 +651,20 @@
                 "temporal": {
                     "type": "object",
                     "properties": {
+                        "externalPayloadStorage": {
+                            "type": "object",
+                            "properties": {
+                                "bucketName": {
+                                    "type": "string"
+                                },
+                                "enabled": {
+                                    "type": "boolean"
+                                },
+                                "thresholdBytes": {
+                                    "type": "string"
+                                }
+                            }
+                        },
                         "jobCleanup": {
                             "type": "object",
                             "properties": {

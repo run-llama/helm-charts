@@ -77,6 +77,36 @@ tests:
         path: .spec.template.spec.containers[0].envFrom[?(@.secretRef.name == "existing-basic-auth-secret")].secretRef.name
         value: existing-basic-auth-secret
 
+- it: customer-configured auth secret should be loaded via envFrom if customer-configured auth is enabled
+  documentIndex: 0
+  set:
+    config.authentication.customerConfigured.enabled: true
+    config.authentication.customerConfigured.oidcDiscoveryUrl: https://auth.example.com/.well-known/openid-configuration
+    config.authentication.customerConfigured.cliClientId: cli_123
+    config.authentication.customerConfigured.webClientId: web_456
+    config.authentication.customerConfigured.cookiePassword: cookie-secret
+    config.authentication.customerConfigured.apiKey: sk_test_123
+    config.authentication.customerConfigured.redirectUri: https://app.example.com/api/v1/auth/workos/callback
+    config.authentication.customerConfigured.frontendUrl: https://app.example.com
+  template: ../templates/llamacloud/deployment.yaml
+  asserts:
+    - equal:
+        path: .spec.template.spec.containers[0].envFrom[?(@.secretRef.name == "customer-configured-auth-secret")].secretRef.name
+        value: customer-configured-auth-secret
+    - notExists:
+        path: .spec.template.spec.containers[0].envFrom[?(@.secretRef.name == "oidc-secret")]
+
+- it: should use existing customer-configured auth secret via envFrom if secret is provided
+  documentIndex: 0
+  set:
+    config.authentication.customerConfigured.enabled: true
+    config.authentication.customerConfigured.secret: existing-customer-configured-auth-secret
+  template: ../templates/llamacloud/deployment.yaml
+  asserts:
+    - equal:
+        path: .spec.template.spec.containers[0].envFrom[?(@.secretRef.name == "existing-customer-configured-auth-secret")].secretRef.name
+        value: existing-customer-configured-auth-secret
+
 - it: urls-config configmap should be loaded via envFrom and contain ingress URL
   documentIndex: 0
   set:
