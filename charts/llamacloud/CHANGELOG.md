@@ -1,10 +1,26 @@
 # CHANGELOG
 
+## [0.8.3] - 2026-06-04
+
+### Helm
+- **[Improvement]** Upgraded optional bifrost subchart default image tag to `v1.5.8` (only affects installs with `bifrost.deploy: true`)
+
+### Platform
+- **[Bug Fix]** API input validation fixes
+
+### Parse
+- **[Feature]** Add webhook output format
+
+### Classify, Sheet
+- **[Feature]** Add webhook integrations
+
 ## [0.8.2] - 2026-05-29
 
 ### Platform
 - **[Security]** Security updates
 - **[Feature]** Support large external payloads in queue system
+- **[Feature]** Bump bifrost subchart from `~2.1.16` to `~2.1.21`. Enables airgapped deployments by exposing `bifrost-subchart.bifrost.framework.pricing.modelParametersUrl` (added in bifrost subchart 2.1.17), which lets operators point bifrost at locally-mounted pricing/model-parameters JSON via `file://` URLs without a sidecar mirror pod.
+- **[Feature]** Bump default `bifrost-subchart.image.tag` from `v1.5.0` to `v1.5.8`. v1.5.0 does not support `file://` URLs for pricing data (boot fails with `unsupported protocol scheme "file"`); v1.5.8 does.
 
 ### Parse
 - **[Improvement]** OCR improvements
