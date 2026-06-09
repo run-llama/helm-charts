@@ -2,6 +2,53 @@ apiVersion: v1
 entries:
   llamacloud:
   - apiVersion: v2
+    appVersion: 0.8.3
+    created: "2026-06-09T18:46:49.807342873Z"
+    dependencies:
+    - alias: temporal-subchart
+      condition: temporal.deploy
+      name: temporal
+      repository: https://go.temporal.io/helm-charts
+      version: ~1.2.0
+    - alias: llama-agents-subchart
+      condition: llamaAgents.deploy
+      name: llama-agents
+      repository: oci://registry-1.docker.io/llamaindex
+      version: ~0.12.2
+    - alias: bifrost-subchart
+      condition: bifrost.deploy
+      name: bifrost
+      repository: https://maximhq.github.io/bifrost/helm-charts
+      version: ~2.1.21
+    - alias: kube-prometheus-stack-subchart
+      condition: monitoring.deploy
+      name: kube-prometheus-stack
+      repository: https://prometheus-community.github.io/helm-charts
+      version: ~85.0.2
+    description: A Helm chart to deploy LlamaCloud and all of its necessary services.
+    digest: e5067d755e168b379285bdf8edf5d19c5453a3621bce04d2063cca93b4817119
+    home: https://github.com/run-llama/helm-charts
+    keywords:
+    - llamaindex
+    - llamacloud
+    - rag
+    maintainers:
+    - email: jerry@runllama.ai
+      name: Jerry Liu
+      url: https://github.com/jerryjliu
+    - email: simon@runllama.ai
+      name: Simon Suo
+      url: https://github.com/Disiok
+    - email: jonathan@runllama.ai
+      name: Jonathan Whitaker
+      url: https://github.com/jonathan-whitaker
+    name: llamacloud
+    sources:
+    - https://github.com/run-llama/helm-charts
+    urls:
+    - https://github.com/run-llama/helm-charts/releases/download/llamacloud-0.8.3/llamacloud-0.8.3.tgz
+    version: 0.8.3
+  - apiVersion: v2
     appVersion: 0.8.2
     created: "2026-06-04T20:48:51.498954253Z"
     dependencies:
@@ -4476,4 +4523,4 @@ entries:
     urls:
     - https://github.com/run-llama/helm-charts/releases/download/llamacloud-0.1.1/llamacloud-0.1.1.tgz
     version: 0.1.1
-generated: "2026-06-04T20:48:51.499251819Z"
+generated: "2026-06-09T18:46:49.807797562Z"
