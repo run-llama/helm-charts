@@ -233,7 +233,7 @@ bifrost:
 bifrost-subchart:
   image:
     ## @param bifrost-subchart.image.tag Bifrost container image tag. Defaults to the appVersion of the pinned bifrost chart. Override to track a different Bifrost release independently of the chart version.
-    tag: "v1.5.0"
+    tag: "v1.5.8"
   bifrost:
     client:
       ## @param bifrost-subchart.bifrost.client.enforceAuthOnInference Require a Bifrost virtual key (sk-bf-*) on inference requests. Defaults to false so the happy-path LlamaCloud integration (configure provider keys under bifrost-subchart.bifrost.providers, then point LlamaCloud at Bifrost via config.llms.providerConfigs with any non-empty placeholder api_key) works out of the box. Set true if you intend to issue per-tenant virtual keys and pass them via the x-bf-vk header.
@@ -807,7 +807,7 @@ frontend:
   annotations: {}
 
   ## @param frontend.image Frontend image
-  image: docker.io/llamaindex/llamacloud-frontend:0.8.2
+  image: docker.io/llamaindex/llamacloud-frontend:0.8.3
 
   ## @param frontend.imagePullPolicy Frontend image pull policy
   imagePullPolicy: IfNotPresent
@@ -869,7 +869,7 @@ backend:
   annotations: {}
 
   ## @param backend.image Backend image
-  image: docker.io/llamaindex/llamacloud-backend:0.8.2
+  image: docker.io/llamaindex/llamacloud-backend:0.8.3
 
   ## @param backend.imagePullPolicy Backend image pull policy
   imagePullPolicy: IfNotPresent
@@ -931,7 +931,7 @@ jobsService:
   annotations: {}
 
   ## @param jobsService.image JobsService image
-  image: docker.io/llamaindex/llamacloud-backend:0.8.2
+  image: docker.io/llamaindex/llamacloud-backend:0.8.3
 
   ## @param jobsService.imagePullPolicy JobsService image pull policy
   imagePullPolicy: IfNotPresent
@@ -993,7 +993,7 @@ jobsWorker:
   annotations: {}
 
   ## @param jobsWorker.image JobsWorker image
-  image: docker.io/llamaindex/llamacloud-backend:0.8.2
+  image: docker.io/llamaindex/llamacloud-backend:0.8.3
 
   ## @param jobsWorker.imagePullPolicy JobsWorker image pull policy
   imagePullPolicy: IfNotPresent
@@ -1055,7 +1055,7 @@ llamaParse:
   annotations: {}
 
   ## @param llamaParse.image LlamaParse image
-  image: docker.io/llamaindex/llamacloud-llamaparse:0.8.2
+  image: docker.io/llamaindex/llamacloud-llamaparse:0.8.3
 
   ## @param llamaParse.imagePullPolicy LlamaParse image pull policy
   imagePullPolicy: IfNotPresent
@@ -1117,7 +1117,7 @@ llamaParseOcr:
   annotations: {}
 
   ## @param llamaParseOcr.image LlamaParseOcr image
-  image: docker.io/llamaindex/llamacloud-llamaparse-ocr:0.8.2
+  image: docker.io/llamaindex/llamacloud-llamaparse-ocr:0.8.3
 
   ## @param llamaParseOcr.imagePullPolicy LlamaParseOcr image pull policy
   imagePullPolicy: IfNotPresent
@@ -1179,7 +1179,7 @@ llamaParseLayoutDetectionApi:
   annotations: {}
 
   ## @param llamaParseLayoutDetectionApi.image LlamaParseLayoutDetectionApi image
-  image: docker.io/llamaindex/llamacloud-layout-detection-api:0.8.2
+  image: docker.io/llamaindex/llamacloud-layout-detection-api:0.8.3
 
   ## @param llamaParseLayoutDetectionApi.imagePullPolicy LlamaParseLayoutDetectionApi image pull policy
   imagePullPolicy: IfNotPresent
@@ -1304,7 +1304,7 @@ usage:
   annotations: {}
 
   ## @param usage.image LlamaParseLayoutDetectionApi image
-  image: docker.io/llamaindex/llamacloud-backend:0.8.2
+  image: docker.io/llamaindex/llamacloud-backend:0.8.3
 
   ## @param usage.imagePullPolicy LlamaParseLayoutDetectionApi image pull policy
   imagePullPolicy: IfNotPresent
@@ -1368,7 +1368,7 @@ temporalWorkloads:
     annotations: {}
 
     ## @param temporalWorkloads.llamaParse.image temporal llamaparse image
-    image: docker.io/llamaindex/llamacloud-llamaparse:0.8.2
+    image: docker.io/llamaindex/llamacloud-llamaparse:0.8.3
 
     ## @param temporalWorkloads.llamaParse.imagePullPolicy temporal llamaparse image pull policy
     imagePullPolicy: IfNotPresent
@@ -1434,7 +1434,7 @@ temporalWorkloads:
       annotations: {}
 
       ## @param temporalWorkloads.workers.temporal-jobs-worker.image Frontend image
-      image: docker.io/llamaindex/llamacloud-backend:0.8.2
+      image: docker.io/llamaindex/llamacloud-backend:0.8.3
 
       ## @param temporalWorkloads.workers.temporal-jobs-worker.imagePullPolicy Frontend image pull policy
       imagePullPolicy: IfNotPresent
