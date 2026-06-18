@@ -1,0 +1,162 @@
+suite: default-index-tests
+
+# Covers the optional config.defaultIndex block: rendering of the
+# default-index-secret and its envFrom wiring on the backend and
+# temporal worker deployments.
+
+templates:
+- ../templates/llamacloud/secrets/data.default-index.yaml
+- ../templates/llamacloud/deployment.yaml
+
+release:
+  name: test-release
+  namespace: test-namespace
+
+capabilities:
+  majorVersion: 1
+  minorVersion: 31
+  apiVersions:
+    - apps/v1
+
+chart:
+  appVersion: 0.0.0
+
+tests:
+- it: secret is not rendered when defaultIndex is unset
+  template: ../templates/llamacloud/secrets/data.default-index.yaml
+  asserts:
+    - hasDocuments:
+        count: 0
+
+- it: secret renders mongo and turbopuffer keys when set
+  set:
+    config:
+      defaultIndex:
+        mongo:
+          uri: mongodb://user:pass@mongo.example.com:27017/?retryWrites=false
+          db: vector_search_db
+          collection: collection_v1
+        turbopuffer:
+          apiKey: tpuf-test-key
+          namespacePrefix: example-prefix
+  template: ../templates/llamacloud/secrets/data.default-index.yaml
+  asserts:
+    - isKind:
+        of: Secret
+    - equal:
+        path: .metadata.name
+        value: default-index-secret
+    - equal:
+        path: .data.DEFAULT_INDEX_MONGO_URI
+        value: bW9uZ29kYjovL3VzZXI6cGFzc0Btb25nby5leGFtcGxlLmNvbToyNzAxNy8/cmV0cnlXcml0ZXM9ZmFsc2U=  # base64("mongodb://user:pass@mongo.example.com:27017/?retryWrites=false")
+    - equal:
+        path: .data.DEFAULT_INDEX_MONGO_DB
+        value: dmVjdG9yX3NlYXJjaF9kYg==  # base64("vector_search_db")
+    - equal:
+        path: .data.DEFAULT_INDEX_MONGO_COLLECTION
+        value: Y29sbGVjdGlvbl92MQ==  # base64("collection_v1")
+    - equal:
+        path: .data.DEFAULT_INDEX_TPUF_API_KEY
+        value: dHB1Zi10ZXN0LWtleQ==  # base64("tpuf-test-key")
+    - equal:
+        path: .data.DEFAULT_INDEX_TPUF_NAMESPACE_PREFIX
+        value: ZXhhbXBsZS1wcmVmaXg=  # base64("example-prefix")
+    - isNull:
+        path: .data.DEFAULT_INDEX_TPUF_REGION
+
+- it: turbopuffer-only configuration renders without mongo keys
+  set:
+    config:
+      defaultIndex:
+        turbopuffer:
+          apiKey: tpuf-test-key
+  template: ../templates/llamacloud/secrets/data.default-index.yaml
+  asserts:
+    - equal:
+        path: .data.DEFAULT_INDEX_TPUF_API_KEY
+        value: dHB1Zi10ZXN0LWtleQ==  # base64("tpuf-test-key")
+    - isNull:
+        path: .data.DEFAULT_INDEX_MONGO_URI
+
+- it: partial mongo configuration fails rendering
+  set:
+    config:
+      defaultIndex:
+        mongo:
+          uri: mongodb://user:pass@mongo.example.com:27017/?retryWrites=false
+  template: ../templates/llamacloud/secrets/data.default-index.yaml
+  asserts:
+    - failedTemplate:
+        errorMessage: "config.defaultIndex.mongo requires uri, db, and collection to all be set"
+
+- it: backend mounts default-index-secret when configured
+  set:
+    config:
+      defaultIndex:
+        turbopuffer:
+          apiKey: tpuf-test-key
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud
+  asserts:
+    - contains:
+        path: .spec.template.spec.containers[0].envFrom
+        content:
+          secretRef:
+            name: default-index-secret
+
+- it: temporal worker mounts default-index-secret when configured
+  set:
+    config:
+      defaultIndex:
+        turbopuffer:
+          apiKey: tpuf-test-key
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: temporal-jobs-worker
+  asserts:
+    - contains:
+        path: .spec.template.spec.containers[0].envFrom
+        content:
+          secretRef:
+            name: default-index-secret
+
+- it: deployments do not mount default-index-secret by default
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud
+  asserts:
+    - notContains:
+        path: .spec.template.spec.containers[0].envFrom
+        content:
+          secretRef:
+            name: default-index-secret
+
+- it: existing-secret override is mounted instead of the rendered secret
+  set:
+    config:
+      defaultIndex:
+        secret: my-default-index-secret
+  template: ../templates/llamacloud/secrets/data.default-index.yaml
+  asserts:
+    - hasDocuments:
+        count: 0
+
+- it: existing-secret override appears in envFrom
+  set:
+    config:
+      defaultIndex:
+        secret: my-default-index-secret
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: temporal-jobs-worker
+  asserts:
+    - contains:
+        path: .spec.template.spec.containers[0].envFrom
+        content:
+          secretRef:
+            name: my-default-index-secret

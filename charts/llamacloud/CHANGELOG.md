@@ -1,5 +1,25 @@
 # CHANGELOG
 
+## [0.8.4] - 2026-06-17
+
+### Platform
+- **[Security]** Security updates
+- **[Feature]** Batch v2: Parse and Extract APIs
+- **[Feature]** Added admin usage metric export UI and APIs: Located at settings/admin/usage-metrics
+- **[Feature]** Added optional `config.defaultIndex` values for the platform-managed directory-index destinations: `config.defaultIndex.mongo.{uri,db,collection}` (document store) and `config.defaultIndex.turbopuffer.{apiKey,region,namespacePrefix}` (vector store), or `config.defaultIndex.secret` to reference an existing secret. When set, the rendered `default-index-secret` is mounted on the backend and the temporal jobs worker, enabling directory exports and index sync against the platform-managed destinations. When unset, behavior is unchanged.
+- **[Removal]** Removed the Extract V2 model override env vars `LLAMA_EXTRACT_V2_AGENTIC_MODEL` and `LLAMA_EXTRACT_V2_COST_EFFECTIVE_MODEL`, and the unused `LLAMA_EXTRACT_MULTIMODAL_MODEL` (no longer rendered by the chart; the `config.extraction.multimodalModel` Helm value is now ignored). The default multimodal parse model is `openai-gpt-4-1` (`gemini-2.0-flash` was retired by Google on 2026-06-01). No action needed: Extract V2 still runs `openai-gpt-4-1` (agentic) and `openai-gpt-4-1-mini` (cost-effective) by default. Extract model availability is controlled by which `model_id` entries you register under `config.llms.providerConfigs` in your Helm values ([Centralized Provider Configuration](https://developers.llamaindex.ai/llamaparse/self_hosting/configuration/llm_integrations/centralized-config)); when an extract version prefers a model you haven't registered, it automatically falls back to a registered model in the same family (e.g. `openai-gpt-4-1-mini` → `openai-gpt-4-1-nano`).
+
+### Parse
+- **[Improvement]** Improved OCR throughput
+- **[Feature]** Support for Gemini 3.1 flash-lite
+- **[Feature]** Support for GPT-5.4
+- **[Feature]** Support for specifying per-tier model fallbacks via config
+- **[Improvement]** Improved heuristic table extraction
+
+### Extract
+- **[Feature]** New improved agentic version
+- **[Feature]** Add dated version pinning
+
 ## [0.8.3] - 2026-06-04
 
 ### Helm
