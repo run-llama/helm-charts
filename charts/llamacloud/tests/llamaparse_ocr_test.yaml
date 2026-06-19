@@ -259,3 +259,164 @@ tests:
     - matchRegex:
         path: spec.template.spec.containers[0].image
         pattern: docker\.io/llamaindex/llamacloud-llamaparse-ocr:[^-]+$
+    - equal:
+        path: spec.template.spec.containers[0].resources.requests["nvidia.com/gpu"]
+        value: 1
+    - equal:
+        path: spec.template.spec.containers[0].resources.limits["nvidia.com/gpu"]
+        value: 1
+
+- it: should not render GPU resources when config.parseOcr.gpu is false
+  set:
+    config:
+      frontend:
+        enabled: false
+      parseOcr:
+        enabled: true
+        gpu: false
+      parseLayoutDetection:
+        enabled: false
+    llamaParseOcr.image: ""
+    redis:
+      host: test-redis
+      port: "6379"
+      password: test-pass
+    postgresql:
+      host: test-pg
+      port: "5432"
+      username: test-user
+      password: test-pass
+      database: test-db
+    mongodb:
+      host: mongodb
+      username: test-mongo-user
+      password: test-mongo-pass
+    rabbitmq:
+      host: test-rabbit
+      username: test-user
+      password: test-pass
+  template: ../templates/llamacloud/deployment.yaml
+  documentIndex: 4
+  asserts:
+    - notExists:
+        path: spec.template.spec.containers[0].resources.requests["nvidia.com/gpu"]
+    - notExists:
+        path: spec.template.spec.containers[0].resources.limits["nvidia.com/gpu"]
+
+- it: should render custom GPU count when config.parseOcr.gpu is true
+  set:
+    config:
+      frontend:
+        enabled: false
+      parseOcr:
+        enabled: true
+        gpu: true
+      parseLayoutDetection:
+        enabled: false
+    llamaParseOcr:
+      image: ""
+      gpuCount: 2
+    redis:
+      host: test-redis
+      port: "6379"
+      password: test-pass
+    postgresql:
+      host: test-pg
+      port: "5432"
+      username: test-user
+      password: test-pass
+      database: test-db
+    mongodb:
+      host: mongodb
+      username: test-mongo-user
+      password: test-mongo-pass
+    rabbitmq:
+      host: test-rabbit
+      username: test-user
+      password: test-pass
+  template: ../templates/llamacloud/deployment.yaml
+  documentIndex: 4
+  asserts:
+    - equal:
+        path: spec.template.spec.containers[0].resources.requests["nvidia.com/gpu"]
+        value: 2
+    - equal:
+        path: spec.template.spec.containers[0].resources.limits["nvidia.com/gpu"]
+        value: 2
+
+- it: should render custom GPU resource name when config.parseOcr.gpu is true
+  set:
+    config:
+      frontend:
+        enabled: false
+      parseOcr:
+        enabled: true
+        gpu: true
+      parseLayoutDetection:
+        enabled: false
+    llamaParseOcr:
+      image: ""
+      gpuResourceName: example.com/gpu
+    redis:
+      host: test-redis
+      port: "6379"
+      password: test-pass
+    postgresql:
+      host: test-pg
+      port: "5432"
+      username: test-user
+      password: test-pass
+      database: test-db
+    mongodb:
+      host: mongodb
+      username: test-mongo-user
+      password: test-mongo-pass
+    rabbitmq:
+      host: test-rabbit
+      username: test-user
+      password: test-pass
+  template: ../templates/llamacloud/deployment.yaml
+  documentIndex: 4
+  asserts:
+    - equal:
+        path: spec.template.spec.containers[0].resources.requests["example.com/gpu"]
+        value: 1
+    - equal:
+        path: spec.template.spec.containers[0].resources.limits["example.com/gpu"]
+        value: 1
+
+- it: should keep custom OCR image unsuffixed in GPU mode
+  set:
+    config:
+      frontend:
+        enabled: false
+      parseOcr:
+        enabled: true
+        gpu: true
+      parseLayoutDetection:
+        enabled: false
+    llamaParseOcr.image: example.com/ocr:triton-dev
+    redis:
+      host: test-redis
+      port: "6379"
+      password: test-pass
+    postgresql:
+      host: test-pg
+      port: "5432"
+      username: test-user
+      password: test-pass
+      database: test-db
+    mongodb:
+      host: mongodb
+      username: test-mongo-user
+      password: test-mongo-pass
+    rabbitmq:
+      host: test-rabbit
+      username: test-user
+      password: test-pass
+  template: ../templates/llamacloud/deployment.yaml
+  documentIndex: 4
+  asserts:
+    - equal:
+        path: spec.template.spec.containers[0].image
+        value: example.com/ocr:triton-dev

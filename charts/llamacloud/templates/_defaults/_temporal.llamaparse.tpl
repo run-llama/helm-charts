@@ -12,7 +12,11 @@ Temporal Parse Component Settings.
      jemalloc isn't inherited by Chromium-based children (calibre's
      ebook-convert, puppeteer's chromium) which SIGSEGV when a foreign
      allocator is preloaded into their address space. */}}
-{{- $component = set $component "command" (list "/bin/bash" "-c" "LD_PRELOAD=$JEMALLOC_PATH exec node --max-old-space-size=$MAX_OLD_SPACE_SIZE dist/worker/temporal/worker.js") }}
+{{/* Use /bin/sh, not /bin/bash: the Chainguard-based worker image is busybox-only
+     (no bash). Hardcoding /bin/bash crashlooped these workers with
+     `exec: "/bin/bash": stat /bin/bash: no such file or directory`. The command body
+     is POSIX-sh compatible; sh + jemalloc preload + node were verified on the image. */}}
+{{- $component = set $component "command" (list "/bin/sh" "-c" "LD_PRELOAD=$JEMALLOC_PATH exec node --max-old-space-size=$MAX_OLD_SPACE_SIZE dist/worker/temporal/worker.js") }}
 {{- $component = set $component "usesS3" "true" }}
 {{- $component | toYaml }}
 {{- end }}

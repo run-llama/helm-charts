@@ -20,6 +20,8 @@ Parameters:
 - root: $
 */}}
 {{ define "llamacloud.component.llamaParseLayoutDetectionApiV3.resources" }}
+{{- $gpuResourceName := (.component).gpuResourceName | default "nvidia.com/gpu" }}
+{{- $gpuCount := (.component).gpuCount | default 1 }}
 requests:
   cpu: {{ (((.component).resources).requests).cpu | default "1" }}
   memory: {{ (((.component).resources).requests).memory | default "8Gi" }}
@@ -27,7 +29,7 @@ requests:
   ephemeral-storage: {{ . }}
   {{- end }}{{- end }}
   {{- if ((.root.Values.config).parseLayoutDetectionV3).gpu }}
-  nvidia.com/gpu: 1
+  {{ $gpuResourceName }}: {{ $gpuCount }}
   {{- end }}
 limits:
   cpu: {{ (((.component).resources).limits).cpu | default "2" }}
@@ -36,7 +38,7 @@ limits:
   ephemeral-storage: {{ . }}
   {{- end }}{{- end }}
   {{- if ((.root.Values.config).parseLayoutDetectionV3).gpu }}
-  nvidia.com/gpu: 1
+  {{ $gpuResourceName }}: {{ $gpuCount }}
   {{- end }}
 {{- end }}
 

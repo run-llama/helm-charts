@@ -335,8 +335,8 @@ tests:
     - isKind:
         of: ConfigMap
     - equal:
-        path: .data.LLAMA_EXTRACT_MULTIMODAL_MODEL
-        value: "openai-gpt-4-1"
+        path: .data.LLAMA_EXTRACT_SCHEMA_GENERATION_MODEL
+        value: "openai-gpt-4-1-mini"
 
 - it: jobs-service deployment should have LOG_LEVEL env var
   set:

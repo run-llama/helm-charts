@@ -94,9 +94,6 @@ tests:
     - isKind:
         of: ConfigMap
     - equal:
-        path: .data.LLAMA_EXTRACT_MULTIMODAL_MODEL
-        value: "openai-gpt-4-1"
-    - equal:
         path: .data.LLAMA_EXTRACT_SCHEMA_GENERATION_MODEL
         value: "openai-gpt-4-1-mini"
     - equal:
@@ -108,16 +105,12 @@ tests:
 
 - it: should set custom LLAMA_EXTRACT settings when specified
   set:
-    config.extraction.multimodalModel: "openai-gpt-4-1"
     config.extraction.schemaGenerationModel: "openai-gpt-4-1-mini"
     config.extraction.maxPages: 1000
     config.extraction.maxFileSizeMb: 200
   templates:
     - ../templates/llamacloud/configmaps/extract.yaml
   asserts:
-    - equal:
-        path: .data.LLAMA_EXTRACT_MULTIMODAL_MODEL
-        value: "openai-gpt-4-1"
     - equal:
         path: .data.LLAMA_EXTRACT_SCHEMA_GENERATION_MODEL
         value: "openai-gpt-4-1-mini"

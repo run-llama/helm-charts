@@ -32,9 +32,6 @@ tests:
   template: ../templates/llamacloud/configmaps/extract.yaml
   asserts:
     - equal:
-        path: .data.LLAMA_EXTRACT_MULTIMODAL_MODEL
-        value: openai-gpt-4-1
-    - equal:
         path: .data.LLAMA_EXTRACT_SCHEMA_GENERATION_MODEL
         value: openai-gpt-4-1-mini
     - equal:
@@ -44,20 +41,16 @@ tests:
         path: .data.LLAMA_EXTRACT_MAX_FILE_SIZE_MB
         value: "100"
 
-- it: falls back to gemini-2.0-flash when multimodalModel is explicitly emptied
+- it: falls back to a live model when schemaGenerationModel is explicitly emptied
   set:
     config:
       extraction:
-        multimodalModel: ""
         schemaGenerationModel: ""
   template: ../templates/llamacloud/configmaps/extract.yaml
   asserts:
     - equal:
-        path: .data.LLAMA_EXTRACT_MULTIMODAL_MODEL
-        value: gemini-2.0-flash
-    - equal:
         path: .data.LLAMA_EXTRACT_SCHEMA_GENERATION_MODEL
-        value: gemini-2.0-flash
+        value: openai-gpt-4-1-mini
 
 - it: applies config.extraction overrides
   set:
@@ -69,9 +62,6 @@ tests:
         maxFileSizeMb: 250
   template: ../templates/llamacloud/configmaps/extract.yaml
   asserts:
-    - equal:
-        path: .data.LLAMA_EXTRACT_MULTIMODAL_MODEL
-        value: openai-gpt-4o
     - equal:
         path: .data.LLAMA_EXTRACT_SCHEMA_GENERATION_MODEL
         value: openai-gpt-4-1

@@ -32,6 +32,23 @@ tests:
     - isKind:
         of: Deployment
 
+# Regression: the worker image was migrated to a Chainguard busybox base that ships
+# no /bin/bash. The command hardcoded /bin/bash and every temporal parse worker
+# crashlooped with `exec: "/bin/bash": stat /bin/bash: no such file or directory`.
+# The command body is POSIX-sh compatible, so /bin/sh is the correct shell.
+- it: temporal.llamaParse command invokes /bin/sh, not /bin/bash (worker image is busybox-only)
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-temporal-parse
+  asserts:
+    - equal:
+        path: .spec.template.spec.containers[0].command[0]
+        value: /bin/sh
+    - notEqual:
+        path: .spec.template.spec.containers[0].command[0]
+        value: /bin/bash
+
 - it: temporal.llamaParse deployment does NOT render when temporal is disabled
   set:
     temporal:

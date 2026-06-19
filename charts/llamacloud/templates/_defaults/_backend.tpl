@@ -143,6 +143,7 @@ Parameters:
 {{- include "llamacloud.secrets.awsBedrock" .root }}
 {{- include "llamacloud.secrets.googleVertexAi" .root }}
 {{- include "llamacloud.secrets.llmProviderConfigs" .root }}
+{{- include "llamacloud.secrets.defaultIndex" .root }}
 {{- end }}
 
 {{/*

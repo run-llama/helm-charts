@@ -175,6 +175,42 @@
                         }
                     }
                 },
+                "defaultIndex": {
+                    "type": "object",
+                    "properties": {
+                        "mongo": {
+                            "type": "object",
+                            "properties": {
+                                "collection": {
+                                    "type": "string"
+                                },
+                                "db": {
+                                    "type": "string"
+                                },
+                                "uri": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "secret": {
+                            "type": "string"
+                        },
+                        "turbopuffer": {
+                            "type": "object",
+                            "properties": {
+                                "apiKey": {
+                                    "type": "string"
+                                },
+                                "namespacePrefix": {
+                                    "type": "string"
+                                },
+                                "region": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                },
                 "extraction": {
                     "type": "object",
                     "properties": {
@@ -1077,6 +1113,13 @@
                 "extraEnvVariables": {
                     "type": "array"
                 },
+                "gpuCount": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "gpuResourceName": {
+                    "type": "string"
+                },
                 "horizontalPodAutoscalerSpec": {
                     "type": "object"
                 },
@@ -1129,6 +1172,13 @@
                 },
                 "extraEnvVariables": {
                     "type": "array"
+                },
+                "gpuCount": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "gpuResourceName": {
+                    "type": "string"
                 },
                 "horizontalPodAutoscalerSpec": {
                     "type": "object"

@@ -202,3 +202,16 @@ LLM Provider Configs Secret envFrom
     name: "llm-provider-configs-secret"
 {{- end }}
 {{- end }}
+
+{{/*
+Default Index Secret envFrom
+*/}}
+{{ define "llamacloud.secrets.defaultIndex" }}
+{{- if ((.Values.config).defaultIndex).secret }}
+- secretRef:
+    name: {{ .Values.config.defaultIndex.secret }}
+{{- else if or ((((.Values.config).defaultIndex).mongo).uri) ((((.Values.config).defaultIndex).turbopuffer).apiKey) }}
+- secretRef:
+    name: "default-index-secret"
+{{- end }}
+{{- end }}
