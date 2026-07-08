@@ -1,0 +1,11 @@
+# Full deployment profile: every feature, all backing stores (the default).
+#
+# This file exists as the explicit counterpart to minimal.yaml — applying it
+# is identical to applying no profile at all. MongoDB and RabbitMQ connection
+# values (or existing secrets) are required, exactly as today.
+
+mongodb:
+  enabled: true
+
+rabbitmq:
+  enabled: true

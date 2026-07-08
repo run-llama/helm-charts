@@ -1,5 +1,22 @@
 # CHANGELOG
 
+## [0.8.5] - 2026-07-07
+
+### Platform
+- **[Security]** Security updates
+- **[Security]** Updated webhook signing security
+- **[Feature]** Added usage tags (controlled by headers)
+- **[Feature]** Added user metadata to parse jobs ([create parsing job API](https://developers.llamaindex.ai/reference/resources/parsing/methods/create/))
+
+### Extract
+- **[Improvement]** `target_pages` now preserves user specified page order
+
+### Index
+- **[Improvement]** Improvements to reranker model selection
+
+### Parse
+- **[Improvement]** Improved performance
+
 ## [0.8.4] - 2026-06-17
 
 ### Platform
