@@ -25,9 +25,10 @@ PostgreSQL Secret envFrom
 {{- end }}
 
 {{/*
-MongoDB Secret envFrom
+MongoDB Secret envFrom (emits nothing when mongodb is disabled)
 */}}
 {{ define "llamacloud.secrets.mongodb" }}
+{{- if (.Values.mongodb).enabled }}
 {{- if (.Values.mongodb).secret }}
 - secretRef:
     name: {{ .Values.mongodb.secret }}
@@ -36,17 +37,20 @@ MongoDB Secret envFrom
     name: "mongodb-secret"
 {{- end }}
 {{- end }}
+{{- end }}
 
 {{/*
-RabbitMQ Secret envFrom
+RabbitMQ Secret envFrom (emits nothing when rabbitmq is disabled)
 */}}
 {{ define "llamacloud.secrets.rabbitmq" }}
+{{- if (.Values.rabbitmq).enabled }}
 {{- if (.Values.rabbitmq).secret }}
 - secretRef:
     name: {{ .Values.rabbitmq.secret }}
 {{- else }}
 - secretRef:
     name: "rabbitmq-secret"
+{{- end }}
 {{- end }}
 {{- end }}
 

@@ -10,3 +10,9 @@ data:
   DEPLOYMENT_MODE: "prod"
   PARSE_PREMIUM: "true"
   ALLOWED_INDEX: "true"
+{{- if not (.Values.mongodb).enabled }}
+  MONGO_DISABLED: "true"
+{{- end }}
+{{- if not (.Values.rabbitmq).enabled }}
+  AMQP_DISABLED: "true"
+{{- end }}

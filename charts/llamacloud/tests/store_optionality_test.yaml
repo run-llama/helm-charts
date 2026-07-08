@@ -1,0 +1,234 @@
+suite: store-optionality-tests
+
+# mongodb.enabled / rabbitmq.enabled (both default true). When false: the
+# store's secret is not rendered, no Deployment mounts it (the envFrom ref
+# would otherwise CreateContainerConfigError), the matching *_DISABLED env
+# is injected via common-config, and (rabbitmq only) the jobs-worker AMQP
+# consumer Deployment is not created.
+
+templates:
+- ../templates/llamacloud/configmaps/common.yaml
+- ../templates/llamacloud/deployment.yaml
+
+release:
+  name: test-release
+  namespace: test-namespace
+
+capabilities:
+  majorVersion: 1
+  minorVersion: 31
+  apiVersions:
+    - apps/v1
+
+chart:
+  appVersion: 0.0.0
+
+tests:
+# ---------------------------------------------------------------------------
+# Default state: no flag envs, secrets mounted, jobs-worker present
+# ---------------------------------------------------------------------------
+- it: default values inject no disable flags into common-config
+  template: ../templates/llamacloud/configmaps/common.yaml
+  asserts:
+    - notExists:
+        path: .data.MONGO_DISABLED
+    - notExists:
+        path: .data.AMQP_DISABLED
+
+- it: backend mounts mongodb and rabbitmq secrets by default
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud
+  asserts:
+    - contains:
+        path: spec.template.spec.containers[0].envFrom
+        content:
+          secretRef:
+            name: mongodb-secret
+    - contains:
+        path: spec.template.spec.containers[0].envFrom
+        content:
+          secretRef:
+            name: rabbitmq-secret
+
+- it: jobs-worker Deployment exists by default
+  template: ../templates/llamacloud/deployment.yaml
+  asserts:
+    - containsDocument:
+        any: true
+        kind: Deployment
+        apiVersion: apps/v1
+        name: llamacloud-worker
+        namespace: test-namespace
+
+# ---------------------------------------------------------------------------
+# mongodb.enabled=false
+# ---------------------------------------------------------------------------
+- it: mongodb disabled injects MONGO_DISABLED into common-config
+  set:
+    mongodb.enabled: false
+  template: ../templates/llamacloud/configmaps/common.yaml
+  asserts:
+    - equal:
+        path: .data.MONGO_DISABLED
+        value: "true"
+    - notExists:
+        path: .data.AMQP_DISABLED
+
+- it: mongodb disabled removes the mongodb envFrom ref from every Deployment
+  set:
+    mongodb.enabled: false
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: kind
+    value: Deployment
+    matchMany: true
+  asserts:
+    - notContains:
+        path: spec.template.spec.containers[0].envFrom
+        content:
+          secretRef:
+            name: mongodb-secret
+
+- it: mongodb disabled keeps the rabbitmq envFrom ref on backend
+  set:
+    mongodb.enabled: false
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud
+  asserts:
+    - contains:
+        path: spec.template.spec.containers[0].envFrom
+        content:
+          secretRef:
+            name: rabbitmq-secret
+
+- it: mongodb disabled still renders the jobs-service and temporal-jobs-worker Deployments
+  set:
+    mongodb.enabled: false
+  template: ../templates/llamacloud/deployment.yaml
+  asserts:
+    - containsDocument:
+        any: true
+        kind: Deployment
+        apiVersion: apps/v1
+        name: llamacloud-operator
+        namespace: test-namespace
+    - containsDocument:
+        any: true
+        kind: Deployment
+        apiVersion: apps/v1
+        name: temporal-jobs-worker
+        namespace: test-namespace
+
+# ---------------------------------------------------------------------------
+# rabbitmq.enabled=false
+# ---------------------------------------------------------------------------
+- it: rabbitmq disabled injects AMQP_DISABLED into common-config
+  set:
+    rabbitmq.enabled: false
+  template: ../templates/llamacloud/configmaps/common.yaml
+  asserts:
+    - equal:
+        path: .data.AMQP_DISABLED
+        value: "true"
+    - notExists:
+        path: .data.MONGO_DISABLED
+
+- it: rabbitmq disabled removes the rabbitmq envFrom ref from every Deployment
+  set:
+    rabbitmq.enabled: false
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: kind
+    value: Deployment
+    matchMany: true
+  asserts:
+    - notContains:
+        path: spec.template.spec.containers[0].envFrom
+        content:
+          secretRef:
+            name: rabbitmq-secret
+
+- it: rabbitmq disabled removes the jobs-worker Deployment
+  set:
+    rabbitmq.enabled: false
+  template: ../templates/llamacloud/deployment.yaml
+  asserts:
+    - not: true
+      containsDocument:
+        any: true
+        kind: Deployment
+        apiVersion: apps/v1
+        name: llamacloud-worker
+        namespace: test-namespace
+
+# ---------------------------------------------------------------------------
+# Both disabled (the parse+extract-only minimal shape)
+# ---------------------------------------------------------------------------
+- it: both stores disabled injects both flags
+  set:
+    mongodb.enabled: false
+    rabbitmq.enabled: false
+  template: ../templates/llamacloud/configmaps/common.yaml
+  asserts:
+    - equal:
+        path: .data.MONGO_DISABLED
+        value: "true"
+    - equal:
+        path: .data.AMQP_DISABLED
+        value: "true"
+
+- it: both stores disabled keeps backend, llamacloud-parse and temporal workers running
+  set:
+    mongodb.enabled: false
+    rabbitmq.enabled: false
+  template: ../templates/llamacloud/deployment.yaml
+  asserts:
+    - containsDocument:
+        any: true
+        kind: Deployment
+        apiVersion: apps/v1
+        name: llamacloud
+        namespace: test-namespace
+    - containsDocument:
+        any: true
+        kind: Deployment
+        apiVersion: apps/v1
+        name: llamacloud-parse
+        namespace: test-namespace
+    - containsDocument:
+        any: true
+        kind: Deployment
+        apiVersion: apps/v1
+        name: llamacloud-temporal-parse
+        namespace: test-namespace
+    - containsDocument:
+        any: true
+        kind: Deployment
+        apiVersion: apps/v1
+        name: temporal-jobs-worker
+        namespace: test-namespace
+
+- it: both stores disabled leaves no secretRef to either store anywhere
+  set:
+    mongodb.enabled: false
+    rabbitmq.enabled: false
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: kind
+    value: Deployment
+    matchMany: true
+  asserts:
+    - notContains:
+        path: spec.template.spec.containers[0].envFrom
+        content:
+          secretRef:
+            name: mongodb-secret
+    - notContains:
+        path: spec.template.spec.containers[0].envFrom
+        content:
+          secretRef:
+            name: rabbitmq-secret

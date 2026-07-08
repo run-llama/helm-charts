@@ -15,3 +15,6 @@ metadata:
 data:
   ## Read by frontend (server-only, non-NEXT_PUBLIC) and backend FeatureFlagSettings
   IS_AGENT_DEPLOYMENTS_ENABLED: {{ $llamaAgentsEnabled | quote }}
+  {{- with (((.Values.config).defaultIndex).destination) }}
+  DEFAULT_DIRECTORY_INDEX_DESTINATION: {{ . | quote }}
+  {{- end }}

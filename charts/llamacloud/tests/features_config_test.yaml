@@ -84,3 +84,31 @@ tests:
     - equal:
         path: .data.IS_AGENT_DEPLOYMENTS_ENABLED
         value: "false"
+
+- it: DEFAULT_DIRECTORY_INDEX_DESTINATION is absent when config.defaultIndex.destination is empty
+  template: ../templates/llamacloud/configmaps/features.yaml
+  asserts:
+    - notExists:
+        path: .data.DEFAULT_DIRECTORY_INDEX_DESTINATION
+
+- it: DEFAULT_DIRECTORY_INDEX_DESTINATION is set when config.defaultIndex.destination is turbopuffer
+  set:
+    config:
+      defaultIndex:
+        destination: turbopuffer
+  template: ../templates/llamacloud/configmaps/features.yaml
+  asserts:
+    - equal:
+        path: .data.DEFAULT_DIRECTORY_INDEX_DESTINATION
+        value: "turbopuffer"
+
+- it: DEFAULT_DIRECTORY_INDEX_DESTINATION is set when config.defaultIndex.destination is mongodb
+  set:
+    config:
+      defaultIndex:
+        destination: mongodb
+  template: ../templates/llamacloud/configmaps/features.yaml
+  asserts:
+    - equal:
+        path: .data.DEFAULT_DIRECTORY_INDEX_DESTINATION
+        value: "mongodb"
