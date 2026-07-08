@@ -1,0 +1,144 @@
+suite: profile-preset-tests
+
+# examples/profiles/minimal.yaml and full.yaml are preset overlays. minimal =
+# parse+extract-only (no mongo, no rabbit, v1 parse worker scaled to 0, index
+# destination pinned to postgres). full = every store on (identical to no
+# overlay). These tests assert the presets resolve to the intended shape;
+# store-optionality mechanics themselves are covered by store_optionality_test.
+
+templates:
+- ../templates/llamacloud/configmaps/common.yaml
+- ../templates/llamacloud/configmaps/features.yaml
+- ../templates/llamacloud/deployment.yaml
+
+release:
+  name: test-release
+  namespace: test-namespace
+
+capabilities:
+  majorVersion: 1
+  minorVersion: 31
+  apiVersions:
+    - apps/v1
+
+chart:
+  appVersion: 0.0.0
+
+tests:
+# ---------------------------------------------------------------------------
+# minimal.yaml
+# ---------------------------------------------------------------------------
+- it: minimal preset disables both stores
+  values:
+    - ../examples/profiles/minimal.yaml
+  template: ../templates/llamacloud/configmaps/common.yaml
+  asserts:
+    - equal:
+        path: .data.MONGO_DISABLED
+        value: "true"
+    - equal:
+        path: .data.AMQP_DISABLED
+        value: "true"
+
+- it: minimal preset pins default index destination to postgres
+  values:
+    - ../examples/profiles/minimal.yaml
+  template: ../templates/llamacloud/configmaps/features.yaml
+  asserts:
+    - equal:
+        path: .data.DEFAULT_DIRECTORY_INDEX_DESTINATION
+        value: postgres
+
+- it: minimal preset scales the v1 parse worker to zero
+  values:
+    - ../examples/profiles/minimal.yaml
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-parse
+  asserts:
+    - equal:
+        path: spec.replicas
+        value: 0
+
+- it: minimal preset drops the jobs-worker AMQP consumer
+  values:
+    - ../examples/profiles/minimal.yaml
+  template: ../templates/llamacloud/deployment.yaml
+  asserts:
+    - not: true
+      containsDocument:
+        any: true
+        kind: Deployment
+        apiVersion: apps/v1
+        name: llamacloud-worker
+        namespace: test-namespace
+
+- it: minimal preset keeps parse+extract stack (backend, temporal parse, temporal jobs worker)
+  values:
+    - ../examples/profiles/minimal.yaml
+  template: ../templates/llamacloud/deployment.yaml
+  asserts:
+    - containsDocument:
+        any: true
+        kind: Deployment
+        apiVersion: apps/v1
+        name: llamacloud
+        namespace: test-namespace
+    - containsDocument:
+        any: true
+        kind: Deployment
+        apiVersion: apps/v1
+        name: llamacloud-temporal-parse
+        namespace: test-namespace
+    - containsDocument:
+        any: true
+        kind: Deployment
+        apiVersion: apps/v1
+        name: temporal-jobs-worker
+        namespace: test-namespace
+
+- it: minimal preset mounts no store secrets anywhere
+  values:
+    - ../examples/profiles/minimal.yaml
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: kind
+    value: Deployment
+    matchMany: true
+  asserts:
+    - notContains:
+        path: spec.template.spec.containers[0].envFrom
+        content:
+          secretRef:
+            name: mongodb-secret
+    - notContains:
+        path: spec.template.spec.containers[0].envFrom
+        content:
+          secretRef:
+            name: rabbitmq-secret
+
+# ---------------------------------------------------------------------------
+# full.yaml (must equal the default / no-overlay behavior)
+# ---------------------------------------------------------------------------
+- it: full preset injects no disable flags
+  values:
+    - ../examples/profiles/full.yaml
+  template: ../templates/llamacloud/configmaps/common.yaml
+  asserts:
+    - notExists:
+        path: .data.MONGO_DISABLED
+    - notExists:
+        path: .data.AMQP_DISABLED
+
+- it: full preset keeps the jobs-worker Deployment and mounts both store secrets
+  values:
+    - ../examples/profiles/full.yaml
+  template: ../templates/llamacloud/deployment.yaml
+  asserts:
+    - containsDocument:
+        any: true
+        kind: Deployment
+        apiVersion: apps/v1
+        name: llamacloud-worker
+        namespace: test-namespace

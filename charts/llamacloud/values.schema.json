@@ -178,6 +178,9 @@
                 "defaultIndex": {
                     "type": "object",
                     "properties": {
+                        "destination": {
+                            "type": "string"
+                        },
                         "mongo": {
                             "type": "object",
                             "properties": {
@@ -1224,6 +1227,9 @@
         "mongodb": {
             "type": "object",
             "properties": {
+                "enabled": {
+                    "type": "boolean"
+                },
                 "host": {
                     "type": "string"
                 },
@@ -1317,6 +1323,9 @@
             "properties": {
                 "connectionString": {
                     "type": "string"
+                },
+                "enabled": {
+                    "type": "boolean"
                 },
                 "host": {
                     "type": "string"

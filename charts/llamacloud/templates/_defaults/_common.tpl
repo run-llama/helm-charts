@@ -111,7 +111,10 @@ Activated Components
 {{- $activated := dict }}
 {{- $activated = set $activated "backend" (include "llamacloud.component.backend" . | fromYaml) }}
 {{- $activated = set $activated "jobsService" (include "llamacloud.component.jobsService" . | fromYaml) }}
+{{- /* jobs-worker is the AMQP consumer; without RabbitMQ it has nothing to consume */}}
+{{- if (.Values.rabbitmq).enabled }}
 {{- $activated = set $activated "jobsWorker" (include "llamacloud.component.jobsWorker" . | fromYaml) }}
+{{- end }}
 {{- $activated = set $activated "llamaParse" (include "llamacloud.component.llamaParse" . | fromYaml) }}
 {{- $activated = set $activated "usage" (include "llamacloud.component.usage" . | fromYaml) }}
 {{- if (($.Values.config).frontend).enabled }}
