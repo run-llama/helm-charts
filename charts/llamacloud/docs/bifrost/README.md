@@ -26,7 +26,7 @@ bifrost-subchart:
   # Image tag is pre-pinned in the chart defaults to a stable Bifrost release.
   # Override only when you want to track a different Bifrost version.
   image:
-    tag: "v1.5.0"
+    tag: "v1.5.8"
 ```
 
 That renders a runnable Bifrost with no providers configured. The sections below add the real configuration you'll need.

@@ -1,75 +1,35 @@
 # Deploying LlamaCloud with S3Proxy
 
-The LlamaCloud Helm Chart supports the service [s3proxy](https://github.com/gaul/s3proxy) as a way to connect LlamaCloud services to different cloud filestores. There are a few ways to configure this service in the charts. The following examples will show you how to configure s3proxy to proxy to AWS S3 requests to the Azure Blob Storage.
+The LlamaCloud Helm Chart bundles [s3proxy](https://github.com/gaul/s3proxy) as an optional sidecar so LlamaCloud services can talk to non-AWS object stores (such as Azure Blob Storage or Google Cloud Storage) over an S3-compatible API. It is only used when your storage provider is `gcp` or `azure` — it is ignored for `aws`.
 
-## 1. Configure directly in the values.yaml
+## Enabling and configuring s3proxy
 
-Inside the `values.yaml`, there is a field, `.Values.s3proxy.config`, where you can provide the configurations directly.
-
-```yaml
-s3proxy:
-  enabled: true
-
-  config:
-    S3PROXY_ENDPOINT: "http://0.0.0.0:80"
-    S3PROXY_AUTHORIZATION: "none"
-    JCLOUDS_PROVIDER: "azureblob"
-    JCLOUDS_AZUREBLOB_AUTH: "azureKey"
-    JCLOUD_REGION: "<azure-region>"
-    JCLOUDS_IDENTITY: "<azure-storage-account-name>"
-    JCLOUDS_CREDENTIAL: "<azure-storage-account-key>"
-    JCLOUDS_ENDPOINT: "<azure-storage-account-endpoint>"
-
-```
-
-## 2. Use an existing secret or configmap
-
-The `values.yaml` provides a way to pass in an existing secret or configmap with the necessary configuration
+s3proxy is configured under `config.storageBuckets.s3proxy` in your `values.yaml`. Set `enabled: true` and supply the backend-specific settings under `config` as environment variables. The following example proxies S3 requests to Azure Blob Storage:
 
 ```yaml
-# existing-secret.yaml
-apiVersion: v1
-kind: Secret
-metadata:
-  name: existing-s3proxy-secret
-data:
-  S3PROXY_ENDPOINT: "http://0.0.0.0:80"
-  S3PROXY_AUTHORIZATION: "none"
-  JCLOUDS_PROVIDER: "azureblob"
-  JCLOUDS_AZUREBLOB_AUTH: "azureKey"
-  JCLOUD_REGION: "<azure-region>"
-  JCLOUDS_IDENTITY: "<azure-storage-account-name>"
-  JCLOUDS_CREDENTIAL: "<azure-storage-account-key>"
-  JCLOUDS_ENDPOINT: "<azure-storage-account-endpoint>"
-  
+config:
+  storageBuckets:
+    s3proxy:
+      enabled: true
 
-# values.yaml
-s3proxy:
-  enabled: true
-
-  envFromSecretName: existing-s3proxy-secret
+      config:
+        JCLOUDS_PROVIDER: "azureblob"
+        JCLOUDS_AZUREBLOB_AUTH: "azureKey"
+        JCLOUD_REGION: "<azure-region>"
+        JCLOUDS_IDENTITY: "<azure-storage-account-name>"
+        JCLOUDS_CREDENTIAL: "<azure-storage-account-key>"
+        JCLOUDS_ENDPOINT: "<azure-storage-account-endpoint>"
 ```
 
-## 3. Configure extra environment variables
+Everything you place under `config.storageBuckets.s3proxy.config` is rendered into the chart-managed `s3proxy-secret` Secret and injected into the sidecar. Use it for backend provider/credential settings like the `JCLOUDS_*` values above.
 
-The `values.yaml` also supports an `extraEnvVariables` field that adds envariable variable configuration to the s3proxy Deployment object.
+### Endpoint settings are managed for you
 
-```yaml
-# values.yaml
-s3proxy:
-  enabled: true
+You do **not** need to set `S3PROXY_ENDPOINT` or `S3PROXY_AUTHORIZATION` yourself. The chart generates them automatically from `config.storageBuckets.s3proxy.containerPort` (default `8080`), so the proxy always listens on `http://0.0.0.0:<containerPort>` with authorization disabled inside the pod. Setting these keys manually is unnecessary and can conflict with the generated values.
 
-  extraEnvVariables:
-  - name: S3PROXY_ENDPOINT
-    value: "http://0.0.0.0:80"
-  - name: JCLOUDS_CREDENTIAL
-    valueFrom:
-      secretKeyRef:
-        name: azure-secret
-        key: storage-account-key
-  - name: OTHER_VARIABLES
-    value: "other values"
-```
+### Other s3proxy settings
+
+Additional deployment knobs live alongside `config` under `config.storageBuckets.s3proxy`, including `image`, `imagePullPolicy`, `containerPort`, `logLevel`, `securityContext`, and `resources`. See the `@param` annotations in `values.yaml` for the full list and defaults.
 
 ## Documentation
 

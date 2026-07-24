@@ -8,13 +8,13 @@ helm -n <namespace> upgrade llamacloud llamaindex/llamacloud -f values.yaml --ve
 However, an extra step would be required for *downgrades*. This is primarly because the postgres database schemas will need to be migrated back to the versions they were at in the helm chart you are aiming to downgrade to.
 At a high level, you will first need to run this alembic downgrade within your deployment pod before being able to run the full helm-chart downgrade.
 
-For this, we've provided a utility script in this repo named [`helm_chart_alembic_version.sh`](../scripts/helm_chart_alembic_version.sh). Each helm chart is on a specific alembic migration version which indicates the state of the postgres database schema at the point in time the specific helm chart version was created.
+For this, we've provided a utility script in this repo named [`helm_chart_alembic_version.sh`](../../_internal/scripts/helm_chart_alembic_version.sh). Each helm chart is on a specific alembic migration version which indicates the state of the postgres database schema at the point in time the specific helm chart version was created.
 This script will simply print out this alembic migration version for a given helm chart version. Here are the steps to use this when performing a helm chart downgrade:
 1. Determine which helm chart version you would like to downgrade to
     - Consult our [CHANGELOG](../CHANGELOG.md) to see the changes in each version.
-1. Run the [`helm_chart_alembic_version.sh`](../scripts/helm_chart_alembic_version.sh) script with the helm-chart version you are downgrading to
-    - Usage: `./scripts/helm_chart_alembic_version.sh <version you are downgrading to>`
-        - e.g. `./scripts/helm_chart_alembic_version.sh 0.1.47` should print a alembic version of `f43d21f9cdb8`
+1. Run the [`helm_chart_alembic_version.sh`](../../_internal/scripts/helm_chart_alembic_version.sh) script with the helm-chart version you are downgrading to
+    - Usage: `infra/charts/_internal/scripts/helm_chart_alembic_version.sh <version you are downgrading to>` (run from the repo root)
+        - e.g. `infra/charts/_internal/scripts/helm_chart_alembic_version.sh 0.1.47` should print a alembic version of `f43d21f9cdb8`
     - This script may take a minute or two to finish
     - Copy/save the alembic version that is printed at the end of this script
 1. Run the downgrade command on the backend pod
