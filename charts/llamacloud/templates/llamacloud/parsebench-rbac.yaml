@@ -1,0 +1,37 @@
+{{- if .Values.parsebench.enabled }}
+# RBAC allowing the temporal-jobs-worker pod to create, monitor, and clean up
+# ParseBench Kubernetes Jobs.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ .Release.Name }}-parsebench-job-manager
+  namespace: {{ $.Release.Namespace | quote }}
+  labels: {{ include "llamacloud.labels" (dict "root" $) | indent 4 }}
+  annotations: {{ include "llamacloud.annotations" (dict "root" $) | indent 4 }}
+rules:
+- apiGroups: ["batch"]
+  resources: ["jobs"]
+  verbs: ["create", "get", "list", "watch", "delete"]
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: [""]
+  resources: ["pods/log"]
+  verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ .Release.Name }}-parsebench-job-manager
+  namespace: {{ $.Release.Namespace | quote }}
+  labels: {{ include "llamacloud.labels" (dict "root" $) | indent 4 }}
+  annotations: {{ include "llamacloud.annotations" (dict "root" $) | indent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ .Release.Name }}-parsebench-job-manager
+subjects:
+- kind: ServiceAccount
+  name: temporal-jobs-worker
+  namespace: {{ $.Release.Namespace | quote }}
+{{- end }}

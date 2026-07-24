@@ -65,11 +65,15 @@ kubectl get ns <namespace> -o json 2>/dev/null || kubectl auth can-i create name
 kubectl auth can-i create deployment,service,ingress,secret,job,configmap,serviceaccount,horizontalpodautoscaler,poddisruptionbudget,networkpolicy,role,rolebinding -n <namespace>
 ```
 
-Assertions:
+Assertions. The numeric minimums and GPU conditions come from the chart's
+`system-requirements.yaml` (chart root) — read it first and use its values; it is the
+single source of truth and moves with the chart version. The numbers quoted
+below are the 0.8.x values, kept as the fallback for older chart versions that
+predate `system-requirements.yaml`.
 
-- [ ] Server version `>= 1.28`. The chart's stated minimum.
-- [ ] Sum of `.status.allocatable.cpu` across all nodes `>= 12`. Sum of `.status.allocatable.memory` `>= 80Gi`. These are the chart's documented hardware minimums; deployments below that will pack tightly and may fail to schedule the larger workloads.
-- [ ] If `config.parseOcr.enabled: true` or `config.parseLayoutDetection.enabled: true` or `config.parseLayoutDetectionV3.enabled: true` → at least one node advertises `nvidia.com/gpu` in `.status.allocatable`. Without GPU nodes these pods stay `Pending` indefinitely.
+- [ ] Server version satisfies `platform.kubernetes` from system-requirements.yaml (fallback: `>= 1.28`).
+- [ ] Sum of `.status.allocatable.cpu` across all nodes `>= cluster.minimum.allocatableCpu` and sum of `.status.allocatable.memory` `>= cluster.minimum.allocatableMemory` (fallback: 12 CPUs / 80Gi). These assume default component sizing; deployments below that will pack tightly and may fail to schedule the larger workloads. For a values file that overrides `<component>.resources`, sum the per-component entries in `system-requirements.yaml` `components[]` (respecting each `enabledWhen`) instead of using the aggregate.
+- [ ] If any of the `cluster.gpu.requiredWhen` values expressions is true in the values file (fallback set: `config.parseOcr.gpu`, `config.parseLayoutDetection.gpu`, `config.parseLayoutDetectionV3.gpu`) → at least one node advertises the `cluster.gpu.resource` resource (default `nvidia.com/gpu`) in `.status.allocatable`. Without GPU nodes these pods stay `Pending` indefinitely. Note: `enabled: true` with `gpu: false` runs the CPU backend and does NOT need GPU nodes — the GPU requirement keys off the `gpu` flags, not `enabled`.
 - [ ] At least one StorageClass exists, and either it is annotated as the default (`storageclass.kubernetes.io/is-default-class: "true"`) or the user has configured `storageClassName` explicitly on PVC-using subcharts. Temporal subchart, if deployed, needs PVCs.
 - [ ] `kubectl auth can-i` returns `yes` for each required resource type in the target namespace. Discovering RBAC gaps now beats discovering them 15 minutes into the install.
 

@@ -110,3 +110,172 @@ tests:
   asserts:
     - isKind:
         of: Secret
+
+# --- Strictness tests: unknown keys in chart-owned sections are rejected, ---
+# --- subchart pass-through sections stay open.                            ---
+
+- it: rejects an unknown top-level key (typo of backend)
+  set:
+    backned:
+      image: docker.io/llamaindex/llamacloud-backend:0.0.0
+  template: ../templates/llamacloud/secrets/license.yaml
+  asserts:
+    - failedTemplate:
+        errorPattern: "additional properties 'backned' not allowed"
+
+- it: rejects an unknown key inside a chart-owned section
+  set:
+    backend:
+      imagePullPolice: Always
+  template: ../templates/llamacloud/secrets/license.yaml
+  asserts:
+    - failedTemplate:
+        errorPattern: "at '/backend': additional properties 'imagePullPolice' not allowed"
+
+- it: rejects a typo'd model concurrency key (silently ignored before strict schema)
+  set:
+    config:
+      parse:
+        concurrency:
+          geminy25Flash: "3"
+  template: ../templates/llamacloud/secrets/license.yaml
+  asserts:
+    - failedTemplate:
+        errorPattern: "at '/config/parse/concurrency': additional properties 'geminy25Flash' not allowed"
+
+- it: rejects the misspelled Bedrock model key that shipped in full-llm-config.yaml
+  set:
+    config:
+      llms:
+        awsBedrock:
+          haiku3_5_ModelVersionName: "anthropic.claude-3-5-haiku-20241022-v1:0"
+  template: ../templates/llamacloud/secrets/license.yaml
+  asserts:
+    - failedTemplate:
+        errorPattern: "at '/config/llms/awsBedrock': additional properties 'haiku3_5_ModelVersionName' not allowed"
+
+- it: rejects a logLevel typo (pattern) but accepts any casing the backend accepts
+  # logLevel is a case-insensitive pattern, not an enum: the backend does
+  # .strip().upper() before validating, so Title/mixed case must pass (a plain
+  # enum would reject "Warning" that installs fine today — a backward-compat break).
+  set:
+    config:
+      logLevel: TRACE
+  template: ../templates/llamacloud/secrets/license.yaml
+  asserts:
+    - failedTemplate:
+        errorPattern: "at '/config/logLevel'"
+
+- it: accepts Title-case logLevel (backward-compat with pre-schema free-string values)
+  set:
+    config:
+      logLevel: Warning
+  template: ../templates/llamacloud/secrets/license.yaml
+  asserts:
+    - isKind:
+        of: Secret
+
+- it: rejects a value outside the storage provider enum
+  set:
+    config:
+      storageBuckets:
+        provider: ibm
+  template: ../templates/llamacloud/secrets/license.yaml
+  asserts:
+    - failedTemplate:
+        errorPattern: "at '/config/storageBuckets/provider'"
+
+- it: rejects a value outside the imagePullPolicy enum
+  set:
+    backend:
+      imagePullPolicy: Sometimes
+  template: ../templates/llamacloud/secrets/license.yaml
+  asserts:
+    - failedTemplate:
+        errorPattern: "at '/backend/imagePullPolicy'"
+
+- it: accepts a bare/null cosmetic section (no root 'required' — preserves the common YAML idiom)
+  # The schema intentionally omits `required`: additionalProperties:false already
+  # rejects typos, while `required` would only ever reject `section:` written bare
+  # (helm coalesces that to null and deletes it) — a common idiom that installs fine
+  # today. Guards against `required` being reintroduced.
+  set:
+    imagePullSecrets: null
+    commonLabels: null
+  template: ../templates/llamacloud/secrets/license.yaml
+  asserts:
+    - isKind:
+        of: Secret
+
+- it: accepts arbitrary keys inside subchart pass-through sections
+  set:
+    temporal-subchart:
+      server:
+        replicaCount: 3
+        someFutureUpstreamKey: value
+    bifrost-subchart:
+      bifrost:
+        providers:
+          openai:
+            keys: []
+    llama-agents-subchart:
+      apps:
+        someFutureUpstreamKey: value
+      operator:
+        replicaCount: 2
+    kube-prometheus-stack-subchart:
+      grafana:
+        adminPassword: not-a-real-password
+      prometheus:
+        prometheusSpec:
+          retention: 30d
+  template: ../templates/llamacloud/secrets/license.yaml
+  asserts:
+    - isKind:
+        of: Secret
+
+- it: accepts the Helm-reserved global key
+  set:
+    global:
+      imageRegistry: registry.example.com
+  template: ../templates/llamacloud/secrets/license.yaml
+  asserts:
+    - isKind:
+        of: Secret
+
+- it: accepts replicas and command on component sections
+  set:
+    llamaParse:
+      replicas: 0
+    backend:
+      replicas: 3
+      command: ["python", "-m", "app"]
+  template: ../templates/llamacloud/secrets/license.yaml
+  asserts:
+    - isKind:
+        of: Secret
+
+- it: accepts arbitrary worker names under temporalWorkloads.workers
+  set:
+    temporalWorkloads:
+      workers:
+        my-new-worker:
+          image: docker.io/llamaindex/llamacloud-backend:0.0.0
+          command: ["worker"]
+  template: ../templates/llamacloud/secrets/license.yaml
+  asserts:
+    - isKind:
+        of: Secret
+
+- it: accepts arbitrary keys inside free-form component maps
+  set:
+    backend:
+      nodeSelector:
+        Repository: llamacloud
+        Digest: abc123
+      annotations:
+        example.com/arbitrary: "yes"
+  template: ../templates/llamacloud/secrets/license.yaml
+  asserts:
+    - isKind:
+        of: Secret

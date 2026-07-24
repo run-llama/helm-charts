@@ -112,3 +112,20 @@ tests:
     - equal:
         path: .data.DEFAULT_DIRECTORY_INDEX_DESTINATION
         value: "mongodb"
+
+- it: IS_MANAGED_EMBEDDINGS_ENABLED is absent by default
+  template: ../templates/llamacloud/configmaps/features.yaml
+  asserts:
+    - notExists:
+        path: .data.IS_MANAGED_EMBEDDINGS_ENABLED
+
+- it: IS_MANAGED_EMBEDDINGS_ENABLED is set when config.managedEmbeddings.enabled is true
+  set:
+    config:
+      managedEmbeddings:
+        enabled: true
+  template: ../templates/llamacloud/configmaps/features.yaml
+  asserts:
+    - equal:
+        path: .data.IS_MANAGED_EMBEDDINGS_ENABLED
+        value: "true"

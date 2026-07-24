@@ -1,5 +1,30 @@
 # CHANGELOG
 
+## [0.8.6] - 2026-07-21
+
+### Platform
+- **[Security]** Security updates
+- **[Feature]** Usage metrics API - organization-scoped aggregation for billing and reporting
+
+
+### Parse
+- **[Feature]** Form parsing — extract form fields and tables from documents
+- **[Feature]** Support for .log and TIFF files
+
+### Extract
+- **[Improvement]**  Turbo tier — a faster extraction option
+- **[Feature]** Agentic Plus — a new agentic extraction mode with a visual planner
+- **[Improvement]** Support for additional extraction models
+
+
+### Edit
+- **[Improvement]**  New capability - fill PDF forms automatically using AI-mapped templates and field detection
+
+### App
+- **[Improvement]** Dark mode
+
+
+
 ## [0.8.5] - 2026-07-07
 
 ### Platform

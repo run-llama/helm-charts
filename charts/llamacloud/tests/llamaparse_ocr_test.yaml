@@ -145,10 +145,10 @@ tests:
     - hasDocuments:
         count: 0
 
-- it: should not create a PDB if llamaParseOcr has no podDisruptionBudgetSpec
+- it: should not create a PDB if llamaParseOcr has no horizontalPodAutoscalerSpec
   set:
     config.parseOcr.enabled: true
-    llamaParseOcr.podDisruptionBudgetSpec: null
+    llamaParseOcr.horizontalPodAutoscalerSpec: null
   template: ../templates/llamacloud/pdb.yaml
   asserts:
     - hasDocuments:

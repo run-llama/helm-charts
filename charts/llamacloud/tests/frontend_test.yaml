@@ -82,8 +82,6 @@ tests:
     config.parseOcr.enabled: false
     config.parseLayoutDetection.enabled: false
     ingress.enabled: false
-    backend.name: backend
-    backend.service.port: 8000
   documentIndex: 1
   template: ../templates/llamacloud/deployment.yaml
   asserts:
