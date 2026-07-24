@@ -46,3 +46,27 @@ tests:
           value: "1048576"
       - isNull:
           path: data.TEMPORAL_EXTERNAL_PAYLOAD_STORAGE_BYPASS_WORKFLOW_TYPES
+
+  - it: should honor config.temporal.workerRegistryProfile (was read from config.workerRegistryProfile, a key the values contract never documented)
+    set:
+      temporal.deploy: false
+      temporal.host: "temporal.example.com"
+      temporal.port: 7233
+      config.temporal.workerRegistryProfile: "default"
+    template: ../templates/llamacloud/configmaps/temporal.yaml
+    asserts:
+      - equal:
+          path: data.TEMPORAL_WORKER_REGISTRY_PROFILE
+          value: "default"
+
+  - it: should fall back to the consolidated worker registry profile when unset
+    set:
+      temporal.deploy: false
+      temporal.host: "temporal.example.com"
+      temporal.port: 7233
+      config.temporal.workerRegistryProfile: ""
+    template: ../templates/llamacloud/configmaps/temporal.yaml
+    asserts:
+      - equal:
+          path: data.TEMPORAL_WORKER_REGISTRY_PROFILE
+          value: "consolidated"

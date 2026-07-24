@@ -11,6 +11,9 @@
                 "annotations": {
                     "type": "object"
                 },
+                "command": {
+                    "type": "array"
+                },
                 "extraEnvVariables": {
                     "type": "array"
                 },
@@ -21,7 +24,13 @@
                     "type": "string"
                 },
                 "imagePullPolicy": {
-                    "type": "string"
+                    "type": "string",
+                    "enum": [
+                        "",
+                        "Always",
+                        "IfNotPresent",
+                        "Never"
+                    ]
                 },
                 "nodeSelector": {
                     "type": "object"
@@ -31,6 +40,13 @@
                 },
                 "podSecurityContext": {
                     "type": "object"
+                },
+                "replicas": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "minimum": 0
                 },
                 "resources": {
                     "type": "object"
@@ -53,7 +69,8 @@
                 "volumes": {
                     "type": "array"
                 }
-            }
+            },
+            "additionalProperties": false
         },
         "bifrost": {
             "type": "object",
@@ -61,7 +78,8 @@
                 "deploy": {
                     "type": "boolean"
                 }
-            }
+            },
+            "additionalProperties": false
         },
         "bifrost-subchart": {
             "type": "object",
@@ -116,7 +134,8 @@
                                 "validEmailDomain": {
                                     "type": "string"
                                 }
-                            }
+                            },
+                            "additionalProperties": false
                         },
                         "customerConfigured": {
                             "type": "object",
@@ -151,7 +170,8 @@
                                 "webClientId": {
                                     "type": "string"
                                 }
-                            }
+                            },
+                            "additionalProperties": false
                         },
                         "oidc": {
                             "type": "object",
@@ -171,15 +191,23 @@
                                 "secret": {
                                     "type": "string"
                                 }
-                            }
+                            },
+                            "additionalProperties": false
                         }
-                    }
+                    },
+                    "additionalProperties": false
                 },
                 "defaultIndex": {
                     "type": "object",
                     "properties": {
                         "destination": {
-                            "type": "string"
+                            "type": "string",
+                            "enum": [
+                                "",
+                                "turbopuffer",
+                                "mongodb",
+                                "postgres"
+                            ]
                         },
                         "mongo": {
                             "type": "object",
@@ -193,7 +221,29 @@
                                 "uri": {
                                     "type": "string"
                                 }
-                            }
+                            },
+                            "additionalProperties": false
+                        },
+                        "postgres": {
+                            "type": "object",
+                            "properties": {
+                                "database": {
+                                    "type": "string"
+                                },
+                                "host": {
+                                    "type": "string"
+                                },
+                                "password": {
+                                    "type": "string"
+                                },
+                                "port": {
+                                    "type": "string"
+                                },
+                                "username": {
+                                    "type": "string"
+                                }
+                            },
+                            "additionalProperties": false
                         },
                         "secret": {
                             "type": "string"
@@ -210,9 +260,11 @@
                                 "region": {
                                     "type": "string"
                                 }
-                            }
+                            },
+                            "additionalProperties": false
                         }
-                    }
+                    },
+                    "additionalProperties": false
                 },
                 "extraction": {
                     "type": "object",
@@ -229,7 +281,8 @@
                         "schemaGenerationModel": {
                             "type": "string"
                         }
-                    }
+                    },
+                    "additionalProperties": false
                 },
                 "frontend": {
                     "type": "object",
@@ -237,7 +290,8 @@
                         "enabled": {
                             "type": "boolean"
                         }
-                    }
+                    },
+                    "additionalProperties": false
                 },
                 "jobCleanup": {
                     "type": "object",
@@ -251,7 +305,8 @@
                                 "retentionDays": {
                                     "type": "integer"
                                 }
-                            }
+                            },
+                            "additionalProperties": false
                         },
                         "extract": {
                             "type": "object",
@@ -262,7 +317,8 @@
                                 "retentionDays": {
                                     "type": "integer"
                                 }
-                            }
+                            },
+                            "additionalProperties": false
                         },
                         "parse": {
                             "type": "object",
@@ -273,9 +329,11 @@
                                 "retentionDays": {
                                     "type": "integer"
                                 }
-                            }
+                            },
+                            "additionalProperties": false
                         }
-                    }
+                    },
+                    "additionalProperties": false
                 },
                 "jobs": {
                     "type": "object",
@@ -298,7 +356,8 @@
                         "transformEmbeddingCharLimit": {
                             "type": "string"
                         }
-                    }
+                    },
+                    "additionalProperties": false
                 },
                 "llms": {
                     "type": "object",
@@ -315,7 +374,8 @@
                                 "secret": {
                                     "type": "string"
                                 }
-                            }
+                            },
+                            "additionalProperties": false
                         },
                         "awsBedrock": {
                             "type": "object",
@@ -350,7 +410,8 @@
                                 "sonnet4_5ModelVersionName": {
                                     "type": "string"
                                 }
-                            }
+                            },
+                            "additionalProperties": false
                         },
                         "azureOpenAi": {
                             "type": "object",
@@ -361,7 +422,8 @@
                                 "secret": {
                                     "type": "string"
                                 }
-                            }
+                            },
+                            "additionalProperties": false
                         },
                         "gemini": {
                             "type": "object",
@@ -375,7 +437,8 @@
                                 "secret": {
                                     "type": "string"
                                 }
-                            }
+                            },
+                            "additionalProperties": false
                         },
                         "googleVertexAi": {
                             "type": "object",
@@ -395,7 +458,8 @@
                                 "secret": {
                                     "type": "string"
                                 }
-                            }
+                            },
+                            "additionalProperties": false
                         },
                         "openAi": {
                             "type": "object",
@@ -409,15 +473,27 @@
                                 "secret": {
                                     "type": "string"
                                 }
-                            }
+                            },
+                            "additionalProperties": false
                         },
                         "providerConfigs": {
                             "type": "array"
                         }
-                    }
+                    },
+                    "additionalProperties": false
                 },
                 "logLevel": {
-                    "type": "string"
+                    "type": "string",
+                    "pattern": "^(?i)(debug|info|warning|error|critical)?$"
+                },
+                "managedEmbeddings": {
+                    "type": "object",
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean"
+                        }
+                    },
+                    "additionalProperties": false
                 },
                 "parse": {
                     "type": "object",
@@ -515,7 +591,8 @@
                                 "premiumModeModelConcurrency": {
                                     "type": "string"
                                 }
-                            }
+                            },
+                            "additionalProperties": false
                         },
                         "debugMode": {
                             "type": "boolean"
@@ -526,7 +603,8 @@
                         "preferedPremiumModel": {
                             "type": "string"
                         }
-                    }
+                    },
+                    "additionalProperties": false
                 },
                 "parseLayoutDetection": {
                     "type": "object",
@@ -537,7 +615,8 @@
                         "gpu": {
                             "type": "boolean"
                         }
-                    }
+                    },
+                    "additionalProperties": false
                 },
                 "parseLayoutDetectionV3": {
                     "type": "object",
@@ -548,7 +627,8 @@
                         "gpu": {
                             "type": "boolean"
                         }
-                    }
+                    },
+                    "additionalProperties": false
                 },
                 "parseOcr": {
                     "type": "object",
@@ -559,7 +639,8 @@
                         "gpu": {
                             "type": "boolean"
                         }
-                    }
+                    },
+                    "additionalProperties": false
                 },
                 "rateLimits": {
                     "type": "object",
@@ -615,7 +696,8 @@
                         "usageApiQueryQps": {
                             "type": "integer"
                         }
-                    }
+                    },
+                    "additionalProperties": false
                 },
                 "storageBuckets": {
                     "type": "object",
@@ -654,7 +736,13 @@
                             "type": "string"
                         },
                         "provider": {
-                            "type": "string"
+                            "type": "string",
+                            "enum": [
+                                "",
+                                "aws",
+                                "gcp",
+                                "azure"
+                            ]
                         },
                         "s3proxy": {
                             "type": "object",
@@ -672,6 +760,15 @@
                                     "type": "string"
                                 },
                                 "imagePullPolicy": {
+                                    "type": "string",
+                                    "enum": [
+                                        "",
+                                        "Always",
+                                        "IfNotPresent",
+                                        "Never"
+                                    ]
+                                },
+                                "logLevel": {
                                     "type": "string"
                                 },
                                 "resources": {
@@ -680,12 +777,14 @@
                                 "securityContext": {
                                     "type": "object"
                                 }
-                            }
+                            },
+                            "additionalProperties": false
                         },
                         "signatureVersion": {
                             "type": "string"
                         }
-                    }
+                    },
+                    "additionalProperties": false
                 },
                 "temporal": {
                     "type": "object",
@@ -702,7 +801,8 @@
                                 "thresholdBytes": {
                                     "type": "string"
                                 }
-                            }
+                            },
+                            "additionalProperties": false
                         },
                         "jobCleanup": {
                             "type": "object",
@@ -710,7 +810,8 @@
                                 "image": {
                                     "type": "string"
                                 }
-                            }
+                            },
+                            "additionalProperties": false
                         },
                         "namespace": {
                             "type": "string"
@@ -738,14 +839,31 @@
                                 "image": {
                                     "type": "string"
                                 }
-                            }
+                            },
+                            "additionalProperties": false
                         },
                         "workerRegistryProfile": {
-                            "type": "string"
+                            "type": "string",
+                            "enum": [
+                                "",
+                                "default",
+                                "consolidated"
+                            ]
                         }
-                    }
+                    },
+                    "additionalProperties": false
+                },
+                "v1": {
+                    "type": "object",
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean"
+                        }
+                    },
+                    "additionalProperties": false
                 }
-            }
+            },
+            "additionalProperties": false
         },
         "extraObjects": {
             "type": "array"
@@ -759,6 +877,9 @@
                 "annotations": {
                     "type": "object"
                 },
+                "command": {
+                    "type": "array"
+                },
                 "extraEnvVariables": {
                     "type": "array"
                 },
@@ -769,7 +890,13 @@
                     "type": "string"
                 },
                 "imagePullPolicy": {
-                    "type": "string"
+                    "type": "string",
+                    "enum": [
+                        "",
+                        "Always",
+                        "IfNotPresent",
+                        "Never"
+                    ]
                 },
                 "nodeSelector": {
                     "type": "object"
@@ -779,6 +906,13 @@
                 },
                 "podSecurityContext": {
                     "type": "object"
+                },
+                "replicas": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "minimum": 0
                 },
                 "resources": {
                     "type": "object"
@@ -801,7 +935,16 @@
                 "volumes": {
                     "type": "array"
                 }
-            }
+            },
+            "additionalProperties": false
+        },
+        "global": {
+            "description": "Global values shared between all subcharts",
+            "$comment": "Added automatically by 'helm schema' to allow this chart to be used as a Helm dependency, as the `additionalProperties` setting would otherwise collide with Helm's special 'global' values key.",
+            "type": [
+                "object",
+                "null"
+            ]
         },
         "imagePullSecrets": {
             "type": "array"
@@ -824,7 +967,8 @@
                 "tlsSecretName": {
                     "type": "string"
                 }
-            }
+            },
+            "additionalProperties": false
         },
         "jobsService": {
             "type": "object",
@@ -835,6 +979,9 @@
                 "annotations": {
                     "type": "object"
                 },
+                "command": {
+                    "type": "array"
+                },
                 "extraEnvVariables": {
                     "type": "array"
                 },
@@ -845,7 +992,13 @@
                     "type": "string"
                 },
                 "imagePullPolicy": {
-                    "type": "string"
+                    "type": "string",
+                    "enum": [
+                        "",
+                        "Always",
+                        "IfNotPresent",
+                        "Never"
+                    ]
                 },
                 "nodeSelector": {
                     "type": "object"
@@ -855,6 +1008,13 @@
                 },
                 "podSecurityContext": {
                     "type": "object"
+                },
+                "replicas": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "minimum": 0
                 },
                 "resources": {
                     "type": "object"
@@ -877,7 +1037,8 @@
                 "volumes": {
                     "type": "array"
                 }
-            }
+            },
+            "additionalProperties": false
         },
         "jobsWorker": {
             "type": "object",
@@ -888,6 +1049,9 @@
                 "annotations": {
                     "type": "object"
                 },
+                "command": {
+                    "type": "array"
+                },
                 "extraEnvVariables": {
                     "type": "array"
                 },
@@ -898,7 +1062,13 @@
                     "type": "string"
                 },
                 "imagePullPolicy": {
-                    "type": "string"
+                    "type": "string",
+                    "enum": [
+                        "",
+                        "Always",
+                        "IfNotPresent",
+                        "Never"
+                    ]
                 },
                 "nodeSelector": {
                     "type": "object"
@@ -908,6 +1078,13 @@
                 },
                 "podSecurityContext": {
                     "type": "object"
+                },
+                "replicas": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "minimum": 0
                 },
                 "resources": {
                     "type": "object"
@@ -930,7 +1107,8 @@
                 "volumes": {
                     "type": "array"
                 }
-            }
+            },
+            "additionalProperties": false
         },
         "kube-prometheus-stack-subchart": {
             "type": "object",
@@ -954,7 +1132,8 @@
                 "secret": {
                     "type": "string"
                 }
-            }
+            },
+            "additionalProperties": false
         },
         "llama-agents-subchart": {
             "type": "object",
@@ -996,7 +1175,8 @@
                 "useBackendPublicUrl": {
                     "type": "boolean"
                 }
-            }
+            },
+            "additionalProperties": false
         },
         "llamaParse": {
             "type": "object",
@@ -1007,6 +1187,9 @@
                 "annotations": {
                     "type": "object"
                 },
+                "command": {
+                    "type": "array"
+                },
                 "extraEnvVariables": {
                     "type": "array"
                 },
@@ -1017,7 +1200,13 @@
                     "type": "string"
                 },
                 "imagePullPolicy": {
-                    "type": "string"
+                    "type": "string",
+                    "enum": [
+                        "",
+                        "Always",
+                        "IfNotPresent",
+                        "Never"
+                    ]
                 },
                 "nodeSelector": {
                     "type": "object"
@@ -1027,6 +1216,13 @@
                 },
                 "podSecurityContext": {
                     "type": "object"
+                },
+                "replicas": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "minimum": 0
                 },
                 "resources": {
                     "type": "object"
@@ -1049,7 +1245,8 @@
                 "volumes": {
                     "type": "array"
                 }
-            }
+            },
+            "additionalProperties": false
         },
         "llamaParseLayoutDetectionApi": {
             "type": "object",
@@ -1060,6 +1257,9 @@
                 "annotations": {
                     "type": "object"
                 },
+                "command": {
+                    "type": "array"
+                },
                 "extraEnvVariables": {
                     "type": "array"
                 },
@@ -1070,7 +1270,13 @@
                     "type": "string"
                 },
                 "imagePullPolicy": {
-                    "type": "string"
+                    "type": "string",
+                    "enum": [
+                        "",
+                        "Always",
+                        "IfNotPresent",
+                        "Never"
+                    ]
                 },
                 "nodeSelector": {
                     "type": "object"
@@ -1080,6 +1286,13 @@
                 },
                 "podSecurityContext": {
                     "type": "object"
+                },
+                "replicas": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "minimum": 0
                 },
                 "resources": {
                     "type": "object"
@@ -1102,7 +1315,8 @@
                 "volumes": {
                     "type": "array"
                 }
-            }
+            },
+            "additionalProperties": false
         },
         "llamaParseLayoutDetectionApiV3": {
             "type": "object",
@@ -1113,6 +1327,9 @@
                 "annotations": {
                     "type": "object"
                 },
+                "command": {
+                    "type": "array"
+                },
                 "extraEnvVariables": {
                     "type": "array"
                 },
@@ -1130,7 +1347,13 @@
                     "type": "string"
                 },
                 "imagePullPolicy": {
-                    "type": "string"
+                    "type": "string",
+                    "enum": [
+                        "",
+                        "Always",
+                        "IfNotPresent",
+                        "Never"
+                    ]
                 },
                 "nodeSelector": {
                     "type": "object"
@@ -1140,6 +1363,13 @@
                 },
                 "podSecurityContext": {
                     "type": "object"
+                },
+                "replicas": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "minimum": 0
                 },
                 "resources": {
                     "type": "object"
@@ -1162,7 +1392,8 @@
                 "volumes": {
                     "type": "array"
                 }
-            }
+            },
+            "additionalProperties": false
         },
         "llamaParseOcr": {
             "type": "object",
@@ -1173,6 +1404,9 @@
                 "annotations": {
                     "type": "object"
                 },
+                "command": {
+                    "type": "array"
+                },
                 "extraEnvVariables": {
                     "type": "array"
                 },
@@ -1190,7 +1424,13 @@
                     "type": "string"
                 },
                 "imagePullPolicy": {
-                    "type": "string"
+                    "type": "string",
+                    "enum": [
+                        "",
+                        "Always",
+                        "IfNotPresent",
+                        "Never"
+                    ]
                 },
                 "nodeSelector": {
                     "type": "object"
@@ -1200,6 +1440,13 @@
                 },
                 "podSecurityContext": {
                     "type": "object"
+                },
+                "replicas": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "minimum": 0
                 },
                 "resources": {
                     "type": "object"
@@ -1222,7 +1469,8 @@
                 "volumes": {
                     "type": "array"
                 }
-            }
+            },
+            "additionalProperties": false
         },
         "mongodb": {
             "type": "object",
@@ -1243,7 +1491,12 @@
                     "type": "string"
                 },
                 "scheme": {
-                    "type": "string"
+                    "type": "string",
+                    "enum": [
+                        "",
+                        "mongodb",
+                        "mongodb+srv"
+                    ]
                 },
                 "secret": {
                     "type": "string"
@@ -1251,7 +1504,8 @@
                 "username": {
                     "type": "string"
                 }
-            }
+            },
+            "additionalProperties": false
         },
         "monitoring": {
             "type": "object",
@@ -1274,9 +1528,38 @@
                         "scrapeTimeout": {
                             "type": "string"
                         }
-                    }
+                    },
+                    "additionalProperties": false
                 }
-            }
+            },
+            "additionalProperties": false
+        },
+        "parsebench": {
+            "type": "object",
+            "properties": {
+                "apiKey": {
+                    "type": "string"
+                },
+                "apiKeySecretName": {
+                    "type": "string"
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "image": {
+                    "type": "string"
+                },
+                "imagePullPolicy": {
+                    "type": "string",
+                    "enum": [
+                        "",
+                        "Always",
+                        "IfNotPresent",
+                        "Never"
+                    ]
+                }
+            },
+            "additionalProperties": false
         },
         "postgresql": {
             "type": "object",
@@ -1299,7 +1582,8 @@
                 "username": {
                     "type": "string"
                 }
-            }
+            },
+            "additionalProperties": false
         },
         "qdrant": {
             "type": "object",
@@ -1316,7 +1600,8 @@
                 "url": {
                     "type": "string"
                 }
-            }
+            },
+            "additionalProperties": false
         },
         "rabbitmq": {
             "type": "object",
@@ -1337,7 +1622,12 @@
                     "type": "string"
                 },
                 "scheme": {
-                    "type": "string"
+                    "type": "string",
+                    "enum": [
+                        "",
+                        "amqp",
+                        "amqps"
+                    ]
                 },
                 "secret": {
                     "type": "string"
@@ -1345,7 +1635,8 @@
                 "username": {
                     "type": "string"
                 }
-            }
+            },
+            "additionalProperties": false
         },
         "redis": {
             "type": "object",
@@ -1363,7 +1654,12 @@
                     "type": "string"
                 },
                 "scheme": {
-                    "type": "string"
+                    "type": "string",
+                    "enum": [
+                        "",
+                        "redis",
+                        "rediss"
+                    ]
                 },
                 "secret": {
                     "type": "string"
@@ -1371,7 +1667,8 @@
                 "username": {
                     "type": "string"
                 }
-            }
+            },
+            "additionalProperties": false
         },
         "temporal": {
             "type": "object",
@@ -1388,7 +1685,8 @@
                 "port": {
                     "type": "integer"
                 }
-            }
+            },
+            "additionalProperties": false
         },
         "temporal-subchart": {
             "type": "object",
@@ -1605,6 +1903,9 @@
                         "annotations": {
                             "type": "object"
                         },
+                        "command": {
+                            "type": "array"
+                        },
                         "extraEnvVariables": {
                             "type": "array"
                         },
@@ -1615,7 +1916,13 @@
                             "type": "string"
                         },
                         "imagePullPolicy": {
-                            "type": "string"
+                            "type": "string",
+                            "enum": [
+                                "",
+                                "Always",
+                                "IfNotPresent",
+                                "Never"
+                            ]
                         },
                         "nodeSelector": {
                             "type": "object"
@@ -1625,6 +1932,13 @@
                         },
                         "podSecurityContext": {
                             "type": "object"
+                        },
+                        "replicas": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ],
+                            "minimum": 0
                         },
                         "resources": {
                             "type": "object"
@@ -1647,7 +1961,8 @@
                         "volumes": {
                             "type": "array"
                         }
-                    }
+                    },
+                    "additionalProperties": false
                 },
                 "workers": {
                     "type": "object",
@@ -1674,7 +1989,13 @@
                                     "type": "string"
                                 },
                                 "imagePullPolicy": {
-                                    "type": "string"
+                                    "type": "string",
+                                    "enum": [
+                                        "",
+                                        "Always",
+                                        "IfNotPresent",
+                                        "Never"
+                                    ]
                                 },
                                 "nodeSelector": {
                                     "type": "object"
@@ -1710,7 +2031,8 @@
                         }
                     }
                 }
-            }
+            },
+            "additionalProperties": false
         },
         "usage": {
             "type": "object",
@@ -1720,6 +2042,9 @@
                 },
                 "annotations": {
                     "type": "object"
+                },
+                "command": {
+                    "type": "array"
                 },
                 "extraEnvVariables": {
                     "type": "array"
@@ -1731,7 +2056,13 @@
                     "type": "string"
                 },
                 "imagePullPolicy": {
-                    "type": "string"
+                    "type": "string",
+                    "enum": [
+                        "",
+                        "Always",
+                        "IfNotPresent",
+                        "Never"
+                    ]
                 },
                 "nodeSelector": {
                     "type": "object"
@@ -1741,6 +2072,13 @@
                 },
                 "podSecurityContext": {
                     "type": "object"
+                },
+                "replicas": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "minimum": 0
                 },
                 "resources": {
                     "type": "object"
@@ -1763,7 +2101,9 @@
                 "volumes": {
                     "type": "array"
                 }
-            }
+            },
+            "additionalProperties": false
         }
-    }
+    },
+    "additionalProperties": false
 }

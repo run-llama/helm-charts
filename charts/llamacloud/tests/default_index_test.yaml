@@ -64,7 +64,7 @@ tests:
     - isNull:
         path: .data.DEFAULT_INDEX_TPUF_REGION
 
-- it: turbopuffer-only configuration renders without mongo keys
+- it: turbopuffer-only configuration renders without mongo or postgres keys
   set:
     config:
       defaultIndex:
@@ -77,6 +77,149 @@ tests:
         value: dHB1Zi10ZXN0LWtleQ==  # base64("tpuf-test-key")
     - isNull:
         path: .data.DEFAULT_INDEX_MONGO_URI
+    - isNull:
+        path: .data.DEFAULT_INDEX_PG_HOST
+
+- it: postgres destination inherits inline postgresql values
+  set:
+    postgresql:
+      host: pg.example.com
+      port: "5433"
+      database: llamacloud
+      username: llamauser
+      password: llamapass
+    config:
+      defaultIndex:
+        destination: postgres
+  template: ../templates/llamacloud/secrets/data.default-index.yaml
+  asserts:
+    - isKind:
+        of: Secret
+    - equal:
+        path: .data.DEFAULT_INDEX_PG_HOST
+        value: cGcuZXhhbXBsZS5jb20=  # base64("pg.example.com")
+    - equal:
+        path: .data.DEFAULT_INDEX_PG_PORT
+        value: NTQzMw==  # base64("5433")
+    - equal:
+        path: .data.DEFAULT_INDEX_PG_NAME
+        value: bGxhbWFjbG91ZA==  # base64("llamacloud")
+    - equal:
+        path: .data.DEFAULT_INDEX_PG_USER
+        value: bGxhbWF1c2Vy  # base64("llamauser")
+    - equal:
+        path: .data.DEFAULT_INDEX_PG_PASSWORD
+        value: bGxhbWFwYXNz  # base64("llamapass")
+    - isNull:
+        path: .data.DEFAULT_INDEX_MONGO_URI
+    - isNull:
+        path: .data.DEFAULT_INDEX_TPUF_API_KEY
+
+- it: explicit config.defaultIndex.postgres values override inherited postgresql values
+  set:
+    postgresql:
+      host: pg.example.com
+      database: llamacloud
+      username: llamauser
+      password: llamapass
+    config:
+      defaultIndex:
+        destination: postgres
+        postgres:
+          host: vectors.example.com
+          database: vectors
+  template: ../templates/llamacloud/secrets/data.default-index.yaml
+  asserts:
+    - equal:
+        path: .data.DEFAULT_INDEX_PG_HOST
+        value: dmVjdG9ycy5leGFtcGxlLmNvbQ==  # base64("vectors.example.com")
+    - equal:
+        path: .data.DEFAULT_INDEX_PG_NAME
+        value: dmVjdG9ycw==  # base64("vectors")
+    - equal:
+        path: .data.DEFAULT_INDEX_PG_PORT
+        value: NTQzMg==  # base64("5432") — chart default when neither block sets it
+    - equal:
+        path: .data.DEFAULT_INDEX_PG_USER
+        value: bGxhbWF1c2Vy  # base64("llamauser") — inherited
+    - equal:
+        path: .data.DEFAULT_INDEX_PG_PASSWORD
+        value: bGxhbWFwYXNz  # base64("llamapass") — inherited
+
+- it: explicit postgres host activates the block without destination being set
+  set:
+    postgresql:
+      host: pg.example.com
+      database: llamacloud
+      username: llamauser
+      password: llamapass
+    config:
+      defaultIndex:
+        postgres:
+          host: vectors.example.com
+  template: ../templates/llamacloud/secrets/data.default-index.yaml
+  asserts:
+    - equal:
+        path: .data.DEFAULT_INDEX_PG_HOST
+        value: dmVjdG9ycy5leGFtcGxlLmNvbQ==  # base64("vectors.example.com")
+
+- it: postgres destination fails rendering when credentials cannot be inherited
+  set:
+    postgresql:
+      secret: my-external-postgresql-secret
+    config:
+      defaultIndex:
+        destination: postgres
+  template: ../templates/llamacloud/secrets/data.default-index.yaml
+  asserts:
+    - failedTemplate:
+        errorMessagePattern: "the postgres index destination requires host, database, username, and password"
+
+# The minimal profile preset pins destination=postgres; with inline postgresql
+# credentials the postgres index target must come up with no extra values.
+# (Preset shape tests otherwise live in profiles_test.yaml — these two need the
+# default-index template, which is only in this suite's template list.)
+- it: minimal preset renders the postgres index target from inline postgresql values
+  values:
+    - ../examples/profiles/minimal.yaml
+  set:
+    postgresql:
+      host: postgresql
+      database: llamacloud
+      username: llamacloud
+      password: llamacloud
+  template: ../templates/llamacloud/secrets/data.default-index.yaml
+  asserts:
+    - isKind:
+        of: Secret
+    - equal:
+        path: .data.DEFAULT_INDEX_PG_HOST
+        value: cG9zdGdyZXNxbA==  # base64("postgresql")
+    - equal:
+        path: .data.DEFAULT_INDEX_PG_NAME
+        value: bGxhbWFjbG91ZA==  # base64("llamacloud")
+    - isNull:
+        path: .data.DEFAULT_INDEX_MONGO_URI
+
+- it: minimal preset mounts the default-index-secret on the temporal jobs worker
+  values:
+    - ../examples/profiles/minimal.yaml
+  set:
+    postgresql:
+      host: postgresql
+      database: llamacloud
+      username: llamacloud
+      password: llamacloud
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: temporal-jobs-worker
+  asserts:
+    - contains:
+        path: .spec.template.spec.containers[0].envFrom
+        content:
+          secretRef:
+            name: default-index-secret
 
 - it: partial mongo configuration fails rendering
   set:
@@ -112,6 +255,48 @@ tests:
       defaultIndex:
         turbopuffer:
           apiKey: tpuf-test-key
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: temporal-jobs-worker
+  asserts:
+    - contains:
+        path: .spec.template.spec.containers[0].envFrom
+        content:
+          secretRef:
+            name: default-index-secret
+
+- it: backend mounts default-index-secret when destination is postgres
+  set:
+    postgresql:
+      host: pg.example.com
+      database: llamacloud
+      username: llamauser
+      password: llamapass
+    config:
+      defaultIndex:
+        destination: postgres
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud
+  asserts:
+    - contains:
+        path: .spec.template.spec.containers[0].envFrom
+        content:
+          secretRef:
+            name: default-index-secret
+
+- it: temporal worker mounts default-index-secret when destination is postgres
+  set:
+    postgresql:
+      host: pg.example.com
+      database: llamacloud
+      username: llamauser
+      password: llamapass
+    config:
+      defaultIndex:
+        destination: postgres
   template: ../templates/llamacloud/deployment.yaml
   documentSelector:
     path: metadata.name

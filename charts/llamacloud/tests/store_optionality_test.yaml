@@ -34,6 +34,8 @@ tests:
         path: .data.MONGO_DISABLED
     - notExists:
         path: .data.AMQP_DISABLED
+    - notExists:
+        path: .data.V1_ENABLED
 
 - it: backend mounts mongodb and rabbitmq secrets by default
   template: ../templates/llamacloud/deployment.yaml
@@ -232,3 +234,33 @@ tests:
         content:
           secretRef:
             name: rabbitmq-secret
+
+# ---------------------------------------------------------------------------
+# config.v1.enabled=false — V1_ENABLED product switch (independent of stores):
+# a backend runtime flag, so it injects V1_ENABLED=false but does NOT change
+# chart topology (worker deployments stay store-driven).
+# ---------------------------------------------------------------------------
+- it: v1 disabled injects V1_ENABLED=false and touches no store flags
+  set:
+    config.v1.enabled: false
+  template: ../templates/llamacloud/configmaps/common.yaml
+  asserts:
+    - equal:
+        path: .data.V1_ENABLED
+        value: "false"
+    - notExists:
+        path: .data.MONGO_DISABLED
+    - notExists:
+        path: .data.AMQP_DISABLED
+
+- it: v1 disabled leaves the jobs-worker Deployment intact (topology is store-driven, not v1-driven)
+  set:
+    config.v1.enabled: false
+  template: ../templates/llamacloud/deployment.yaml
+  asserts:
+    - containsDocument:
+        any: true
+        kind: Deployment
+        apiVersion: apps/v1
+        name: llamacloud-worker
+        namespace: test-namespace

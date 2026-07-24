@@ -36,7 +36,6 @@ qdrant:
   apiKey: ""
 
 temporal:
-  enabled: true
   host: "temporal-frontend"
   port: 7233
 

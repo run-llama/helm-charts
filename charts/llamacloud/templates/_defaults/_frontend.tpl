@@ -129,7 +129,7 @@ Parameters:
 HOSTNAME: 0.0.0.0
 IS_INDEX_V1_ENABLED: "true"
 {{- if (.root.Values.qdrant).enabled }}
-NEXT_PUBLIC_BYOC_HAS_MANAGED_QDRANT: "true"
+BYOC_HAS_MANAGED_QDRANT: "true"
 {{- end }}
 {{- end }}
 

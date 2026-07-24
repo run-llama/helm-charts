@@ -12,10 +12,15 @@
 #   - llamaParse.replicas=0: the v1 AMQP parse worker has no queue to consume;
 #     parse runs through the Temporal worker (llamacloud-temporal-parse).
 #   - Default index destination pinned to postgres so nothing resolves to the
-#     legacy mongodb export destination.
+#     legacy mongodb export destination. The postgres vector store
+#     (DEFAULT_INDEX_PG_*) inherits the inline postgresql.* values; the
+#     database user must be able to CREATE EXTENSION vector (pgvector must be
+#     installed on the PostgreSQL server).
 #
 # Feature surface under this profile:
 #   - Parse v2 and Extract v2 work end to end (Temporal + PostgreSQL + Redis).
+#   - Index (directory) sync, export, retrieval, and chat run against the
+#     postgres (pgvector) destination.
 #   - v1 parse, pipelines, retrieval over pipeline documents, and mongodb
 #     index export return cause-coded 4xx errors instead of hanging.
 #

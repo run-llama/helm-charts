@@ -2,6 +2,7 @@
 ## Ref: https://developers.llamaindex.ai/python/cloud/
 
 ## @section License Configuration
+# @schema additionalProperties: false
 license:
   ## @param license.key License key for all components
   key: "<input-license-key-here>"
@@ -9,6 +10,7 @@ license:
   secret: ""
 
 ## @section Postgresql Configuration
+# @schema additionalProperties: false
 postgresql:
   ## @param postgresql.host PostgreSQL host
   host: ""
@@ -24,10 +26,12 @@ postgresql:
   secret: ""
 
 ## @section MongoDB Configuration
+# @schema additionalProperties: false
 mongodb:
   ## @param mongodb.enabled Whether this deployment uses MongoDB. When false, no mongodb secret is rendered or mounted and MONGO_DISABLED=true is injected; features that require MongoDB (pipelines, v1 jobs, mongodb index export) return errors. Requires an app version with MONGO_DISABLED support.
   enabled: true
   ## @param mongodb.scheme MongoDB connection scheme (i.e. mongodb, mongodb+srv)
+  # @schema enum: ["", mongodb, mongodb+srv]
   scheme: "mongodb"
   ## @param mongodb.host MongoDB host
   host: ""
@@ -43,10 +47,12 @@ mongodb:
   secret: ""
 
 ## @section RabbitMQ Configuration
+# @schema additionalProperties: false
 rabbitmq:
   ## @param rabbitmq.enabled Whether this deployment uses RabbitMQ. When false, no rabbitmq secret is rendered or mounted, AMQP_DISABLED=true is injected, and the jobs-worker (AMQP consumer) Deployment is not created; v1 parse and pipeline ingestion return errors. Requires an app version with AMQP_DISABLED support.
   enabled: true
   ## @param rabbitmq.scheme RabbitMQ scheme
+  # @schema enum: ["", amqp, amqps]
   scheme: "amqp"
   ## @param rabbitmq.host RabbitMQ host
   host: ""
@@ -62,12 +68,14 @@ rabbitmq:
   secret: ""
 
 ## @section Redis Configuration
+# @schema additionalProperties: false
 redis:
   ## @param redis.host Redis host
   host: ""
   ## @param redis.port Redis port
   port: "6379"
   ## @param redis.scheme Redis connection scheme (redis or rediss for SSL)
+  # @schema enum: ["", redis, rediss]
   scheme: "redis"
   ## @param redis.username Redis username (required for Redis 6.0+)
   username: ""
@@ -79,6 +87,7 @@ redis:
   secret: ""
 
 ## @section Optional QDRANT Data-Sink configuration
+# @schema additionalProperties: false
 qdrant:
   ## @param qdrant.enabled Enable QDRANT Data-Sink for backend
   enabled: false
@@ -90,6 +99,7 @@ qdrant:
   secret: ""
 
 ## @section Temporal configuration (required) - either deploy Temporal as a subchart or connect to an external Temporal instance
+# @schema additionalProperties: false
 temporal:
   ## @param temporal.disabled Completely disable Temporal and all Temporal workloads (configmaps, jobs, workers). temporal.deploy must be false when this is true.
   disabled: false
@@ -196,6 +206,7 @@ temporal-subchart:
           constraints: {}
 
 ## @section Llama Agents Configuration
+# @schema additionalProperties: false
 llamaAgents:
   ## @param llamaAgents.enabled Feature gate. Auto-enabled when deploy=true or controlPlaneUrl is set. Set explicitly to override.
   # @schema type: [boolean, "null"]
@@ -226,6 +237,7 @@ llama-agents-subchart:
 ## @section Bifrost (LLM gateway) Configuration
 ## Optional subchart that deploys the maximhq/bifrost LLM gateway. Disabled by default;
 ## intended for BYOC installs that want a one-shot install of Bifrost alongside LlamaCloud.
+# @schema additionalProperties: false
 bifrost:
   ## @param bifrost.deploy Deploy the bifrost subchart. Disabled by default.
   deploy: false
@@ -246,9 +258,11 @@ bifrost-subchart:
 ## @section Monitoring (Prometheus + Grafana) Configuration
 ## Optional kube-prometheus-stack subchart and LlamaCloud ServiceMonitors. Disabled by
 ## default; intended for BYOC installs.
+# @schema additionalProperties: false
 monitoring:
   ## @param monitoring.deploy Deploy the kube-prometheus-stack subchart (Prometheus Operator, Prometheus, Grafana, AlertManager). Disabled by default. If a Prometheus Operator is already present in the cluster, leave this false and use serviceMonitors.enabled below to register LlamaCloud's ServiceMonitors against it.
   deploy: false
+  # @schema additionalProperties: false
   serviceMonitors:
     ## @param monitoring.serviceMonitors.enabled Render ServiceMonitor objects for LlamaCloud services. Requires the Prometheus Operator CRDs (monitoring.coreos.com/v1) to be present in the cluster — either via monitoring.deploy=true, or via an externally-managed operator. Templates no-op cleanly if the CRDs are not installed.
     enabled: false
@@ -269,6 +283,7 @@ kube-prometheus-stack-subchart:
     enabled: false
 
 ## @section Ingress Configuration
+# @schema additionalProperties: false
 ingress:
   ## @param ingress.enabled Whether to enable the ingress
   enabled: false
@@ -282,13 +297,22 @@ ingress:
   ingressClassName: ""
 
 ## @section Application Configuration
+# @schema additionalProperties: false
 config:
   ## @param config.logLevel Log level for the application (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+  # @schema pattern: ^(?i)(debug|info|warning|error|critical)?$
   logLevel: INFO
 
+  ## @param config.v1.enabled Whether v1 products (v1 parse, managed-ingestion, extract's legacy AMQP path) are activated. When false, V1_ENABLED=false is injected: v1-legacy requests return 410 and extract force-routes to the v2 (Temporal) path — even if RabbitMQ/MongoDB are still present. Defaults true; set false to force everything onto v2 ahead of decommissioning v1. Requires an app version with V1_ENABLED support.
+  # @schema additionalProperties: false
+  v1:
+    enabled: true
+
   ## @section LLMs Configuration
+  # @schema additionalProperties: false
   llms:
     ## @section OpenAI Configuration
+    # @schema additionalProperties: false
     openAi:
       ## @param config.llms.openAi.apiKey OpenAI API key
       apiKey: ""
@@ -298,6 +322,7 @@ config:
       baseUrl: ""
 
     ## @section Anthropic Configuration
+    # @schema additionalProperties: false
     anthropic:
       ## @param config.llms.anthropic.apiKey Anthropic API key
       apiKey: ""
@@ -307,6 +332,7 @@ config:
       baseUrl: ""
 
     ## @section Google Gemini Configuration
+    # @schema additionalProperties: false
     gemini:
       ## @param config.llms.gemini.apiKey Google Gemini API key
       apiKey: ""
@@ -316,6 +342,7 @@ config:
       baseUrl: ""
 
     ## @section Azure OpenAI Configuration
+    # @schema additionalProperties: false
     azureOpenAi:
       ## @param config.llms.azureOpenAi.secret Name of the existing secret to use for the Azure OpenAI API key
       secret: ""
@@ -328,6 +355,7 @@ config:
       #   apiVersion: "2024-08-06"
 
     ## @section AWS Bedrock Configuration
+    # @schema additionalProperties: false
     awsBedrock:
       ## @param config.llms.awsBedrock.region AWS Bedrock region
       region: ""
@@ -351,6 +379,7 @@ config:
       secret: ""
 
     ## @section Google Vertex AI Configuration
+    # @schema additionalProperties: false
     googleVertexAi:
       ## @param config.llms.googleVertexAi.projectId Google Vertex AI project id
       projectId: ""
@@ -419,9 +448,11 @@ config:
   ## Platform-managed destinations for directory indexes. Optional: when unset,
   ## directory exports and index sync that rely on the platform-managed
   ## document store and vector store are unavailable.
+  # @schema additionalProperties: false
   defaultIndex:
     ## @param config.defaultIndex.secret Name of an existing secret providing the DEFAULT_INDEX_* environment variables (overrides the inline values below)
     secret: ""
+    # @schema additionalProperties: false
     mongo:
       ## @param config.defaultIndex.mongo.uri MongoDB connection URI for the platform-managed document store (uri, db, and collection must be set together)
       uri: ""
@@ -429,6 +460,7 @@ config:
       db: ""
       ## @param config.defaultIndex.mongo.collection MongoDB collection name for the platform-managed document store
       collection: ""
+    # @schema additionalProperties: false
     turbopuffer:
       ## @param config.defaultIndex.turbopuffer.apiKey Turbopuffer API key for platform-managed vector namespaces
       apiKey: ""
@@ -436,13 +468,41 @@ config:
       region: ""
       ## @param config.defaultIndex.turbopuffer.namespacePrefix Prefix prepended to platform-managed namespace names (optional)
       namespacePrefix: ""
-    ## @param config.defaultIndex.destination Default destination for new directory indexes. Accepted values: "turbopuffer", "mongodb", "postgres". When unset the backend falls back to "mongodb".
+    ## PostgreSQL (pgvector) vector store for platform-managed directory indexes.
+    ## Used when destination is "postgres". Every field left empty inherits the
+    ## matching postgresql.* value, so with inline postgresql credentials the
+    ## postgres destination needs no extra configuration. If platform PostgreSQL
+    ## is supplied via postgresql.secret (an existing secret), set these fields
+    ## explicitly (or use config.defaultIndex.secret). The database user must be
+    ## able to CREATE EXTENSION vector (pgvector must be installed on the server).
+    # @schema additionalProperties: false
+    postgres:
+      ## @param config.defaultIndex.postgres.host PostgreSQL host for the platform-managed vector store (defaults to postgresql.host)
+      host: ""
+      ## @param config.defaultIndex.postgres.port PostgreSQL port for the platform-managed vector store (defaults to postgresql.port)
+      port: ""
+      ## @param config.defaultIndex.postgres.database PostgreSQL database for the platform-managed vector store (defaults to postgresql.database)
+      database: ""
+      ## @param config.defaultIndex.postgres.username PostgreSQL user for the platform-managed vector store (defaults to postgresql.username)
+      username: ""
+      ## @param config.defaultIndex.postgres.password PostgreSQL password for the platform-managed vector store (defaults to postgresql.password)
+      password: ""
+    ## @param config.defaultIndex.destination Default destination for new directory indexes. Accepted values: "turbopuffer", "mongodb", "postgres". When unset the backend falls back to "mongodb" ("postgres" when MongoDB is disabled, on app versions with MONGO_DISABLED support).
+    # @schema enum: ["", turbopuffer, mongodb, postgres]
     destination: ""
+
+  ## @section Managed Embeddings Configuration
+  # @schema additionalProperties: false
+  managedEmbeddings:
+    ## @param config.managedEmbeddings.enabled Offer managed embeddings as a default option when creating indexes (also requires an embedding model such as openai-text-embedding-3-small registered in the LLM provider config). Applied to both backend and frontend.
+    enabled: false
 
   ## @section authentication Configuration
   ## Choose exactly one backend authentication mode: Basic Auth, OIDC, or customer-configured WorkOS.
+  # @schema additionalProperties: false
   authentication:
     ## @section Basic Auth configuration
+    # @schema additionalProperties: false
     basicAuth:
       ## @param config.authentication.basicAuth.enabled Enable Basic Auth for the backend
       enabled: false
@@ -454,6 +514,7 @@ config:
       secret: ""
 
     ## @section OpenID Connect configuration
+    # @schema additionalProperties: false
     oidc:
       ## @param config.authentication.oidc.enabled Enable OIDC for the backend
       enabled: false
@@ -467,6 +528,7 @@ config:
       secret: ""
 
     ## @section Customer-configured WorkOS configuration
+    # @schema additionalProperties: false
     customerConfigured:
       ## @param config.authentication.customerConfigured.enabled Enable customer-configured WorkOS authentication for the backend
       enabled: false
@@ -493,9 +555,11 @@ config:
       secret: ""
 
   ## @section Storage Buckets Configuration
+  # @schema additionalProperties: false
   storageBuckets:
     ## @param config.storageBuckets.provider Cloud storage provider
     ## Options: aws, gcp, azure
+    # @schema enum: ["", aws, gcp, azure]
     provider: "aws"
 
     ## @param config.storageBuckets.extraEnvVariables Extra environment variables to add to the pods for storage buckets
@@ -538,15 +602,19 @@ config:
     parseFileOutput: "llama-platform-file-parsing"
 
     ## @section S3Proxy Configuration (only used when provider is set to gcp or azure, ignored for aws)
+    # @schema additionalProperties: false
     s3proxy:
       ## @param config.storageBuckets.s3proxy.enabled S3Proxy image
       enabled: false
       ## @param config.storageBuckets.s3proxy.image S3Proxy image
       image: "docker.io/andrewgaul/s3proxy:sha-001d042"
       ## @param config.storageBuckets.s3proxy.imagePullPolicy S3Proxy image pull policy
+      # @schema enum: ["", Always, IfNotPresent, Never]
       imagePullPolicy: "IfNotPresent"
       ## @param config.storageBuckets.s3proxy.containerPort S3Proxy container port
       containerPort: 8080
+      ## @param config.storageBuckets.s3proxy.logLevel S3Proxy log level. Falls back to config.logLevel, then "info", when empty.
+      logLevel: ""
       ## @param config.storageBuckets.s3proxy.securityContext Security context for the S3Proxy container
       securityContext: {}
       ## @param config.storageBuckets.s3proxy.resources Set container requests and limits for different resources like CPU or memory
@@ -568,6 +636,7 @@ config:
         # JCLOUDS_ENDPOINT: "<azure-storage-account-endpoint>"
 
   ## @section Frontend Configuration
+  # @schema additionalProperties: false
   frontend:
     ## @param config.frontend.enabled Enable Frontend service
     enabled: true
@@ -576,6 +645,7 @@ config:
   ## Per-project default rate limits for API endpoints. Applied on backend startup
   ## via the quota sync (defaults are upserted into the quota_configurations table,
   ## so changing a value and restarting the backend takes effect).
+  # @schema additionalProperties: false
   rateLimits:
     ## @param config.rateLimits.parseApiCreationQueries Parse job creation: requests allowed per window
     parseApiCreationQueries: 500
@@ -613,6 +683,7 @@ config:
     usageApiQueryQps: 20
 
   ## @section LlamaExtract Configuration
+  # @schema additionalProperties: false
   extraction:
     ## @param config.extraction.multimodalModel LlamaExtract multimodal model (gemini-2.0-flash, gemini-2.5-pro, openai-gpt-4-1)
     multimodalModel: "openai-gpt-4-1"
@@ -624,6 +695,7 @@ config:
     maxFileSizeMb: 100
 
   ## @section Jobs Configuration
+  # @schema additionalProperties: false
   jobs:
     ## @param config.jobs.maxJobsInExecutionPerJobType Maximum number of jobs in execution per job type
     maxJobsInExecutionPerJobType: 10
@@ -639,6 +711,7 @@ config:
     transformEmbeddingCharLimit: "11520000"
 
   ## @section LlamaParse Configuration
+  # @schema additionalProperties: false
   parse:
     ## @param config.parse.debugMode Enable debug mode for LlamaParse
     debugMode: false
@@ -647,6 +720,7 @@ config:
     ## @param config.parse.preferedPremiumModel Prefered premium LLM model to use for the application
     preferedPremiumModel: ""
 
+    # @schema additionalProperties: false
     concurrency:
       ## @param config.parse.concurrency.accurateModeLLMConcurrency concurrency setting
       accurateModeLLMConcurrency: ""
@@ -716,6 +790,7 @@ config:
       anthropicHaiku45: ""
 
   ## @section LlamaParse-OCR Configuration
+  # @schema additionalProperties: false
   parseOcr:
     ## @param config.parseOcr.enabled Enable LlamaParseOcr
     enabled: true
@@ -723,6 +798,7 @@ config:
     ## GPU configuration for OCR processing
     gpu: false
 
+  # @schema additionalProperties: false
   parseLayoutDetection:
     ## @param config.parseLayoutDetection.enabled Enable LlamaParse Layout Detection
     enabled: true
@@ -731,6 +807,7 @@ config:
     gpu: false
 
   ## @section Layout Detection V3 (BYOC Self-Hosted) Configuration
+  # @schema additionalProperties: false
   parseLayoutDetectionV3:
     ## @param config.parseLayoutDetectionV3.enabled Enable Layout V3 Detection (self-hosted layout detection model)
     ## Note: This is for BYOC deployments that cannot access HuggingFace inference endpoints
@@ -739,8 +816,10 @@ config:
     gpu: false
 
   ## @section Temporal Configuration
+  # @schema additionalProperties: false
   temporal:
     ## @param config.temporal.workerRegistryProfile Temporal worker registry profile (default or consolidated)
+    # @schema enum: ["", default, consolidated]
     workerRegistryProfile: "consolidated"
 
     ## @param config.temporal.namespace Temporal registered namespace
@@ -749,6 +828,7 @@ config:
     namespace: ""
 
     ## Temporal external payload storage
+    # @schema additionalProperties: false
     externalPayloadStorage:
       ## @param config.temporal.externalPayloadStorage.enabled Store oversized Temporal payloads outside workflow history
       enabled: false
@@ -758,11 +838,13 @@ config:
       thresholdBytes: ""
 
     ## Job Cleanup Hook
+    # @schema additionalProperties: false
     jobCleanup:
       ## @param config.temporal.jobCleanup.image Image for the kubectl job cleanup hook
       image: "bitnami/kubectl:latest"
 
     ## Search Attributes Job
+    # @schema additionalProperties: false
     searchAttributesJob:
       ## @param config.temporal.searchAttributesJob.enabled Enable the search attributes job
       enabled: true
@@ -786,8 +868,10 @@ config:
   ## Scheduled Temporal workflows that delete completed jobs past their retention period.
   ## Each service (parse, extract, classify) has its own cleanup schedule.
   ## Set retentionDays to 0 (or any value <= 0) to disable cleanup for that service.
+  # @schema additionalProperties: false
   jobCleanup:
     ## @section Parse Job Cleanup
+    # @schema additionalProperties: false
     parse:
       ## @param config.jobCleanup.parse.retentionDays Number of days to retain completed parse jobs before deletion. Set to 0 to disable.
       retentionDays: 30
@@ -795,6 +879,7 @@ config:
       batchSize: 100
 
     ## @section Extract Job Cleanup
+    # @schema additionalProperties: false
     extract:
       ## @param config.jobCleanup.extract.retentionDays Number of days to retain completed extract jobs before deletion. Set to 0 to disable.
       retentionDays: 14
@@ -802,6 +887,7 @@ config:
       batchSize: 100
 
     ## @section Classify Job Cleanup
+    # @schema additionalProperties: false
     classify:
       ## @param config.jobCleanup.classify.retentionDays Number of days to retain completed classify jobs before deletion. Set to 0 to disable.
       retentionDays: 14
@@ -826,18 +912,27 @@ imagePullSecrets: []
 extraObjects: []
 
 ## @section Frontend Configuration
+# @schema additionalProperties: false
 frontend:
   ## @param frontend.horizontalPodAutoscalerSpec HorizontalPodAutoScaler configuration
   ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/
   horizontalPodAutoscalerSpec: {}
 
+  ## @param frontend.replicas Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set.
+  # @schema type: [integer, "null"];minimum: 0
+  replicas: null
+
+  ## @param frontend.command Override the container command (entrypoint)
+  command: []
+
   ## @param frontend.annotations Annotations added to the Frontend Deployment.
   annotations: {}
 
   ## @param frontend.image Frontend image
-  image: docker.io/llamaindex/llamacloud-frontend:0.8.5
+  image: docker.io/llamaindex/llamacloud-frontend:0.8.6
 
   ## @param frontend.imagePullPolicy Frontend image pull policy
+  # @schema enum: ["", Always, IfNotPresent, Never]
   imagePullPolicy: IfNotPresent
 
   ## @param frontend.securityContext Security context for the container
@@ -888,18 +983,27 @@ frontend:
   volumes: []
 
 ## @section Backend Configuration
+# @schema additionalProperties: false
 backend:
   ## @param backend.horizontalPodAutoscalerSpec HorizontalPodAutoScaler configuration
   ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/
   horizontalPodAutoscalerSpec: {}
 
+  ## @param backend.replicas Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set.
+  # @schema type: [integer, "null"];minimum: 0
+  replicas: null
+
+  ## @param backend.command Override the container command (entrypoint)
+  command: []
+
   ## @param backend.annotations Annotations added to the Backend Deployment.
   annotations: {}
 
   ## @param backend.image Backend image
-  image: docker.io/llamaindex/llamacloud-backend:0.8.5
+  image: docker.io/llamaindex/llamacloud-backend:0.8.6
 
   ## @param backend.imagePullPolicy Backend image pull policy
+  # @schema enum: ["", Always, IfNotPresent, Never]
   imagePullPolicy: IfNotPresent
 
   ## @param backend.securityContext Security context for the container
@@ -950,18 +1054,27 @@ backend:
   volumes: []
 
 ## @section JobsService Configuration
+# @schema additionalProperties: false
 jobsService:
   ## @param jobsService.horizontalPodAutoscalerSpec HorizontalPodAutoScaler configuration
   ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/
   horizontalPodAutoscalerSpec: {}
 
+  ## @param jobsService.replicas Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set.
+  # @schema type: [integer, "null"];minimum: 0
+  replicas: null
+
+  ## @param jobsService.command Override the container command (entrypoint)
+  command: []
+
   ## @param jobsService.annotations Annotations added to the JobsService Deployment.
   annotations: {}
 
   ## @param jobsService.image JobsService image
-  image: docker.io/llamaindex/llamacloud-backend:0.8.5
+  image: docker.io/llamaindex/llamacloud-backend:0.8.6
 
   ## @param jobsService.imagePullPolicy JobsService image pull policy
+  # @schema enum: ["", Always, IfNotPresent, Never]
   imagePullPolicy: IfNotPresent
 
   ## @param jobsService.securityContext Security context for the container
@@ -1012,18 +1125,27 @@ jobsService:
   volumes: []
 
 ## @section JobsWorker Configuration
+# @schema additionalProperties: false
 jobsWorker:
   ## @param jobsWorker.horizontalPodAutoscalerSpec HorizontalPodAutoScaler configuration
   ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/
   horizontalPodAutoscalerSpec: {}
 
+  ## @param jobsWorker.replicas Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set.
+  # @schema type: [integer, "null"];minimum: 0
+  replicas: null
+
+  ## @param jobsWorker.command Override the container command (entrypoint)
+  command: []
+
   ## @param jobsWorker.annotations Annotations added to the JobsWorker Deployment.
   annotations: {}
 
   ## @param jobsWorker.image JobsWorker image
-  image: docker.io/llamaindex/llamacloud-backend:0.8.5
+  image: docker.io/llamaindex/llamacloud-backend:0.8.6
 
   ## @param jobsWorker.imagePullPolicy JobsWorker image pull policy
+  # @schema enum: ["", Always, IfNotPresent, Never]
   imagePullPolicy: IfNotPresent
 
   ## @param jobsWorker.securityContext Security context for the container
@@ -1074,18 +1196,27 @@ jobsWorker:
   volumes: []
 
 ## @section LlamaParse Configuration
+# @schema additionalProperties: false
 llamaParse:
   ## @param llamaParse.horizontalPodAutoscalerSpec HorizontalPodAutoScaler configuration
   ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/
   horizontalPodAutoscalerSpec: {}
 
+  ## @param llamaParse.replicas Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set.
+  # @schema type: [integer, "null"];minimum: 0
+  replicas: null
+
+  ## @param llamaParse.command Override the container command (entrypoint)
+  command: []
+
   ## @param llamaParse.annotations Annotations added to the LlamaParse Deployment.
   annotations: {}
 
   ## @param llamaParse.image LlamaParse image
-  image: docker.io/llamaindex/llamacloud-llamaparse:0.8.5
+  image: docker.io/llamaindex/llamacloud-llamaparse:0.8.6
 
   ## @param llamaParse.imagePullPolicy LlamaParse image pull policy
+  # @schema enum: ["", Always, IfNotPresent, Never]
   imagePullPolicy: IfNotPresent
 
   ## @param llamaParse.securityContext Security context for the container
@@ -1136,18 +1267,27 @@ llamaParse:
   volumes: []
 
 ## @section LlamaParseOcr Configuration
+# @schema additionalProperties: false
 llamaParseOcr:
   ## @param llamaParseOcr.horizontalPodAutoscalerSpec HorizontalPodAutoScaler configuration
   ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/
   horizontalPodAutoscalerSpec: {}
 
+  ## @param llamaParseOcr.replicas Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set.
+  # @schema type: [integer, "null"];minimum: 0
+  replicas: null
+
+  ## @param llamaParseOcr.command Override the container command (entrypoint)
+  command: []
+
   ## @param llamaParseOcr.annotations Annotations added to the LlamaParseOcr Deployment.
   annotations: {}
 
   ## @param llamaParseOcr.image LlamaParseOcr image
-  image: docker.io/llamaindex/llamacloud-llamaparse-ocr:0.8.5
+  image: docker.io/llamaindex/llamacloud-llamaparse-ocr:0.8.6
 
   ## @param llamaParseOcr.imagePullPolicy LlamaParseOcr image pull policy
+  # @schema enum: ["", Always, IfNotPresent, Never]
   imagePullPolicy: IfNotPresent
 
   ## @param llamaParseOcr.securityContext Security context for the container
@@ -1205,18 +1345,27 @@ llamaParseOcr:
   volumes: []
 
 ## @section LlamaParse Layout Detection API Configuration
+# @schema additionalProperties: false
 llamaParseLayoutDetectionApi:
   ## @param llamaParseLayoutDetectionApi.horizontalPodAutoscalerSpec HorizontalPodAutoScaler configuration
   ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/
   horizontalPodAutoscalerSpec: {}
 
+  ## @param llamaParseLayoutDetectionApi.replicas Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set.
+  # @schema type: [integer, "null"];minimum: 0
+  replicas: null
+
+  ## @param llamaParseLayoutDetectionApi.command Override the container command (entrypoint)
+  command: []
+
   ## @param llamaParseLayoutDetectionApi.annotations Annotations added to the LlamaParseLayoutDetectionApi Deployment.
   annotations: {}
 
   ## @param llamaParseLayoutDetectionApi.image LlamaParseLayoutDetectionApi image
-  image: docker.io/llamaindex/llamacloud-layout-detection-api:0.8.5
+  image: docker.io/llamaindex/llamacloud-layout-detection-api:0.8.6
 
   ## @param llamaParseLayoutDetectionApi.imagePullPolicy LlamaParseLayoutDetectionApi image pull policy
+  # @schema enum: ["", Always, IfNotPresent, Never]
   imagePullPolicy: IfNotPresent
 
   ## @param llamaParseLayoutDetectionApi.securityContext Security context for the container
@@ -1267,10 +1416,18 @@ llamaParseLayoutDetectionApi:
   volumes: []
 
 ## @section LlamaParse Layout Detection API V3 Configuration (BYOC)
+# @schema additionalProperties: false
 llamaParseLayoutDetectionApiV3:
   ## @param llamaParseLayoutDetectionApiV3.horizontalPodAutoscalerSpec HorizontalPodAutoScaler configuration
   ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/
   horizontalPodAutoscalerSpec: {}
+
+  ## @param llamaParseLayoutDetectionApiV3.replicas Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set.
+  # @schema type: [integer, "null"];minimum: 0
+  replicas: null
+
+  ## @param llamaParseLayoutDetectionApiV3.command Override the container command (entrypoint)
+  command: []
 
   ## @param llamaParseLayoutDetectionApiV3.annotations Annotations added to the LlamaParseLayoutDetectionApiV3 Deployment.
   annotations: {}
@@ -1280,6 +1437,7 @@ llamaParseLayoutDetectionApiV3:
   image: ""
 
   ## @param llamaParseLayoutDetectionApiV3.imagePullPolicy LlamaParseLayoutDetectionApiV3 image pull policy
+  # @schema enum: ["", Always, IfNotPresent, Never]
   imagePullPolicy: IfNotPresent
 
   ## @param llamaParseLayoutDetectionApiV3.securityContext Security context for the container
@@ -1337,18 +1495,27 @@ llamaParseLayoutDetectionApiV3:
   volumes: []
 
 ## @section Usage Configuration
+# @schema additionalProperties: false
 usage:
   ## @param usage.horizontalPodAutoscalerSpec HorizontalPodAutoScaler configuration
   ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/
   horizontalPodAutoscalerSpec: {}
 
+  ## @param usage.replicas Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set.
+  # @schema type: [integer, "null"];minimum: 0
+  replicas: null
+
+  ## @param usage.command Override the container command (entrypoint)
+  command: []
+
   ## @param usage.annotations Annotations added to the LlamaParseLayoutDetectionApi Deployment.
   annotations: {}
 
   ## @param usage.image LlamaParseLayoutDetectionApi image
-  image: docker.io/llamaindex/llamacloud-backend:0.8.5
+  image: docker.io/llamaindex/llamacloud-backend:0.8.6
 
   ## @param usage.imagePullPolicy LlamaParseLayoutDetectionApi image pull policy
+  # @schema enum: ["", Always, IfNotPresent, Never]
   imagePullPolicy: IfNotPresent
 
   ## @param usage.securityContext Security context for the container
@@ -1398,21 +1565,51 @@ usage:
   ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-volume-storage/
   volumes: []
 
+## @section ParseBench Configuration
+# @schema additionalProperties: false
+parsebench:
+  ## @param parsebench.enabled Enable the ParseBench benchmark feature
+  enabled: false
+
+  ## @param parsebench.image ParseBench Job image
+  image: ""
+
+  ## @param parsebench.imagePullPolicy ParseBench Job image pull policy
+  # @schema enum: ["", Always, IfNotPresent, Never]
+  imagePullPolicy: IfNotPresent
+
+  ## @param parsebench.apiKeySecretName Existing secret name containing LLAMA_CLOUD_API_KEY (takes precedence over apiKey)
+  apiKeySecretName: ""
+
+  ## @param parsebench.apiKey LLAMA_CLOUD_API_KEY value to store in a chart-managed secret
+  ## Leave empty if apiKeySecretName is provided.
+  apiKey: ""
+
 ## @section Temporal Workloads Configuration
 ## Temporal workloads configuration only used when Temporal is enabled
+# @schema additionalProperties: false
 temporalWorkloads:
+  # @schema additionalProperties: false
   llamaParse:
     ## @param temporalWorkloads.llamaParse.horizontalPodAutoscalerSpec HorizontalPodAutoScaler configuration
     ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/
     horizontalPodAutoscalerSpec: {}
 
+    ## @param temporalWorkloads.llamaParse.replicas Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set.
+    # @schema type: [integer, "null"];minimum: 0
+    replicas: null
+
+    ## @param temporalWorkloads.llamaParse.command Override the container command (entrypoint)
+    command: []
+
     ## @param temporalWorkloads.llamaParse.annotations Annotations added to the temporal llamaparse Deployment.
     annotations: {}
 
     ## @param temporalWorkloads.llamaParse.image temporal llamaparse image
-    image: docker.io/llamaindex/llamacloud-llamaparse:0.8.5
+    image: docker.io/llamaindex/llamacloud-llamaparse:0.8.6
 
     ## @param temporalWorkloads.llamaParse.imagePullPolicy temporal llamaparse image pull policy
+    # @schema enum: ["", Always, IfNotPresent, Never]
     imagePullPolicy: IfNotPresent
 
     ## @param temporalWorkloads.llamaParse.securityContext Security context for the container
@@ -1476,9 +1673,10 @@ temporalWorkloads:
       annotations: {}
 
       ## @param temporalWorkloads.workers.temporal-jobs-worker.image Frontend image
-      image: docker.io/llamaindex/llamacloud-backend:0.8.5
+      image: docker.io/llamaindex/llamacloud-backend:0.8.6
 
       ## @param temporalWorkloads.workers.temporal-jobs-worker.imagePullPolicy Frontend image pull policy
+      # @schema enum: ["", Always, IfNotPresent, Never]
       imagePullPolicy: IfNotPresent
 
       ## @param temporalWorkloads.workers.temporal-jobs-worker.command Command to run in the container

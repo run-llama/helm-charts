@@ -16,3 +16,6 @@ data:
 {{- if not (.Values.rabbitmq).enabled }}
   AMQP_DISABLED: "true"
 {{- end }}
+{{- if not ((.Values.config).v1).enabled }}
+  V1_ENABLED: "false"
+{{- end }}

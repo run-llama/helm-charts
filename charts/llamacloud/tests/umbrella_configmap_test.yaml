@@ -45,9 +45,9 @@ tests:
         path: .data.IS_INDEX_V1_ENABLED
         value: "true"
     - isNull:
-        path: .data.NEXT_PUBLIC_BYOC_HAS_MANAGED_QDRANT
+        path: .data.BYOC_HAS_MANAGED_QDRANT
 
-- it: frontend ConfigMap exposes NEXT_PUBLIC_BYOC_HAS_MANAGED_QDRANT when qdrant is enabled
+- it: frontend ConfigMap exposes BYOC_HAS_MANAGED_QDRANT when qdrant is enabled
   set:
     qdrant:
       enabled: true
@@ -59,8 +59,12 @@ tests:
     value: llamacloud-web
   asserts:
     - equal:
-        path: .data.NEXT_PUBLIC_BYOC_HAS_MANAGED_QDRANT
+        path: .data.BYOC_HAS_MANAGED_QDRANT
         value: "true"
+    # The build-time NEXT_PUBLIC_ variant is gone: it was baked into the client
+    # bundle at image build, so a per-deployment ConfigMap value never applied.
+    - isNull:
+        path: .data.NEXT_PUBLIC_BYOC_HAS_MANAGED_QDRANT
 
 - it: frontend ConfigMap is not rendered when frontend is disabled
   set:

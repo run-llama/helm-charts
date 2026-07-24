@@ -25,5 +25,12 @@
 # into the runtime tarball that `helm install` downloads.
 .claude/
 
+# Generator config for values.schema.json (helm schema plugin) — build-time
+# only. system-requirements.yaml is deliberately NOT ignored: it ships in the
+# package so tooling can read the requirements for the exact chart version
+# installed. (It is named system-requirements.yaml because helm strips the
+# legacy v1 dependencies filename requirements.yaml from packages regardless.)
+.schema.yaml
+
 tests/
 deployment_tests/

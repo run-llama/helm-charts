@@ -214,7 +214,7 @@ Default Index Secret envFrom
 {{- if ((.Values.config).defaultIndex).secret }}
 - secretRef:
     name: {{ .Values.config.defaultIndex.secret }}
-{{- else if or ((((.Values.config).defaultIndex).mongo).uri) ((((.Values.config).defaultIndex).turbopuffer).apiKey) }}
+{{- else if or ((((.Values.config).defaultIndex).mongo).uri) ((((.Values.config).defaultIndex).turbopuffer).apiKey) (eq ((((.Values.config).defaultIndex).destination) | default "") "postgres") ((((.Values.config).defaultIndex).postgres).host) }}
 - secretRef:
     name: "default-index-secret"
 {{- end }}

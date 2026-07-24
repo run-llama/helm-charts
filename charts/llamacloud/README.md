@@ -26,11 +26,12 @@ helm install my-llamacloud-release llamaindex/llamacloud
 
 ## Hardware Requirements
 
-- **Linux Instances running x86 cpus**
-    - As of August 12th, 2024, we build only linux/amd64 images. arm64 is not supported at this moment.
-- **Ubuntu >=22.04**
-- **>=12 vCPUs**
-- **>=80Gbi Memory**
+The authoritative, machine-readable requirements for this chart version live in
+[`system-requirements.yaml`](./system-requirements.yaml): platform minimums (Kubernetes/Helm
+versions, CPU architecture, node OS), aggregate cluster capacity for a
+default-values install, per-component resource defaults, and the conditions
+under which GPU nodes are required. Tooling (the preinstall-check skill, future
+CLI checks) reads that file — update it there, not here.
 
 Warning #1: LlamaParse, LlamaIndex's proprietry document parser, can be a very resource intensive deployment to run, especially if you want to maximize performance.
 Warning #2:The base cpu/memory requirements may increase if you are running containerized deployments of LlamaCloud dependencies. (More information in the following section)
@@ -87,27 +88,29 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 
 ### MongoDB Configuration
 
-| Name                  | Description                                                | Value     |
-| --------------------- | ---------------------------------------------------------- | --------- |
-| `mongodb.scheme`      | MongoDB connection scheme (i.e. mongodb, mongodb+srv)      | `mongodb` |
-| `mongodb.host`        | MongoDB host                                               | `""`      |
-| `mongodb.port`        | MongoDB port                                               | `27017`   |
-| `mongodb.username`    | MongoDB user                                               | `""`      |
-| `mongodb.password`    | MongoDB password                                           | `""`      |
-| `mongodb.mongodb_url` | Full MongoDB connection URL                                | `""`      |
-| `mongodb.secret`      | Name of the existing secret to use for MongoDB credentials | `""`      |
+| Name                  | Description                                                                                                                                                                                                                                                                  | Value     |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
+| `mongodb.enabled`     | Whether this deployment uses MongoDB. When false, no mongodb secret is rendered or mounted and MONGO_DISABLED=true is injected; features that require MongoDB (pipelines, v1 jobs, mongodb index export) return errors. Requires an app version with MONGO_DISABLED support. | `true`    |
+| `mongodb.scheme`      | MongoDB connection scheme (i.e. mongodb, mongodb+srv)                                                                                                                                                                                                                        | `mongodb` |
+| `mongodb.host`        | MongoDB host                                                                                                                                                                                                                                                                 | `""`      |
+| `mongodb.port`        | MongoDB port                                                                                                                                                                                                                                                                 | `27017`   |
+| `mongodb.username`    | MongoDB user                                                                                                                                                                                                                                                                 | `""`      |
+| `mongodb.password`    | MongoDB password                                                                                                                                                                                                                                                             | `""`      |
+| `mongodb.mongodb_url` | Full MongoDB connection URL                                                                                                                                                                                                                                                  | `""`      |
+| `mongodb.secret`      | Name of the existing secret to use for MongoDB credentials                                                                                                                                                                                                                   | `""`      |
 
 ### RabbitMQ Configuration
 
-| Name                        | Description                                                        | Value  |
-| --------------------------- | ------------------------------------------------------------------ | ------ |
-| `rabbitmq.scheme`           | RabbitMQ scheme                                                    | `amqp` |
-| `rabbitmq.host`             | RabbitMQ host                                                      | `""`   |
-| `rabbitmq.port`             | RabbitMQ port                                                      | `5672` |
-| `rabbitmq.username`         | RabbitMQ user                                                      | `""`   |
-| `rabbitmq.password`         | RabbitMQ password                                                  | `""`   |
-| `rabbitmq.connectionString` | Connection string for the AMQP queue (e.g., for Azure Service Bus) | `""`   |
-| `rabbitmq.secret`           | Name of the existing secret to use for RabbitMQ credentials        | `""`   |
+| Name                        | Description                                                                                                                                                                                                                                                                                     | Value  |
+| --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| `rabbitmq.enabled`          | Whether this deployment uses RabbitMQ. When false, no rabbitmq secret is rendered or mounted, AMQP_DISABLED=true is injected, and the jobs-worker (AMQP consumer) Deployment is not created; v1 parse and pipeline ingestion return errors. Requires an app version with AMQP_DISABLED support. | `true` |
+| `rabbitmq.scheme`           | RabbitMQ scheme                                                                                                                                                                                                                                                                                 | `amqp` |
+| `rabbitmq.host`             | RabbitMQ host                                                                                                                                                                                                                                                                                   | `""`   |
+| `rabbitmq.port`             | RabbitMQ port                                                                                                                                                                                                                                                                                   | `5672` |
+| `rabbitmq.username`         | RabbitMQ user                                                                                                                                                                                                                                                                                   | `""`   |
+| `rabbitmq.password`         | RabbitMQ password                                                                                                                                                                                                                                                                               | `""`   |
+| `rabbitmq.connectionString` | Connection string for the AMQP queue (e.g., for Azure Service Bus)                                                                                                                                                                                                                              | `""`   |
+| `rabbitmq.secret`           | Name of the existing secret to use for RabbitMQ credentials                                                                                                                                                                                                                                     | `""`   |
 
 ### Redis Configuration
 
@@ -236,9 +239,10 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 
 ### Application Configuration
 
-| Name              | Description                                                           | Value  |
-| ----------------- | --------------------------------------------------------------------- | ------ |
-| `config.logLevel` | Log level for the application (DEBUG, INFO, WARNING, ERROR, CRITICAL) | `INFO` |
+| Name                | Description                                                                                                                                                                                                                                                                                                                                                                                              | Value  |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| `config.logLevel`   | Log level for the application (DEBUG, INFO, WARNING, ERROR, CRITICAL)                                                                                                                                                                                                                                                                                                                                    | `INFO` |
+| `config.v1.enabled` | Whether v1 products (v1 parse, managed-ingestion, extract's legacy AMQP path) are activated. When false, V1_ENABLED=false is injected: v1-legacy requests return 410 and extract force-routes to the v2 (Temporal) path — even if RabbitMQ/MongoDB are still present. Defaults true; set false to force everything onto v2 ahead of decommissioning v1. Requires an app version with V1_ENABLED support. | `true` |
 
 ### LLMs Configuration
 
@@ -307,16 +311,21 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 
 ### Default Index Configuration
 
-| Name                                              | Description                                                                                                                                           | Value |
-| ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | ----- |
-| `config.defaultIndex.secret`                      | Name of an existing secret providing the DEFAULT_INDEX_* environment variables (overrides the inline values below)                                    | `""`  |
-| `config.defaultIndex.mongo.uri`                   | MongoDB connection URI for the platform-managed document store (uri, db, and collection must be set together)                                         | `""`  |
-| `config.defaultIndex.mongo.db`                    | MongoDB database name for the platform-managed document store                                                                                         | `""`  |
-| `config.defaultIndex.mongo.collection`            | MongoDB collection name for the platform-managed document store                                                                                       | `""`  |
-| `config.defaultIndex.turbopuffer.apiKey`          | Turbopuffer API key for platform-managed vector namespaces                                                                                            | `""`  |
-| `config.defaultIndex.turbopuffer.region`          | Turbopuffer region for namespaces created by the platform (optional)                                                                                  | `""`  |
-| `config.defaultIndex.turbopuffer.namespacePrefix` | Prefix prepended to platform-managed namespace names (optional)                                                                                       | `""`  |
-| `config.defaultIndex.destination`                 | Default destination for new directory indexes. Accepted values: "turbopuffer", "mongodb", "postgres". When unset the backend falls back to "mongodb". | `""`  |
+| Name                                              | Description                                                                                                                                                                                                                              | Value |
+| ------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----- |
+| `config.defaultIndex.secret`                      | Name of an existing secret providing the DEFAULT_INDEX_* environment variables (overrides the inline values below)                                                                                                                       | `""`  |
+| `config.defaultIndex.mongo.uri`                   | MongoDB connection URI for the platform-managed document store (uri, db, and collection must be set together)                                                                                                                            | `""`  |
+| `config.defaultIndex.mongo.db`                    | MongoDB database name for the platform-managed document store                                                                                                                                                                            | `""`  |
+| `config.defaultIndex.mongo.collection`            | MongoDB collection name for the platform-managed document store                                                                                                                                                                          | `""`  |
+| `config.defaultIndex.turbopuffer.apiKey`          | Turbopuffer API key for platform-managed vector namespaces                                                                                                                                                                               | `""`  |
+| `config.defaultIndex.turbopuffer.region`          | Turbopuffer region for namespaces created by the platform (optional)                                                                                                                                                                     | `""`  |
+| `config.defaultIndex.turbopuffer.namespacePrefix` | Prefix prepended to platform-managed namespace names (optional)                                                                                                                                                                          | `""`  |
+| `config.defaultIndex.postgres.host`               | PostgreSQL host for the platform-managed vector store (defaults to postgresql.host)                                                                                                                                                      | `""`  |
+| `config.defaultIndex.postgres.port`               | PostgreSQL port for the platform-managed vector store (defaults to postgresql.port)                                                                                                                                                      | `""`  |
+| `config.defaultIndex.postgres.database`           | PostgreSQL database for the platform-managed vector store (defaults to postgresql.database)                                                                                                                                              | `""`  |
+| `config.defaultIndex.postgres.username`           | PostgreSQL user for the platform-managed vector store (defaults to postgresql.username)                                                                                                                                                  | `""`  |
+| `config.defaultIndex.postgres.password`           | PostgreSQL password for the platform-managed vector store (defaults to postgresql.password)                                                                                                                                              | `""`  |
+| `config.defaultIndex.destination`                 | Default destination for new directory indexes. Accepted values: "turbopuffer", "mongodb", "postgres". When unset the backend falls back to "mongodb" ("postgres" when MongoDB is disabled, on app versions with MONGO_DISABLED support). | `""`  |
 
 ### authentication Configuration
 
@@ -381,6 +390,7 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 | `config.storageBuckets.s3proxy.image`           | S3Proxy image                                                                | `docker.io/andrewgaul/s3proxy:sha-001d042` |
 | `config.storageBuckets.s3proxy.imagePullPolicy` | S3Proxy image pull policy                                                    | `IfNotPresent`                             |
 | `config.storageBuckets.s3proxy.containerPort`   | S3Proxy container port                                                       | `8080`                                     |
+| `config.storageBuckets.s3proxy.logLevel`        | S3Proxy log level. Falls back to config.logLevel, then "info", when empty.   | `""`                                       |
 | `config.storageBuckets.s3proxy.securityContext` | Security context for the S3Proxy container                                   | `{}`                                       |
 | `config.storageBuckets.s3proxy.resources`       | Set container requests and limits for different resources like CPU or memory | `{}`                                       |
 | `config.storageBuckets.s3proxy.config`          | S3Proxy configuration ENV variables                                          | `{}`                                       |
@@ -539,217 +549,247 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 
 ### Frontend Configuration
 
-| Name                                   | Description                                                                                                       | Value                                            |
-| -------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
-| `frontend.horizontalPodAutoscalerSpec` | HorizontalPodAutoScaler configuration                                                                             | `{}`                                             |
-| `frontend.annotations`                 | Annotations added to the Frontend Deployment.                                                                     | `{}`                                             |
-| `frontend.image`                       | Frontend image                                                                                                    | `docker.io/llamaindex/llamacloud-frontend:0.8.5` |
-| `frontend.imagePullPolicy`             | Frontend image pull policy                                                                                        | `IfNotPresent`                                   |
-| `frontend.securityContext`             | Security context for the container                                                                                | `{}`                                             |
-| `frontend.serviceAccountAnnotations`   | Annotations to add to the service account                                                                         | `{}`                                             |
-| `frontend.nodeSelector`                | Node labels for pod assignment                                                                                    | `{}`                                             |
-| `frontend.tolerations`                 | Taints to tolerate on node assignment:                                                                            | `[]`                                             |
-| `frontend.affinity`                    | Pod scheduling constraints                                                                                        | `{}`                                             |
-| `frontend.topologySpreadConstraints`   | Topology Spread Constraints for frontend pods                                                                     | `[]`                                             |
-| `frontend.podAnnotations`              | Annotations to add to the resulting Pods of the Deployment.                                                       | `{}`                                             |
-| `frontend.podSecurityContext`          | Annotations to add to the resulting Pods of the Deployment.                                                       | `{}`                                             |
-| `frontend.resources`                   | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | `{}`                                             |
-| `frontend.extraEnvVariables`           | Extra environment variables to add to Frontend pods                                                               | `[]`                                             |
-| `frontend.volumeMounts`                | List of volumeMounts that can be mounted by containers belonging to the pod                                       | `[]`                                             |
-| `frontend.volumes`                     | List of volumes that can be mounted by containers belonging to the pod                                            | `[]`                                             |
+| Name                                   | Description                                                                                                                      | Value                                            |
+| -------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| `frontend.horizontalPodAutoscalerSpec` | HorizontalPodAutoScaler configuration                                                                                            | `{}`                                             |
+| `frontend.replicas`                    | Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set. | `nil`                                            |
+| `frontend.command`                     | Override the container command (entrypoint)                                                                                      | `[]`                                             |
+| `frontend.annotations`                 | Annotations added to the Frontend Deployment.                                                                                    | `{}`                                             |
+| `frontend.image`                       | Frontend image                                                                                                                   | `docker.io/llamaindex/llamacloud-frontend:0.8.5` |
+| `frontend.imagePullPolicy`             | Frontend image pull policy                                                                                                       | `IfNotPresent`                                   |
+| `frontend.securityContext`             | Security context for the container                                                                                               | `{}`                                             |
+| `frontend.serviceAccountAnnotations`   | Annotations to add to the service account                                                                                        | `{}`                                             |
+| `frontend.nodeSelector`                | Node labels for pod assignment                                                                                                   | `{}`                                             |
+| `frontend.tolerations`                 | Taints to tolerate on node assignment:                                                                                           | `[]`                                             |
+| `frontend.affinity`                    | Pod scheduling constraints                                                                                                       | `{}`                                             |
+| `frontend.topologySpreadConstraints`   | Topology Spread Constraints for frontend pods                                                                                    | `[]`                                             |
+| `frontend.podAnnotations`              | Annotations to add to the resulting Pods of the Deployment.                                                                      | `{}`                                             |
+| `frontend.podSecurityContext`          | Annotations to add to the resulting Pods of the Deployment.                                                                      | `{}`                                             |
+| `frontend.resources`                   | Set container requests and limits for different resources like CPU or memory (essential for production workloads)                | `{}`                                             |
+| `frontend.extraEnvVariables`           | Extra environment variables to add to Frontend pods                                                                              | `[]`                                             |
+| `frontend.volumeMounts`                | List of volumeMounts that can be mounted by containers belonging to the pod                                                      | `[]`                                             |
+| `frontend.volumes`                     | List of volumes that can be mounted by containers belonging to the pod                                                           | `[]`                                             |
 
 ### Backend Configuration
 
-| Name                                  | Description                                                                                                       | Value                                           |
-| ------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
-| `backend.horizontalPodAutoscalerSpec` | HorizontalPodAutoScaler configuration                                                                             | `{}`                                            |
-| `backend.annotations`                 | Annotations added to the Backend Deployment.                                                                      | `{}`                                            |
-| `backend.image`                       | Backend image                                                                                                     | `docker.io/llamaindex/llamacloud-backend:0.8.5` |
-| `backend.imagePullPolicy`             | Backend image pull policy                                                                                         | `IfNotPresent`                                  |
-| `backend.securityContext`             | Security context for the container                                                                                | `{}`                                            |
-| `backend.serviceAccountAnnotations`   | Annotations to add to the service account                                                                         | `{}`                                            |
-| `backend.nodeSelector`                | Node labels for pod assignment                                                                                    | `{}`                                            |
-| `backend.tolerations`                 | Taints to tolerate on node assignment:                                                                            | `[]`                                            |
-| `backend.affinity`                    | Pod scheduling constraints                                                                                        | `{}`                                            |
-| `backend.topologySpreadConstraints`   | Topology Spread Constraints for backend pods                                                                      | `[]`                                            |
-| `backend.podAnnotations`              | Annotations to add to the resulting Pods of the Deployment.                                                       | `{}`                                            |
-| `backend.podSecurityContext`          | Annotations to add to the resulting Pods of the Deployment.                                                       | `{}`                                            |
-| `backend.resources`                   | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | `{}`                                            |
-| `backend.extraEnvVariables`           | Extra environment variables to add to Backend pods                                                                | `[]`                                            |
-| `backend.volumeMounts`                | List of volumeMounts that can be mounted by containers belonging to the pod                                       | `[]`                                            |
-| `backend.volumes`                     | List of volumes that can be mounted by containers belonging to the pod                                            | `[]`                                            |
+| Name                                  | Description                                                                                                                      | Value                                           |
+| ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| `backend.horizontalPodAutoscalerSpec` | HorizontalPodAutoScaler configuration                                                                                            | `{}`                                            |
+| `backend.replicas`                    | Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set. | `nil`                                           |
+| `backend.command`                     | Override the container command (entrypoint)                                                                                      | `[]`                                            |
+| `backend.annotations`                 | Annotations added to the Backend Deployment.                                                                                     | `{}`                                            |
+| `backend.image`                       | Backend image                                                                                                                    | `docker.io/llamaindex/llamacloud-backend:0.8.5` |
+| `backend.imagePullPolicy`             | Backend image pull policy                                                                                                        | `IfNotPresent`                                  |
+| `backend.securityContext`             | Security context for the container                                                                                               | `{}`                                            |
+| `backend.serviceAccountAnnotations`   | Annotations to add to the service account                                                                                        | `{}`                                            |
+| `backend.nodeSelector`                | Node labels for pod assignment                                                                                                   | `{}`                                            |
+| `backend.tolerations`                 | Taints to tolerate on node assignment:                                                                                           | `[]`                                            |
+| `backend.affinity`                    | Pod scheduling constraints                                                                                                       | `{}`                                            |
+| `backend.topologySpreadConstraints`   | Topology Spread Constraints for backend pods                                                                                     | `[]`                                            |
+| `backend.podAnnotations`              | Annotations to add to the resulting Pods of the Deployment.                                                                      | `{}`                                            |
+| `backend.podSecurityContext`          | Annotations to add to the resulting Pods of the Deployment.                                                                      | `{}`                                            |
+| `backend.resources`                   | Set container requests and limits for different resources like CPU or memory (essential for production workloads)                | `{}`                                            |
+| `backend.extraEnvVariables`           | Extra environment variables to add to Backend pods                                                                               | `[]`                                            |
+| `backend.volumeMounts`                | List of volumeMounts that can be mounted by containers belonging to the pod                                                      | `[]`                                            |
+| `backend.volumes`                     | List of volumes that can be mounted by containers belonging to the pod                                                           | `[]`                                            |
 
 ### JobsService Configuration
 
-| Name                                      | Description                                                                                                       | Value                                           |
-| ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
-| `jobsService.horizontalPodAutoscalerSpec` | HorizontalPodAutoScaler configuration                                                                             | `{}`                                            |
-| `jobsService.annotations`                 | Annotations added to the JobsService Deployment.                                                                  | `{}`                                            |
-| `jobsService.image`                       | JobsService image                                                                                                 | `docker.io/llamaindex/llamacloud-backend:0.8.5` |
-| `jobsService.imagePullPolicy`             | JobsService image pull policy                                                                                     | `IfNotPresent`                                  |
-| `jobsService.securityContext`             | Security context for the container                                                                                | `{}`                                            |
-| `jobsService.serviceAccountAnnotations`   | Annotations to add to the service account                                                                         | `{}`                                            |
-| `jobsService.nodeSelector`                | Node labels for pod assignment                                                                                    | `{}`                                            |
-| `jobsService.tolerations`                 | Taints to tolerate on node assignment:                                                                            | `[]`                                            |
-| `jobsService.affinity`                    | Pod scheduling constraints                                                                                        | `{}`                                            |
-| `jobsService.topologySpreadConstraints`   | Topology Spread Constraints for JobsService pods                                                                  | `[]`                                            |
-| `jobsService.podAnnotations`              | Annotations to add to the resulting Pods of the Deployment.                                                       | `{}`                                            |
-| `jobsService.podSecurityContext`          | Annotations to add to the resulting Pods of the Deployment.                                                       | `{}`                                            |
-| `jobsService.resources`                   | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | `{}`                                            |
-| `jobsService.extraEnvVariables`           | Extra environment variables to add to JobsService pods                                                            | `[]`                                            |
-| `jobsService.volumeMounts`                | List of volumeMounts that can be mounted by containers belonging to the pod                                       | `[]`                                            |
-| `jobsService.volumes`                     | List of volumes that can be mounted by containers belonging to the pod                                            | `[]`                                            |
+| Name                                      | Description                                                                                                                      | Value                                           |
+| ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| `jobsService.horizontalPodAutoscalerSpec` | HorizontalPodAutoScaler configuration                                                                                            | `{}`                                            |
+| `jobsService.replicas`                    | Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set. | `nil`                                           |
+| `jobsService.command`                     | Override the container command (entrypoint)                                                                                      | `[]`                                            |
+| `jobsService.annotations`                 | Annotations added to the JobsService Deployment.                                                                                 | `{}`                                            |
+| `jobsService.image`                       | JobsService image                                                                                                                | `docker.io/llamaindex/llamacloud-backend:0.8.5` |
+| `jobsService.imagePullPolicy`             | JobsService image pull policy                                                                                                    | `IfNotPresent`                                  |
+| `jobsService.securityContext`             | Security context for the container                                                                                               | `{}`                                            |
+| `jobsService.serviceAccountAnnotations`   | Annotations to add to the service account                                                                                        | `{}`                                            |
+| `jobsService.nodeSelector`                | Node labels for pod assignment                                                                                                   | `{}`                                            |
+| `jobsService.tolerations`                 | Taints to tolerate on node assignment:                                                                                           | `[]`                                            |
+| `jobsService.affinity`                    | Pod scheduling constraints                                                                                                       | `{}`                                            |
+| `jobsService.topologySpreadConstraints`   | Topology Spread Constraints for JobsService pods                                                                                 | `[]`                                            |
+| `jobsService.podAnnotations`              | Annotations to add to the resulting Pods of the Deployment.                                                                      | `{}`                                            |
+| `jobsService.podSecurityContext`          | Annotations to add to the resulting Pods of the Deployment.                                                                      | `{}`                                            |
+| `jobsService.resources`                   | Set container requests and limits for different resources like CPU or memory (essential for production workloads)                | `{}`                                            |
+| `jobsService.extraEnvVariables`           | Extra environment variables to add to JobsService pods                                                                           | `[]`                                            |
+| `jobsService.volumeMounts`                | List of volumeMounts that can be mounted by containers belonging to the pod                                                      | `[]`                                            |
+| `jobsService.volumes`                     | List of volumes that can be mounted by containers belonging to the pod                                                           | `[]`                                            |
 
 ### JobsWorker Configuration
 
-| Name                                     | Description                                                                                                       | Value                                           |
-| ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
-| `jobsWorker.horizontalPodAutoscalerSpec` | HorizontalPodAutoScaler configuration                                                                             | `{}`                                            |
-| `jobsWorker.annotations`                 | Annotations added to the JobsWorker Deployment.                                                                   | `{}`                                            |
-| `jobsWorker.image`                       | JobsWorker image                                                                                                  | `docker.io/llamaindex/llamacloud-backend:0.8.5` |
-| `jobsWorker.imagePullPolicy`             | JobsWorker image pull policy                                                                                      | `IfNotPresent`                                  |
-| `jobsWorker.securityContext`             | Security context for the container                                                                                | `{}`                                            |
-| `jobsWorker.serviceAccountAnnotations`   | Annotations to add to the service account                                                                         | `{}`                                            |
-| `jobsWorker.nodeSelector`                | Node labels for pod assignment                                                                                    | `{}`                                            |
-| `jobsWorker.tolerations`                 | Taints to tolerate on node assignment:                                                                            | `[]`                                            |
-| `jobsWorker.affinity`                    | Pod scheduling constraints                                                                                        | `{}`                                            |
-| `jobsWorker.topologySpreadConstraints`   | Topology Spread Constraints for JobsWorker pods                                                                   | `[]`                                            |
-| `jobsWorker.podAnnotations`              | Annotations to add to the resulting Pods of the Deployment.                                                       | `{}`                                            |
-| `jobsWorker.podSecurityContext`          | Annotations to add to the resulting Pods of the Deployment.                                                       | `{}`                                            |
-| `jobsWorker.resources`                   | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | `{}`                                            |
-| `jobsWorker.extraEnvVariables`           | Extra environment variables to add to JobsWorker pods                                                             | `[]`                                            |
-| `jobsWorker.volumeMounts`                | List of volumeMounts that can be mounted by containers belonging to the pod                                       | `[]`                                            |
-| `jobsWorker.volumes`                     | List of volumes that can be mounted by containers belonging to the pod                                            | `[]`                                            |
+| Name                                     | Description                                                                                                                      | Value                                           |
+| ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| `jobsWorker.horizontalPodAutoscalerSpec` | HorizontalPodAutoScaler configuration                                                                                            | `{}`                                            |
+| `jobsWorker.replicas`                    | Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set. | `nil`                                           |
+| `jobsWorker.command`                     | Override the container command (entrypoint)                                                                                      | `[]`                                            |
+| `jobsWorker.annotations`                 | Annotations added to the JobsWorker Deployment.                                                                                  | `{}`                                            |
+| `jobsWorker.image`                       | JobsWorker image                                                                                                                 | `docker.io/llamaindex/llamacloud-backend:0.8.5` |
+| `jobsWorker.imagePullPolicy`             | JobsWorker image pull policy                                                                                                     | `IfNotPresent`                                  |
+| `jobsWorker.securityContext`             | Security context for the container                                                                                               | `{}`                                            |
+| `jobsWorker.serviceAccountAnnotations`   | Annotations to add to the service account                                                                                        | `{}`                                            |
+| `jobsWorker.nodeSelector`                | Node labels for pod assignment                                                                                                   | `{}`                                            |
+| `jobsWorker.tolerations`                 | Taints to tolerate on node assignment:                                                                                           | `[]`                                            |
+| `jobsWorker.affinity`                    | Pod scheduling constraints                                                                                                       | `{}`                                            |
+| `jobsWorker.topologySpreadConstraints`   | Topology Spread Constraints for JobsWorker pods                                                                                  | `[]`                                            |
+| `jobsWorker.podAnnotations`              | Annotations to add to the resulting Pods of the Deployment.                                                                      | `{}`                                            |
+| `jobsWorker.podSecurityContext`          | Annotations to add to the resulting Pods of the Deployment.                                                                      | `{}`                                            |
+| `jobsWorker.resources`                   | Set container requests and limits for different resources like CPU or memory (essential for production workloads)                | `{}`                                            |
+| `jobsWorker.extraEnvVariables`           | Extra environment variables to add to JobsWorker pods                                                                            | `[]`                                            |
+| `jobsWorker.volumeMounts`                | List of volumeMounts that can be mounted by containers belonging to the pod                                                      | `[]`                                            |
+| `jobsWorker.volumes`                     | List of volumes that can be mounted by containers belonging to the pod                                                           | `[]`                                            |
 
 ### LlamaParse Configuration
 
-| Name                                     | Description                                                                                                       | Value                                              |
-| ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
-| `llamaParse.horizontalPodAutoscalerSpec` | HorizontalPodAutoScaler configuration                                                                             | `{}`                                               |
-| `llamaParse.annotations`                 | Annotations added to the LlamaParse Deployment.                                                                   | `{}`                                               |
-| `llamaParse.image`                       | LlamaParse image                                                                                                  | `docker.io/llamaindex/llamacloud-llamaparse:0.8.5` |
-| `llamaParse.imagePullPolicy`             | LlamaParse image pull policy                                                                                      | `IfNotPresent`                                     |
-| `llamaParse.securityContext`             | Security context for the container                                                                                | `{}`                                               |
-| `llamaParse.serviceAccountAnnotations`   | Annotations to add to the service account                                                                         | `{}`                                               |
-| `llamaParse.nodeSelector`                | Node labels for pod assignment                                                                                    | `{}`                                               |
-| `llamaParse.tolerations`                 | Taints to tolerate on node assignment:                                                                            | `[]`                                               |
-| `llamaParse.affinity`                    | Pod scheduling constraints                                                                                        | `{}`                                               |
-| `llamaParse.topologySpreadConstraints`   | Topology Spread Constraints for LlamaParse pods                                                                   | `[]`                                               |
-| `llamaParse.podAnnotations`              | Annotations to add to the resulting Pods of the Deployment.                                                       | `{}`                                               |
-| `llamaParse.podSecurityContext`          | Annotations to add to the resulting Pods of the Deployment.                                                       | `{}`                                               |
-| `llamaParse.resources`                   | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | `{}`                                               |
-| `llamaParse.extraEnvVariables`           | Extra environment variables to add to LlamaParse pods                                                             | `[]`                                               |
-| `llamaParse.volumeMounts`                | List of volumeMounts that can be mounted by containers belonging to the pod                                       | `[]`                                               |
-| `llamaParse.volumes`                     | List of volumes that can be mounted by containers belonging to the pod                                            | `[]`                                               |
+| Name                                     | Description                                                                                                                      | Value                                              |
+| ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| `llamaParse.horizontalPodAutoscalerSpec` | HorizontalPodAutoScaler configuration                                                                                            | `{}`                                               |
+| `llamaParse.replicas`                    | Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set. | `nil`                                              |
+| `llamaParse.command`                     | Override the container command (entrypoint)                                                                                      | `[]`                                               |
+| `llamaParse.annotations`                 | Annotations added to the LlamaParse Deployment.                                                                                  | `{}`                                               |
+| `llamaParse.image`                       | LlamaParse image                                                                                                                 | `docker.io/llamaindex/llamacloud-llamaparse:0.8.5` |
+| `llamaParse.imagePullPolicy`             | LlamaParse image pull policy                                                                                                     | `IfNotPresent`                                     |
+| `llamaParse.securityContext`             | Security context for the container                                                                                               | `{}`                                               |
+| `llamaParse.serviceAccountAnnotations`   | Annotations to add to the service account                                                                                        | `{}`                                               |
+| `llamaParse.nodeSelector`                | Node labels for pod assignment                                                                                                   | `{}`                                               |
+| `llamaParse.tolerations`                 | Taints to tolerate on node assignment:                                                                                           | `[]`                                               |
+| `llamaParse.affinity`                    | Pod scheduling constraints                                                                                                       | `{}`                                               |
+| `llamaParse.topologySpreadConstraints`   | Topology Spread Constraints for LlamaParse pods                                                                                  | `[]`                                               |
+| `llamaParse.podAnnotations`              | Annotations to add to the resulting Pods of the Deployment.                                                                      | `{}`                                               |
+| `llamaParse.podSecurityContext`          | Annotations to add to the resulting Pods of the Deployment.                                                                      | `{}`                                               |
+| `llamaParse.resources`                   | Set container requests and limits for different resources like CPU or memory (essential for production workloads)                | `{}`                                               |
+| `llamaParse.extraEnvVariables`           | Extra environment variables to add to LlamaParse pods                                                                            | `[]`                                               |
+| `llamaParse.volumeMounts`                | List of volumeMounts that can be mounted by containers belonging to the pod                                                      | `[]`                                               |
+| `llamaParse.volumes`                     | List of volumes that can be mounted by containers belonging to the pod                                                           | `[]`                                               |
 
 ### LlamaParseOcr Configuration
 
-| Name                                        | Description                                                                                                       | Value                                                  |
-| ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
-| `llamaParseOcr.horizontalPodAutoscalerSpec` | HorizontalPodAutoScaler configuration                                                                             | `{}`                                                   |
-| `llamaParseOcr.annotations`                 | Annotations added to the LlamaParseOcr Deployment.                                                                | `{}`                                                   |
-| `llamaParseOcr.image`                       | LlamaParseOcr image                                                                                               | `docker.io/llamaindex/llamacloud-llamaparse-ocr:0.8.5` |
-| `llamaParseOcr.imagePullPolicy`             | LlamaParseOcr image pull policy                                                                                   | `IfNotPresent`                                         |
-| `llamaParseOcr.securityContext`             | Security context for the container                                                                                | `{}`                                                   |
-| `llamaParseOcr.serviceAccountAnnotations`   | Annotations to add to the service account                                                                         | `{}`                                                   |
-| `llamaParseOcr.nodeSelector`                | Node labels for pod assignment                                                                                    | `{}`                                                   |
-| `llamaParseOcr.tolerations`                 | Taints to tolerate on node assignment:                                                                            | `[]`                                                   |
-| `llamaParseOcr.affinity`                    | Pod scheduling constraints                                                                                        | `{}`                                                   |
-| `llamaParseOcr.topologySpreadConstraints`   | Topology Spread Constraints for LlamaParseOcr pods                                                                | `[]`                                                   |
-| `llamaParseOcr.podAnnotations`              | Annotations to add to the resulting Pods of the Deployment.                                                       | `{}`                                                   |
-| `llamaParseOcr.podSecurityContext`          | Annotations to add to the resulting Pods of the Deployment.                                                       | `{}`                                                   |
-| `llamaParseOcr.resources`                   | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | `{}`                                                   |
-| `llamaParseOcr.gpuResourceName`             | Kubernetes GPU resource name used when config.parseOcr.gpu is true                                                | `nvidia.com/gpu`                                       |
-| `llamaParseOcr.gpuCount`                    | Number of GPUs requested when config.parseOcr.gpu is true                                                         | `1`                                                    |
-| `llamaParseOcr.extraEnvVariables`           | Extra environment variables to add to LlamaParseOcr pods                                                          | `[]`                                                   |
-| `llamaParseOcr.volumeMounts`                | List of volumeMounts that can be mounted by containers belonging to the pod                                       | `[]`                                                   |
-| `llamaParseOcr.volumes`                     | List of volumes that can be mounted by containers belonging to the pod                                            | `[]`                                                   |
+| Name                                        | Description                                                                                                                      | Value                                                  |
+| ------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
+| `llamaParseOcr.horizontalPodAutoscalerSpec` | HorizontalPodAutoScaler configuration                                                                                            | `{}`                                                   |
+| `llamaParseOcr.replicas`                    | Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set. | `nil`                                                  |
+| `llamaParseOcr.command`                     | Override the container command (entrypoint)                                                                                      | `[]`                                                   |
+| `llamaParseOcr.annotations`                 | Annotations added to the LlamaParseOcr Deployment.                                                                               | `{}`                                                   |
+| `llamaParseOcr.image`                       | LlamaParseOcr image                                                                                                              | `docker.io/llamaindex/llamacloud-llamaparse-ocr:0.8.5` |
+| `llamaParseOcr.imagePullPolicy`             | LlamaParseOcr image pull policy                                                                                                  | `IfNotPresent`                                         |
+| `llamaParseOcr.securityContext`             | Security context for the container                                                                                               | `{}`                                                   |
+| `llamaParseOcr.serviceAccountAnnotations`   | Annotations to add to the service account                                                                                        | `{}`                                                   |
+| `llamaParseOcr.nodeSelector`                | Node labels for pod assignment                                                                                                   | `{}`                                                   |
+| `llamaParseOcr.tolerations`                 | Taints to tolerate on node assignment:                                                                                           | `[]`                                                   |
+| `llamaParseOcr.affinity`                    | Pod scheduling constraints                                                                                                       | `{}`                                                   |
+| `llamaParseOcr.topologySpreadConstraints`   | Topology Spread Constraints for LlamaParseOcr pods                                                                               | `[]`                                                   |
+| `llamaParseOcr.podAnnotations`              | Annotations to add to the resulting Pods of the Deployment.                                                                      | `{}`                                                   |
+| `llamaParseOcr.podSecurityContext`          | Annotations to add to the resulting Pods of the Deployment.                                                                      | `{}`                                                   |
+| `llamaParseOcr.resources`                   | Set container requests and limits for different resources like CPU or memory (essential for production workloads)                | `{}`                                                   |
+| `llamaParseOcr.gpuResourceName`             | Kubernetes GPU resource name used when config.parseOcr.gpu is true                                                               | `nvidia.com/gpu`                                       |
+| `llamaParseOcr.gpuCount`                    | Number of GPUs requested when config.parseOcr.gpu is true                                                                        | `1`                                                    |
+| `llamaParseOcr.extraEnvVariables`           | Extra environment variables to add to LlamaParseOcr pods                                                                         | `[]`                                                   |
+| `llamaParseOcr.volumeMounts`                | List of volumeMounts that can be mounted by containers belonging to the pod                                                      | `[]`                                                   |
+| `llamaParseOcr.volumes`                     | List of volumes that can be mounted by containers belonging to the pod                                                           | `[]`                                                   |
 
 ### LlamaParse Layout Detection API Configuration
 
-| Name                                                       | Description                                                                                                       | Value                                                        |
-| ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| `llamaParseLayoutDetectionApi.horizontalPodAutoscalerSpec` | HorizontalPodAutoScaler configuration                                                                             | `{}`                                                         |
-| `llamaParseLayoutDetectionApi.annotations`                 | Annotations added to the LlamaParseLayoutDetectionApi Deployment.                                                 | `{}`                                                         |
-| `llamaParseLayoutDetectionApi.image`                       | LlamaParseLayoutDetectionApi image                                                                                | `docker.io/llamaindex/llamacloud-layout-detection-api:0.8.5` |
-| `llamaParseLayoutDetectionApi.imagePullPolicy`             | LlamaParseLayoutDetectionApi image pull policy                                                                    | `IfNotPresent`                                               |
-| `llamaParseLayoutDetectionApi.securityContext`             | Security context for the container                                                                                | `{}`                                                         |
-| `llamaParseLayoutDetectionApi.serviceAccountAnnotations`   | Annotations to add to the service account                                                                         | `{}`                                                         |
-| `llamaParseLayoutDetectionApi.nodeSelector`                | Node labels for pod assignment                                                                                    | `{}`                                                         |
-| `llamaParseLayoutDetectionApi.tolerations`                 | Taints to tolerate on node assignment:                                                                            | `[]`                                                         |
-| `llamaParseLayoutDetectionApi.affinity`                    | Pod scheduling constraints                                                                                        | `{}`                                                         |
-| `llamaParseLayoutDetectionApi.topologySpreadConstraints`   | Topology Spread Constraints for LlamaParseLayoutDetectionApi pods                                                 | `[]`                                                         |
-| `llamaParseLayoutDetectionApi.podAnnotations`              | Annotations to add to the resulting Pods of the Deployment.                                                       | `{}`                                                         |
-| `llamaParseLayoutDetectionApi.podSecurityContext`          | Annotations to add to the resulting Pods of the Deployment.                                                       | `{}`                                                         |
-| `llamaParseLayoutDetectionApi.resources`                   | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | `{}`                                                         |
-| `llamaParseLayoutDetectionApi.extraEnvVariables`           | Extra environment variables to add to LlamaParseLayoutDetectionApi pods                                           | `[]`                                                         |
-| `llamaParseLayoutDetectionApi.volumeMounts`                | List of volumeMounts that can be mounted by containers belonging to the pod                                       | `[]`                                                         |
-| `llamaParseLayoutDetectionApi.volumes`                     | List of volumes that can be mounted by containers belonging to the pod                                            | `[]`                                                         |
+| Name                                                       | Description                                                                                                                      | Value                                                        |
+| ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| `llamaParseLayoutDetectionApi.horizontalPodAutoscalerSpec` | HorizontalPodAutoScaler configuration                                                                                            | `{}`                                                         |
+| `llamaParseLayoutDetectionApi.replicas`                    | Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set. | `nil`                                                        |
+| `llamaParseLayoutDetectionApi.command`                     | Override the container command (entrypoint)                                                                                      | `[]`                                                         |
+| `llamaParseLayoutDetectionApi.annotations`                 | Annotations added to the LlamaParseLayoutDetectionApi Deployment.                                                                | `{}`                                                         |
+| `llamaParseLayoutDetectionApi.image`                       | LlamaParseLayoutDetectionApi image                                                                                               | `docker.io/llamaindex/llamacloud-layout-detection-api:0.8.5` |
+| `llamaParseLayoutDetectionApi.imagePullPolicy`             | LlamaParseLayoutDetectionApi image pull policy                                                                                   | `IfNotPresent`                                               |
+| `llamaParseLayoutDetectionApi.securityContext`             | Security context for the container                                                                                               | `{}`                                                         |
+| `llamaParseLayoutDetectionApi.serviceAccountAnnotations`   | Annotations to add to the service account                                                                                        | `{}`                                                         |
+| `llamaParseLayoutDetectionApi.nodeSelector`                | Node labels for pod assignment                                                                                                   | `{}`                                                         |
+| `llamaParseLayoutDetectionApi.tolerations`                 | Taints to tolerate on node assignment:                                                                                           | `[]`                                                         |
+| `llamaParseLayoutDetectionApi.affinity`                    | Pod scheduling constraints                                                                                                       | `{}`                                                         |
+| `llamaParseLayoutDetectionApi.topologySpreadConstraints`   | Topology Spread Constraints for LlamaParseLayoutDetectionApi pods                                                                | `[]`                                                         |
+| `llamaParseLayoutDetectionApi.podAnnotations`              | Annotations to add to the resulting Pods of the Deployment.                                                                      | `{}`                                                         |
+| `llamaParseLayoutDetectionApi.podSecurityContext`          | Annotations to add to the resulting Pods of the Deployment.                                                                      | `{}`                                                         |
+| `llamaParseLayoutDetectionApi.resources`                   | Set container requests and limits for different resources like CPU or memory (essential for production workloads)                | `{}`                                                         |
+| `llamaParseLayoutDetectionApi.extraEnvVariables`           | Extra environment variables to add to LlamaParseLayoutDetectionApi pods                                                          | `[]`                                                         |
+| `llamaParseLayoutDetectionApi.volumeMounts`                | List of volumeMounts that can be mounted by containers belonging to the pod                                                      | `[]`                                                         |
+| `llamaParseLayoutDetectionApi.volumes`                     | List of volumes that can be mounted by containers belonging to the pod                                                           | `[]`                                                         |
 
 ### LlamaParse Layout Detection API V3 Configuration (BYOC)
 
-| Name                                                         | Description                                                                                                       | Value            |
-| ------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------- | ---------------- |
-| `llamaParseLayoutDetectionApiV3.horizontalPodAutoscalerSpec` | HorizontalPodAutoScaler configuration                                                                             | `{}`             |
-| `llamaParseLayoutDetectionApiV3.annotations`                 | Annotations added to the LlamaParseLayoutDetectionApiV3 Deployment.                                               | `{}`             |
-| `llamaParseLayoutDetectionApiV3.image`                       | LlamaParseLayoutDetectionApiV3 image (layout detection + figure classifier)                                       | `""`             |
-| `llamaParseLayoutDetectionApiV3.imagePullPolicy`             | LlamaParseLayoutDetectionApiV3 image pull policy                                                                  | `IfNotPresent`   |
-| `llamaParseLayoutDetectionApiV3.securityContext`             | Security context for the container                                                                                | `{}`             |
-| `llamaParseLayoutDetectionApiV3.serviceAccountAnnotations`   | Annotations to add to the service account                                                                         | `{}`             |
-| `llamaParseLayoutDetectionApiV3.nodeSelector`                | Node labels for pod assignment                                                                                    | `{}`             |
-| `llamaParseLayoutDetectionApiV3.tolerations`                 | Taints to tolerate on node assignment:                                                                            | `[]`             |
-| `llamaParseLayoutDetectionApiV3.affinity`                    | Pod scheduling constraints                                                                                        | `{}`             |
-| `llamaParseLayoutDetectionApiV3.topologySpreadConstraints`   | Topology Spread Constraints for LlamaParseLayoutDetectionApiV3 pods                                               | `[]`             |
-| `llamaParseLayoutDetectionApiV3.podAnnotations`              | Annotations to add to the resulting Pods of the Deployment.                                                       | `{}`             |
-| `llamaParseLayoutDetectionApiV3.podSecurityContext`          | Annotations to add to the resulting Pods of the Deployment.                                                       | `{}`             |
-| `llamaParseLayoutDetectionApiV3.resources`                   | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | `{}`             |
-| `llamaParseLayoutDetectionApiV3.gpuResourceName`             | Kubernetes GPU resource name used when config.parseLayoutDetectionV3.gpu is true                                  | `nvidia.com/gpu` |
-| `llamaParseLayoutDetectionApiV3.gpuCount`                    | Number of GPUs requested when config.parseLayoutDetectionV3.gpu is true                                           | `1`              |
-| `llamaParseLayoutDetectionApiV3.extraEnvVariables`           | Extra environment variables to add to LlamaParseLayoutDetectionApiV3 pods                                         | `[]`             |
-| `llamaParseLayoutDetectionApiV3.volumeMounts`                | List of volumeMounts that can be mounted by containers belonging to the pod                                       | `[]`             |
-| `llamaParseLayoutDetectionApiV3.volumes`                     | List of volumes that can be mounted by containers belonging to the pod                                            | `[]`             |
+| Name                                                         | Description                                                                                                                      | Value            |
+| ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- | ---------------- |
+| `llamaParseLayoutDetectionApiV3.horizontalPodAutoscalerSpec` | HorizontalPodAutoScaler configuration                                                                                            | `{}`             |
+| `llamaParseLayoutDetectionApiV3.replicas`                    | Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set. | `nil`            |
+| `llamaParseLayoutDetectionApiV3.command`                     | Override the container command (entrypoint)                                                                                      | `[]`             |
+| `llamaParseLayoutDetectionApiV3.annotations`                 | Annotations added to the LlamaParseLayoutDetectionApiV3 Deployment.                                                              | `{}`             |
+| `llamaParseLayoutDetectionApiV3.image`                       | LlamaParseLayoutDetectionApiV3 image (layout detection + figure classifier)                                                      | `""`             |
+| `llamaParseLayoutDetectionApiV3.imagePullPolicy`             | LlamaParseLayoutDetectionApiV3 image pull policy                                                                                 | `IfNotPresent`   |
+| `llamaParseLayoutDetectionApiV3.securityContext`             | Security context for the container                                                                                               | `{}`             |
+| `llamaParseLayoutDetectionApiV3.serviceAccountAnnotations`   | Annotations to add to the service account                                                                                        | `{}`             |
+| `llamaParseLayoutDetectionApiV3.nodeSelector`                | Node labels for pod assignment                                                                                                   | `{}`             |
+| `llamaParseLayoutDetectionApiV3.tolerations`                 | Taints to tolerate on node assignment:                                                                                           | `[]`             |
+| `llamaParseLayoutDetectionApiV3.affinity`                    | Pod scheduling constraints                                                                                                       | `{}`             |
+| `llamaParseLayoutDetectionApiV3.topologySpreadConstraints`   | Topology Spread Constraints for LlamaParseLayoutDetectionApiV3 pods                                                              | `[]`             |
+| `llamaParseLayoutDetectionApiV3.podAnnotations`              | Annotations to add to the resulting Pods of the Deployment.                                                                      | `{}`             |
+| `llamaParseLayoutDetectionApiV3.podSecurityContext`          | Annotations to add to the resulting Pods of the Deployment.                                                                      | `{}`             |
+| `llamaParseLayoutDetectionApiV3.resources`                   | Set container requests and limits for different resources like CPU or memory (essential for production workloads)                | `{}`             |
+| `llamaParseLayoutDetectionApiV3.gpuResourceName`             | Kubernetes GPU resource name used when config.parseLayoutDetectionV3.gpu is true                                                 | `nvidia.com/gpu` |
+| `llamaParseLayoutDetectionApiV3.gpuCount`                    | Number of GPUs requested when config.parseLayoutDetectionV3.gpu is true                                                          | `1`              |
+| `llamaParseLayoutDetectionApiV3.extraEnvVariables`           | Extra environment variables to add to LlamaParseLayoutDetectionApiV3 pods                                                        | `[]`             |
+| `llamaParseLayoutDetectionApiV3.volumeMounts`                | List of volumeMounts that can be mounted by containers belonging to the pod                                                      | `[]`             |
+| `llamaParseLayoutDetectionApiV3.volumes`                     | List of volumes that can be mounted by containers belonging to the pod                                                           | `[]`             |
 
 ### Usage Configuration
 
-| Name                                | Description                                                                                                       | Value                                           |
-| ----------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
-| `usage.horizontalPodAutoscalerSpec` | HorizontalPodAutoScaler configuration                                                                             | `{}`                                            |
-| `usage.annotations`                 | Annotations added to the LlamaParseLayoutDetectionApi Deployment.                                                 | `{}`                                            |
-| `usage.image`                       | LlamaParseLayoutDetectionApi image                                                                                | `docker.io/llamaindex/llamacloud-backend:0.8.5` |
-| `usage.imagePullPolicy`             | LlamaParseLayoutDetectionApi image pull policy                                                                    | `IfNotPresent`                                  |
-| `usage.securityContext`             | Security context for the container                                                                                | `{}`                                            |
-| `usage.serviceAccountAnnotations`   | Annotations to add to the service account                                                                         | `{}`                                            |
-| `usage.nodeSelector`                | Node labels for pod assignment                                                                                    | `{}`                                            |
-| `usage.tolerations`                 | Taints to tolerate on node assignment:                                                                            | `[]`                                            |
-| `usage.affinity`                    | Pod scheduling constraints                                                                                        | `{}`                                            |
-| `usage.topologySpreadConstraints`   | Topology Spread Constraints for usage pods                                                                        | `[]`                                            |
-| `usage.podAnnotations`              | Annotations to add to the resulting Pods of the Deployment.                                                       | `{}`                                            |
-| `usage.podSecurityContext`          | Annotations to add to the resulting Pods of the Deployment.                                                       | `{}`                                            |
-| `usage.resources`                   | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | `{}`                                            |
-| `usage.extraEnvVariables`           | Extra environment variables to add to LlamaParseLayoutDetectionApi pods                                           | `[]`                                            |
-| `usage.volumeMounts`                | List of volumeMounts that can be mounted by containers belonging to the pod                                       | `[]`                                            |
-| `usage.volumes`                     | List of volumes that can be mounted by containers belonging to the pod                                            | `[]`                                            |
+| Name                                | Description                                                                                                                      | Value                                           |
+| ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| `usage.horizontalPodAutoscalerSpec` | HorizontalPodAutoScaler configuration                                                                                            | `{}`                                            |
+| `usage.replicas`                    | Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set. | `nil`                                           |
+| `usage.command`                     | Override the container command (entrypoint)                                                                                      | `[]`                                            |
+| `usage.annotations`                 | Annotations added to the LlamaParseLayoutDetectionApi Deployment.                                                                | `{}`                                            |
+| `usage.image`                       | LlamaParseLayoutDetectionApi image                                                                                               | `docker.io/llamaindex/llamacloud-backend:0.8.5` |
+| `usage.imagePullPolicy`             | LlamaParseLayoutDetectionApi image pull policy                                                                                   | `IfNotPresent`                                  |
+| `usage.securityContext`             | Security context for the container                                                                                               | `{}`                                            |
+| `usage.serviceAccountAnnotations`   | Annotations to add to the service account                                                                                        | `{}`                                            |
+| `usage.nodeSelector`                | Node labels for pod assignment                                                                                                   | `{}`                                            |
+| `usage.tolerations`                 | Taints to tolerate on node assignment:                                                                                           | `[]`                                            |
+| `usage.affinity`                    | Pod scheduling constraints                                                                                                       | `{}`                                            |
+| `usage.topologySpreadConstraints`   | Topology Spread Constraints for usage pods                                                                                       | `[]`                                            |
+| `usage.podAnnotations`              | Annotations to add to the resulting Pods of the Deployment.                                                                      | `{}`                                            |
+| `usage.podSecurityContext`          | Annotations to add to the resulting Pods of the Deployment.                                                                      | `{}`                                            |
+| `usage.resources`                   | Set container requests and limits for different resources like CPU or memory (essential for production workloads)                | `{}`                                            |
+| `usage.extraEnvVariables`           | Extra environment variables to add to LlamaParseLayoutDetectionApi pods                                                          | `[]`                                            |
+| `usage.volumeMounts`                | List of volumeMounts that can be mounted by containers belonging to the pod                                                      | `[]`                                            |
+| `usage.volumes`                     | List of volumes that can be mounted by containers belonging to the pod                                                           | `[]`                                            |
+
+### ParseBench Configuration
+
+| Name                          | Description                                                                        | Value          |
+| ----------------------------- | ---------------------------------------------------------------------------------- | -------------- |
+| `parsebench.enabled`          | Enable the ParseBench benchmark feature                                            | `false`        |
+| `parsebench.image`            | ParseBench Job image                                                               | `""`           |
+| `parsebench.imagePullPolicy`  | ParseBench Job image pull policy                                                   | `IfNotPresent` |
+| `parsebench.apiKeySecretName` | Existing secret name containing LLAMA_CLOUD_API_KEY (takes precedence over apiKey) | `""`           |
+| `parsebench.apiKey`           | LLAMA_CLOUD_API_KEY value to store in a chart-managed secret                       | `""`           |
 
 ### Temporal Workloads Configuration
 
-| Name                                                       | Description                                                                                                       | Value                                              |
-| ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
-| `temporalWorkloads.llamaParse.horizontalPodAutoscalerSpec` | HorizontalPodAutoScaler configuration                                                                             | `{}`                                               |
-| `temporalWorkloads.llamaParse.annotations`                 | Annotations added to the temporal llamaparse Deployment.                                                          | `{}`                                               |
-| `temporalWorkloads.llamaParse.image`                       | temporal llamaparse image                                                                                         | `docker.io/llamaindex/llamacloud-llamaparse:0.8.5` |
-| `temporalWorkloads.llamaParse.imagePullPolicy`             | temporal llamaparse image pull policy                                                                             | `IfNotPresent`                                     |
-| `temporalWorkloads.llamaParse.securityContext`             | Security context for the container                                                                                | `{}`                                               |
-| `temporalWorkloads.llamaParse.serviceAccountAnnotations`   | Annotations to add to the service account                                                                         | `{}`                                               |
-| `temporalWorkloads.llamaParse.nodeSelector`                | Node labels for pod assignment                                                                                    | `{}`                                               |
-| `temporalWorkloads.llamaParse.tolerations`                 | Taints to tolerate on node assignment:                                                                            | `[]`                                               |
-| `temporalWorkloads.llamaParse.affinity`                    | Pod scheduling constraints                                                                                        | `{}`                                               |
-| `temporalWorkloads.llamaParse.topologySpreadConstraints`   | Topology Spread Constraints for temporal llamaparse pods                                                          | `[]`                                               |
-| `temporalWorkloads.llamaParse.podAnnotations`              | Annotations to add to the resulting Pods of the Deployment.                                                       | `{}`                                               |
-| `temporalWorkloads.llamaParse.podSecurityContext`          | Annotations to add to the resulting Pods of the Deployment.                                                       | `{}`                                               |
-| `temporalWorkloads.llamaParse.resources`                   | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | `{}`                                               |
-| `temporalWorkloads.llamaParse.extraEnvVariables`           | Extra environment variables to add to temporal llamaparse pods                                                    | `[]`                                               |
-| `temporalWorkloads.llamaParse.volumeMounts`                | List of volumeMounts that can be mounted by containers belonging to the pod                                       | `[]`                                               |
-| `temporalWorkloads.llamaParse.volumes`                     | List of volumes that can be mounted by containers belonging to the pod                                            | `[]`                                               |
+| Name                                                       | Description                                                                                                                      | Value                                              |
+| ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| `temporalWorkloads.llamaParse.horizontalPodAutoscalerSpec` | HorizontalPodAutoScaler configuration                                                                                            | `{}`                                               |
+| `temporalWorkloads.llamaParse.replicas`                    | Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set. | `nil`                                              |
+| `temporalWorkloads.llamaParse.command`                     | Override the container command (entrypoint)                                                                                      | `[]`                                               |
+| `temporalWorkloads.llamaParse.annotations`                 | Annotations added to the temporal llamaparse Deployment.                                                                         | `{}`                                               |
+| `temporalWorkloads.llamaParse.image`                       | temporal llamaparse image                                                                                                        | `docker.io/llamaindex/llamacloud-llamaparse:0.8.5` |
+| `temporalWorkloads.llamaParse.imagePullPolicy`             | temporal llamaparse image pull policy                                                                                            | `IfNotPresent`                                     |
+| `temporalWorkloads.llamaParse.securityContext`             | Security context for the container                                                                                               | `{}`                                               |
+| `temporalWorkloads.llamaParse.serviceAccountAnnotations`   | Annotations to add to the service account                                                                                        | `{}`                                               |
+| `temporalWorkloads.llamaParse.nodeSelector`                | Node labels for pod assignment                                                                                                   | `{}`                                               |
+| `temporalWorkloads.llamaParse.tolerations`                 | Taints to tolerate on node assignment:                                                                                           | `[]`                                               |
+| `temporalWorkloads.llamaParse.affinity`                    | Pod scheduling constraints                                                                                                       | `{}`                                               |
+| `temporalWorkloads.llamaParse.topologySpreadConstraints`   | Topology Spread Constraints for temporal llamaparse pods                                                                         | `[]`                                               |
+| `temporalWorkloads.llamaParse.podAnnotations`              | Annotations to add to the resulting Pods of the Deployment.                                                                      | `{}`                                               |
+| `temporalWorkloads.llamaParse.podSecurityContext`          | Annotations to add to the resulting Pods of the Deployment.                                                                      | `{}`                                               |
+| `temporalWorkloads.llamaParse.resources`                   | Set container requests and limits for different resources like CPU or memory (essential for production workloads)                | `{}`                                               |
+| `temporalWorkloads.llamaParse.extraEnvVariables`           | Extra environment variables to add to temporal llamaparse pods                                                                   | `[]`                                               |
+| `temporalWorkloads.llamaParse.volumeMounts`                | List of volumeMounts that can be mounted by containers belonging to the pod                                                      | `[]`                                               |
+| `temporalWorkloads.llamaParse.volumes`                     | List of volumes that can be mounted by containers belonging to the pod                                                           | `[]`                                               |
 
 ### Temporal Workers Configuration
 
