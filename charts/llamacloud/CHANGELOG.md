@@ -1,5 +1,36 @@
 # CHANGELOG
 
+## [0.9.0] - 2026-07-24
+
+### Platform
+- **[Security]** Security updates
+
+### Parse
+- **[Improvement]** Agentic parsing accuracy and layout/bounding-box attribution improvements
+- **[Improvement]** Improved form field detection and enriched form parsing
+- **[Improvement]** Improved table column header recovery
+- **[Feature]** Per-page confidence scores for parse jobs
+- **[Bug Fix]** Parsing reliability fixes (HEIC/image fast tier, Office inputs, AcroForm repair)
+
+### Extract
+- **[Improvement]** Improved grounded confidence scoring
+- **[Improvement]** More consistent extraction results
+
+### Index
+- **[Improvement]** Refined index creation and management experience
+
+### Sheets
+- **[Feature]** Added cost_effective and agentic tiers with per-region billing to the Sheets API
+- **[Improvement]** Improved spreadsheet classification performance and reliability
+
+### App
+- **[Improvement]** Performance improvements (faster screenshots, faster organization switching)
+
+### Helm
+- **[Removal]** Removed ParseBench packaging from the chart (the `parsebench.*` values and templates are gone)
+- **[Feature]** Added managed embeddings and managed Qdrant options via runtime feature flags
+
+
 ## [0.8.6] - 2026-07-21
 
 ### Platform

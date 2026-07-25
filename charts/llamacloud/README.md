@@ -46,7 +46,7 @@ The LlamaCloud charts provide easy deployment options for the 3rd party dependen
 
 ### Optional Subcharts (BYOC)
 
-The following dependencies are bundled as optional Helm subcharts and are **disabled by default**. Each is gated by a single boolean flag in `values.yaml`. Enable only the ones you need; configure each via its `*-subchart` pass-through key (see the [upstream chart docs](#) linked below for the full value schema).
+The following dependencies are bundled as optional Helm subcharts and are **disabled by default**. Each is gated by a single boolean flag in `values.yaml`. Enable only the ones you need; configure each via its `*-subchart` pass-through key (see each subchart's upstream docs, linked in the table below, for the full value schema).
 
 | Flag                                 | Subchart                                                                                                                       | Default | Purpose                                                                                                                                       |
 | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------ | ------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -327,6 +327,12 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 | `config.defaultIndex.postgres.password`           | PostgreSQL password for the platform-managed vector store (defaults to postgresql.password)                                                                                                                                              | `""`  |
 | `config.defaultIndex.destination`                 | Default destination for new directory indexes. Accepted values: "turbopuffer", "mongodb", "postgres". When unset the backend falls back to "mongodb" ("postgres" when MongoDB is disabled, on app versions with MONGO_DISABLED support). | `""`  |
 
+### Managed Embeddings Configuration
+
+| Name                               | Description                                                                                                                                                                                                              | Value   |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------- |
+| `config.managedEmbeddings.enabled` | Offer managed embeddings as a default option when creating indexes (also requires an embedding model such as openai-text-embedding-3-small registered in the LLM provider config). Applied to both backend and frontend. | `false` |
+
 ### authentication Configuration
 
 
@@ -425,12 +431,12 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 
 ### LlamaExtract Configuration
 
-| Name                                      | Description                                                                      | Value                 |
-| ----------------------------------------- | -------------------------------------------------------------------------------- | --------------------- |
-| `config.extraction.multimodalModel`       | LlamaExtract multimodal model (gemini-2.0-flash, gemini-2.5-pro, openai-gpt-4-1) | `openai-gpt-4-1`      |
-| `config.extraction.schemaGenerationModel` | LlamaExtract schema generation model (gemini-2.0-flash, openai-gpt-4-1-mini)     | `openai-gpt-4-1-mini` |
-| `config.extraction.maxPages`              | LlamaExtract max pages allowed                                                   | `500`                 |
-| `config.extraction.maxFileSizeMb`         | LlamaExtract max file size (MB) allowed                                          | `100`                 |
+| Name                                      | Description                                                                                                       | Value                 |
+| ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | --------------------- |
+| `config.extraction.multimodalModel`       | Deprecated: ignored as of chart 0.8.4; no longer rendered. The multimodal parse model defaults to openai-gpt-4-1. | `openai-gpt-4-1`      |
+| `config.extraction.schemaGenerationModel` | LlamaExtract schema generation model (openai-gpt-4-1-mini)                                                        | `openai-gpt-4-1-mini` |
+| `config.extraction.maxPages`              | LlamaExtract max pages allowed                                                                                    | `500`                 |
+| `config.extraction.maxFileSizeMb`         | LlamaExtract max file size (MB) allowed                                                                           | `100`                 |
 
 ### Jobs Configuration
 
@@ -555,7 +561,7 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 | `frontend.replicas`                    | Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set. | `nil`                                            |
 | `frontend.command`                     | Override the container command (entrypoint)                                                                                      | `[]`                                             |
 | `frontend.annotations`                 | Annotations added to the Frontend Deployment.                                                                                    | `{}`                                             |
-| `frontend.image`                       | Frontend image                                                                                                                   | `docker.io/llamaindex/llamacloud-frontend:0.8.5` |
+| `frontend.image`                       | Frontend image                                                                                                                   | `docker.io/llamaindex/llamacloud-frontend:0.9.0` |
 | `frontend.imagePullPolicy`             | Frontend image pull policy                                                                                                       | `IfNotPresent`                                   |
 | `frontend.securityContext`             | Security context for the container                                                                                               | `{}`                                             |
 | `frontend.serviceAccountAnnotations`   | Annotations to add to the service account                                                                                        | `{}`                                             |
@@ -578,7 +584,7 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 | `backend.replicas`                    | Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set. | `nil`                                           |
 | `backend.command`                     | Override the container command (entrypoint)                                                                                      | `[]`                                            |
 | `backend.annotations`                 | Annotations added to the Backend Deployment.                                                                                     | `{}`                                            |
-| `backend.image`                       | Backend image                                                                                                                    | `docker.io/llamaindex/llamacloud-backend:0.8.5` |
+| `backend.image`                       | Backend image                                                                                                                    | `docker.io/llamaindex/llamacloud-backend:0.9.0` |
 | `backend.imagePullPolicy`             | Backend image pull policy                                                                                                        | `IfNotPresent`                                  |
 | `backend.securityContext`             | Security context for the container                                                                                               | `{}`                                            |
 | `backend.serviceAccountAnnotations`   | Annotations to add to the service account                                                                                        | `{}`                                            |
@@ -601,7 +607,7 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 | `jobsService.replicas`                    | Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set. | `nil`                                           |
 | `jobsService.command`                     | Override the container command (entrypoint)                                                                                      | `[]`                                            |
 | `jobsService.annotations`                 | Annotations added to the JobsService Deployment.                                                                                 | `{}`                                            |
-| `jobsService.image`                       | JobsService image                                                                                                                | `docker.io/llamaindex/llamacloud-backend:0.8.5` |
+| `jobsService.image`                       | JobsService image                                                                                                                | `docker.io/llamaindex/llamacloud-backend:0.9.0` |
 | `jobsService.imagePullPolicy`             | JobsService image pull policy                                                                                                    | `IfNotPresent`                                  |
 | `jobsService.securityContext`             | Security context for the container                                                                                               | `{}`                                            |
 | `jobsService.serviceAccountAnnotations`   | Annotations to add to the service account                                                                                        | `{}`                                            |
@@ -624,7 +630,7 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 | `jobsWorker.replicas`                    | Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set. | `nil`                                           |
 | `jobsWorker.command`                     | Override the container command (entrypoint)                                                                                      | `[]`                                            |
 | `jobsWorker.annotations`                 | Annotations added to the JobsWorker Deployment.                                                                                  | `{}`                                            |
-| `jobsWorker.image`                       | JobsWorker image                                                                                                                 | `docker.io/llamaindex/llamacloud-backend:0.8.5` |
+| `jobsWorker.image`                       | JobsWorker image                                                                                                                 | `docker.io/llamaindex/llamacloud-backend:0.9.0` |
 | `jobsWorker.imagePullPolicy`             | JobsWorker image pull policy                                                                                                     | `IfNotPresent`                                  |
 | `jobsWorker.securityContext`             | Security context for the container                                                                                               | `{}`                                            |
 | `jobsWorker.serviceAccountAnnotations`   | Annotations to add to the service account                                                                                        | `{}`                                            |
@@ -647,7 +653,7 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 | `llamaParse.replicas`                    | Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set. | `nil`                                              |
 | `llamaParse.command`                     | Override the container command (entrypoint)                                                                                      | `[]`                                               |
 | `llamaParse.annotations`                 | Annotations added to the LlamaParse Deployment.                                                                                  | `{}`                                               |
-| `llamaParse.image`                       | LlamaParse image                                                                                                                 | `docker.io/llamaindex/llamacloud-llamaparse:0.8.5` |
+| `llamaParse.image`                       | LlamaParse image                                                                                                                 | `docker.io/llamaindex/llamacloud-llamaparse:0.9.0` |
 | `llamaParse.imagePullPolicy`             | LlamaParse image pull policy                                                                                                     | `IfNotPresent`                                     |
 | `llamaParse.securityContext`             | Security context for the container                                                                                               | `{}`                                               |
 | `llamaParse.serviceAccountAnnotations`   | Annotations to add to the service account                                                                                        | `{}`                                               |
@@ -670,7 +676,7 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 | `llamaParseOcr.replicas`                    | Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set. | `nil`                                                  |
 | `llamaParseOcr.command`                     | Override the container command (entrypoint)                                                                                      | `[]`                                                   |
 | `llamaParseOcr.annotations`                 | Annotations added to the LlamaParseOcr Deployment.                                                                               | `{}`                                                   |
-| `llamaParseOcr.image`                       | LlamaParseOcr image                                                                                                              | `docker.io/llamaindex/llamacloud-llamaparse-ocr:0.8.5` |
+| `llamaParseOcr.image`                       | LlamaParseOcr image                                                                                                              | `docker.io/llamaindex/llamacloud-llamaparse-ocr:0.9.0` |
 | `llamaParseOcr.imagePullPolicy`             | LlamaParseOcr image pull policy                                                                                                  | `IfNotPresent`                                         |
 | `llamaParseOcr.securityContext`             | Security context for the container                                                                                               | `{}`                                                   |
 | `llamaParseOcr.serviceAccountAnnotations`   | Annotations to add to the service account                                                                                        | `{}`                                                   |
@@ -695,7 +701,7 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 | `llamaParseLayoutDetectionApi.replicas`                    | Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set. | `nil`                                                        |
 | `llamaParseLayoutDetectionApi.command`                     | Override the container command (entrypoint)                                                                                      | `[]`                                                         |
 | `llamaParseLayoutDetectionApi.annotations`                 | Annotations added to the LlamaParseLayoutDetectionApi Deployment.                                                                | `{}`                                                         |
-| `llamaParseLayoutDetectionApi.image`                       | LlamaParseLayoutDetectionApi image                                                                                               | `docker.io/llamaindex/llamacloud-layout-detection-api:0.8.5` |
+| `llamaParseLayoutDetectionApi.image`                       | LlamaParseLayoutDetectionApi image                                                                                               | `docker.io/llamaindex/llamacloud-layout-detection-api:0.9.0` |
 | `llamaParseLayoutDetectionApi.imagePullPolicy`             | LlamaParseLayoutDetectionApi image pull policy                                                                                   | `IfNotPresent`                                               |
 | `llamaParseLayoutDetectionApi.securityContext`             | Security context for the container                                                                                               | `{}`                                                         |
 | `llamaParseLayoutDetectionApi.serviceAccountAnnotations`   | Annotations to add to the service account                                                                                        | `{}`                                                         |
@@ -743,7 +749,7 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 | `usage.replicas`                    | Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set. | `nil`                                           |
 | `usage.command`                     | Override the container command (entrypoint)                                                                                      | `[]`                                            |
 | `usage.annotations`                 | Annotations added to the LlamaParseLayoutDetectionApi Deployment.                                                                | `{}`                                            |
-| `usage.image`                       | LlamaParseLayoutDetectionApi image                                                                                               | `docker.io/llamaindex/llamacloud-backend:0.8.5` |
+| `usage.image`                       | LlamaParseLayoutDetectionApi image                                                                                               | `docker.io/llamaindex/llamacloud-backend:0.9.0` |
 | `usage.imagePullPolicy`             | LlamaParseLayoutDetectionApi image pull policy                                                                                   | `IfNotPresent`                                  |
 | `usage.securityContext`             | Security context for the container                                                                                               | `{}`                                            |
 | `usage.serviceAccountAnnotations`   | Annotations to add to the service account                                                                                        | `{}`                                            |
@@ -758,16 +764,6 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 | `usage.volumeMounts`                | List of volumeMounts that can be mounted by containers belonging to the pod                                                      | `[]`                                            |
 | `usage.volumes`                     | List of volumes that can be mounted by containers belonging to the pod                                                           | `[]`                                            |
 
-### ParseBench Configuration
-
-| Name                          | Description                                                                        | Value          |
-| ----------------------------- | ---------------------------------------------------------------------------------- | -------------- |
-| `parsebench.enabled`          | Enable the ParseBench benchmark feature                                            | `false`        |
-| `parsebench.image`            | ParseBench Job image                                                               | `""`           |
-| `parsebench.imagePullPolicy`  | ParseBench Job image pull policy                                                   | `IfNotPresent` |
-| `parsebench.apiKeySecretName` | Existing secret name containing LLAMA_CLOUD_API_KEY (takes precedence over apiKey) | `""`           |
-| `parsebench.apiKey`           | LLAMA_CLOUD_API_KEY value to store in a chart-managed secret                       | `""`           |
-
 ### Temporal Workloads Configuration
 
 | Name                                                       | Description                                                                                                                      | Value                                              |
@@ -776,7 +772,7 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 | `temporalWorkloads.llamaParse.replicas`                    | Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set. | `nil`                                              |
 | `temporalWorkloads.llamaParse.command`                     | Override the container command (entrypoint)                                                                                      | `[]`                                               |
 | `temporalWorkloads.llamaParse.annotations`                 | Annotations added to the temporal llamaparse Deployment.                                                                         | `{}`                                               |
-| `temporalWorkloads.llamaParse.image`                       | temporal llamaparse image                                                                                                        | `docker.io/llamaindex/llamacloud-llamaparse:0.8.5` |
+| `temporalWorkloads.llamaParse.image`                       | temporal llamaparse image                                                                                                        | `docker.io/llamaindex/llamacloud-llamaparse:0.9.0` |
 | `temporalWorkloads.llamaParse.imagePullPolicy`             | temporal llamaparse image pull policy                                                                                            | `IfNotPresent`                                     |
 | `temporalWorkloads.llamaParse.securityContext`             | Security context for the container                                                                                               | `{}`                                               |
 | `temporalWorkloads.llamaParse.serviceAccountAnnotations`   | Annotations to add to the service account                                                                                        | `{}`                                               |
@@ -797,7 +793,7 @@ For more information about using this chart, visit the [Official LlamaCloud Docu
 | ---------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
 | `temporalWorkloads.workers.temporal-jobs-worker.horizontalPodAutoscalerSpec` | HorizontalPodAutoScaler configuration                                                                             | `{}`                                            |
 | `temporalWorkloads.workers.temporal-jobs-worker.annotations`                 | Annotations added to the temporal-jobs-worker Deployment.                                                         | `{}`                                            |
-| `temporalWorkloads.workers.temporal-jobs-worker.image`                       | Frontend image                                                                                                    | `docker.io/llamaindex/llamacloud-backend:0.8.5` |
+| `temporalWorkloads.workers.temporal-jobs-worker.image`                       | Frontend image                                                                                                    | `docker.io/llamaindex/llamacloud-backend:0.9.0` |
 | `temporalWorkloads.workers.temporal-jobs-worker.imagePullPolicy`             | Frontend image pull policy                                                                                        | `IfNotPresent`                                  |
 | `temporalWorkloads.workers.temporal-jobs-worker.command`                     | Command to run in the container                                                                                   | `[]`                                            |
 | `temporalWorkloads.workers.temporal-jobs-worker.securityContext`             | Security context for the container                                                                                | `{}`                                            |

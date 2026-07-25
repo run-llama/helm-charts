@@ -71,7 +71,7 @@ monitoring:
 Install kube-prometheus-stack as a separate release using the example values in this directory:
 
 ```bash
-helm install kube-prometheus-stack prometheus-community/kube-prometheus-stack -f kube-prometheus-stack-example-values.yaml
+helm install kube-prometheus-stack prometheus-community/kube-prometheus-stack -f kube-prometheus-example-values.yaml
 ```
 
 You can then either enable `monitoring.serviceMonitors.enabled` to have this chart render the ServiceMonitor objects, or manually apply the sample YAMLs shown below.
@@ -80,104 +80,41 @@ For more information about the kube-prometheus-stack Helm chart, please refer to
 
 ## Metrics
 
-The following services expose metrics:
+The following services expose Prometheus-format metrics at their `/metrics` endpoint:
 
 - `backend`
 - `jobsService`
 - `jobsWorker`
 - `llamaParse`
-- `llamaParseOcr`
+- `usage`
+- `llamaParseOcr` (only when `config.parseOcr.enabled: true` — default `true`)
+- the Bifrost gateway, when `bifrost.deploy: true`
 
-Metrics are scraped at the `/metrics` endpoint of each service.
+Metrics collection is controlled by the single chart-wide `monitoring.serviceMonitors.enabled` toggle described in Options A/B above — enabling it renders a `ServiceMonitor` for every deployed component automatically, so you don't need to hand-write one per service.
 
-To enable metrics for a service, you need to set the `metrics.enabled` parameter to `true` in the service's values.yaml file.
+### Manual ServiceMonitors (Option C only)
 
-```yaml
-# example
-backend:
-  metrics:
-    enabled: true
-```
+If you're running kube-prometheus-stack as a standalone release and aren't using `monitoring.serviceMonitors.enabled`, apply the sample `ServiceMonitor` objects in this directory instead:
 
-### ServiceMonitors
-
-If using the Prometheus Operator, you can create a ServiceMontior to scrape the metrics from the service. This can be done by creating a `ServiceMonitor` object.
-
-First, make sure you enable metrics for the service you want to monitor, e.g. backend (aka llamacloud).
-
-```yaml
-# example
-backend:
-  metrics:
-    enabled: true
-```
-
-```yaml
-apiVersion: monitoring.coreos.com/v1
-kind: ServiceMonitor
-metadata:
-  # 👇 Could be anything but by convention just give it the name of the service you want to monitor.
-  name: llamacloud
-  # 👇 Namespace where the ServiceMonitor object itself lives. For kube-prometheus-stack this is usually 
-  # the same namespace where you installed the chart (e.g. "monitoring").
-  namespace: <kube-prometheus-stack-namespace>
-  labels:
-    # 👇 MUST match kube-prometheus-stack's .Values.prometheus.prometheusSpec.serviceMonitorSelector
-    # Typically this is the same namespace as above
-    release: kube-prometheus-stack
-spec:
-  namespaceSelector:
-    matchNames:
-      - <namespace-where-llamacloud-service-lives>
-  selector:
-    matchLabels:
-      app.kubernetes.io/instance: llamacloud
-      app.kubernetes.io/name: llamacloud
-      app.kubernetes.io/managed-by: Helm
-  endpoints:
-    - port: http          # matches .spec.ports[].name in your Service
-      path: /metrics      # change if your app exposes metrics elsewhere
-      interval: 30s
-      scrapeTimeout: 10s
-```
-
-Refer to the sample `ServiceMonitor` objects which you can `kubectl apply`:
 - [LlamaCloud Service Monitor](./llamacloud-service-monitor.yaml)
 - [LlamaCloud Parse Service Monitor](./llamacloud-parse-service-monitor.yaml)
 
-The main services to monitor are:
+Update the `namespace`, `namespaceSelector`, and `release` label to match your environment. The main services to monitor are:
 - `backend`
 - `jobsService`
 - `jobsWorker`
 - `llamaParse`
 - `llamaParseOcr`
+- `usage`
 
-You can simply copy-paste the above samples to create monitors these other services. Only the names change.
+You can copy-paste the above samples to create monitors for the other services — only the names change. Bifrost is templated separately by the chart (see `templates/monitoring/servicemonitor-bifrost.yaml`) and isn't included as a standalone sample here.
 
 ## Dashboards
 
 We have a couple of dashboards that are useful for monitoring LlamaCloud. These dashboards are starting points for monitoring your services. For production enviroments, we recommend extending these dashboards to better suit your needs.
 
 - [LlamaCloud Dashboard](./llamacloud-dashboard.json)
+- [LlamaCloud Indexing Dashboard](./llamacloud-indexing-dashboard.json)
 - [LlamaParse Dashboard](./llamaparse-dashboard.json)
 
 The above json files can be imported into a Grafana instance. Feel free to refer to the [Grafana documentation](https://grafana.com/docs/grafana/latest/dashboards/build-dashboards/import-dashboards/) for more information.
-
-## Prometheus Alerts
-
-Alerting is a crucial part of monitoring your LlamaCloud deployment, especially in production environments. These helm charts support the ability to directly define Prometheus rules in the `values.yaml` file.
-
-```yaml
-# example
-backend:
-  metrics:
-    enabled: true
-    rules:
-      enabled: true
-      spec:
-        - alert: "Backend is down"
-          expr: absent(up{job='backend'})
-          for: 1m
-          labels:
-            severity: "critical"
-```

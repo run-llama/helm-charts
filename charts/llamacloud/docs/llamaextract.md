@@ -8,15 +8,10 @@ For in-depth information about how LlamaExtract, please refer to our [public doc
 
 To enable LlamaExtract in your BYOC deployment, you'll need to do a few things:
 
-- **Make sure your deployment is running version `0.3.0` or higher**
-- **Create a new LlamaExtract filestorage bucket in your cloud provider**
-    - The bucket name LlamaCloud will store LlamaExtract specific files from is `llama-platform-extract-output`. This can be overriden by setting `.Values.global.config.llamaExtractOutputCloudBucketName` to your desired bucket name in your `values.yaml` file.
-- **Configure the backend pod LLM access**
-    - If you haven't done this already to enable other LlamaCloud features, you'll need to do so now.
-    - You will need to configure the `backend` sevice to have access to OpenAI's `gpt4o` model.
-    - OpenAI credentials can be added at either `.Values.backend.config.openAiApiKey` or via a secret object reference at `.Values.backend.config.existingOpenAiApiKeySecretName`.
-    - You can also configured Azure OpenAI credentials at `.Values.backend.config.azureOpenAi.enabled` with either static credentials at `.Values.backend.config.azureOpenAi.key` and `.Values.backend.config.azureOpenAi.endpoint` and other fields for the Azure OpenAI configuration or a secret object reference at `.Values.backend.config.azureOpenAi.existingSecret`.
-- **Configure LlamaParse LLM access**
-    - Similarly to the backend pod, you'll need to configure the `llamaParse` service to have access to OpenAI, but this time for the `gpt4o-mini` model.
-    - OpenAI credentials can be added at either `.Values.llamaParse.config.openAiApiKey` or via a secret object reference at `.Values.llamaParse.config.existingOpenAiApiKeySecretName`.
-    - You can also configured Azure OpenAI credentials at `.Values.llamaParse.config.azureOpenAi.enabled` with either static credentials at `.Values.llamaParse.config.azureOpenAi.key` and `.Values.llamaParse.config.azureOpenAi.endpoint` and other fields for the Azure OpenAI configuration or a secret object reference at `.Values.llamaParse.config.azureOpenAi.existingSecret`.
+- **Create a new LlamaExtract file-storage bucket in your cloud provider**
+    - By default LlamaCloud stores LlamaExtract-specific files in a bucket named `llama-platform-extract-output`. Override it by setting `config.storageBuckets.extractOutput` to your desired bucket name in your `values.yaml`.
+- **Configure LLM access**
+    - LLM credentials are configured once, globally, under `config.llms.*` and are shared across all LlamaCloud services (there is no longer a per-service `backend.config` / `llamaParse.config` block). If you already configured LLM access to enable other features, LlamaExtract will reuse it.
+    - LlamaExtract runs OpenAI `openai-gpt-4-1`-family models by default (the schema-generation model is set via `config.extraction.schemaGenerationModel`, default `openai-gpt-4-1-mini`), so provide OpenAI (or Azure OpenAI) credentials:
+        - **OpenAI**: set the key inline at `config.llms.openAi.apiKey`, or reference an existing secret with `config.llms.openAi.secret`.
+        - **Azure OpenAI**: reference your secret with `config.llms.azureOpenAi.secret` and declare your model deployments under `config.llms.azureOpenAi.deployments` (a list of `{model, deploymentName, apiKey, baseUrl, apiVersion}` entries).

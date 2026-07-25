@@ -1534,33 +1534,6 @@
             },
             "additionalProperties": false
         },
-        "parsebench": {
-            "type": "object",
-            "properties": {
-                "apiKey": {
-                    "type": "string"
-                },
-                "apiKeySecretName": {
-                    "type": "string"
-                },
-                "enabled": {
-                    "type": "boolean"
-                },
-                "image": {
-                    "type": "string"
-                },
-                "imagePullPolicy": {
-                    "type": "string",
-                    "enum": [
-                        "",
-                        "Always",
-                        "IfNotPresent",
-                        "Never"
-                    ]
-                }
-            },
-            "additionalProperties": false
-        },
         "postgresql": {
             "type": "object",
             "properties": {

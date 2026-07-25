@@ -300,7 +300,9 @@ redis:
 #### Temporal
 ```yaml
 temporal:
-  enabled: true
+  # Set deploy: true to run Temporal as a bundled subchart instead of
+  # connecting to an external instance.
+  deploy: false
   host: "temporal-frontend"
   port: 7233
 ```

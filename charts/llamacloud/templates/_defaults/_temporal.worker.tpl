@@ -134,10 +134,6 @@ Parameters:
     name: urls-config
 - configMapRef:
     name: temporal-connection-config
-{{- if ((.root.Values).parsebench).enabled }}
-- configMapRef:
-    name: parsebench-config
-{{- end }}
 {{- if (include "llamacloud.component.temporal.worker.configMap" $) }}
 - configMapRef:
     name: {{ .component.name | quote }}

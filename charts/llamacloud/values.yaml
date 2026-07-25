@@ -208,7 +208,7 @@ temporal-subchart:
 ## @section Llama Agents Configuration
 # @schema additionalProperties: false
 llamaAgents:
-  ## @param llamaAgents.enabled Feature gate. Auto-enabled when deploy=true or controlPlaneUrl is set. Set explicitly to override.
+  ## @param llamaAgents.enabled [nullable] Feature gate. Auto-enabled when deploy=true or controlPlaneUrl is set. Set explicitly to override.
   # @schema type: [boolean, "null"]
   enabled: null
   ## @param llamaAgents.deploy Deploy the llama-agents subchart. CRDs must be pre-installed separately.
@@ -685,9 +685,9 @@ config:
   ## @section LlamaExtract Configuration
   # @schema additionalProperties: false
   extraction:
-    ## @param config.extraction.multimodalModel LlamaExtract multimodal model (gemini-2.0-flash, gemini-2.5-pro, openai-gpt-4-1)
+    ## @param config.extraction.multimodalModel Deprecated: ignored as of chart 0.8.4; no longer rendered. The multimodal parse model defaults to openai-gpt-4-1.
     multimodalModel: "openai-gpt-4-1"
-    ## @param config.extraction.schemaGenerationModel LlamaExtract schema generation model (gemini-2.0-flash, openai-gpt-4-1-mini)
+    ## @param config.extraction.schemaGenerationModel LlamaExtract schema generation model (openai-gpt-4-1-mini)
     schemaGenerationModel: "openai-gpt-4-1-mini"
     ## @param config.extraction.maxPages LlamaExtract max pages allowed
     maxPages: 500
@@ -918,7 +918,7 @@ frontend:
   ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/
   horizontalPodAutoscalerSpec: {}
 
-  ## @param frontend.replicas Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set.
+  ## @param frontend.replicas [nullable] Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set.
   # @schema type: [integer, "null"];minimum: 0
   replicas: null
 
@@ -929,7 +929,7 @@ frontend:
   annotations: {}
 
   ## @param frontend.image Frontend image
-  image: docker.io/llamaindex/llamacloud-frontend:0.8.6
+  image: docker.io/llamaindex/llamacloud-frontend:0.9.0
 
   ## @param frontend.imagePullPolicy Frontend image pull policy
   # @schema enum: ["", Always, IfNotPresent, Never]
@@ -989,7 +989,7 @@ backend:
   ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/
   horizontalPodAutoscalerSpec: {}
 
-  ## @param backend.replicas Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set.
+  ## @param backend.replicas [nullable] Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set.
   # @schema type: [integer, "null"];minimum: 0
   replicas: null
 
@@ -1000,7 +1000,7 @@ backend:
   annotations: {}
 
   ## @param backend.image Backend image
-  image: docker.io/llamaindex/llamacloud-backend:0.8.6
+  image: docker.io/llamaindex/llamacloud-backend:0.9.0
 
   ## @param backend.imagePullPolicy Backend image pull policy
   # @schema enum: ["", Always, IfNotPresent, Never]
@@ -1060,7 +1060,7 @@ jobsService:
   ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/
   horizontalPodAutoscalerSpec: {}
 
-  ## @param jobsService.replicas Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set.
+  ## @param jobsService.replicas [nullable] Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set.
   # @schema type: [integer, "null"];minimum: 0
   replicas: null
 
@@ -1071,7 +1071,7 @@ jobsService:
   annotations: {}
 
   ## @param jobsService.image JobsService image
-  image: docker.io/llamaindex/llamacloud-backend:0.8.6
+  image: docker.io/llamaindex/llamacloud-backend:0.9.0
 
   ## @param jobsService.imagePullPolicy JobsService image pull policy
   # @schema enum: ["", Always, IfNotPresent, Never]
@@ -1131,7 +1131,7 @@ jobsWorker:
   ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/
   horizontalPodAutoscalerSpec: {}
 
-  ## @param jobsWorker.replicas Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set.
+  ## @param jobsWorker.replicas [nullable] Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set.
   # @schema type: [integer, "null"];minimum: 0
   replicas: null
 
@@ -1142,7 +1142,7 @@ jobsWorker:
   annotations: {}
 
   ## @param jobsWorker.image JobsWorker image
-  image: docker.io/llamaindex/llamacloud-backend:0.8.6
+  image: docker.io/llamaindex/llamacloud-backend:0.9.0
 
   ## @param jobsWorker.imagePullPolicy JobsWorker image pull policy
   # @schema enum: ["", Always, IfNotPresent, Never]
@@ -1202,7 +1202,7 @@ llamaParse:
   ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/
   horizontalPodAutoscalerSpec: {}
 
-  ## @param llamaParse.replicas Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set.
+  ## @param llamaParse.replicas [nullable] Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set.
   # @schema type: [integer, "null"];minimum: 0
   replicas: null
 
@@ -1213,7 +1213,7 @@ llamaParse:
   annotations: {}
 
   ## @param llamaParse.image LlamaParse image
-  image: docker.io/llamaindex/llamacloud-llamaparse:0.8.6
+  image: docker.io/llamaindex/llamacloud-llamaparse:0.9.0
 
   ## @param llamaParse.imagePullPolicy LlamaParse image pull policy
   # @schema enum: ["", Always, IfNotPresent, Never]
@@ -1273,7 +1273,7 @@ llamaParseOcr:
   ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/
   horizontalPodAutoscalerSpec: {}
 
-  ## @param llamaParseOcr.replicas Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set.
+  ## @param llamaParseOcr.replicas [nullable] Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set.
   # @schema type: [integer, "null"];minimum: 0
   replicas: null
 
@@ -1284,7 +1284,7 @@ llamaParseOcr:
   annotations: {}
 
   ## @param llamaParseOcr.image LlamaParseOcr image
-  image: docker.io/llamaindex/llamacloud-llamaparse-ocr:0.8.6
+  image: docker.io/llamaindex/llamacloud-llamaparse-ocr:0.9.0
 
   ## @param llamaParseOcr.imagePullPolicy LlamaParseOcr image pull policy
   # @schema enum: ["", Always, IfNotPresent, Never]
@@ -1351,7 +1351,7 @@ llamaParseLayoutDetectionApi:
   ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/
   horizontalPodAutoscalerSpec: {}
 
-  ## @param llamaParseLayoutDetectionApi.replicas Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set.
+  ## @param llamaParseLayoutDetectionApi.replicas [nullable] Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set.
   # @schema type: [integer, "null"];minimum: 0
   replicas: null
 
@@ -1362,7 +1362,7 @@ llamaParseLayoutDetectionApi:
   annotations: {}
 
   ## @param llamaParseLayoutDetectionApi.image LlamaParseLayoutDetectionApi image
-  image: docker.io/llamaindex/llamacloud-layout-detection-api:0.8.6
+  image: docker.io/llamaindex/llamacloud-layout-detection-api:0.9.0
 
   ## @param llamaParseLayoutDetectionApi.imagePullPolicy LlamaParseLayoutDetectionApi image pull policy
   # @schema enum: ["", Always, IfNotPresent, Never]
@@ -1422,7 +1422,7 @@ llamaParseLayoutDetectionApiV3:
   ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/
   horizontalPodAutoscalerSpec: {}
 
-  ## @param llamaParseLayoutDetectionApiV3.replicas Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set.
+  ## @param llamaParseLayoutDetectionApiV3.replicas [nullable] Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set.
   # @schema type: [integer, "null"];minimum: 0
   replicas: null
 
@@ -1501,7 +1501,7 @@ usage:
   ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/
   horizontalPodAutoscalerSpec: {}
 
-  ## @param usage.replicas Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set.
+  ## @param usage.replicas [nullable] Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set.
   # @schema type: [integer, "null"];minimum: 0
   replicas: null
 
@@ -1512,7 +1512,7 @@ usage:
   annotations: {}
 
   ## @param usage.image LlamaParseLayoutDetectionApi image
-  image: docker.io/llamaindex/llamacloud-backend:0.8.6
+  image: docker.io/llamaindex/llamacloud-backend:0.9.0
 
   ## @param usage.imagePullPolicy LlamaParseLayoutDetectionApi image pull policy
   # @schema enum: ["", Always, IfNotPresent, Never]
@@ -1565,26 +1565,6 @@ usage:
   ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-volume-storage/
   volumes: []
 
-## @section ParseBench Configuration
-# @schema additionalProperties: false
-parsebench:
-  ## @param parsebench.enabled Enable the ParseBench benchmark feature
-  enabled: false
-
-  ## @param parsebench.image ParseBench Job image
-  image: ""
-
-  ## @param parsebench.imagePullPolicy ParseBench Job image pull policy
-  # @schema enum: ["", Always, IfNotPresent, Never]
-  imagePullPolicy: IfNotPresent
-
-  ## @param parsebench.apiKeySecretName Existing secret name containing LLAMA_CLOUD_API_KEY (takes precedence over apiKey)
-  apiKeySecretName: ""
-
-  ## @param parsebench.apiKey LLAMA_CLOUD_API_KEY value to store in a chart-managed secret
-  ## Leave empty if apiKeySecretName is provided.
-  apiKey: ""
-
 ## @section Temporal Workloads Configuration
 ## Temporal workloads configuration only used when Temporal is enabled
 # @schema additionalProperties: false
@@ -1595,7 +1575,7 @@ temporalWorkloads:
     ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/
     horizontalPodAutoscalerSpec: {}
 
-    ## @param temporalWorkloads.llamaParse.replicas Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set.
+    ## @param temporalWorkloads.llamaParse.replicas [nullable] Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set.
     # @schema type: [integer, "null"];minimum: 0
     replicas: null
 
@@ -1606,7 +1586,7 @@ temporalWorkloads:
     annotations: {}
 
     ## @param temporalWorkloads.llamaParse.image temporal llamaparse image
-    image: docker.io/llamaindex/llamacloud-llamaparse:0.8.6
+    image: docker.io/llamaindex/llamacloud-llamaparse:0.9.0
 
     ## @param temporalWorkloads.llamaParse.imagePullPolicy temporal llamaparse image pull policy
     # @schema enum: ["", Always, IfNotPresent, Never]
@@ -1673,7 +1653,7 @@ temporalWorkloads:
       annotations: {}
 
       ## @param temporalWorkloads.workers.temporal-jobs-worker.image Frontend image
-      image: docker.io/llamaindex/llamacloud-backend:0.8.6
+      image: docker.io/llamaindex/llamacloud-backend:0.9.0
 
       ## @param temporalWorkloads.workers.temporal-jobs-worker.imagePullPolicy Frontend image pull policy
       # @schema enum: ["", Always, IfNotPresent, Never]

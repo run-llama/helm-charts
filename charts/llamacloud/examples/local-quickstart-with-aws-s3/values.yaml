@@ -187,14 +187,14 @@ config:
     enabled: true
 
 frontend:
-  image: docker.io/llamaindex/llamacloud-frontend:0.5.11
+  image: docker.io/llamaindex/llamacloud-frontend:0.9.0
   resources:
     requests:
       cpu: "250m"
       memory: "256Mi"
 
 backend:
-  image: docker.io/llamaindex/llamacloud-backend:0.5.11
+  image: docker.io/llamaindex/llamacloud-backend:0.9.0
   resources: 
     requests:
       cpu: "250m"
@@ -206,7 +206,7 @@ backend:
     value: "<REPLACE>"
 
 jobsService:
-  image: docker.io/llamaindex/llamacloud-backend:0.5.11
+  image: docker.io/llamaindex/llamacloud-backend:0.9.0
   resources:
     requests:
       cpu: "250m"
@@ -219,7 +219,7 @@ jobsService:
     value: "<REPLACE>"
 
 jobsWorker:
-  image: docker.io/llamaindex/llamacloud-backend:0.5.11
+  image: docker.io/llamaindex/llamacloud-backend:0.9.0
   resources:
     requests:
       cpu: "250m"
@@ -232,7 +232,7 @@ jobsWorker:
 
 ## @section LlamaParse Configuration
 llamaParse:
-  image: docker.io/llamaindex/llamacloud-llamaparse:0.5.11
+  image: docker.io/llamaindex/llamacloud-llamaparse:0.9.0
   resources:
     requests:
       cpu: "250m"
@@ -244,7 +244,7 @@ llamaParse:
     value: "<REPLACE>"
 
 llamaParseOcr:
-  image: docker.io/llamaindex/llamacloud-llamaparse-ocr:0.5.11
+  image: docker.io/llamaindex/llamacloud-llamaparse-ocr:0.9.0
   resources:
     requests:
       cpu: "250m"
@@ -256,7 +256,7 @@ llamaParseOcr:
     value: "<REPLACE>"
 
 llamaParseLayoutDetectionApi:
-  image: docker.io/llamaindex/llamacloud-layout-detection-api:0.5.11
+  image: docker.io/llamaindex/llamacloud-layout-detection-api:0.9.0
   resources:
     requests:
       cpu: "250m"
@@ -268,7 +268,7 @@ llamaParseLayoutDetectionApi:
     value: "<REPLACE>"
 
 usage:
-  image: docker.io/llamaindex/llamacloud-backend:0.5.11
+  image: docker.io/llamaindex/llamacloud-backend:0.9.0
   resources:
     requests:
       cpu: "250m"
@@ -276,7 +276,7 @@ usage:
 
 temporalWorkloads:
   llamaParse:
-    image: docker.io/llamaindex/llamacloud-llamaparse:0.5.11
+    image: docker.io/llamaindex/llamacloud-llamaparse:0.9.0
     resources:
       requests:
         cpu: "250m"
@@ -289,7 +289,7 @@ temporalWorkloads:
 
   workers:
     temporal-jobs-worker:
-      image: docker.io/llamaindex/llamacloud-backend:0.5.11
+      image: docker.io/llamaindex/llamacloud-backend:0.9.0
       imagePullPolicy: IfNotPresent
       resources:
         requests:
