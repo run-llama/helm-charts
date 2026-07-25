@@ -2,24 +2,34 @@
 
 ## [0.9.0] - 2026-07-24
 
+### Platform
+- **[Security]** Security updates
+
+### Parse
+- **[Improvement]** Agentic parsing accuracy and layout/bounding-box attribution improvements
+- **[Improvement]** Improved form field detection and enriched form parsing
+- **[Improvement]** Improved table column header recovery
+- **[Feature]** Per-page confidence scores for parse jobs
+- **[Bug Fix]** Parsing reliability fixes (HEIC/image fast tier, Office inputs, AcroForm repair)
+
+### Extract
+- **[Improvement]** Improved grounded confidence scoring
+- **[Improvement]** More consistent extraction results
+
+### Index
+- **[Improvement]** Refined index creation and management experience
+
+### Sheets
+- **[Feature]** Added cost_effective and agentic tiers with per-region billing to the Sheets API
+- **[Improvement]** Improved spreadsheet classification performance and reliability
+
+### App
+- **[Improvement]** Performance improvements (faster screenshots, faster organization switching)
+
 ### Helm
-- **[Removal]** Removed ParseBench packaging from the chart. The `parsebench.*` values
-  (`parsebench.enabled`, `parsebench.image`, `parsebench.imagePullPolicy`,
-  `parsebench.apiKeySecretName`, `parsebench.apiKey`) and the associated templates/secret
-  are gone. No action needed unless you were setting `parsebench.*` values.
-- **[Feature]** Added `config.managedEmbeddings.enabled` to offer managed embeddings as a
-  default option when creating indexes (requires a registered embedding model, e.g.
-  `openai-text-embedding-3-small`). Applied to both backend and frontend.
-- **[Improvement]** Azure OpenAI is now configured under `config.llms.azureOpenAi`: reference
-  a secret with `config.llms.azureOpenAi.secret` and declare model deployments under
-  `config.llms.azureOpenAi.deployments` (`{model, deploymentName, apiKey, baseUrl, apiVersion}`).
-- **[Improvement]** Metrics are now controlled by a single chart-wide
-  `monitoring.serviceMonitors.enabled` toggle that renders a `ServiceMonitor` for every
-  deployed component automatically.
-- **[Improvement]** s3proxy is now configured under `config.storageBuckets.s3proxy`
-  (set `enabled: true` and supply backend settings under `config`).
-- **[Improvement]** Bumped the optional bifrost subchart default image tag to `v1.5.8`
-  (only affects installs with `bifrost.deploy: true`).
+- **[Removal]** Removed ParseBench packaging from the chart (the `parsebench.*` values and templates are gone)
+- **[Feature]** Added managed embeddings and managed Qdrant options via runtime feature flags
+
 
 ## [0.8.6] - 2026-07-21
 
