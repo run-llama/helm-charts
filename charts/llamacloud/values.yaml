@@ -219,10 +219,13 @@ llamaAgents:
   allowBackendEgress: true
   ## @param llamaAgents.useBackendPublicUrl Point deployed agents at the public ingress instead of the in-cluster backend. Set true only when cluster network policy blocks agent→backend ClusterIP traffic.
   useBackendPublicUrl: false
-  ## @param llamaAgents.crdVersion Pinned `llama-agents-crds` chart version this release is validated against. Advisory only; the parent chart does not install CRDs. External BYOC consumers should `helm upgrade --install llama-agents-crds --version <crdVersion> oci://registry-1.docker.io/llamaindex/llama-agents-crds` cluster-wide before installing the parent chart. Kept in sync with the k8sctl component pin by scripts/bump-cloud-llama-deploy-version.py.
+  ## @param llamaAgents.crdVersion Pinned `llama-agents-crds` chart version this release is validated against. Advisory only; the parent chart does not install CRDs. External BYOC consumers should `helm upgrade --install llama-agents-crds --version <crdVersion> oci://registry-1.docker.io/llamaindex/llama-agents-crds` cluster-wide before installing the parent chart. Kept in sync with the k8sctl component pin by infra/kubernetes/scripts/bump-cloud-llama-deploy-version.py.
   crdVersion: "0.7.2"
   ## @param llamaAgents.createAppsNamespace Create the `llama-agents-subchart.apps.namespace` Namespace from this chart. Set false when the namespace is pre-provisioned out-of-band (e.g. managed by cluster ops with PSA/istio/quota labels). When true, the Namespace is rendered with `helm.sh/resource-policy: keep` so `helm uninstall` leaves it and any pre-existing workloads alone.
   createAppsNamespace: true
+  ## @param llamaAgents.controlPlaneBackupEnabled [nullable] Take a periodic backup of the agents control plane, pruning backups older than 30 days. Defaults to `llamaAgents.deploy` — on when this release renders its own control plane, off when pointing at an external `controlPlaneUrl`. The backup API is not tenant-scoped, so it acts on the whole control plane: only enable it for a control plane this release owns, never one shared with another environment.
+  # @schema type: [boolean, "null"]
+  controlPlaneBackupEnabled: null
 
 ## @section Llama Agents Subchart Configuration
 ## Pass-through values for the llamaAgents subchart (aliased in Chart.yaml).
@@ -719,6 +722,8 @@ config:
     maxQueueConcurrency: 3
     ## @param config.parse.preferedPremiumModel Prefered premium LLM model to use for the application
     preferedPremiumModel: ""
+    ## @param config.parse.quarantineWorkerEnabled Deploy a dedicated LlamaParse quarantine worker (isolated poison-document lane). Off by default; nothing dispatches to its task queue unless the quarantine re-dispatch is also enabled.
+    quarantineWorkerEnabled: false
 
     # @schema additionalProperties: false
     concurrency:
@@ -929,7 +934,7 @@ frontend:
   annotations: {}
 
   ## @param frontend.image Frontend image
-  image: docker.io/llamaindex/llamacloud-frontend:0.9.0
+  image: docker.io/llamaindex/llamacloud-frontend:0.9.1
 
   ## @param frontend.imagePullPolicy Frontend image pull policy
   # @schema enum: ["", Always, IfNotPresent, Never]
@@ -1000,7 +1005,7 @@ backend:
   annotations: {}
 
   ## @param backend.image Backend image
-  image: docker.io/llamaindex/llamacloud-backend:0.9.0
+  image: docker.io/llamaindex/llamacloud-backend:0.9.1
 
   ## @param backend.imagePullPolicy Backend image pull policy
   # @schema enum: ["", Always, IfNotPresent, Never]
@@ -1071,7 +1076,7 @@ jobsService:
   annotations: {}
 
   ## @param jobsService.image JobsService image
-  image: docker.io/llamaindex/llamacloud-backend:0.9.0
+  image: docker.io/llamaindex/llamacloud-backend:0.9.1
 
   ## @param jobsService.imagePullPolicy JobsService image pull policy
   # @schema enum: ["", Always, IfNotPresent, Never]
@@ -1142,7 +1147,7 @@ jobsWorker:
   annotations: {}
 
   ## @param jobsWorker.image JobsWorker image
-  image: docker.io/llamaindex/llamacloud-backend:0.9.0
+  image: docker.io/llamaindex/llamacloud-backend:0.9.1
 
   ## @param jobsWorker.imagePullPolicy JobsWorker image pull policy
   # @schema enum: ["", Always, IfNotPresent, Never]
@@ -1213,7 +1218,7 @@ llamaParse:
   annotations: {}
 
   ## @param llamaParse.image LlamaParse image
-  image: docker.io/llamaindex/llamacloud-llamaparse:0.9.0
+  image: docker.io/llamaindex/llamacloud-llamaparse:0.9.1
 
   ## @param llamaParse.imagePullPolicy LlamaParse image pull policy
   # @schema enum: ["", Always, IfNotPresent, Never]
@@ -1284,7 +1289,7 @@ llamaParseOcr:
   annotations: {}
 
   ## @param llamaParseOcr.image LlamaParseOcr image
-  image: docker.io/llamaindex/llamacloud-llamaparse-ocr:0.9.0
+  image: docker.io/llamaindex/llamacloud-llamaparse-ocr:0.9.1
 
   ## @param llamaParseOcr.imagePullPolicy LlamaParseOcr image pull policy
   # @schema enum: ["", Always, IfNotPresent, Never]
@@ -1362,7 +1367,7 @@ llamaParseLayoutDetectionApi:
   annotations: {}
 
   ## @param llamaParseLayoutDetectionApi.image LlamaParseLayoutDetectionApi image
-  image: docker.io/llamaindex/llamacloud-layout-detection-api:0.9.0
+  image: docker.io/llamaindex/llamacloud-layout-detection-api:0.9.1
 
   ## @param llamaParseLayoutDetectionApi.imagePullPolicy LlamaParseLayoutDetectionApi image pull policy
   # @schema enum: ["", Always, IfNotPresent, Never]
@@ -1512,7 +1517,7 @@ usage:
   annotations: {}
 
   ## @param usage.image LlamaParseLayoutDetectionApi image
-  image: docker.io/llamaindex/llamacloud-backend:0.9.0
+  image: docker.io/llamaindex/llamacloud-backend:0.9.1
 
   ## @param usage.imagePullPolicy LlamaParseLayoutDetectionApi image pull policy
   # @schema enum: ["", Always, IfNotPresent, Never]
@@ -1586,7 +1591,7 @@ temporalWorkloads:
     annotations: {}
 
     ## @param temporalWorkloads.llamaParse.image temporal llamaparse image
-    image: docker.io/llamaindex/llamacloud-llamaparse:0.9.0
+    image: docker.io/llamaindex/llamacloud-llamaparse:0.9.1
 
     ## @param temporalWorkloads.llamaParse.imagePullPolicy temporal llamaparse image pull policy
     # @schema enum: ["", Always, IfNotPresent, Never]
@@ -1639,6 +1644,83 @@ temporalWorkloads:
     ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-volume-storage/
     volumes: []
 
+  ## Quarantine parse worker: the isolated poison-document lane. Rendered only
+  ## when config.parse.quarantineWorkerEnabled is true, so an install that does
+  ## not opt in is byte-identical to before this key existed. Shares every
+  ## resources/probe/env/envFrom/volume sub-template with llamaParse above; only
+  ## the Deployment name, image, pull policy, command and worker role are its own.
+  ## PARSE_WORKER_ROLE=quarantine is set by the chart itself — nothing below needs
+  ## to supply it, and extraEnvVariables are added on top of it.
+  # @schema additionalProperties: false
+  llamaParseQuarantine:
+    ## @param temporalWorkloads.llamaParseQuarantine.horizontalPodAutoscalerSpec HorizontalPodAutoScaler configuration
+    ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/
+    horizontalPodAutoscalerSpec: {}
+
+    ## @param temporalWorkloads.llamaParseQuarantine.replicas [nullable] Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set.
+    # @schema type: [integer, "null"];minimum: 0
+    replicas: null
+
+    ## @param temporalWorkloads.llamaParseQuarantine.command Override the container command (entrypoint)
+    command: []
+
+    ## @param temporalWorkloads.llamaParseQuarantine.annotations Annotations added to the temporal llamaparse quarantine Deployment.
+    annotations: {}
+
+    ## @param temporalWorkloads.llamaParseQuarantine.image temporal llamaparse quarantine image
+    image: docker.io/llamaindex/llamacloud-llamaparse:0.9.1
+
+    ## @param temporalWorkloads.llamaParseQuarantine.imagePullPolicy temporal llamaparse quarantine image pull policy
+    # @schema enum: ["", Always, IfNotPresent, Never]
+    imagePullPolicy: IfNotPresent
+
+    ## @param temporalWorkloads.llamaParseQuarantine.securityContext Security context for the container
+    securityContext: {}
+
+    ## @param temporalWorkloads.llamaParseQuarantine.serviceAccountAnnotations Annotations to add to the service account
+    serviceAccountAnnotations: {}
+
+    ## @param temporalWorkloads.llamaParseQuarantine.nodeSelector Node labels for pod assignment
+    ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
+    nodeSelector: {}
+
+    ## @param temporalWorkloads.llamaParseQuarantine.tolerations Taints to tolerate on node assignment:
+    ## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+    tolerations: []
+
+    ## @param temporalWorkloads.llamaParseQuarantine.affinity Pod scheduling constraints
+    ## Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
+    affinity: {}
+
+    ## @param temporalWorkloads.llamaParseQuarantine.topologySpreadConstraints Topology Spread Constraints for temporal llamaparse quarantine pods
+    topologySpreadConstraints: []
+
+    ## @param temporalWorkloads.llamaParseQuarantine.podAnnotations Annotations to add to the resulting Pods of the Deployment.
+    podAnnotations: {}
+
+    ## @param temporalWorkloads.llamaParseQuarantine.podSecurityContext Annotations to add to the resulting Pods of the Deployment.
+    podSecurityContext: {}
+
+    ## @param temporalWorkloads.llamaParseQuarantine.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
+    ## Ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+    resources: {}
+
+    ## @param temporalWorkloads.llamaParseQuarantine.extraEnvVariables Extra environment variables to add to temporal llamaparse quarantine pods
+    ## Example:
+    ## extraEnvVars:
+    ##   - name: FOO
+    ##     value: BAR
+    ##
+    extraEnvVariables: []
+
+    ## @param temporalWorkloads.llamaParseQuarantine.volumeMounts List of volumeMounts that can be mounted by containers belonging to the pod
+    ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-volume-storage/
+    volumeMounts: []
+
+    ## @param temporalWorkloads.llamaParseQuarantine.volumes List of volumes that can be mounted by containers belonging to the pod
+    ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-volume-storage/
+    volumes: []
+
   ## @section Temporal Workers Configuration
   ## Consolidated temporal workers using the dynamic worker CLI
   ## This is a map of worker names to their configurations
@@ -1653,7 +1735,7 @@ temporalWorkloads:
       annotations: {}
 
       ## @param temporalWorkloads.workers.temporal-jobs-worker.image Frontend image
-      image: docker.io/llamaindex/llamacloud-backend:0.9.0
+      image: docker.io/llamaindex/llamacloud-backend:0.9.1
 
       ## @param temporalWorkloads.workers.temporal-jobs-worker.imagePullPolicy Frontend image pull policy
       # @schema enum: ["", Always, IfNotPresent, Never]

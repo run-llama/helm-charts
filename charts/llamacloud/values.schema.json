@@ -602,6 +602,9 @@
                         },
                         "preferedPremiumModel": {
                             "type": "string"
+                        },
+                        "quarantineWorkerEnabled": {
+                            "type": "boolean"
                         }
                     },
                     "additionalProperties": false
@@ -1153,6 +1156,12 @@
             "properties": {
                 "allowBackendEgress": {
                     "type": "boolean"
+                },
+                "controlPlaneBackupEnabled": {
+                    "type": [
+                        "boolean",
+                        "null"
+                    ]
                 },
                 "controlPlaneUrl": {
                     "type": "string"
@@ -1868,6 +1877,76 @@
             "type": "object",
             "properties": {
                 "llamaParse": {
+                    "type": "object",
+                    "properties": {
+                        "affinity": {
+                            "type": "object"
+                        },
+                        "annotations": {
+                            "type": "object"
+                        },
+                        "command": {
+                            "type": "array"
+                        },
+                        "extraEnvVariables": {
+                            "type": "array"
+                        },
+                        "horizontalPodAutoscalerSpec": {
+                            "type": "object"
+                        },
+                        "image": {
+                            "type": "string"
+                        },
+                        "imagePullPolicy": {
+                            "type": "string",
+                            "enum": [
+                                "",
+                                "Always",
+                                "IfNotPresent",
+                                "Never"
+                            ]
+                        },
+                        "nodeSelector": {
+                            "type": "object"
+                        },
+                        "podAnnotations": {
+                            "type": "object"
+                        },
+                        "podSecurityContext": {
+                            "type": "object"
+                        },
+                        "replicas": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ],
+                            "minimum": 0
+                        },
+                        "resources": {
+                            "type": "object"
+                        },
+                        "securityContext": {
+                            "type": "object"
+                        },
+                        "serviceAccountAnnotations": {
+                            "type": "object"
+                        },
+                        "tolerations": {
+                            "type": "array"
+                        },
+                        "topologySpreadConstraints": {
+                            "type": "array"
+                        },
+                        "volumeMounts": {
+                            "type": "array"
+                        },
+                        "volumes": {
+                            "type": "array"
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "llamaParseQuarantine": {
                     "type": "object",
                     "properties": {
                         "affinity": {

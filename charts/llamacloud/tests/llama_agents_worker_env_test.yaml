@@ -1,0 +1,127 @@
+suite: llama-agents-worker-env-tests
+
+# The worker's llama-agents-config mount gates on BOTH a resolvable URL and the
+# agents feature flag. Each case also asserts common-config on the same path:
+# helm-unittest passes notContains vacuously when the path does not resolve, so
+# without that anchor the negative cases could silently stop testing anything.
+
+templates:
+  - ../templates/llamacloud/deployment.yaml
+
+release:
+  name: llamacloud
+  namespace: default
+
+capabilities:
+  majorVersion: 1
+  minorVersion: 28
+
+tests:
+  - it: should mount llama-agents-config on the temporal worker when deploy=true
+    set:
+      temporal.deploy: false
+      temporal.host: "temporal.example.com"
+      temporal.port: 7233
+      llamaAgents.deploy: true
+    documentSelector:
+      path: metadata.name
+      value: temporal-jobs-worker
+    asserts:
+      - contains:
+          path: .spec.template.spec.containers[0].envFrom
+          content:
+            configMapRef:
+              name: common-config
+      - contains:
+          path: .spec.template.spec.containers[0].envFrom
+          content:
+            configMapRef:
+              name: llama-agents-config
+
+  - it: should mount llama-agents-config on the temporal worker for an external control plane
+    set:
+      temporal.deploy: false
+      temporal.host: "temporal.example.com"
+      temporal.port: 7233
+      llamaAgents.controlPlaneUrl: https://agents.example.com
+    documentSelector:
+      path: metadata.name
+      value: temporal-jobs-worker
+    asserts:
+      - contains:
+          path: .spec.template.spec.containers[0].envFrom
+          content:
+            configMapRef:
+              name: common-config
+      - contains:
+          path: .spec.template.spec.containers[0].envFrom
+          content:
+            configMapRef:
+              name: llama-agents-config
+
+  - it: should not mount llama-agents-config on the temporal worker when no URL resolves
+    set:
+      temporal.deploy: false
+      temporal.host: "temporal.example.com"
+      temporal.port: 7233
+    documentSelector:
+      path: metadata.name
+      value: temporal-jobs-worker
+    asserts:
+      - contains:
+          path: .spec.template.spec.containers[0].envFrom
+          content:
+            configMapRef:
+              name: common-config
+      - notContains:
+          path: .spec.template.spec.containers[0].envFrom
+          content:
+            configMapRef:
+              name: llama-agents-config
+
+  - it: should not mount llama-agents-config when agents are explicitly disabled
+    # The URL still resolves here, so this pins the enabled term specifically: the
+    # sweep's suspend and delete calls must not fire for a disabled feature.
+    set:
+      temporal.deploy: false
+      temporal.host: "temporal.example.com"
+      temporal.port: 7233
+      llamaAgents.deploy: true
+      llamaAgents.enabled: false
+    documentSelector:
+      path: metadata.name
+      value: temporal-jobs-worker
+    asserts:
+      - contains:
+          path: .spec.template.spec.containers[0].envFrom
+          content:
+            configMapRef:
+              name: common-config
+      - notContains:
+          path: .spec.template.spec.containers[0].envFrom
+          content:
+            configMapRef:
+              name: llama-agents-config
+
+  - it: should not mount llama-agents-config when enabled is forced on with no URL
+    # Pins the URL term on its own: without it the guard would reference a
+    # ConfigMap that only renders when a URL resolves -> CreateContainerConfigError.
+    set:
+      temporal.deploy: false
+      temporal.host: "temporal.example.com"
+      temporal.port: 7233
+      llamaAgents.enabled: true
+    documentSelector:
+      path: metadata.name
+      value: temporal-jobs-worker
+    asserts:
+      - contains:
+          path: .spec.template.spec.containers[0].envFrom
+          content:
+            configMapRef:
+              name: common-config
+      - notContains:
+          path: .spec.template.spec.containers[0].envFrom
+          content:
+            configMapRef:
+              name: llama-agents-config

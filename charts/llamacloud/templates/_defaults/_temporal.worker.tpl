@@ -134,6 +134,15 @@ Parameters:
     name: urls-config
 - configMapRef:
     name: temporal-connection-config
+- configMapRef:
+    name: feature-config
+{{- /* URL term: llama-agents-config only renders when a URL resolves, so referencing
+       it otherwise is CreateContainerConfigError. Enabled term: the sweep suspends
+       and deletes deployments, which must not fire for a disabled feature. */}}
+{{- if and (ne (include "llamacloud.llamaAgents.url" .root) "") (ne (include "llamacloud.llamaAgents.enabled" .root) "") }}
+- configMapRef:
+    name: llama-agents-config
+{{- end }}
 {{- if (include "llamacloud.component.temporal.worker.configMap" $) }}
 - configMapRef:
     name: {{ .component.name | quote }}
@@ -181,6 +190,16 @@ Parameters:
 */}}
 {{ define "llamacloud.component.temporal.worker.configMap" }}
 JOB_CONSUMER_PORT: "80"
+
+{{- /* See LlamaAppSettings.agent_control_plane_backup_enabled. Defaults to
+       llamaAgents.deploy (this release renders the control plane, so it owns it),
+       then ANDed with the same condition that mounts LLAMA_DEPLOY_URL above.
+       Arming the backup without that URL points it at the local-dev default, and
+       since its failures raise, that fails the sweep on every tick. */}}
+{{- $backup := .root.Values.llamaAgents.controlPlaneBackupEnabled }}
+{{- $backup = ternary $backup .root.Values.llamaAgents.deploy (kindIs "bool" $backup) }}
+{{- $reachable := and (ne (include "llamacloud.llamaAgents.url" .root) "") (ne (include "llamacloud.llamaAgents.enabled" .root) "") }}
+AGENT_CONTROL_PLANE_BACKUP_ENABLED: {{ and $reachable $backup | quote }}
 
 MAX_JOBS_IN_EXECUTION_PER_JOB_TYPE: {{ ((.root.Values.config).jobs).maxJobsInExecutionPerJobType | default 10 | quote }}
 MAX_INDEX_JOBS_IN_EXECUTION: {{ ((.root.Values.config).jobs).maxIndexJobsInExecution | default 0 | quote }}

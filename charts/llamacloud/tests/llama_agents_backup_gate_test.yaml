@@ -1,0 +1,80 @@
+suite: llama-agents-backup-gate-tests
+
+# The deployment sweep ends in a control-plane backup step that prunes every
+# backup older than 30 days at LLAMA_DEPLOY_URL, with no tenant scope. It is safe
+# only for a release that owns its control plane, so it tracks llamaAgents.deploy
+# unless the operator overrides it.
+
+templates:
+  - ../templates/llamacloud/configmap.yaml
+
+release:
+  name: llamacloud
+  namespace: default
+
+capabilities:
+  majorVersion: 1
+  minorVersion: 28
+
+tests:
+  - it: should default the control-plane backup on when this release deploys its own
+    set:
+      temporal.deploy: false
+      temporal.host: "temporal.example.com"
+      temporal.port: 7233
+      llamaAgents.deploy: true
+    documentSelector:
+      path: metadata.name
+      value: temporal-jobs-worker
+    asserts:
+      - equal:
+          path: .data.AGENT_CONTROL_PLANE_BACKUP_ENABLED
+          value: "true"
+
+  - it: should default the control-plane backup off for an external control plane
+    # The backup API takes no tenant scope, so it must never default on against a
+    # control plane this release does not own.
+    set:
+      temporal.deploy: false
+      temporal.host: "temporal.example.com"
+      temporal.port: 7233
+      llamaAgents.controlPlaneUrl: https://agents.example.com
+    documentSelector:
+      path: metadata.name
+      value: temporal-jobs-worker
+    asserts:
+      - equal:
+          path: .data.AGENT_CONTROL_PLANE_BACKUP_ENABLED
+          value: "false"
+
+  - it: should let an operator opt an external control plane into backups
+    set:
+      temporal.deploy: false
+      temporal.host: "temporal.example.com"
+      temporal.port: 7233
+      llamaAgents.controlPlaneUrl: https://agents.example.com
+      llamaAgents.controlPlaneBackupEnabled: true
+    documentSelector:
+      path: metadata.name
+      value: temporal-jobs-worker
+    asserts:
+      - equal:
+          path: .data.AGENT_CONTROL_PLANE_BACKUP_ENABLED
+          value: "true"
+
+  - it: should disarm the backup when agents are disabled
+    # enabled=false drops LLAMA_DEPLOY_URL. Leaving the backup armed would point it
+    # at the local-dev default and fail the sweep every tick.
+    set:
+      temporal.deploy: false
+      temporal.host: "temporal.example.com"
+      temporal.port: 7233
+      llamaAgents.deploy: true
+      llamaAgents.enabled: false
+    documentSelector:
+      path: metadata.name
+      value: temporal-jobs-worker
+    asserts:
+      - equal:
+          path: .data.AGENT_CONTROL_PLANE_BACKUP_ENABLED
+          value: "false"
