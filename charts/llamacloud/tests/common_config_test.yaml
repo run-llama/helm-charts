@@ -38,6 +38,24 @@ tests:
         path: .data.ALLOWED_INDEX
         value: "true"
 
+- it: routes all v1 parse through Temporal by default
+  template: ../templates/llamacloud/configmaps/common.yaml
+  asserts:
+    - equal:
+        path: .data.V1_PARSE_VIA_TEMPORAL_PERCENTAGE
+        value: "100"
+
+- it: falls back to the AMQP transport when Temporal is disabled
+  set:
+    temporal:
+      disabled: true
+      deploy: false
+  template: ../templates/llamacloud/configmaps/common.yaml
+  asserts:
+    - equal:
+        path: .data.V1_PARSE_VIA_TEMPORAL_PERCENTAGE
+        value: "0"
+
 - it: is scoped to release namespace
   release:
     namespace: my-ns

@@ -104,6 +104,12 @@ Parameters:
     name: extract-config
 - configMapRef:
     name: urls-config
+{{- /* Index v1 ingestion dispatches v1 parse from this worker, so it needs the
+       Temporal connection whenever v1 parse routes through a workflow. */}}
+{{- if not .root.Values.temporal.disabled }}
+- configMapRef:
+    name: temporal-connection-config
+{{- end }}
 {{- if (include "llamacloud.component.jobsWorker.configMap" $) }}
 - configMapRef:
     name: {{ .component.name }}

@@ -9,20 +9,58 @@ Temporal Parse Component Settings.
 {{- $component = set $component "imagePullPolicy" ( (($.Values.temporalWorkloads).llamaParse).imagePullPolicy | default "IfNotPresent" ) }}
 {{- $component = set $component "port" 8003 }}
 {{/* LD_PRELOAD is scoped to the node process (not a container ENV) so
-     jemalloc isn't inherited by Chromium-based children (calibre's
-     ebook-convert, puppeteer's chromium) which SIGSEGV when a foreign
+     jemalloc isn't inherited by Puppeteer's Chromium children, which SIGSEGV
+     when a foreign
      allocator is preloaded into their address space. */}}
 {{/* Use /bin/sh, not /bin/bash: the Chainguard-based worker image is busybox-only
      (no bash). Hardcoding /bin/bash crashlooped these workers with
      `exec: "/bin/bash": stat /bin/bash: no such file or directory`. The command body
      is POSIX-sh compatible; sh + jemalloc preload + node were verified on the image. */}}
-{{- $component = set $component "command" (list "/bin/sh" "-c" "LD_PRELOAD=$JEMALLOC_PATH exec node --max-old-space-size=$MAX_OLD_SPACE_SIZE dist/worker/temporal/worker.js") }}
+{{- $component = set $component "command" (list "/bin/sh" "-c" "node dist/worker/bootPrewarm.js & LD_PRELOAD=$JEMALLOC_PATH exec node --max-old-space-size=$MAX_OLD_SPACE_SIZE dist/worker/temporal/bundle-worker.mjs") }}
+{{- $component = set $component "usesS3" "true" }}
+{{- $component | toYaml }}
+{{- end }}
+
+{{/*
+Temporal Parse Quarantine Component Settings.
+
+The isolated poison-document lane. Deliberately NOT its own template family:
+`prefix` stays on llamacloud.component.temporal.llamaParse so every
+resources/probe/env/envFrom/volumes sub-template below is shared rather than
+copied — only the Deployment name, image, pull policy, command and worker role
+differ.
+
+`workerRole` is set HERE rather than left to per-install extraEnvVariables: the
+worker runs the same entrypoint as the normal one, and PARSE_WORKER_ROLE is the
+only thing that makes it poll parse-quarantine-queue. Leaving it to the caller
+means flipping quarantineWorkerEnabled alone boots a second worker on the
+NORMAL queue — a silent loss of the isolation this lane exists for. The shared
+env define below reads the key; extraEnvVariables stay additive on top.
+
+Activated only when config.parse.quarantineWorkerEnabled is true — see
+llamacloud.components in _common.tpl.
+*/}}
+{{ define "llamacloud.component.temporal.llamaParseQuarantine" }}
+{{- $component := ($.Values.temporalWorkloads).llamaParseQuarantine }}
+{{- $component = set $component "prefix" "llamacloud.component.temporal.llamaParse" }}
+{{- $component = set $component "name" "llamacloud-temporal-parse-quarantine" }}
+{{- $component = set $component "workerRole" "quarantine" }}
+{{- $component = set $component "image" ( (($.Values.temporalWorkloads).llamaParseQuarantine).image | default ( print "docker.io/llamaindex/llamacloud-llamaparse:" .Chart.AppVersion ) ) }}
+{{- $component = set $component "imagePullPolicy" ( (($.Values.temporalWorkloads).llamaParseQuarantine).imagePullPolicy | default "IfNotPresent" ) }}
+{{- $component = set $component "port" 8003 }}
+{{/* Same entrypoint as llamaParse above; see that block for why /bin/sh and
+     why LD_PRELOAD is scoped to the node process rather than a container ENV. */}}
+{{- $component = set $component "command" (list "/bin/sh" "-c" "node dist/worker/bootPrewarm.js & LD_PRELOAD=$JEMALLOC_PATH exec node --max-old-space-size=$MAX_OLD_SPACE_SIZE dist/worker/temporal/bundle-worker.mjs") }}
 {{- $component = set $component "usesS3" "true" }}
 {{- $component | toYaml }}
 {{- end }}
 
 {{/*
 Temporal Parse Resources.
+
+Shared by the llamaParse and llamaParseQuarantine components (both carry
+prefix llamacloud.component.temporal.llamaParse), as are every probe, env,
+envFrom, configMap, secret, volumeMounts and volumes define below.
 
 Parameters:
 - component: The component configuration in values.yaml
@@ -85,11 +123,20 @@ failureThreshold: 10
 {{/*
 Temporal Parse Environment Variables.
 
+Shared by llamaParse and llamaParseQuarantine. `workerRole` is set by the
+component define, not by values, so the quarantine component always ships the
+role that binds it to parse-quarantine-queue. The normal component sets no
+role and so emits none, keeping its rendered env byte-identical.
+
 Parameters:
 - component: The component configuration in values.yaml
 - root: $
 */}}
 {{ define "llamacloud.component.temporal.llamaParse.env" }}
+{{- if (.component).workerRole }}
+- name: PARSE_WORKER_ROLE
+  value: {{ (.component).workerRole | quote }}
+{{- end }}
 {{- if (.component).extraEnvVariables }}
 {{ toYaml (.component).extraEnvVariables }}
 {{- end }}

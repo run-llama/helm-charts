@@ -10,6 +10,10 @@ data:
   DEPLOYMENT_MODE: "prod"
   PARSE_PREMIUM: "true"
   ALLOWED_INDEX: "true"
+  ## Parse v1 dispatch transport. 100 runs every v1 parse job as a Temporal
+  ## parse-job-workflow; 0 keeps the legacy RabbitMQ publish, which is the only
+  ## transport left when Temporal (and with it the parse workers) is switched off.
+  V1_PARSE_VIA_TEMPORAL_PERCENTAGE: {{ ternary "0" "100" .Values.temporal.disabled | quote }}
 {{- if not (.Values.mongodb).enabled }}
   MONGO_DISABLED: "true"
 {{- end }}

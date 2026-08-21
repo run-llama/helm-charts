@@ -121,3 +121,31 @@ tests:
         path: .data.LLAMA_EXTRACT_MAX_FILE_SIZE_MB
         value: "200"
 
+
+- it: mounts temporal-connection-config so Index v1 ingestion can dispatch v1 parse
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-worker
+  asserts:
+    - contains:
+        path: .spec.template.spec.containers[0].envFrom
+        content:
+          configMapRef:
+            name: temporal-connection-config
+
+- it: omits temporal-connection-config from the worker when Temporal is disabled
+  set:
+    temporal:
+      disabled: true
+      deploy: false
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-worker
+  asserts:
+    - notContains:
+        path: .spec.template.spec.containers[0].envFrom
+        content:
+          configMapRef:
+            name: temporal-connection-config

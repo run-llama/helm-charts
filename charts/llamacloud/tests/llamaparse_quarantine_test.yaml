@@ -1,0 +1,101 @@
+suite: llamaparse-quarantine-tests
+
+# The isolated poison-document lane (config.parse.quarantineWorkerEnabled).
+#
+# The component shares every sub-template with temporal.llamaParse — same
+# prefix, so the same resources/probes/env/envFrom/volumes defines render for
+# both. The ONLY thing that makes the second Deployment a quarantine worker
+# rather than a duplicate normal one is PARSE_WORKER_ROLE=quarantine, so the
+# chart has to emit it itself: leaving it to per-install extraEnvVariables means
+# an operator who flips the flag and nothing else boots a second worker polling
+# the NORMAL queue, which is precisely the isolation the lane exists to provide.
+
+templates:
+- ../templates/llamacloud/deployment.yaml
+- ../templates/llamacloud/service.yaml
+- ../templates/llamacloud/serviceaccount.yaml
+
+release:
+  name: test-release
+  namespace: test-namespace
+
+capabilities:
+  majorVersion: 1
+  minorVersion: 31
+  apiVersions:
+    - apps/v1
+    - v1
+
+chart:
+  appVersion: 0.0.0
+
+tests:
+- it: the quarantine worker sets PARSE_WORKER_ROLE=quarantine itself
+  set:
+    config.parse.quarantineWorkerEnabled: true
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-temporal-parse-quarantine
+  asserts:
+    - contains:
+        path: .spec.template.spec.containers[0].env
+        content:
+          name: PARSE_WORKER_ROLE
+          value: quarantine
+
+# The role env is emitted by the SHARED llamaParse.env define, so the guard
+# against over-application is that the normal worker still has no role at all
+# (it defaults to the consolidated/monolithic behaviour without one).
+- it: the normal parse worker gets no PARSE_WORKER_ROLE from the shared env define
+  set:
+    config.parse.quarantineWorkerEnabled: true
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-temporal-parse
+  asserts:
+    - notContains:
+        path: .spec.template.spec.containers[0].env
+        content:
+          name: PARSE_WORKER_ROLE
+          value: quarantine
+    # notContains passes vacuously when the path does not resolve, so anchor on
+    # an env entry that IS always present to prove the path resolved at all.
+    - contains:
+        path: .spec.template.spec.containers[0].env
+        content:
+          name: PORT
+          value: "8003"
+
+- it: extraEnvVariables stay additive alongside the chart-set role
+  set:
+    config.parse.quarantineWorkerEnabled: true
+    temporalWorkloads.llamaParseQuarantine.extraEnvVariables:
+      - name: LOCAL_DEV
+        value: "true"
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-temporal-parse-quarantine
+  asserts:
+    - contains:
+        path: .spec.template.spec.containers[0].env
+        content:
+          name: PARSE_WORKER_ROLE
+          value: quarantine
+    - contains:
+        path: .spec.template.spec.containers[0].env
+        content:
+          name: LOCAL_DEV
+          value: "true"
+
+- it: no quarantine Deployment renders while the flag is off
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-temporal-parse-quarantine
+    skipEmptyTemplates: true
+  asserts:
+    - hasDocuments:
+        count: 0

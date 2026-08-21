@@ -1,10 +1,5 @@
 {{- /* llamaAgents.enabled: explicit override, else derived from resolvable URL. */ -}}
-{{- $llamaAgentsEnabled := false -}}
-{{- if kindIs "bool" .Values.llamaAgents.enabled -}}
-{{-   $llamaAgentsEnabled = .Values.llamaAgents.enabled -}}
-{{- else -}}
-{{-   $llamaAgentsEnabled = (ne (include "llamacloud.llamaAgents.url" .) "") -}}
-{{- end -}}
+{{- $llamaAgentsEnabled := ne (include "llamacloud.llamaAgents.enabled" .) "" -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:

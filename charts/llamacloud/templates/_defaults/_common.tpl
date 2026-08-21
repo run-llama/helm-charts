@@ -132,6 +132,13 @@ Activated Components
 {{- /* Temporal workloads - skip when temporal is disabled */}}
 {{- if not $.Values.temporal.disabled }}
 {{- $activated = set $activated "temporalLlamaParse" (include "llamacloud.component.temporal.llamaParse" . | fromYaml) }}
+{{- /* Quarantine parse worker: opt-in, so a BYOC/single-tenant install that
+       does not set the flag renders exactly what it rendered before this key
+       existed. Ungated activation would put an idle quarantine pod in every
+       install, for a queue nothing dispatches to there. */}}
+{{- if (($.Values.config).parse).quarantineWorkerEnabled }}
+{{- $activated = set $activated "temporalLlamaParseQuarantine" (include "llamacloud.component.temporal.llamaParseQuarantine" . | fromYaml) }}
+{{- end }}
 {{- range $workerName, $workerConfig := .Values.temporalWorkloads.workers }}
 {{- $activated = set $activated $workerName (include "llamacloud.component.temporal.worker" (dict "name" $workerName "component" $workerConfig "appVersion" $.Chart.AppVersion) | fromYaml) }}
 {{- end }}
@@ -165,5 +172,20 @@ Usage: include "llamacloud.llamaAgents.url" .  (or .root when nested)
 http://llama-agents-service:80
 {{- else if .Values.llamaAgents.controlPlaneUrl -}}
 {{- .Values.llamaAgents.controlPlaneUrl -}}
+{{- end -}}
+{{- end }}
+
+{{/*
+Explicit llamaAgents.enabled override, else derived from a resolvable URL.
+Emits "true" or "" so callers can use it as a plain truthiness test. Shared so the
+override cannot be honored in one place and missed in another — it gates both
+IS_AGENT_DEPLOYMENTS_ENABLED and the worker's control-plane access.
+Usage: include "llamacloud.llamaAgents.enabled" .  (or .root when nested)
+*/}}
+{{- define "llamacloud.llamaAgents.enabled" -}}
+{{- if kindIs "bool" .Values.llamaAgents.enabled -}}
+{{- if .Values.llamaAgents.enabled }}true{{ end -}}
+{{- else if ne (include "llamacloud.llamaAgents.url" .) "" -}}
+true
 {{- end -}}
 {{- end }}

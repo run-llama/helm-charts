@@ -1,35 +1,32 @@
 # CHANGELOG
 
-## [0.9.0] - 2026-07-24
+## [0.9.1] - 2026-08-20
 
 ### Platform
 - **[Security]** Security updates
 
 ### Parse
-- **[Improvement]** Agentic parsing accuracy and layout/bounding-box attribution improvements
-- **[Improvement]** Improved form field detection and enriched form parsing
-- **[Improvement]** Improved table column header recovery
-- **[Feature]** Per-page confidence scores for parse jobs
-- **[Bug Fix]** Parsing reliability fixes (HEIC/image fast tier, Office inputs, AcroForm repair)
+- **[Feature]** Form handling — parsed forms are returned as structured fields on the job result ([`form.json` in the get parsing job API](https://developers.api.llamaindex.ai/api/resources/parsing/methods/get/#(resource)%20parsing%20%3E%20(model)%20form%20%3E%20(schema)%20%3E%20(property)%20json))
+- **[Feature]** Revision tracking ([Configuring Parse](https://developers.llamaindex.ai/llamaparse/parse/guides/configuring-parse/#revision-tracking))
+- **[Improvement]** Scaling improvements
+- **[Improvement]** Parse jobs submitted through the v1 API now run as Temporal workflows instead of RabbitMQ messages, matching the v2 API. Deployments that set `temporal.disabled: true` keep the RabbitMQ transport.
 
 ### Extract
-- **[Improvement]** Improved grounded confidence scoring
-- **[Improvement]** More consistent extraction results
+- **[Feature]** Agentic Plus is now available, handling long-context documents and more complex extractions ([extraction tiers](https://developers.llamaindex.ai/llamaparse/extract/guides/options/#tiers))
 
 ### Index
-- **[Improvement]** Refined index creation and management experience
+- **[Improvement]** Improved Index v2 UI
 
-### Sheets
-- **[Feature]** Added cost_effective and agentic tiers with per-region billing to the Sheets API
-- **[Improvement]** Improved spreadsheet classification performance and reliability
+### Verify
+- **[Feature]** Verify is now available in preview
 
-### App
-- **[Improvement]** Performance improvements (faster screenshots, faster organization switching)
+### LlamaSheets
+- **[Improvement]** Stability improvements
+- **[Removal]** LlamaSheets is no longer shown in self-hosted deployments
 
-### Helm
-- **[Removal]** Removed ParseBench packaging from the chart (the `parsebench.*` values and templates are gone)
-- **[Feature]** Added managed embeddings and managed Qdrant options via runtime feature flags
-
+### Agents
+- **[Fix]** The periodic deployment sweep now reaches the agents control plane, so idle deployments are suspended and deleted ones are fully torn down. After upgrading, the first sweep suspends any deployment idle for 3 days; it wakes on its next request. Set `llamaAgents.enabled: false` to disable the sweep.
+- **[Feature]** New `llamaAgents.controlPlaneBackupEnabled` backs up the agents control plane on each sweep and prunes backups older than 30 days. It defaults to `llamaAgents.deploy`; turn it on for an external control plane only if this release owns it.
 
 ## [0.8.6] - 2026-07-21
 
