@@ -1,3 +1,9 @@
+{{- $layoutComponent := dict }}
+{{- if (((.Values.config).parseLayoutDetectionV3).enabled) }}
+{{- $layoutComponent = include "llamacloud.component.llamaParseLayoutDetectionApiV3" $ | fromYaml }}
+{{- else if (((.Values.config).parseLayoutDetection).enabled) }}
+{{- $layoutComponent = include "llamacloud.component.llamaParseLayoutDetectionApi" $ | fromYaml }}
+{{- end }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -19,6 +25,14 @@ data:
   {{- if ($.Values.ingress).host }}
   PUBLIC_BACKEND_URL: {{ print (include "llamacloud.ingress.scheme" .) "://" (.Values.ingress).host | quote }}
   {{- end }}
+  {{- if ($.Values.ingress).host }}
+  # Self-hosted deployments serve the UI from the same host as the API. Without this the
+  # backend's frontend-URL lookup falls back to the deployment-mode map, which points at the
+  # hosted product, so post-login/registration redirects would leave the customer's own
+  # deployment. Customer-configured auth supplies its own FRONTEND_URL via a Secret, which is
+  # attached after this ConfigMap in envFrom and therefore still wins.
+  FRONTEND_URL: {{ print (include "llamacloud.ingress.scheme" .) "://" (.Values.ingress).host | quote }}
+  {{- end }}
   AGENT_DEPLOYMENT_USE_PUBLIC_BACKEND_URL: {{ .Values.llamaAgents.useBackendPublicUrl | quote }}
   {{- if (((.Values.config).storageBuckets).s3proxy.enabled | default false) }}
   S3_ENDPOINT_URL: {{ printf "http://localhost:%d" (int ((($.Values.config).storageBuckets).s3proxy.containerPort | default 80)) | quote }}
@@ -26,10 +40,10 @@ data:
   {{- if (((.Values.config).parseOcr).enabled) }}
   OCR_SERVER_URL: {{ printf "http://%s:%d/ocr" (include "llamacloud.component.llamaParseOcr" $ | fromYaml).name ( "80" | int) | quote }}
   {{- end }}
-  {{- if (((.Values.config).parseLayoutDetection).enabled) }}
-  LAYOUT_EXTRACTION_ENDPOINT: {{ printf "http://%s:%d" (include "llamacloud.component.llamaParseLayoutDetectionApi" $ | fromYaml).name ( "80" | int) | quote }}
-  LAYOUT_EXTRACTION_V2_ENDPOINT: {{ printf "http://%s:%d" (include "llamacloud.component.llamaParseLayoutDetectionApi" $ | fromYaml).name ( "80" | int) | quote }}
-  {{- end }}
-  {{- if (((.Values.config).parseLayoutDetectionV3).enabled) }}
-  LAYOUT_EXTRACTION_V3_ENDPOINT: {{ printf "http://%s:%d" (include "llamacloud.component.llamaParseLayoutDetectionApiV3" $ | fromYaml).name ( "80" | int) | quote }}
+  {{- if $layoutComponent.name }}
+  # Keep all endpoint names as compatibility aliases for the selected V3-backed
+  # Layout service. Callers choose an endpoint variable, not a separate runtime.
+  LAYOUT_EXTRACTION_ENDPOINT: {{ printf "http://%s:%d" $layoutComponent.name ( "80" | int) | quote }}
+  LAYOUT_EXTRACTION_V2_ENDPOINT: {{ printf "http://%s:%d" $layoutComponent.name ( "80" | int) | quote }}
+  LAYOUT_EXTRACTION_V3_ENDPOINT: {{ printf "http://%s:%d" $layoutComponent.name ( "80" | int) | quote }}
   {{- end }}

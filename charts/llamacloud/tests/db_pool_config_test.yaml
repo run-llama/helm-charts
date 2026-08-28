@@ -1,0 +1,148 @@
+suite: db-pool-config-tests
+
+# The five mount tests exist because a component that misses the ConfigMap falls back to
+# the application default rather than failing, so dropping a configMapRef from any one of
+# them has to turn this suite red.
+
+templates:
+- ../templates/llamacloud/configmaps/db-pool.yaml
+- ../templates/llamacloud/deployment.yaml
+
+release:
+  name: test-release
+  namespace: test-namespace
+
+capabilities:
+  majorVersion: 1
+  minorVersion: 31
+  apiVersions:
+    - v1
+    - apps/v1
+
+chart:
+  appVersion: 0.0.0
+
+tests:
+- it: should render no pool keys on chart defaults, so an upgrade does not resize a running release
+  template: ../templates/llamacloud/configmaps/db-pool.yaml
+  asserts:
+    - isKind:
+        of: ConfigMap
+    - equal:
+        path: .metadata.name
+        value: db-pool-config
+    - isEmpty:
+        path: .data
+
+- it: should render each key independently of the other
+  template: ../templates/llamacloud/configmaps/db-pool.yaml
+  set:
+    postgresql:
+      poolSize: 8
+  asserts:
+    - equal:
+        path: .data.DB_CONNECTION_POOL_SIZE
+        value: "8"
+    - notExists:
+        path: .data.DB_CONNECTION_POOL_MAX_OVERFLOW
+
+# 0 is a real setting, not an absent one: max_overflow 0 caps a pod at poolSize, which is
+# the point of the knob. A truthiness guard drops it and silently restores the default 10.
+- it: should render an explicit zero rather than treating it as unset
+  template: ../templates/llamacloud/configmaps/db-pool.yaml
+  set:
+    postgresql:
+      poolSize: 8
+      poolMaxOverflow: 0
+  asserts:
+    - equal:
+        path: .data.DB_CONNECTION_POOL_SIZE
+        value: "8"
+    - equal:
+        path: .data.DB_CONNECTION_POOL_MAX_OVERFLOW
+        value: "0"
+
+- it: should render the prepared-statements flag only when true
+  template: ../templates/llamacloud/configmaps/db-pool.yaml
+  set:
+    postgresql:
+      disablePreparedStatements: true
+  asserts:
+    - equal:
+        path: .data.DATABASE_DISABLE_PREPARED_STATEMENTS
+        value: "true"
+
+- it: should render no prepared-statements key when false, matching the application default
+  template: ../templates/llamacloud/configmaps/db-pool.yaml
+  set:
+    postgresql:
+      disablePreparedStatements: false
+  asserts:
+    - notExists:
+        path: .data.DATABASE_DISABLE_PREPARED_STATEMENTS
+
+- it: should be mounted by backend
+  template: ../templates/llamacloud/deployment.yaml
+  # Minimum values needed to render the component Deployments. Anchored here rather than
+  # at suite level, where helm-unittest would apply it to the ConfigMap tests above and
+  # stop them testing chart defaults.
+  set: &deployable
+    postgresql:
+      host: pg.example.com
+      database: llamacloud
+      username: llamacloud
+      password: secret
+    redis:
+      host: redis.example.com
+    rabbitmq:
+      enabled: true
+    temporal:
+      deploy: false
+      host: temporal.example.com
+      port: 7233
+  documentSelector:
+    path: metadata.name
+    value: "llamacloud"
+  asserts:
+    - exists:
+        path: .spec.template.spec.containers[0].envFrom[?(@.configMapRef.name == "db-pool-config")]
+
+- it: should be mounted by jobsService
+  template: ../templates/llamacloud/deployment.yaml
+  set: *deployable
+  documentSelector:
+    path: metadata.name
+    value: "llamacloud-operator"
+  asserts:
+    - exists:
+        path: .spec.template.spec.containers[0].envFrom[?(@.configMapRef.name == "db-pool-config")]
+
+- it: should be mounted by jobsWorker
+  template: ../templates/llamacloud/deployment.yaml
+  set: *deployable
+  documentSelector:
+    path: metadata.name
+    value: "llamacloud-worker"
+  asserts:
+    - exists:
+        path: .spec.template.spec.containers[0].envFrom[?(@.configMapRef.name == "db-pool-config")]
+
+- it: should be mounted by usage
+  template: ../templates/llamacloud/deployment.yaml
+  set: *deployable
+  documentSelector:
+    path: metadata.name
+    value: "llamacloud-telemetry"
+  asserts:
+    - exists:
+        path: .spec.template.spec.containers[0].envFrom[?(@.configMapRef.name == "db-pool-config")]
+
+- it: should be mounted by the temporal jobs worker
+  template: ../templates/llamacloud/deployment.yaml
+  set: *deployable
+  documentSelector:
+    path: metadata.name
+    value: "temporal-jobs-worker"
+  asserts:
+    - exists:
+        path: .spec.template.spec.containers[0].envFrom[?(@.configMapRef.name == "db-pool-config")]

@@ -1,5 +1,10 @@
-# This example shows how to configure the LlamaCloud platform to use Azure OpenAI and Azure Blob Storage (using s3proxy).
-# We currently do not have native support for non-S3 filestores in LlamaCloud at the moment.
+# Example: back LlamaCloud's file storage with Azure Blob Storage via the S3Proxy sidecar.
+# LlamaCloud speaks S3 natively; S3Proxy translates those calls for non-S3 backends.
+#
+# S3Proxy is gated ONLY on config.storageBuckets.s3proxy.enabled. `provider` does not
+# switch it on or off; it only sets the CLOUD_PROVIDER env var. Enable S3Proxy for any
+# non-AWS backend (Azure Blob, GCS, MinIO and other S3-compatible stores) and for AWS
+# when you authenticate with access keys instead of IRSA.
 
 license:
   key: "<REPLACE-WITH-LLAMACLOUD-LICENSE-KEY>"
@@ -38,17 +43,24 @@ redis:
 
 config:
   storageBuckets:
-    # Set the provider to 'azure' or 'gcp' to enable s3proxy sidecar
-    provider: "azure"  # or "gcp"
+    provider: "azure"  # or "gcp"; sets CLOUD_PROVIDER, does not gate the sidecar
 
     s3proxy:
+      # Required. This, and only this, deploys the sidecar.
+      enabled: true
+      containerPort: 8080
+
+      # Backend credentials. For other backends see:
+      # https://github.com/gaul/s3proxy/wiki/Storage-backend-examples
       config:
-        # Fillout with your own values
-        # https://github.com/gaul/s3proxy/wiki/Storage-backend-examples
-        # S3PROXY_ENDPOINT: "http://0.0.0.0:80"
-        # S3PROXY_AUTHORIZATION: "none"
-        # JCLOUDS_PROVIDER: "azureblob"
-        # JCLOUDS_AZUREBLOB_AUTH: "azureKey"
-        # JCLOUDS_IDENTITY: "<azure-storage-account-name>"
-        # JCLOUDS_CREDENTIAL: "<azure-storage-account-key>"
-        # JCLOUDS_ENDPOINT: "<azure-storage-account-endpoint>"
+        JCLOUDS_PROVIDER: "azureblob"
+        JCLOUDS_AZUREBLOB_AUTH: "azureKey"
+        JCLOUDS_IDENTITY: "<REPLACE-WITH-STORAGE-ACCOUNT-NAME>"
+        JCLOUDS_CREDENTIAL: "<REPLACE-WITH-STORAGE-ACCOUNT-KEY>"
+        # Optional. Defaults to https://<identity>.blob.core.windows.net; set it
+        # only for a sovereign cloud or a custom storage endpoint.
+        # JCLOUDS_ENDPOINT: "<REPLACE-WITH-STORAGE-ACCOUNT-ENDPOINT>"
+        # Optional. Not used by the azureblob backend.
+        # JCLOUDS_REGION: "<REPLACE-WITH-REGION>"
+        # The S3PROXY_* listener settings (endpoint, authorization, CORS,
+        # unknown-header handling) are set by the chart; override only if needed.

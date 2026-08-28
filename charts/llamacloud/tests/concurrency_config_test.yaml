@@ -59,6 +59,9 @@ tests:
     - equal:
         path: .data.LAYOUT_EXTRACTION_V2_CONCURRENCY
         value: "16"
+    - equal:
+        path: .data.LAYOUT_EXTRACTION_V3_CONCURRENCY
+        value: "16"
 
 - it: should render accurateModeLLMConcurrency and model-specific keys when set
   set:

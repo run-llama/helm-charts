@@ -1,3 +1,4 @@
+{{- $layoutV3Concurrency := ((($.Values.config).parse).concurrency).layoutExtractionV3Concurrency | default ((($.Values.config).parse).concurrency).layoutExtractionV2Concurrency | default ((($.Values.config).parse).concurrency).layoutExtractionConcurrency }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -23,6 +24,9 @@ data:
   {{- end }}
   {{- if ((($.Values.config).parse).concurrency).layoutExtractionV2Concurrency }}
   LAYOUT_EXTRACTION_V2_CONCURRENCY: {{ ((($.Values.config).parse).concurrency).layoutExtractionV2Concurrency | quote }}
+  {{- end }}
+  {{- if $layoutV3Concurrency }}
+  LAYOUT_EXTRACTION_V3_CONCURRENCY: {{ $layoutV3Concurrency | quote }}
   {{- end }}
   {{- if ((($.Values.config).parse).concurrency).layoutModeBlockParseConcurrency }}
   LAYOUT_MODE_BLOCK_PARSE_CONCURRENCY: {{ ((($.Values.config).parse).concurrency).layoutModeBlockParseConcurrency | quote }}

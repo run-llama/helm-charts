@@ -64,3 +64,44 @@ tests:
     - equal:
         path: .metadata.namespace
         value: my-ns
+
+- it: leaves usage caps off and unset by default
+  template: ../templates/llamacloud/configmaps/common.yaml
+  asserts:
+    - equal:
+        path: .data.USAGE_CAP_ENFORCEMENT_MODE
+        value: "off"
+    - notExists:
+        path: .data.DEFAULT_DAILY_USAGE_CREDITS
+    - notExists:
+        path: .data.DEFAULT_MONTHLY_USAGE_CREDITS
+
+- it: renders the configured usage cap mode and credit defaults
+  set:
+    config:
+      usageCaps:
+        enforcementMode: enforce
+        defaultDailyCredits: 5000
+        defaultMonthlyCredits: 100000
+  template: ../templates/llamacloud/configmaps/common.yaml
+  asserts:
+    - equal:
+        path: .data.USAGE_CAP_ENFORCEMENT_MODE
+        value: "enforce"
+    - equal:
+        path: .data.DEFAULT_DAILY_USAGE_CREDITS
+        value: "5000"
+    - equal:
+        path: .data.DEFAULT_MONTHLY_USAGE_CREDITS
+        value: "100000"
+
+- it: renders a zero credit default rather than dropping it
+  set:
+    config:
+      usageCaps:
+        defaultDailyCredits: 0
+  template: ../templates/llamacloud/configmaps/common.yaml
+  asserts:
+    - equal:
+        path: .data.DEFAULT_DAILY_USAGE_CREDITS
+        value: "0"

@@ -17,6 +17,13 @@ Temporal Parse Component Settings.
      `exec: "/bin/bash": stat /bin/bash: no such file or directory`. The command body
      is POSIX-sh compatible; sh + jemalloc preload + node were verified on the image. */}}
 {{- $component = set $component "command" (list "/bin/sh" "-c" "node dist/worker/bootPrewarm.js & LD_PRELOAD=$JEMALLOC_PATH exec node --max-old-space-size=$MAX_OLD_SPACE_SIZE dist/worker/temporal/bundle-worker.mjs") }}
+{{/* Must outlive the worker's own graceful drain: on SIGTERM the TS worker
+     stops polling and drains in-flight parse activities for up to 14m, forcing
+     exit at 15m (worker.ts shutdownGraceTime). The chart-wide 30s default
+     SIGKILLed pods mid-drain, so any scale-in during a parse killed the
+     activity; a job whose retry landed on another scale-in victim exhausted
+     its Temporal attempts and failed. */}}
+{{- $component = set $component "terminationGracePeriodSeconds" ( (($.Values.temporalWorkloads).llamaParse).terminationGracePeriodSeconds | default 960 ) }}
 {{- $component = set $component "usesS3" "true" }}
 {{- $component | toYaml }}
 {{- end }}
@@ -51,6 +58,8 @@ llamacloud.components in _common.tpl.
 {{/* Same entrypoint as llamaParse above; see that block for why /bin/sh and
      why LD_PRELOAD is scoped to the node process rather than a container ENV. */}}
 {{- $component = set $component "command" (list "/bin/sh" "-c" "node dist/worker/bootPrewarm.js & LD_PRELOAD=$JEMALLOC_PATH exec node --max-old-space-size=$MAX_OLD_SPACE_SIZE dist/worker/temporal/bundle-worker.mjs") }}
+{{/* Same drain semantics as llamaParse above — see that block. */}}
+{{- $component = set $component "terminationGracePeriodSeconds" ( (($.Values.temporalWorkloads).llamaParseQuarantine).terminationGracePeriodSeconds | default 960 ) }}
 {{- $component = set $component "usesS3" "true" }}
 {{- $component | toYaml }}
 {{- end }}
