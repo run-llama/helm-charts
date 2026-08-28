@@ -123,11 +123,10 @@ Activated Components
 {{- if (($.Values.config).parseOcr).enabled }}
 {{- $activated = set $activated "llamaParseOcr" (include "llamacloud.component.llamaParseOcr" . | fromYaml) }}
 {{- end }}
-{{- if (($.Values.config).parseLayoutDetection).enabled }}
-{{- $activated = set $activated "llamaParseLayoutDetectionApi" (include "llamacloud.component.llamaParseLayoutDetectionApi" . | fromYaml) }}
-{{- end }}
 {{- if (($.Values.config).parseLayoutDetectionV3).enabled }}
 {{- $activated = set $activated "llamaParseLayoutDetectionApiV3" (include "llamacloud.component.llamaParseLayoutDetectionApiV3" . | fromYaml) }}
+{{- else if (($.Values.config).parseLayoutDetection).enabled }}
+{{- $activated = set $activated "llamaParseLayoutDetectionApi" (include "llamacloud.component.llamaParseLayoutDetectionApi" . | fromYaml) }}
 {{- end }}
 {{- /* Temporal workloads - skip when temporal is disabled */}}
 {{- if not $.Values.temporal.disabled }}

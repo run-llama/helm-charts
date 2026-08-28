@@ -107,6 +107,8 @@ Parameters:
 - secretRef:
     name: {{ .component.name }}
 {{- end }}
+- configMapRef:
+    name: db-pool-config
 {{- include "llamacloud.secrets.postgresql" .root }}
 {{- include "llamacloud.secrets.redis" .root }}
 {{- end }}

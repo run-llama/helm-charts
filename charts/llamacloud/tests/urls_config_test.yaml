@@ -52,6 +52,22 @@ tests:
     - isNull:
         path: .data.LAYOUT_EXTRACTION_V3_ENDPOINT
 
+- it: should set FRONTEND_URL to the ingress URL so self-hosted redirects stay on the deployment
+  set:
+    ingress:
+      host: app.example.com
+  template: ../templates/llamacloud/configmaps/urls.yaml
+  asserts:
+    - equal:
+        path: .data.FRONTEND_URL
+        value: "http://app.example.com"
+
+- it: should omit FRONTEND_URL when no ingress host is configured
+  template: ../templates/llamacloud/configmaps/urls.yaml
+  asserts:
+    - isNull:
+        path: .data.FRONTEND_URL
+
 - it: should set PUBLIC_BACKEND_URL to the ingress URL when host is localhost (Tilt-style dev)
   set:
     ingress:
@@ -99,10 +115,15 @@ tests:
         enabled: true
   template: ../templates/llamacloud/configmaps/urls.yaml
   asserts:
-    - isNotNull:
+    - equal:
         path: .data.LAYOUT_EXTRACTION_ENDPOINT
-    - isNotNull:
+        value: "http://llamacloud-layout:80"
+    - equal:
         path: .data.LAYOUT_EXTRACTION_V2_ENDPOINT
+        value: "http://llamacloud-layout:80"
+    - equal:
+        path: .data.LAYOUT_EXTRACTION_V3_ENDPOINT
+        value: "http://llamacloud-layout:80"
 
 - it: should include layout v3 endpoint when parseLayoutDetectionV3 is enabled
   set:
@@ -113,8 +134,15 @@ tests:
         enabled: true
   template: ../templates/llamacloud/configmaps/urls.yaml
   asserts:
-    - isNotNull:
+    - equal:
         path: .data.LAYOUT_EXTRACTION_V3_ENDPOINT
+        value: "http://llamacloud-layout-v3:80"
+    - equal:
+        path: .data.LAYOUT_EXTRACTION_ENDPOINT
+        value: "http://llamacloud-layout-v3:80"
+    - equal:
+        path: .data.LAYOUT_EXTRACTION_V2_ENDPOINT
+        value: "http://llamacloud-layout-v3:80"
 
 - it: should default AGENT_DEPLOYMENT_USE_PUBLIC_BACKEND_URL to false
   set:

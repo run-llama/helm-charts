@@ -1,11 +1,12 @@
 {{/*
-Parse Layout Detection V3 Component Settings.
-This is for BYOC deployments using the self-hosted layout detection model.
+Deprecated Layout V3 compatibility alias. New configuration should use the
+canonical llamaParseLayoutDetectionApi component and llamacloud-layout identity.
 */}}
 {{ define "llamacloud.component.llamaParseLayoutDetectionApiV3" }}
 {{- $component := .Values.llamaParseLayoutDetectionApiV3 }}
 {{- $component = set $component "prefix" "llamacloud.component.llamaParseLayoutDetectionApiV3" }}
 {{- $component = set $component "name" "llamacloud-layout-v3" }}
+{{- $component = set $component "gpuEnabled" ((.Values.config).parseLayoutDetectionV3).gpu }}
 {{- $component = set $component "image" ( ($.Values.llamaParseLayoutDetectionApiV3).image | default ( print "docker.io/llamaindex/llamacloud-layout-detection-api-v3:" .Chart.AppVersion ) ) }}
 {{- $component = set $component "imagePullPolicy" ( ($.Values.llamaParseLayoutDetectionApiV3).imagePullPolicy | default "IfNotPresent" ) }}
 {{- $component = set $component "port" 8000 }}
@@ -28,7 +29,7 @@ requests:
   {{- with ((((.component).resources).requests)) }}{{- with (index . "ephemeral-storage") }}
   ephemeral-storage: {{ . }}
   {{- end }}{{- end }}
-  {{- if ((.root.Values.config).parseLayoutDetectionV3).gpu }}
+  {{- if (.component).gpuEnabled }}
   {{ $gpuResourceName }}: {{ $gpuCount }}
   {{- end }}
 limits:
@@ -37,7 +38,7 @@ limits:
   {{- with ((((.component).resources).limits)) }}{{- with (index . "ephemeral-storage") }}
   ephemeral-storage: {{ . }}
   {{- end }}{{- end }}
-  {{- if ((.root.Values.config).parseLayoutDetectionV3).gpu }}
+  {{- if (.component).gpuEnabled }}
   {{ $gpuResourceName }}: {{ $gpuCount }}
   {{- end }}
 {{- end }}

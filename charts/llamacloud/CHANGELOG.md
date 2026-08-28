@@ -1,5 +1,18 @@
 # CHANGELOG
 
+## [0.9.2] - 2026-08-27
+
+### Platform
+- **[Security]** Security updates
+- **[Feature]** Usage caps — bound the credits an organization or project may consume per day or per month. New `config.usageCaps.enforcementMode` (`off` / `observe` / `enforce`, default `off`), `config.usageCaps.defaultDailyCredits`, and `config.usageCaps.defaultMonthlyCredits` set the deployment-wide default; global administrators override it for one organization — or cap a single project — from **Settings → Admin → Quota Management** using the new **Daily Usage Credits Limit** and **Monthly Usage Credits Limit** entries. Breaching a cap rejects job creation with HTTP 402. Off by default, so upgrading changes nothing until you set a mode and a credit value ([Usage Controls](https://developers.llamaindex.ai/llamaparse/self_hosting/configuration/usage-controls)).
+- **[Improvement]** The per-project API rate limits under `config.rateLimits` are now documented alongside usage caps, including how a limit resolves from an organization override through the plan tier to the deployment-wide default ([Usage Controls](https://developers.llamaindex.ai/llamaparse/self_hosting/configuration/usage-controls)).
+- **[Improvement]** The admin Quota Management page now finds an organization by name as well as by id, and splits what someone set deliberately (**Overrides**, including project-level caps) from the full effective list (**All Limits**).
+- **[Improvement]** Postgres pooling controls and improvements
+- **[Improvement]** Updated Viewer role; the old role is now Viewer (legacy)
+
+### Extract
+- **[Beta]** Native spreadsheet extraction is now available in beta — extract structured data from `.xlsx`, `.xls`, and `.csv` files ([Spreadsheet mode](https://developers.llamaindex.ai/llamaparse/extract/guides/configuring-extract/#spreadsheet-mode))
+
 ## [0.9.1] - 2026-08-20
 
 ### Platform

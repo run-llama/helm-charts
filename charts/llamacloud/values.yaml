@@ -24,6 +24,24 @@ postgresql:
   password: ""
   ## @param postgresql.secret Name of the existing secret to use for PostgreSQL credentials
   secret: ""
+  ## Connection pool sizing. A pod holds `poolSize` connections open whether busy or idle,
+  ## and may open `poolMaxOverflow` more under load, so the deployment's worst case is
+  ## roughly `sum over components of (replicas x (poolSize + poolMaxOverflow))`. That has
+  ## to fit inside the server's `max_connections` alongside every other client, and
+  ## Temporal is one of those whenever it points at the same host, which is what the
+  ## temporal-subchart configuration below does by default.
+  ## These are delivered by ConfigMap, so changing them on a running release takes effect
+  ## when the affected pods next restart, not at `helm upgrade`.
+  ## @param postgresql.poolSize [nullable] Persistent connections each pod keeps open to PostgreSQL. Leave null to use the application default of 10.
+  # @schema type: [integer, "null"];minimum: 0
+  poolSize: null
+  ## @param postgresql.poolMaxOverflow [nullable] Additional connections each pod may open beyond poolSize under load. Leave null to use the application default of 10. Set 0 to cap each pod at poolSize.
+  # @schema type: [integer, "null"];minimum: 0
+  poolMaxOverflow: null
+
+  ## Driver behavior, not sizing: applies to the same five components via the same ConfigMap.
+  ## @param postgresql.disablePreparedStatements Disable asyncpg server-side prepared statements. Required when this host is a transaction-mode pooler (PgBouncer 1.21+); leave false for a direct connection, where prepared statements are a performance win.
+  disablePreparedStatements: false
 
 ## @section MongoDB Configuration
 # @schema additionalProperties: false
@@ -604,7 +622,12 @@ config:
     ## @param config.storageBuckets.parseFileOutput Cloud storage bucket name
     parseFileOutput: "llama-platform-file-parsing"
 
-    ## @section S3Proxy Configuration (only used when provider is set to gcp or azure, ignored for aws)
+    ## @section S3Proxy Configuration
+    ## Gated solely on s3proxy.enabled. `provider` is NOT consulted, it only becomes the
+    ## CLOUD_PROVIDER env var. Enable S3Proxy for any non-AWS backend (Azure Blob, GCS,
+    ## MinIO and other S3-compatible stores) AND for AWS when authenticating with access
+    ## keys rather than IRSA. Leave it off only on the AWS + IRSA path, where the platform
+    ## talks to S3 natively.
     # @schema additionalProperties: false
     s3proxy:
       ## @param config.storageBuckets.s3proxy.enabled S3Proxy image
@@ -685,6 +708,24 @@ config:
     ## @param config.rateLimits.usageApiQueryQps Usage API query ops (queries per second)
     usageApiQueryQps: 20
 
+  ## @section Usage Caps Configuration
+  ## Credit-spend caps evaluated per project and per organization on every
+  ## job-creating request. `enforcementMode` is the master switch; the default
+  ## credit values below are written into the quota_configurations table by the
+  ## quota sync on backend startup as the organization-scope global default, and
+  ## can be overridden per organization from the admin Quota Management page.
+  # @schema additionalProperties: false
+  usageCaps:
+    ## @param config.usageCaps.enforcementMode Cap behavior: `off` skips evaluation, `observe` logs the would-block and allows, `enforce` rejects the request with HTTP 402
+    # @schema enum: ["", off, observe, enforce]
+    enforcementMode: "off"
+    ## @param config.usageCaps.defaultDailyCredits Global default for the per-organization daily credit cap. Null leaves organizations uncapped daily
+    # @schema type: [integer, "null"];minimum: 0
+    defaultDailyCredits: null
+    ## @param config.usageCaps.defaultMonthlyCredits Global default for the per-organization monthly credit cap. Null leaves organizations uncapped monthly
+    # @schema type: [integer, "null"];minimum: 0
+    defaultMonthlyCredits: null
+
   ## @section LlamaExtract Configuration
   # @schema additionalProperties: false
   extraction:
@@ -739,6 +780,8 @@ config:
       layoutExtractionConcurrency: ""
       ## @param config.parse.concurrency.layoutExtractionV2Concurrency layout extraction v2 concurrency setting
       layoutExtractionV2Concurrency: ""
+      ## @param config.parse.concurrency.layoutExtractionV3Concurrency Deprecated compatibility alias; use layoutExtractionConcurrency
+      layoutExtractionV3Concurrency: ""
       ## @param config.parse.concurrency.layoutModeBlockParseConcurrency layout mode block parse concurrency setting
       layoutModeBlockParseConcurrency: ""
       ## @param config.parse.concurrency.layoutModePageConcurrency layout mode page concurrency setting
@@ -812,12 +855,13 @@ config:
     gpu: false
 
   ## @section Layout Detection V3 (BYOC Self-Hosted) Configuration
+  ## Deprecated: use parseLayoutDetection. This alias remains supported for compatibility.
   # @schema additionalProperties: false
   parseLayoutDetectionV3:
-    ## @param config.parseLayoutDetectionV3.enabled Enable Layout V3 Detection (self-hosted layout detection model)
+    ## @param config.parseLayoutDetectionV3.enabled Deprecated compatibility alias for config.parseLayoutDetection.enabled
     ## Note: This is for BYOC deployments that cannot access HuggingFace inference endpoints
     enabled: false
-    ## @param config.parseLayoutDetectionV3.gpu Enable GPU acceleration for Layout V3 processing
+    ## @param config.parseLayoutDetectionV3.gpu Deprecated compatibility alias for config.parseLayoutDetection.gpu
     gpu: false
 
   ## @section Temporal Configuration
@@ -934,7 +978,7 @@ frontend:
   annotations: {}
 
   ## @param frontend.image Frontend image
-  image: docker.io/llamaindex/llamacloud-frontend:0.9.1
+  image: docker.io/llamaindex/llamacloud-frontend:0.9.2
 
   ## @param frontend.imagePullPolicy Frontend image pull policy
   # @schema enum: ["", Always, IfNotPresent, Never]
@@ -1005,7 +1049,7 @@ backend:
   annotations: {}
 
   ## @param backend.image Backend image
-  image: docker.io/llamaindex/llamacloud-backend:0.9.1
+  image: docker.io/llamaindex/llamacloud-backend:0.9.2
 
   ## @param backend.imagePullPolicy Backend image pull policy
   # @schema enum: ["", Always, IfNotPresent, Never]
@@ -1076,7 +1120,7 @@ jobsService:
   annotations: {}
 
   ## @param jobsService.image JobsService image
-  image: docker.io/llamaindex/llamacloud-backend:0.9.1
+  image: docker.io/llamaindex/llamacloud-backend:0.9.2
 
   ## @param jobsService.imagePullPolicy JobsService image pull policy
   # @schema enum: ["", Always, IfNotPresent, Never]
@@ -1147,7 +1191,7 @@ jobsWorker:
   annotations: {}
 
   ## @param jobsWorker.image JobsWorker image
-  image: docker.io/llamaindex/llamacloud-backend:0.9.1
+  image: docker.io/llamaindex/llamacloud-backend:0.9.2
 
   ## @param jobsWorker.imagePullPolicy JobsWorker image pull policy
   # @schema enum: ["", Always, IfNotPresent, Never]
@@ -1218,7 +1262,7 @@ llamaParse:
   annotations: {}
 
   ## @param llamaParse.image LlamaParse image
-  image: docker.io/llamaindex/llamacloud-llamaparse:0.9.1
+  image: docker.io/llamaindex/llamacloud-llamaparse:0.9.2
 
   ## @param llamaParse.imagePullPolicy LlamaParse image pull policy
   # @schema enum: ["", Always, IfNotPresent, Never]
@@ -1289,7 +1333,7 @@ llamaParseOcr:
   annotations: {}
 
   ## @param llamaParseOcr.image LlamaParseOcr image
-  image: docker.io/llamaindex/llamacloud-llamaparse-ocr:0.9.1
+  image: docker.io/llamaindex/llamacloud-llamaparse-ocr:0.9.2
 
   ## @param llamaParseOcr.imagePullPolicy LlamaParseOcr image pull policy
   # @schema enum: ["", Always, IfNotPresent, Never]
@@ -1366,8 +1410,10 @@ llamaParseLayoutDetectionApi:
   ## @param llamaParseLayoutDetectionApi.annotations Annotations added to the LlamaParseLayoutDetectionApi Deployment.
   annotations: {}
 
-  ## @param llamaParseLayoutDetectionApi.image LlamaParseLayoutDetectionApi image
-  image: docker.io/llamaindex/llamacloud-layout-detection-api:0.9.1
+  ## @param llamaParseLayoutDetectionApi.image Layout V3 image behind the canonical Layout component
+  ## Leave empty to use docker.io/llamaindex/llamacloud-layout-detection-api-v3:<chart-version>.
+  ## The previous official V1/V2 image default is migrated automatically on upgrade.
+  image: ""
 
   ## @param llamaParseLayoutDetectionApi.imagePullPolicy LlamaParseLayoutDetectionApi image pull policy
   # @schema enum: ["", Always, IfNotPresent, Never]
@@ -1422,8 +1468,9 @@ llamaParseLayoutDetectionApi:
 
 ## @section LlamaParse Layout Detection API V3 Configuration (BYOC)
 # @schema additionalProperties: false
+## Deprecated: use llamaParseLayoutDetectionApi. This alias remains supported for compatibility.
 llamaParseLayoutDetectionApiV3:
-  ## @param llamaParseLayoutDetectionApiV3.horizontalPodAutoscalerSpec HorizontalPodAutoScaler configuration
+  ## @param llamaParseLayoutDetectionApiV3.horizontalPodAutoscalerSpec Deprecated compatibility alias; use llamaParseLayoutDetectionApi.horizontalPodAutoscalerSpec
   ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/
   horizontalPodAutoscalerSpec: {}
 
@@ -1517,7 +1564,7 @@ usage:
   annotations: {}
 
   ## @param usage.image LlamaParseLayoutDetectionApi image
-  image: docker.io/llamaindex/llamacloud-backend:0.9.1
+  image: docker.io/llamaindex/llamacloud-backend:0.9.2
 
   ## @param usage.imagePullPolicy LlamaParseLayoutDetectionApi image pull policy
   # @schema enum: ["", Always, IfNotPresent, Never]
@@ -1591,7 +1638,7 @@ temporalWorkloads:
     annotations: {}
 
     ## @param temporalWorkloads.llamaParse.image temporal llamaparse image
-    image: docker.io/llamaindex/llamacloud-llamaparse:0.9.1
+    image: docker.io/llamaindex/llamacloud-llamaparse:0.9.2
 
     ## @param temporalWorkloads.llamaParse.imagePullPolicy temporal llamaparse image pull policy
     # @schema enum: ["", Always, IfNotPresent, Never]
@@ -1644,6 +1691,10 @@ temporalWorkloads:
     ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-volume-storage/
     volumes: []
 
+    ## @param temporalWorkloads.llamaParse.terminationGracePeriodSeconds Pod termination grace period. Must outlive the worker's SIGTERM drain (up to 14m of in-flight parse activities, forced exit at 15m); shorter values SIGKILL the worker mid-parse on every scale-in.
+    # @schema type: integer;minimum: 0
+    terminationGracePeriodSeconds: 960
+
   ## Quarantine parse worker: the isolated poison-document lane. Rendered only
   ## when config.parse.quarantineWorkerEnabled is true, so an install that does
   ## not opt in is byte-identical to before this key existed. Shares every
@@ -1668,7 +1719,7 @@ temporalWorkloads:
     annotations: {}
 
     ## @param temporalWorkloads.llamaParseQuarantine.image temporal llamaparse quarantine image
-    image: docker.io/llamaindex/llamacloud-llamaparse:0.9.1
+    image: docker.io/llamaindex/llamacloud-llamaparse:0.9.2
 
     ## @param temporalWorkloads.llamaParseQuarantine.imagePullPolicy temporal llamaparse quarantine image pull policy
     # @schema enum: ["", Always, IfNotPresent, Never]
@@ -1721,6 +1772,10 @@ temporalWorkloads:
     ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-volume-storage/
     volumes: []
 
+    ## @param temporalWorkloads.llamaParseQuarantine.terminationGracePeriodSeconds Pod termination grace period. Same drain semantics as temporalWorkloads.llamaParse.terminationGracePeriodSeconds.
+    # @schema type: integer;minimum: 0
+    terminationGracePeriodSeconds: 960
+
   ## @section Temporal Workers Configuration
   ## Consolidated temporal workers using the dynamic worker CLI
   ## This is a map of worker names to their configurations
@@ -1735,7 +1790,7 @@ temporalWorkloads:
       annotations: {}
 
       ## @param temporalWorkloads.workers.temporal-jobs-worker.image Frontend image
-      image: docker.io/llamaindex/llamacloud-backend:0.9.1
+      image: docker.io/llamaindex/llamacloud-backend:0.9.2
 
       ## @param temporalWorkloads.workers.temporal-jobs-worker.imagePullPolicy Frontend image pull policy
       # @schema enum: ["", Always, IfNotPresent, Never]

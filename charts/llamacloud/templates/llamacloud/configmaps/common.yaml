@@ -23,3 +23,12 @@ data:
 {{- if not ((.Values.config).v1).enabled }}
   V1_ENABLED: "false"
 {{- end }}
+{{- with (((.Values.config).usageCaps).enforcementMode) }}
+  USAGE_CAP_ENFORCEMENT_MODE: {{ . | quote }}
+{{- end }}
+{{- if not (kindIs "invalid" (((.Values.config).usageCaps).defaultDailyCredits)) }}
+  DEFAULT_DAILY_USAGE_CREDITS: {{ ((.Values.config).usageCaps).defaultDailyCredits | quote }}
+{{- end }}
+{{- if not (kindIs "invalid" (((.Values.config).usageCaps).defaultMonthlyCredits)) }}
+  DEFAULT_MONTHLY_USAGE_CREDITS: {{ ((.Values.config).usageCaps).defaultMonthlyCredits | quote }}
+{{- end }}

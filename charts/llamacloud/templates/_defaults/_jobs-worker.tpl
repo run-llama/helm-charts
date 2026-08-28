@@ -120,6 +120,8 @@ Parameters:
 {{- end }}
 - secretRef:
     name: bucket-secret
+- configMapRef:
+    name: db-pool-config
 {{- include "llamacloud.secrets.postgresql" .root }}
 {{- include "llamacloud.secrets.mongodb" .root }}
 {{- include "llamacloud.secrets.rabbitmq" .root }}

@@ -66,5 +66,5 @@ spec:
       {{- if $component.topologySpreadConstraints }}
       topologySpreadConstraints: {{ toYaml $component.topologySpreadConstraints | nindent 8 }}
       {{- end }}
-      terminationGracePeriodSeconds: 30
+      terminationGracePeriodSeconds: {{ $component.terminationGracePeriodSeconds | default 30 }}
 {{- end }}

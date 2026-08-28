@@ -1,0 +1,30 @@
+{{- /* Pool sizing for the components that open a pool against the platform PostgreSQL.
+
+       Its own ConfigMap rather than two keys in common-config: usage does not mount
+       common-config, and mounting it there to pick these up would also hand that pod
+       IS_DEPLOYED and DEPLOYMENT_MODE, which move its plan gates. See the validator
+       docstring in backend/src/app/configs/deployment.py, and LI-7954 for what that
+       costs when it happens by accident.
+
+       Keys are omitted when null so an upgrade does not resize a running release. The
+       guard is `kindIs "invalid"` rather than truthiness because max_overflow 0 is a
+       real setting: it caps a pod at poolSize. */ -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: db-pool-config
+  namespace: {{ $.Release.Namespace | quote }}
+  labels: {{ include "llamacloud.labels" (dict "root" $) | indent 4 }}
+  annotations: {{ include "llamacloud.annotations" (dict "root" $) | indent 4 }}
+data:
+  {{- if not (kindIs "invalid" (.Values.postgresql).poolSize) }}
+  DB_CONNECTION_POOL_SIZE: {{ (.Values.postgresql).poolSize | quote }}
+  {{- end }}
+  {{- if not (kindIs "invalid" (.Values.postgresql).poolMaxOverflow) }}
+  DB_CONNECTION_POOL_MAX_OVERFLOW: {{ (.Values.postgresql).poolMaxOverflow | quote }}
+  {{- end }}
+  {{- /* Plain truthiness here, unlike the two keys above: false matches the application
+         default, so omitting it is behavior-identical and there is no meaningful zero. */}}
+  {{- if (.Values.postgresql).disablePreparedStatements }}
+  DATABASE_DISABLE_PREPARED_STATEMENTS: "true"
+  {{- end }}

@@ -546,6 +546,9 @@
                                 "layoutExtractionV2Concurrency": {
                                     "type": "string"
                                 },
+                                "layoutExtractionV3Concurrency": {
+                                    "type": "string"
+                                },
                                 "layoutModeBlockParseConcurrency": {
                                     "type": "string"
                                 },
@@ -851,6 +854,35 @@
                                 "",
                                 "default",
                                 "consolidated"
+                            ]
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "usageCaps": {
+                    "type": "object",
+                    "properties": {
+                        "defaultDailyCredits": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ],
+                            "minimum": 0
+                        },
+                        "defaultMonthlyCredits": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ],
+                            "minimum": 0
+                        },
+                        "enforcementMode": {
+                            "type": "string",
+                            "enum": [
+                                "",
+                                "off",
+                                "observe",
+                                "enforce"
                             ]
                         }
                     },
@@ -1549,11 +1581,28 @@
                 "database": {
                     "type": "string"
                 },
+                "disablePreparedStatements": {
+                    "type": "boolean"
+                },
                 "host": {
                     "type": "string"
                 },
                 "password": {
                     "type": "string"
+                },
+                "poolMaxOverflow": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "minimum": 0
+                },
+                "poolSize": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "minimum": 0
                 },
                 "port": {
                     "type": "string"
@@ -1931,6 +1980,10 @@
                         "serviceAccountAnnotations": {
                             "type": "object"
                         },
+                        "terminationGracePeriodSeconds": {
+                            "type": "integer",
+                            "minimum": 0
+                        },
                         "tolerations": {
                             "type": "array"
                         },
@@ -2000,6 +2053,10 @@
                         },
                         "serviceAccountAnnotations": {
                             "type": "object"
+                        },
+                        "terminationGracePeriodSeconds": {
+                            "type": "integer",
+                            "minimum": 0
                         },
                         "tolerations": {
                             "type": "array"
