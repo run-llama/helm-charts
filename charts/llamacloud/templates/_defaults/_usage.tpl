@@ -109,6 +109,10 @@ Parameters:
 {{- end }}
 - configMapRef:
     name: db-pool-config
+{{- if not .root.Values.temporal.disabled }}
+- configMapRef:
+    name: temporal-connection-config
+{{- end }}
 {{- include "llamacloud.secrets.postgresql" .root }}
 {{- include "llamacloud.secrets.redis" .root }}
 {{- end }}

@@ -91,6 +91,9 @@ tests:
         path: .data.MAX_JOBS_IN_EXECUTION_PER_JOB_TYPE
         value: "10"
     - equal:
+        path: .data.MAX_INDEX_JOBS_IN_EXECUTION
+        value: "100000"
+    - equal:
         path: .data.MAX_DOCUMENT_INGESTION_JOBS_IN_EXECUTION
         value: "1"
     - equal:
@@ -119,7 +122,7 @@ tests:
         path: .data.DEFAULT_TRANSFORM_DOCUMENT_TIMEOUT_SECONDS
         value: "600"
 
-- it: renders llamaParse ConfigMap with debug and concurrency defaults
+- it: renders llamaParse ConfigMap with defaults
   template: ../templates/llamacloud/configmap.yaml
   documentSelector:
     path: metadata.name
@@ -128,8 +131,6 @@ tests:
     - equal:
         path: .data.DEBUG_MODE
         value: "false"
-    - isNotNullOrEmpty:
-        path: .data.MAX_QUEUE_CONCURRENCY
     - isNull:
         path: .data.PREFERED_PREMIUM_MODE_MODEL
 
@@ -146,6 +147,30 @@ tests:
     - equal:
         path: .data.PREFERED_PREMIUM_MODE_MODEL
         value: openai-gpt-4o
+
+- it: temporal-jobs-worker ConfigMap renders the pipeline concurrency default
+  template: ../templates/llamacloud/configmap.yaml
+  documentSelector:
+    path: metadata.name
+    value: temporal-jobs-worker
+  asserts:
+    - equal:
+        path: .data.MAX_INDEX_JOBS_IN_EXECUTION
+        value: "100000"
+
+- it: temporal-jobs-worker ConfigMap applies the pipeline concurrency override
+  set:
+    config:
+      jobs:
+        maxIndexJobsInExecution: 4
+  template: ../templates/llamacloud/configmap.yaml
+  documentSelector:
+    path: metadata.name
+    value: temporal-jobs-worker
+  asserts:
+    - equal:
+        path: .data.MAX_INDEX_JOBS_IN_EXECUTION
+        value: "4"
 
 - it: temporal-jobs-worker ConfigMap renders default cleanup retention envs
   template: ../templates/llamacloud/configmap.yaml
@@ -202,17 +227,3 @@ tests:
     - equal:
         path: .data.CLEANUP_PARSE_V2_RETENTION_DAYS
         value: "90"
-
-- it: no ConfigMaps when temporal is disabled AND frontend is disabled
-  set:
-    config:
-      frontend:
-        enabled: false
-    temporal:
-      disabled: true
-      deploy: false
-  template: ../templates/llamacloud/configmap.yaml
-  asserts:
-    # jobsWorker (non-temporal) and llamaParse (non-temporal) remain
-    - hasDocuments:
-        count: 2

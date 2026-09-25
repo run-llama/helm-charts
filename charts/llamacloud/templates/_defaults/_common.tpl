@@ -120,6 +120,11 @@ Activated Components
 {{- if (($.Values.config).frontend).enabled }}
 {{- $activated = set $activated "frontend" (include "llamacloud.component.frontend" . | fromYaml) }}
 {{- end }}
+{{- /* MCP serves agent clients against this deployment's own LlamaCloud. Off by
+       default: it is optional, and its image is not part of the base install. */}}
+{{- if (($.Values.config).mcp).enabled }}
+{{- $activated = set $activated "mcp" (include "llamacloud.component.mcp" . | fromYaml) }}
+{{- end }}
 {{- if (($.Values.config).parseOcr).enabled }}
 {{- $activated = set $activated "llamaParseOcr" (include "llamacloud.component.llamaParseOcr" . | fromYaml) }}
 {{- end }}
@@ -128,8 +133,17 @@ Activated Components
 {{- else if (($.Values.config).parseLayoutDetection).enabled }}
 {{- $activated = set $activated "llamaParseLayoutDetectionApi" (include "llamacloud.component.llamaParseLayoutDetectionApi" . | fromYaml) }}
 {{- end }}
-{{- /* Temporal workloads - skip when temporal is disabled */}}
-{{- if not $.Values.temporal.disabled }}
+{{- /* Form-field detection runs the FFDetr detector in-cluster, for deployments
+       with no Modal endpoint to call. Its own if, not another branch of the chain
+       above: it is orthogonal to layout detection and the two run together. Opt-in
+       because it is a GPU-class workload — an install that never sets the key
+       renders exactly what it rendered before the key existed, rather than gaining
+       a pod, a GPU request and a cost line on upgrade. */}}
+{{- if (($.Values.config).parseFormFieldDetection).enabled }}
+{{- $activated = set $activated "llamaParseFormFieldDetectionApi" (include "llamacloud.component.llamaParseFormFieldDetectionApi" . | fromYaml) }}
+{{- end }}
+{{- /* Temporal workloads. Temporal is required: v1 and v2 parse both dispatch
+       as workflows, so these are activated unconditionally. */}}
 {{- $activated = set $activated "temporalLlamaParse" (include "llamacloud.component.temporal.llamaParse" . | fromYaml) }}
 {{- /* Quarantine parse worker: opt-in, so a BYOC/single-tenant install that
        does not set the flag renders exactly what it rendered before this key
@@ -140,7 +154,6 @@ Activated Components
 {{- end }}
 {{- range $workerName, $workerConfig := .Values.temporalWorkloads.workers }}
 {{- $activated = set $activated $workerName (include "llamacloud.component.temporal.worker" (dict "name" $workerName "component" $workerConfig "appVersion" $.Chart.AppVersion) | fromYaml) }}
-{{- end }}
 {{- end }}
 {{- $activated | toYaml }}
 {{- end }}
@@ -186,5 +199,50 @@ Usage: include "llamacloud.llamaAgents.enabled" .  (or .root when nested)
 {{- if .Values.llamaAgents.enabled }}true{{ end -}}
 {{- else if ne (include "llamacloud.llamaAgents.url" .) "" -}}
 true
+{{- end -}}
+{{- end }}
+
+{{/*
+Temporal's address: the subchart's frontend Service when temporal.deploy=true,
+otherwise the required temporal.host/port.
+
+temporal.host is empty in subchart mode, so concatenating it with temporal.port
+yields ":7233" — a well-formed address every client reads as localhost. Getting
+this wrong therefore fails at runtime, not at render time.
+
+qualifiedEndpoint adds namespace and cluster domain, for callers outside the
+release namespace (KEDA evaluates scaler triggers from the keda-operator pod).
+*/}}
+{{- define "llamacloud.temporal.host" -}}
+{{- if .Values.temporal.deploy -}}
+{{- printf "%s-temporal-subchart-frontend" .Release.Name -}}
+{{- else -}}
+{{- if not (and .Values.temporal.host .Values.temporal.port) -}}
+{{- fail "temporal.host and temporal.port are required when temporal.deploy is false" -}}
+{{- end -}}
+{{- .Values.temporal.host -}}
+{{- end -}}
+{{- end }}
+
+{{- define "llamacloud.temporal.port" -}}
+{{- if .Values.temporal.deploy -}}
+7233
+{{- else -}}
+{{- if not (and .Values.temporal.host .Values.temporal.port) -}}
+{{- fail "temporal.host and temporal.port are required when temporal.deploy is false" -}}
+{{- end -}}
+{{- .Values.temporal.port | toString -}}
+{{- end -}}
+{{- end }}
+
+{{- define "llamacloud.temporal.endpoint" -}}
+{{- printf "%s:%s" (include "llamacloud.temporal.host" .) (include "llamacloud.temporal.port" .) -}}
+{{- end }}
+
+{{- define "llamacloud.temporal.qualifiedEndpoint" -}}
+{{- if .Values.temporal.deploy -}}
+{{- printf "%s.%s.svc.cluster.local:%s" (include "llamacloud.temporal.host" .) .Release.Namespace (include "llamacloud.temporal.port" .) -}}
+{{- else -}}
+{{- include "llamacloud.temporal.endpoint" . -}}
 {{- end -}}
 {{- end }}

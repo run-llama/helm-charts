@@ -203,3 +203,75 @@ tests:
     - equal:
         path: spec.template.spec.containers[0].image
         value: example.com/layout-v3:triton-dev
+
+- it: should use the CPU image when config.parseLayoutDetectionV3.gpu is false and no image is set
+  set:
+    config:
+      frontend:
+        enabled: false
+      parseLayoutDetectionV3:
+        enabled: true
+        gpu: false
+    redis:
+      host: test-redis
+      port: "6379"
+      password: test-pass
+    postgresql:
+      host: test-pg
+      port: "5432"
+      username: test-user
+      password: test-pass
+      database: test-db
+    mongodb:
+      host: mongodb
+      username: test-mongo-user
+      password: test-mongo-pass
+    rabbitmq:
+      host: test-rabbit
+      username: test-user
+      password: test-pass
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-layout-v3
+  asserts:
+    - matchRegex:
+        path: spec.template.spec.containers[0].image
+        pattern: ^docker\.io/llamaindex/llamacloud-layout-detection-api-v3:.+-cpu$
+
+- it: should keep custom layout image unsuffixed in CPU mode
+  set:
+    config:
+      frontend:
+        enabled: false
+      parseLayoutDetectionV3:
+        enabled: true
+        gpu: false
+    llamaParseLayoutDetectionApiV3:
+      image: my-registry.example.com/layout-v3:pinned
+    redis:
+      host: test-redis
+      port: "6379"
+      password: test-pass
+    postgresql:
+      host: test-pg
+      port: "5432"
+      username: test-user
+      password: test-pass
+      database: test-db
+    mongodb:
+      host: mongodb
+      username: test-mongo-user
+      password: test-mongo-pass
+    rabbitmq:
+      host: test-rabbit
+      username: test-user
+      password: test-pass
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-layout-v3
+  asserts:
+    - equal:
+        path: spec.template.spec.containers[0].image
+        value: my-registry.example.com/layout-v3:pinned

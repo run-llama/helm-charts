@@ -19,12 +19,6 @@ data:
   {{- if ((($.Values.config).parse).concurrency).ocrConcurrency }}
   OCR_CONCURRENCY: {{ ((($.Values.config).parse).concurrency).ocrConcurrency | quote }}
   {{- end }}
-  {{- if ((($.Values.config).parse).concurrency).layoutExtractionConcurrency }}
-  LAYOUT_EXTRACTION_CONCURRENCY: {{ ((($.Values.config).parse).concurrency).layoutExtractionConcurrency | quote }}
-  {{- end }}
-  {{- if ((($.Values.config).parse).concurrency).layoutExtractionV2Concurrency }}
-  LAYOUT_EXTRACTION_V2_CONCURRENCY: {{ ((($.Values.config).parse).concurrency).layoutExtractionV2Concurrency | quote }}
-  {{- end }}
   {{- if $layoutV3Concurrency }}
   LAYOUT_EXTRACTION_V3_CONCURRENCY: {{ $layoutV3Concurrency | quote }}
   {{- end }}

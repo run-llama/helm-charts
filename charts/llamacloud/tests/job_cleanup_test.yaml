@@ -23,21 +23,6 @@ tests:
   set:
     temporal:
       deploy: false
-      disabled: false
-    config:
-      temporal:
-        searchAttributesJob:
-          enabled: true
-  template: ../templates/llamacloud/job-cleanup.yaml
-  asserts:
-    - hasDocuments:
-        count: 0
-
-- it: should not render when temporal is disabled
-  set:
-    temporal:
-      deploy: true
-      disabled: true
     config:
       temporal:
         searchAttributesJob:
@@ -51,7 +36,6 @@ tests:
   set:
     temporal:
       deploy: true
-      disabled: false
     config:
       temporal:
         searchAttributesJob:
@@ -65,7 +49,6 @@ tests:
   set:
     temporal:
       deploy: true
-      disabled: false
     config:
       temporal:
         searchAttributesJob:
@@ -91,7 +74,6 @@ tests:
   set:
     temporal:
       deploy: true
-      disabled: false
     config:
       temporal:
         searchAttributesJob:
@@ -112,11 +94,10 @@ tests:
         path: .metadata.name
         value: test-release-temporal-job-cleanup
 
-- it: default cleanup image is bitnami/kubectl:latest
+- it: default cleanup image is digest-pinned
   set:
     temporal:
       deploy: true
-      disabled: false
     config:
       temporal:
         searchAttributesJob:
@@ -126,13 +107,12 @@ tests:
   asserts:
     - equal:
         path: .spec.template.spec.containers[0].image
-        value: bitnami/kubectl:latest
+        value: bitnami/kubectl:latest@sha256:b29d8c1665b70817259ceecaea16ab27aab6368b48daf485d19436c809067492
 
 - it: jobCleanup.image override should propagate to cleanup container
   set:
     temporal:
       deploy: true
-      disabled: false
     config:
       temporal:
         searchAttributesJob:
@@ -150,7 +130,6 @@ tests:
   set:
     temporal:
       deploy: true
-      disabled: false
     config:
       temporal:
         searchAttributesJob:

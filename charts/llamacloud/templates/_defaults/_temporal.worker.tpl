@@ -171,6 +171,7 @@ Parameters:
 {{- include "llamacloud.secrets.googleVertexAi" .root }}
 {{- include "llamacloud.secrets.llmProviderConfigs" .root }}
 {{- include "llamacloud.secrets.defaultIndex" .root }}
+{{- include "llamacloud.secrets.connectors" .root }}
 {{- end }}
 
 {{/*
@@ -204,7 +205,7 @@ JOB_CONSUMER_PORT: "80"
 AGENT_CONTROL_PLANE_BACKUP_ENABLED: {{ and $reachable $backup | quote }}
 
 MAX_JOBS_IN_EXECUTION_PER_JOB_TYPE: {{ ((.root.Values.config).jobs).maxJobsInExecutionPerJobType | default 10 | quote }}
-MAX_INDEX_JOBS_IN_EXECUTION: {{ ((.root.Values.config).jobs).maxIndexJobsInExecution | default 0 | quote }}
+MAX_INDEX_JOBS_IN_EXECUTION: {{ ((.root.Values.config).jobs).maxIndexJobsInExecution | default 100000 | quote }}
 MAX_DOCUMENT_INGESTION_JOBS_IN_EXECUTION: {{ ((.root.Values.config).jobs).maxDocumentIngestionJobsInExecution | default 1 | quote }}
 INCLUDE_JOB_ERROR_DETAILS: {{ ((.root.Values.config).jobs).includeJobErrorDetails | default "true" | quote }}
 DEFAULT_TRANSFORM_DOCUMENT_TIMEOUT_SECONDS: {{ ((.root.Values.config).jobs).defaultTransformDocumentTimeoutSeconds | default "240" | quote }}

@@ -1,4 +1,4 @@
-{{- if and (((.Values.config).temporal).searchAttributesJob).enabled .Values.temporal.deploy (not .Values.temporal.disabled) }}
+{{- if and (((.Values.config).temporal).searchAttributesJob).enabled .Values.temporal.deploy }}
 {{- /*
   Pre-upgrade cleanup hook: Delete the existing temporal-search-attributes job before each upgrade.
   Job.spec.template is immutable, so any change to the job's pod template (e.g. an admin-tools
@@ -26,7 +26,7 @@ spec:
       serviceAccountName: {{ .Release.Name }}-job-cleanup
       containers:
       - name: cleanup
-        image: {{ (((.Values.config).temporal).jobCleanup).image | default "bitnami/kubectl:latest" }}
+        image: {{ (((.Values.config).temporal).jobCleanup).image }}
         command:
           - /bin/sh
           - -c

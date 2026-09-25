@@ -26,10 +26,19 @@ bifrost-subchart:
   # Image tag is pre-pinned in the chart defaults to a stable Bifrost release.
   # Override only when you want to track a different Bifrost version.
   image:
-    tag: "v1.5.8"
+    tag: "v2.2.1"
 ```
 
 That renders a runnable Bifrost with no providers configured. The sections below add the real configuration you'll need.
+
+## Upgrading from Bifrost v1.x
+
+See the [upstream v2 migration guide](https://docs.getbifrost.ai/migration-guides/v2.0.0).
+For private provider endpoints, set `network_config.allow_private_network: true`
+under `bifrost-subchart.bifrost.providers.<provider>` in your Helm values.
+
+The new chart rejects legacy `<provider>_key_config.deployments` fields. Move those
+maps to key-level `aliases`, as described in the [v1.5 migration guide](https://docs.getbifrost.ai/migration-guides/v1.5.0#breaking-change-10-provider-deployments-removed-migrate-to-aliases).
 
 ## Configuration Structure
 
@@ -101,7 +110,7 @@ bifrost-subchart:
 
 ### Azure OpenAI
 
-Azure requires `azure_key_config` per key with the endpoint, API version, and deployment-name map:
+Set the Azure endpoint in `azure_key_config` and map model names to deployment names with key-level `aliases`:
 
 ```yaml
 bifrost-subchart:
@@ -117,12 +126,14 @@ bifrost-subchart:
           - name: "sweden"
             value: "env.AZURE_OPENAI_API_KEY"
             weight: 1
+            models:
+              - "gpt-4o"
+              - "gpt-4o-mini"
+            aliases:
+              gpt-4o: "my-gpt4o-deployment"
+              gpt-4o-mini: "my-gpt4o-mini-deployment"
             azure_key_config:
               endpoint: "https://your-resource.openai.azure.com"
-              api_version: "2024-02-15-preview"
-              deployments:
-                gpt-4o: "my-gpt4o-deployment"
-                gpt-4o-mini: "my-gpt4o-mini-deployment"
 ```
 
 ### Google Vertex AI

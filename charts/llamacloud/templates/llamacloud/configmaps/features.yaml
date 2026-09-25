@@ -16,3 +16,27 @@ data:
   {{- if (((.Values.config).managedEmbeddings).enabled) }}
   IS_MANAGED_EMBEDDINGS_ENABLED: {{ .Values.config.managedEmbeddings.enabled | quote }}
   {{- end }}
+  {{- with ((.Values.config).connectors) }}
+  ## Connectors. The backend refuses any integration/auth pair outside
+  ## CONNECTOR_AUTH_ENABLED_AUTH_TYPES. Emitted even when empty: empty means
+  ## "no connectors", whereas an absent key would allow every integration.
+  {{- if kindIs "string" .enabledAuthTypes }}
+  CONNECTOR_AUTH_ENABLED_AUTH_TYPES: {{ .enabledAuthTypes | quote }}
+  {{- end }}
+  ## OAuth grants are held in this deployment's own token vault; the other
+  ## broker (WorkOS) is hosted-product only.
+  CONNECTOR_AUTH_OAUTH_BROKER: "in_house"
+  {{- $returnUrl := .oauthReturnUrl }}
+  {{- if and (not $returnUrl) ($.Values.ingress).host }}
+  {{- $returnUrl = print (include "llamacloud.ingress.scheme" $) "://" $.Values.ingress.host "/credential-brokers/return" }}
+  {{- end }}
+  {{- with $returnUrl }}
+  TOKEN_VAULT_OAUTH_REDIRECT_URI: {{ . | quote }}
+  {{- end }}
+  {{- with .credentialsKmsKeyArn }}
+  CONNECTOR_KMS_CMK_ARN: {{ . | quote }}
+  {{- end }}
+  {{- with .tokenVaultKmsKeyArn }}
+  TOKEN_VAULT_KMS_CMK_ARN: {{ . | quote }}
+  {{- end }}
+  {{- end }}

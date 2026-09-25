@@ -81,3 +81,245 @@ tests:
     - equal:
         path: .spec.rules[0].http.paths[?(@.path == "/api")].backend.service.name
         value: llamacloud
+
+# MCP is routed by host rather than by path: its endpoints collide with paths the
+# frontend owns (/parse) and three of them carry a config id that no Ingress path
+# type can express. The host is derived from config.mcp.publicUrl so the route and
+# the URL advertised to MCP clients cannot drift apart.
+- it: should route the MCP host to the MCP service when publicUrl is a separate hostname
+  set:
+    ingress.enabled: true
+    ingress.host: "llamacloud.example.com"
+    ingress.ingressClassName: "default-ingress-class"
+    config.mcp.enabled: true
+    config.mcp.publicUrl: "https://mcp.llamacloud.example.com"
+  template: ../templates/ingress.yaml
+  asserts:
+    - lengthEqual:
+        path: .spec.rules
+        count: 2
+    - equal:
+        path: .spec.rules[1].host
+        value: "mcp.llamacloud.example.com"
+    - equal:
+        path: .spec.rules[1].http.paths[0].backend.service.name
+        value: "llamacloud-mcp"
+    - equal:
+        path: .spec.rules[1].http.paths[0].backend.service.port.number
+        value: 80
+    - equal:
+        path: .spec.rules[1].http.paths[0].path
+        value: "/"
+    - equal:
+        path: .spec.rules[1].http.paths[0].pathType
+        value: "Prefix"
+    # The main host keeps its three paths; the MCP rule is additive.
+    - lengthEqual:
+        path: .spec.rules[0].http.paths
+        count: 3
+
+- it: should cover the MCP host in the TLS certificate hosts
+  set:
+    ingress.enabled: true
+    ingress.host: "llamacloud.example.com"
+    ingress.ingressClassName: "default-ingress-class"
+    ingress.tlsSecretName: "llamacloud-example-tls-secret"
+    config.mcp.enabled: true
+    config.mcp.publicUrl: "https://mcp.llamacloud.example.com"
+  template: ../templates/ingress.yaml
+  asserts:
+    - lengthEqual:
+        path: .spec.tls[0].hosts
+        count: 2
+    - equal:
+        path: .spec.tls[0].hosts[1]
+        value: "mcp.llamacloud.example.com"
+
+- it: should strip a port from the MCP host, which the Ingress host field rejects
+  set:
+    ingress.enabled: true
+    ingress.host: "llamacloud.example.com"
+    ingress.ingressClassName: "default-ingress-class"
+    config.mcp.enabled: true
+    config.mcp.publicUrl: "https://mcp.example.com:8443"
+  template: ../templates/ingress.yaml
+  asserts:
+    - equal:
+        path: .spec.rules[1].host
+        value: "mcp.example.com"
+
+# A publicUrl on the main host means the operator routes MCP themselves.
+- it: should add no MCP rule when publicUrl is on the ingress host
+  set:
+    ingress.enabled: true
+    ingress.host: "llamacloud.example.com"
+    ingress.ingressClassName: "default-ingress-class"
+    config.mcp.enabled: true
+    config.mcp.publicUrl: "https://llamacloud.example.com"
+  template: ../templates/ingress.yaml
+  asserts:
+    - lengthEqual:
+        path: .spec.rules
+        count: 1
+
+- it: should add no MCP rule when MCP is disabled
+  set:
+    ingress.enabled: true
+    ingress.host: "llamacloud.example.com"
+    ingress.ingressClassName: "default-ingress-class"
+    config.mcp.enabled: false
+    config.mcp.publicUrl: "https://mcp.llamacloud.example.com"
+  template: ../templates/ingress.yaml
+  asserts:
+    - lengthEqual:
+        path: .spec.rules
+        count: 1
+
+- it: should add no MCP rule when publicUrl is unset
+  set:
+    ingress.enabled: true
+    ingress.host: "llamacloud.example.com"
+    ingress.ingressClassName: "default-ingress-class"
+    config.mcp.enabled: true
+  template: ../templates/ingress.yaml
+  asserts:
+    - lengthEqual:
+        path: .spec.rules
+        count: 1
+
+# A scheme-less publicUrl parses to an empty host, which would silently drop the
+# route. Fail the render instead.
+- it: should fail when publicUrl has no scheme
+  set:
+    ingress.enabled: true
+    ingress.host: "llamacloud.example.com"
+    ingress.ingressClassName: "default-ingress-class"
+    config.mcp.enabled: true
+    config.mcp.publicUrl: "mcp.llamacloud.example.com"
+  template: ../templates/ingress.yaml
+  asserts:
+    - failedTemplate: {}
+
+# Hostnames are case-insensitive but urlParse preserves case, so a differently
+# cased publicUrl must still be recognised as the main host.
+- it: should add no MCP rule when publicUrl differs from the ingress host only by case
+  set:
+    ingress.enabled: true
+    ingress.host: "llamacloud.example.com"
+    ingress.ingressClassName: "default-ingress-class"
+    config.mcp.enabled: true
+    config.mcp.publicUrl: "https://LlamaCloud.Example.COM"
+  template: ../templates/ingress.yaml
+  asserts:
+    - lengthEqual:
+        path: .spec.rules
+        count: 1
+
+# An uppercase host would be rejected as a non-RFC-1123 subdomain at apply time.
+- it: should lowercase the MCP host
+  set:
+    ingress.enabled: true
+    ingress.host: "llamacloud.example.com"
+    ingress.ingressClassName: "default-ingress-class"
+    ingress.tlsSecretName: "llamacloud-example-tls-secret"
+    config.mcp.enabled: true
+    config.mcp.publicUrl: "https://MCP.LlamaCloud.Example.com"
+  template: ../templates/ingress.yaml
+  asserts:
+    - equal:
+        path: .spec.rules[1].host
+        value: "mcp.llamacloud.example.com"
+    - equal:
+        path: .spec.tls[0].hosts[1]
+        value: "mcp.llamacloud.example.com"
+
+# Stripping the port by splitting on ":" would truncate this to "[fd00". Keeping
+# it whole lets the API server reject it as the invalid host it is, rather than
+# quietly routing a mangled name.
+- it: should not truncate a bracketed IPv6 literal when stripping the port
+  set:
+    ingress.enabled: true
+    ingress.host: "llamacloud.example.com"
+    ingress.ingressClassName: "default-ingress-class"
+    config.mcp.enabled: true
+    config.mcp.publicUrl: "https://[fd00::1]:3000"
+  template: ../templates/ingress.yaml
+  asserts:
+    - equal:
+        path: .spec.rules[1].host
+        value: "[fd00::1]"
+
+# The mixed case can sit on either side: nothing lowercases ingress.host before
+# the chart compares against it.
+- it: should add no MCP rule when the ingress host itself is mixed case
+  set:
+    ingress.enabled: true
+    ingress.host: "LlamaCloud.Example.com"
+    ingress.ingressClassName: "default-ingress-class"
+    config.mcp.enabled: true
+    config.mcp.publicUrl: "https://llamacloud.example.com"
+  template: ../templates/ingress.yaml
+  asserts:
+    - lengthEqual:
+        path: .spec.rules
+        count: 1
+
+# MCP tool calls hold one request open for a whole job, so a controller's default
+# 60s read timeout cuts long Parse jobs off mid-flight while they keep running and
+# billing. The default only appears when MCP is actually routed.
+- it: should raise the read timeout when MCP is routed
+  set:
+    ingress.enabled: true
+    ingress.host: "llamacloud.example.com"
+    ingress.ingressClassName: "nginx"
+    config.mcp.enabled: true
+    config.mcp.publicUrl: "https://mcp.llamacloud.example.com"
+  template: ../templates/ingress.yaml
+  asserts:
+    - equal:
+        path: metadata.annotations["nginx.ingress.kubernetes.io/proxy-read-timeout"]
+        value: "600"
+
+- it: should not touch the read timeout when MCP is not routed
+  set:
+    ingress.enabled: true
+    ingress.host: "llamacloud.example.com"
+    ingress.ingressClassName: "nginx"
+  template: ../templates/ingress.yaml
+  asserts:
+    - notExists:
+        path: metadata.annotations["nginx.ingress.kubernetes.io/proxy-read-timeout"]
+
+# An operator with longer documents has to be able to raise it, and one on a
+# controller that does not read this annotation has to be able to drop it.
+- it: should let ingress.annotations override the read-timeout default
+  set:
+    ingress.enabled: true
+    ingress.host: "llamacloud.example.com"
+    ingress.ingressClassName: "nginx"
+    ingress.annotations:
+      nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    config.mcp.enabled: true
+    config.mcp.publicUrl: "https://mcp.llamacloud.example.com"
+  template: ../templates/ingress.yaml
+  asserts:
+    - equal:
+        path: metadata.annotations["nginx.ingress.kubernetes.io/proxy-read-timeout"]
+        value: "3600"
+
+# The documented way to opt out on a controller that ignores this annotation.
+# sprig's merge would treat an empty value as unset and hand back the default.
+- it: should let an operator drop the read-timeout default with an empty value
+  set:
+    ingress.enabled: true
+    ingress.host: "llamacloud.example.com"
+    ingress.ingressClassName: "nginx"
+    ingress.annotations:
+      nginx.ingress.kubernetes.io/proxy-read-timeout: ""
+    config.mcp.enabled: true
+    config.mcp.publicUrl: "https://mcp.llamacloud.example.com"
+  template: ../templates/ingress.yaml
+  asserts:
+    - equal:
+        path: metadata.annotations["nginx.ingress.kubernetes.io/proxy-read-timeout"]
+        value: ""

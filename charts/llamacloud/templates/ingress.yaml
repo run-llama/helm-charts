@@ -1,6 +1,33 @@
 {{- if .Values.ingress.enabled  -}}
 {{- $ingressClassName := .Values.ingress.ingressClassName | required ".Values.ingress.ingressClassName is required" -}}
 {{- $host := .Values.ingress.host | required ".Values.ingress.host is required" -}}
+{{- /* MCP is routed by host, not by path. Its endpoints collide with paths the
+       frontend already owns (/parse), and three of them carry a config id
+       (/extract/<id>/mcp and siblings) that neither Exact nor Prefix can express
+       without also swallowing unrelated traffic. Empty when the chart adds no
+       MCP route -- see the llamacloud.mcp.ingressHost helper. */}}
+{{- $mcpHost := (include "llamacloud.mcp.ingressHost" (dict "root" $)) | trim -}}
+{{- /* MCP tool calls hold one HTTP request open for the whole job: parseFile and
+       its siblings poll to completion rather than returning a job id, and nothing
+       streams in the meantime to keep the connection warm. An ingress controller's
+       default read timeout is 60s, so without this a long Parse is cut off while
+       the job keeps running and the credits are still spent -- the agent just sees
+       a failed call. Applied only when MCP is actually routed, and mergeable, so
+       an operator can raise it for longer documents or drop it entirely.
+
+       It lands on the shared Ingress object, which means the web UI host gets the
+       same read timeout. That is the trade for not splitting MCP onto its own
+       Ingress: two Ingresses naming one tlsSecretName would have cert-manager
+       managing the same Secret from both. */}}
+{{- $readTimeout := "nginx.ingress.kubernetes.io/proxy-read-timeout" -}}
+{{- $ingressAnnotations := (.Values.ingress.annotations | default dict) -}}
+{{- /* hasKey, not merge: sprig's merge treats an empty destination value as unset
+       and fills it from the source, so setting the annotation to "" -- the obvious
+       way to opt out, and the way the self-hosting page describes -- would silently
+       come back as 600. Presence of the key is the operator's decision either way. */}}
+{{- if and $mcpHost (not (hasKey $ingressAnnotations $readTimeout)) -}}
+  {{- $ingressAnnotations = merge (deepCopy $ingressAnnotations) (dict $readTimeout "600") -}}
+{{- end -}}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -10,7 +37,7 @@ metadata:
   {{- /* Synthesize a pseudo-component so ingress.annotations go through the
          dedup-aware llamacloud.annotations helper with the same precedence rules
          (ingress-specific wins over commonAnnotations on collision). */}}
-  annotations: {{ include "llamacloud.annotations" (dict "root" $ "component" (dict "annotations" .Values.ingress.annotations)) | indent 4 }}
+  annotations: {{ include "llamacloud.annotations" (dict "root" $ "component" (dict "annotations" $ingressAnnotations)) | indent 4 }}
 spec:
   ingressClassName: {{ $ingressClassName }}
   rules:
@@ -38,10 +65,25 @@ spec:
               number: 80
         path: "/deployments"
         pathType: Prefix
+{{- if $mcpHost }}
+  - host: {{ $mcpHost | quote }}
+    http:
+      paths:
+      - backend:
+          service:
+            name: {{ (include "llamacloud.component.mcp" . | fromYaml ).name }}
+            port:
+              number: 80
+        path: /
+        pathType: Prefix
+{{- end }}
 {{- if .Values.ingress.tlsSecretName }}
   tls:
   - hosts:
     - {{ $host }}
+{{- if $mcpHost }}
+    - {{ $mcpHost | quote }}
+{{- end }}
     secretName: {{ .Values.ingress.tlsSecretName }}
 {{- end -}}
 {{- end -}}

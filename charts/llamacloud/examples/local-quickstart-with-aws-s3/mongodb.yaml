@@ -1,7 +1,12 @@
 image:
   registry: ghcr.io
   repository: xavidop/mongodb
+  # Personal GHCR namespace, unaffiliated with the project or Broadcom, and `7.0` is mutable there,
+  # so the digest is what makes this stack reproducible. The 7.0 line itself is intended (BYOC runs
+  # 7.x). The image's "copy of bitnami/containers" labels are a claim baked in by whoever built it,
+  # not verified provenance, which is the reason to freeze the bytes rather than trust the source.
   tag: '7.0'
+  digest: sha256:a7f789a9f7fc1c102b8737e95b8e4cb6f9f8bd67893da9c13ade5212d765d92a
 
 # MongoDB Auth
 auth:

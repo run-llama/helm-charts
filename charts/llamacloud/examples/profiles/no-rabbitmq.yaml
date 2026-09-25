@@ -1,0 +1,40 @@
+# No-RabbitMQ profile: run every job over Temporal, keep MongoDB.
+#
+# Layer this on top of your base values (connection details, license, LLMs,
+# auth, storage), e.g.:
+#   helm upgrade --install llamacloud . -f my-values.yaml -f examples/profiles/no-rabbitmq.yaml
+#
+# Use this when you want to decommission RabbitMQ but still need MongoDB. If you
+# want to drop BOTH stores, use profiles/minimal.yaml instead; this file is the
+# RabbitMQ half of it.
+#
+# What this profile does:
+#   - rabbitmq.enabled=false: no RabbitMQ secret is rendered or mounted,
+#     AMQP_DISABLED is injected, and the AMQP jobs-worker Deployment
+#     (llamacloud-worker) is not created. Do NOT install RabbitMQ for this
+#     profile, and omit its connection values.
+#   - llamaParse.replicas=0: llamacloud-parse is the v1 AMQP parse worker. With
+#     no queue to consume it would idle, so it is scaled to zero. Parse runs on
+#     the Temporal worker (llamacloud-temporal-parse) instead.
+#
+# MongoDB stays enabled. Both v1 parse and Extract still write their job records
+# there, so do not remove it along with RabbitMQ.
+#
+# Feature surface under this profile:
+#   - Parse v1 and v2, Extract, and Index (directory) sync, export, retrieval and
+#     chat all run end to end. None of them publish to AMQP once Temporal is on:
+#     v1 parse is dispatched as a workflow (the backend has no other transport
+#     for it), and Extract creates its job record without publishing.
+#   - Legacy managed pipelines (Index v1) also run through Temporal: pipeline
+#     sync, data-source and file updates, metadata updates, and document ingestion.
+#     The v1 API and MongoDB job records remain available.
+#
+# Before applying this profile, verify Temporal worker capacity and autoscaling,
+# and let existing AMQP jobs finish: this profile removes their consumer.
+# Use an app version that routes Index v1 through Temporal unconditionally.
+
+rabbitmq:
+  enabled: false
+
+llamaParse:
+  replicas: 0

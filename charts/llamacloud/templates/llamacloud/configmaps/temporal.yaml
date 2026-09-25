@@ -1,21 +1,5 @@
-{{- if and .Values.temporal.disabled .Values.temporal.deploy }}
-{{- fail "temporal.deploy must be false when temporal.disabled is true" }}
-{{- end }}
-{{- if not .Values.temporal.disabled }}
-{{- $temporalHost := "" }}
-{{- $temporalPort := "" }}
-{{- if .Values.temporal.deploy }}
-{{- /* When deploying subchart, auto-configure to point to the subchart's frontend service */}}
-{{- $temporalHost = printf "%s-temporal-subchart-frontend" .Release.Name }}
-{{- $temporalPort = "7233" }}
-{{- else }}
-{{- /* Using external Temporal, require host and port to be set */}}
-{{- if not (and .Values.temporal.host .Values.temporal.port) }}
-{{- fail "temporal.host and temporal.port are required when temporal.deploy is false" }}
-{{- end }}
-{{- $temporalHost = .Values.temporal.host }}
-{{- $temporalPort = .Values.temporal.port | toString }}
-{{- end }}
+{{- $temporalHost := include "llamacloud.temporal.host" . }}
+{{- $temporalPort := include "llamacloud.temporal.port" . }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -34,5 +18,4 @@ data:
 {{- end }}
 {{- with (((.Values.config).temporal).externalPayloadStorage).thresholdBytes }}
   TEMPORAL_EXTERNAL_PAYLOAD_STORAGE_THRESHOLD_BYTES: {{ . | quote }}
-{{- end }}
 {{- end }}

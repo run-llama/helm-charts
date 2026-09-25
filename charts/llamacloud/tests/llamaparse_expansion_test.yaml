@@ -224,3 +224,75 @@ tests:
     - equal:
         path: .spec.template.spec.containers[0].resources.limits.memory
         value: 8Gi
+
+- it: llamaParse inherits layout size from urls-config without a container override
+  set:
+    config.parseLayoutDetectionV3.enabled: true
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-parse
+  asserts:
+    - contains:
+        path: .spec.template.spec.containers[0].envFrom
+        content:
+          configMapRef:
+            name: urls-config
+    - isNull:
+        path: .spec.template.spec.containers[0].env[?(@.name == "LAYOUT_IMAGE_SIZE")]
+
+- it: llamaParse accepts explicit layout size 640 while retaining urls-config
+  set:
+    config.parseLayoutDetectionV3.enabled: true
+    llamaParse.extraEnvVariables:
+      - name: LAYOUT_IMAGE_SIZE
+        value: "640"
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-parse
+  asserts:
+    - contains:
+        path: .spec.template.spec.containers[0].envFrom
+        content:
+          configMapRef:
+            name: urls-config
+    - equal:
+        path: .spec.template.spec.containers[0].env[?(@.name == "LAYOUT_IMAGE_SIZE")].value
+        value: "640"
+
+- it: temporalWorkloads.llamaParse inherits layout size from urls-config without a container override
+  set:
+    config.parseLayoutDetectionV3.enabled: true
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-temporal-parse
+  asserts:
+    - contains:
+        path: .spec.template.spec.containers[0].envFrom
+        content:
+          configMapRef:
+            name: urls-config
+    - isNull:
+        path: .spec.template.spec.containers[0].env[?(@.name == "LAYOUT_IMAGE_SIZE")]
+
+- it: temporalWorkloads.llamaParse accepts explicit layout size 640 while retaining urls-config
+  set:
+    config.parseLayoutDetectionV3.enabled: true
+    temporalWorkloads.llamaParse.extraEnvVariables:
+      - name: LAYOUT_IMAGE_SIZE
+        value: "640"
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-temporal-parse
+  asserts:
+    - contains:
+        path: .spec.template.spec.containers[0].envFrom
+        content:
+          configMapRef:
+            name: urls-config
+    - equal:
+        path: .spec.template.spec.containers[0].env[?(@.name == "LAYOUT_IMAGE_SIZE")].value
+        value: "640"

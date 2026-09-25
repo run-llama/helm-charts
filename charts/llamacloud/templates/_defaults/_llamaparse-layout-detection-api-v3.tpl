@@ -7,7 +7,14 @@ canonical llamaParseLayoutDetectionApi component and llamacloud-layout identity.
 {{- $component = set $component "prefix" "llamacloud.component.llamaParseLayoutDetectionApiV3" }}
 {{- $component = set $component "name" "llamacloud-layout-v3" }}
 {{- $component = set $component "gpuEnabled" ((.Values.config).parseLayoutDetectionV3).gpu }}
-{{- $component = set $component "image" ( ($.Values.llamaParseLayoutDetectionApiV3).image | default ( print "docker.io/llamaindex/llamacloud-layout-detection-api-v3:" .Chart.AppVersion ) ) }}
+{{- $defaultImage := printf "docker.io/llamaindex/llamacloud-layout-detection-api-v3:%s" .Chart.AppVersion }}
+{{- /* Same rule as the canonical component: the -cpu suffix lands on the default
+     tag only, so an operator who pins llamaParseLayoutDetectionApiV3.image gets
+     that image verbatim. */}}
+{{- if not (((.Values.config).parseLayoutDetectionV3).gpu) }}
+{{- $defaultImage = printf "%s-cpu" $defaultImage }}
+{{- end }}
+{{- $component = set $component "image" ( ($.Values.llamaParseLayoutDetectionApiV3).image | default $defaultImage ) }}
 {{- $component = set $component "imagePullPolicy" ( ($.Values.llamaParseLayoutDetectionApiV3).imagePullPolicy | default "IfNotPresent" ) }}
 {{- $component = set $component "port" 8000 }}
 {{- $component | toYaml }}

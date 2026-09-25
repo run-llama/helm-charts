@@ -31,30 +31,22 @@ tests:
     - equal:
         path: .data.DEPLOYMENT_MODE
         value: "prod"
-    - equal:
-        path: .data.PARSE_PREMIUM
-        value: "true"
-    - equal:
-        path: .data.ALLOWED_INDEX
-        value: "true"
 
-- it: routes all v1 parse through Temporal by default
+- it: does not emit retired index v1 transport dials
   template: ../templates/llamacloud/configmaps/common.yaml
   asserts:
-    - equal:
-        path: .data.V1_PARSE_VIA_TEMPORAL_PERCENTAGE
-        value: "100"
-
-- it: falls back to the AMQP transport when Temporal is disabled
-  set:
-    temporal:
-      disabled: true
-      deploy: false
-  template: ../templates/llamacloud/configmaps/common.yaml
-  asserts:
-    - equal:
-        path: .data.V1_PARSE_VIA_TEMPORAL_PERCENTAGE
-        value: "0"
+    - notExists:
+        path: .data.INDEX_V1_PIPELINE_SYNC_TEMPORAL_PERCENTAGE
+    - notExists:
+        path: .data.INDEX_V1_DATA_SOURCE_UPDATE_TEMPORAL_PERCENTAGE
+    - notExists:
+        path: .data.INDEX_V1_FILE_UPDATER_TEMPORAL_PERCENTAGE
+    - notExists:
+        path: .data.INDEX_V1_DOCUMENT_INGEST_TEMPORAL_PERCENTAGE
+    - notExists:
+        path: .data.INDEX_V1_METADATA_UPDATE_TEMPORAL_PERCENTAGE
+    - notExists:
+        path: .data.INDEX_V1_LLAMA_PARSE_TRANSFORM_TEMPORAL_PERCENTAGE
 
 - it: is scoped to release namespace
   release:
@@ -105,3 +97,81 @@ tests:
     - equal:
         path: .data.DEFAULT_DAILY_USAGE_CREDITS
         value: "0"
+
+- it: does not emit the retired extract transport dial
+  template: ../templates/llamacloud/configmaps/common.yaml
+  asserts:
+    - notExists:
+        path: .data.TEMPORAL_EXTRACT_ROLLOUT_PERCENT
+
+- it: leaves job limits unenforced by default
+  template: ../templates/llamacloud/configmaps/common.yaml
+  asserts:
+    - notExists:
+        path: .data.JOB_SEMAPHORE_MODE
+    - equal:
+        path: .data.PROJECT_MAX_CONCURRENCY
+        value: "100"
+
+- it: enforces job limits when enableLimits is on
+  set:
+    config:
+      jobs:
+        enableLimits: true
+  template: ../templates/llamacloud/configmaps/common.yaml
+  asserts:
+    - equal:
+        path: .data.JOB_SEMAPHORE_MODE
+        value: "v2"
+    - equal:
+        path: .data.PROJECT_MAX_CONCURRENCY
+        value: "100"
+
+- it: carries a configured per-project job limit
+  set:
+    config:
+      jobs:
+        enableLimits: true
+        maxConcurrentJobsPerProject: 4
+  template: ../templates/llamacloud/configmaps/common.yaml
+  asserts:
+    - equal:
+        path: .data.PROJECT_MAX_CONCURRENCY
+        value: "4"
+    - equal:
+        path: .data.JOB_SEMAPHORE_MODE
+        value: "v2"
+
+- it: leaves the spend read on the rollup by default
+  template: ../templates/llamacloud/configmaps/common.yaml
+  asserts:
+    - notExists:
+        path: .data.USAGE_CAP_READ_FROM_ROLLUP
+
+- it: reads spend directly when the rollup is turned off
+  set:
+    config:
+      usageCaps:
+        readFromRollup: false
+  template: ../templates/llamacloud/configmaps/common.yaml
+  asserts:
+    - equal:
+        path: .data.USAGE_CAP_READ_FROM_ROLLUP
+        value: "false"
+
+- it: leaves the execution-time gate on the cached read by default
+  template: ../templates/llamacloud/configmaps/common.yaml
+  asserts:
+    - notExists:
+        path: .data.USAGE_CAP_EXECUTION_GATE_SKIP_CACHE
+
+- it: reads spend uncached at the execution-time gate when asked
+  set:
+    config:
+      usageCaps:
+        executionGateSkipCache: true
+  template: ../templates/llamacloud/configmaps/common.yaml
+  asserts:
+    - equal:
+        path: .data.USAGE_CAP_EXECUTION_GATE_SKIP_CACHE
+        value: "true"

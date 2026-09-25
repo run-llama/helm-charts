@@ -197,6 +197,27 @@
                     },
                     "additionalProperties": false
                 },
+                "connectors": {
+                    "type": "object",
+                    "properties": {
+                        "credentialsKmsKeyArn": {
+                            "type": "string"
+                        },
+                        "enabledAuthTypes": {
+                            "type": "string"
+                        },
+                        "oauthReturnUrl": {
+                            "type": "string"
+                        },
+                        "secret": {
+                            "type": "string"
+                        },
+                        "tokenVaultKmsKeyArn": {
+                            "type": "string"
+                        }
+                    },
+                    "additionalProperties": false
+                },
                 "defaultIndex": {
                     "type": "object",
                     "properties": {
@@ -289,6 +310,9 @@
                     "properties": {
                         "enabled": {
                             "type": "boolean"
+                        },
+                        "storageBrowserOrigins": {
+                            "type": "string"
                         }
                     },
                     "additionalProperties": false
@@ -341,8 +365,14 @@
                         "defaultTransformDocumentTimeoutSeconds": {
                             "type": "string"
                         },
+                        "enableLimits": {
+                            "type": "boolean"
+                        },
                         "includeJobErrorDetails": {
                             "type": "boolean"
+                        },
+                        "maxConcurrentJobsPerProject": {
+                            "type": "integer"
                         },
                         "maxDocumentIngestionJobsInExecution": {
                             "type": "integer"
@@ -495,6 +525,34 @@
                     },
                     "additionalProperties": false
                 },
+                "mcp": {
+                    "type": "object",
+                    "properties": {
+                        "allowPrivateUploadHosts": {
+                            "type": "boolean"
+                        },
+                        "enabled": {
+                            "type": "boolean"
+                        },
+                        "llamaCloudBaseUrl": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "publicUrl": {
+                            "type": "string"
+                        },
+                        "region": {
+                            "type": "string",
+                            "enum": [
+                                "na",
+                                "eu"
+                            ]
+                        }
+                    },
+                    "additionalProperties": false
+                },
                 "parse": {
                     "type": "object",
                     "properties": {
@@ -607,6 +665,18 @@
                             "type": "string"
                         },
                         "quarantineWorkerEnabled": {
+                            "type": "boolean"
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "parseFormFieldDetection": {
+                    "type": "object",
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean"
+                        },
+                        "gpu": {
                             "type": "boolean"
                         }
                     },
@@ -883,6 +953,18 @@
                                 "off",
                                 "observe",
                                 "enforce"
+                            ]
+                        },
+                        "executionGateSkipCache": {
+                            "type": [
+                                "boolean",
+                                "null"
+                            ]
+                        },
+                        "readFromRollup": {
+                            "type": [
+                                "boolean",
+                                "null"
                             ]
                         }
                     },
@@ -1289,6 +1371,83 @@
             },
             "additionalProperties": false
         },
+        "llamaParseFormFieldDetectionApi": {
+            "type": "object",
+            "properties": {
+                "affinity": {
+                    "type": "object"
+                },
+                "annotations": {
+                    "type": "object"
+                },
+                "command": {
+                    "type": "array"
+                },
+                "extraEnvVariables": {
+                    "type": "array"
+                },
+                "gpuCount": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "gpuResourceName": {
+                    "type": "string"
+                },
+                "horizontalPodAutoscalerSpec": {
+                    "type": "object"
+                },
+                "image": {
+                    "type": "string"
+                },
+                "imagePullPolicy": {
+                    "type": "string",
+                    "enum": [
+                        "",
+                        "Always",
+                        "IfNotPresent",
+                        "Never"
+                    ]
+                },
+                "nodeSelector": {
+                    "type": "object"
+                },
+                "podAnnotations": {
+                    "type": "object"
+                },
+                "podSecurityContext": {
+                    "type": "object"
+                },
+                "replicas": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "minimum": 0
+                },
+                "resources": {
+                    "type": "object"
+                },
+                "securityContext": {
+                    "type": "object"
+                },
+                "serviceAccountAnnotations": {
+                    "type": "object"
+                },
+                "tolerations": {
+                    "type": "array"
+                },
+                "topologySpreadConstraints": {
+                    "type": "array"
+                },
+                "volumeMounts": {
+                    "type": "array"
+                },
+                "volumes": {
+                    "type": "array"
+                }
+            },
+            "additionalProperties": false
+        },
         "llamaParseLayoutDetectionApi": {
             "type": "object",
             "properties": {
@@ -1457,6 +1616,76 @@
                 },
                 "gpuResourceName": {
                     "type": "string"
+                },
+                "horizontalPodAutoscalerSpec": {
+                    "type": "object"
+                },
+                "image": {
+                    "type": "string"
+                },
+                "imagePullPolicy": {
+                    "type": "string",
+                    "enum": [
+                        "",
+                        "Always",
+                        "IfNotPresent",
+                        "Never"
+                    ]
+                },
+                "nodeSelector": {
+                    "type": "object"
+                },
+                "podAnnotations": {
+                    "type": "object"
+                },
+                "podSecurityContext": {
+                    "type": "object"
+                },
+                "replicas": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "minimum": 0
+                },
+                "resources": {
+                    "type": "object"
+                },
+                "securityContext": {
+                    "type": "object"
+                },
+                "serviceAccountAnnotations": {
+                    "type": "object"
+                },
+                "tolerations": {
+                    "type": "array"
+                },
+                "topologySpreadConstraints": {
+                    "type": "array"
+                },
+                "volumeMounts": {
+                    "type": "array"
+                },
+                "volumes": {
+                    "type": "array"
+                }
+            },
+            "additionalProperties": false
+        },
+        "mcp": {
+            "type": "object",
+            "properties": {
+                "affinity": {
+                    "type": "object"
+                },
+                "annotations": {
+                    "type": "object"
+                },
+                "command": {
+                    "type": "array"
+                },
+                "extraEnvVariables": {
+                    "type": "array"
                 },
                 "horizontalPodAutoscalerSpec": {
                     "type": "object"
@@ -1707,9 +1936,6 @@
                 "deploy": {
                     "type": "boolean"
                 },
-                "disabled": {
-                    "type": "boolean"
-                },
                 "host": {
                     "type": "string"
                 },
@@ -1722,6 +1948,44 @@
         "temporal-subchart": {
             "type": "object",
             "properties": {
+                "admintools": {
+                    "type": "object",
+                    "properties": {
+                        "resources": {
+                            "type": "object",
+                            "properties": {
+                                "limits": {
+                                    "type": "object",
+                                    "properties": {
+                                        "memory": {
+                                            "type": [
+                                                "string",
+                                                "number"
+                                            ]
+                                        }
+                                    }
+                                },
+                                "requests": {
+                                    "type": "object",
+                                    "properties": {
+                                        "cpu": {
+                                            "type": [
+                                                "string",
+                                                "number"
+                                            ]
+                                        },
+                                        "memory": {
+                                            "type": [
+                                                "string",
+                                                "number"
+                                            ]
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
                 "server": {
                     "type": "object",
                     "properties": {
@@ -1890,6 +2154,174 @@
                                     }
                                 }
                             }
+                        },
+                        "frontend": {
+                            "type": "object",
+                            "properties": {
+                                "readinessProbe": {
+                                    "type": "object",
+                                    "properties": {
+                                        "grpc": {
+                                            "type": "object",
+                                            "properties": {
+                                                "port": {
+                                                    "type": "integer"
+                                                },
+                                                "service": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                "resources": {
+                                    "type": "object",
+                                    "properties": {
+                                        "limits": {
+                                            "type": "object",
+                                            "properties": {
+                                                "memory": {
+                                                    "type": [
+                                                        "string",
+                                                        "number"
+                                                    ]
+                                                }
+                                            }
+                                        },
+                                        "requests": {
+                                            "type": "object",
+                                            "properties": {
+                                                "cpu": {
+                                                    "type": [
+                                                        "string",
+                                                        "number"
+                                                    ]
+                                                },
+                                                "memory": {
+                                                    "type": [
+                                                        "string",
+                                                        "number"
+                                                    ]
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "history": {
+                            "type": "object",
+                            "properties": {
+                                "resources": {
+                                    "type": "object",
+                                    "properties": {
+                                        "limits": {
+                                            "type": "object",
+                                            "properties": {
+                                                "memory": {
+                                                    "type": [
+                                                        "string",
+                                                        "number"
+                                                    ]
+                                                }
+                                            }
+                                        },
+                                        "requests": {
+                                            "type": "object",
+                                            "properties": {
+                                                "cpu": {
+                                                    "type": [
+                                                        "string",
+                                                        "number"
+                                                    ]
+                                                },
+                                                "memory": {
+                                                    "type": [
+                                                        "string",
+                                                        "number"
+                                                    ]
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "matching": {
+                            "type": "object",
+                            "properties": {
+                                "resources": {
+                                    "type": "object",
+                                    "properties": {
+                                        "limits": {
+                                            "type": "object",
+                                            "properties": {
+                                                "memory": {
+                                                    "type": [
+                                                        "string",
+                                                        "number"
+                                                    ]
+                                                }
+                                            }
+                                        },
+                                        "requests": {
+                                            "type": "object",
+                                            "properties": {
+                                                "cpu": {
+                                                    "type": [
+                                                        "string",
+                                                        "number"
+                                                    ]
+                                                },
+                                                "memory": {
+                                                    "type": [
+                                                        "string",
+                                                        "number"
+                                                    ]
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "worker": {
+                            "type": "object",
+                            "properties": {
+                                "resources": {
+                                    "type": "object",
+                                    "properties": {
+                                        "limits": {
+                                            "type": "object",
+                                            "properties": {
+                                                "memory": {
+                                                    "type": [
+                                                        "string",
+                                                        "number"
+                                                    ]
+                                                }
+                                            }
+                                        },
+                                        "requests": {
+                                            "type": "object",
+                                            "properties": {
+                                                "cpu": {
+                                                    "type": [
+                                                        "string",
+                                                        "number"
+                                                    ]
+                                                },
+                                                "memory": {
+                                                    "type": [
+                                                        "string",
+                                                        "number"
+                                                    ]
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
@@ -1909,6 +2341,39 @@
                     "properties": {
                         "enabled": {
                             "type": "boolean"
+                        },
+                        "resources": {
+                            "type": "object",
+                            "properties": {
+                                "limits": {
+                                    "type": "object",
+                                    "properties": {
+                                        "memory": {
+                                            "type": [
+                                                "string",
+                                                "number"
+                                            ]
+                                        }
+                                    }
+                                },
+                                "requests": {
+                                    "type": "object",
+                                    "properties": {
+                                        "cpu": {
+                                            "type": [
+                                                "string",
+                                                "number"
+                                            ]
+                                        },
+                                        "memory": {
+                                            "type": [
+                                                "string",
+                                                "number"
+                                            ]
+                                        }
+                                    }
+                                }
+                            }
                         },
                         "service": {
                             "type": "object",
