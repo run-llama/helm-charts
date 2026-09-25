@@ -219,3 +219,15 @@ Default Index Secret envFrom
     name: "default-index-secret"
 {{- end }}
 {{- end }}
+
+{{/*
+Connector keys Secret envFrom (CONNECTOR_AUTH_SEAL_KEY, CONNECTOR_MASTER_KEY,
+TOKEN_VAULT_MASTER_KEY). Customer-created only: these keys protect stored
+credentials, so the chart never generates or holds them.
+*/}}
+{{ define "llamacloud.secrets.connectors" }}
+{{- with ((.Values.config).connectors).secret }}
+- secretRef:
+    name: {{ . }}
+{{- end }}
+{{- end }}

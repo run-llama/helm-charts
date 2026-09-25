@@ -108,10 +108,8 @@ Parameters:
     name: rate-limits-config
 - configMapRef:
     name: urls-config
-{{- if not .root.Values.temporal.disabled }}
 - configMapRef:
     name: temporal-connection-config
-{{- end }}
 - configMapRef:
     name: feature-config
 {{- if ne (include "llamacloud.llamaAgents.url" .root) "" }}
@@ -146,6 +144,7 @@ Parameters:
 {{- include "llamacloud.secrets.googleVertexAi" .root }}
 {{- include "llamacloud.secrets.llmProviderConfigs" .root }}
 {{- include "llamacloud.secrets.defaultIndex" .root }}
+{{- include "llamacloud.secrets.connectors" .root }}
 {{- end }}
 
 {{/*

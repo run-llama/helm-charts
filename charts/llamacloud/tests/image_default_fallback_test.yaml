@@ -106,7 +106,7 @@ tests:
   asserts:
     - equal:
         path: .spec.template.spec.containers[0].image
-        value: docker.io/llamaindex/llamacloud-layout-detection-api-v3:9.9.9
+        value: docker.io/llamaindex/llamacloud-layout-detection-api-v3:9.9.9-cpu
 
 - it: canonical Layout config migrates the previous official image to V3
   set:
@@ -122,7 +122,7 @@ tests:
   asserts:
     - equal:
         path: .spec.template.spec.containers[0].image
-        value: docker.io/llamaindex/llamacloud-layout-detection-api-v3:9.9.9
+        value: docker.io/llamaindex/llamacloud-layout-detection-api-v3:9.9.9-cpu
 
 - it: canonical Layout config preserves an explicit private V3 image
   set:
@@ -154,7 +154,7 @@ tests:
   asserts:
     - equal:
         path: .spec.template.spec.containers[0].image
-        value: docker.io/llamaindex/llamacloud-layout-detection-api-v3:9.9.9
+        value: docker.io/llamaindex/llamacloud-layout-detection-api-v3:9.9.9-cpu
 
 - it: temporalWorkloads.llamaParse image falls back to chart.AppVersion when emptied
   set:
@@ -188,3 +188,41 @@ tests:
     - equal:
         path: .spec.template.spec.containers[0].image
         value: docker.io/llamaindex/llamacloud-llamaparse-ocr:9.9.9-cpu
+
+- it: llamaParseFormFieldDetectionApi image falls back to chart.AppVersion when emptied
+  # The form field detection helper suffixes the TAG (not the repository) when
+  # config.parseFormFieldDetection.gpu is unset/false, matching how the BYOC
+  # publish step tags the CPU variant on Docker Hub.
+  set:
+    config:
+      parseFormFieldDetection:
+        enabled: true
+    llamaParseFormFieldDetectionApi:
+      image: ""
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-form-field-detection
+  asserts:
+    - equal:
+        path: .spec.template.spec.containers[0].image
+        value: docker.io/llamaindex/llamacloud-form-field-detection-api:9.9.9-cpu
+
+# MCP is the one component that does NOT fall back to chart.AppVersion, and the
+# difference is not stylistic. Every other image here is built and pushed by this
+# repo's own release, so llamacloud:<appVersion> exists. The MCP server is
+# released from run-llama/mcp-llamaindex-ai on its own versioning, so
+# llamacloud-mcp:<appVersion> has never been published and never will be — the
+# fallback's only reachable outcome was an ImagePullBackOff for whoever enabled
+# MCP. It fails the render instead, where the mistake is still visible.
+- it: mcp image does not fall back to chart.AppVersion, which is never published for it
+  set:
+    config:
+      mcp:
+        enabled: true
+    mcp:
+      image: ""
+  template: ../templates/llamacloud/deployment.yaml
+  asserts:
+    - failedTemplate:
+        errorMessage: "mcp.image must name a tag published to docker.io/llamaindex/llamacloud-mcp. The chart pins a working default -- clear it only to substitute a mirrored image, never to fall back to one."

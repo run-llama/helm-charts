@@ -1,0 +1,23 @@
+suite: notes-deprecation-tests
+
+# RabbitMQ is being removed and Temporal is the default transport. While a release
+# still has rabbitmq.enabled=true, every helm install/upgrade prints a deprecation
+# notice pointing at the migration guide. These pin that it appears only while the
+# store is on, so the notice cannot go stale once a deployment has migrated.
+
+templates:
+- ../templates/NOTES.txt
+release:
+  name: test-release
+  namespace: test-namespace
+tests:
+- it: warns while rabbitmq is still enabled
+  asserts:
+    - matchRegexRaw:
+        pattern: "DEPRECATION: this release still has RabbitMQ enabled"
+- it: stays silent once rabbitmq is disabled
+  set:
+    rabbitmq.enabled: false
+  asserts:
+    - notMatchRegexRaw:
+        pattern: "DEPRECATION"

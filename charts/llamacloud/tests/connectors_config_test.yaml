@@ -1,0 +1,136 @@
+suite: connectors-config-tests
+
+# Covers config.connectors: the connector settings published in feature-config
+# (read by the backend and the Temporal worker) and the
+# customer-created key secret's envFrom wiring.
+
+templates:
+- ../templates/llamacloud/configmaps/features.yaml
+- ../templates/llamacloud/deployment.yaml
+
+release:
+  name: test-release
+  namespace: test-namespace
+
+capabilities:
+  majorVersion: 1
+  minorVersion: 31
+  apiVersions:
+    - v1
+    - apps/v1
+
+chart:
+  appVersion: 0.0.0
+
+tests:
+- it: defaults to the hosted product's connectors plus Google Drive OAuth, on the in-house broker
+  template: ../templates/llamacloud/configmaps/features.yaml
+  asserts:
+    - equal:
+        path: .data.CONNECTOR_AUTH_ENABLED_AUTH_TYPES
+        value: google_drive:oauth,google_drive:service_account,sharepoint:oauth,sharepoint:service_account,s3:service_account
+    - equal:
+        path: .data.CONNECTOR_AUTH_OAUTH_BROKER
+        value: in_house
+    - notExists:
+        path: .data.CONNECTOR_KMS_CMK_ARN
+    - notExists:
+        path: .data.TOKEN_VAULT_KMS_CMK_ARN
+    - notExists:
+        path: .data.TOKEN_VAULT_OAUTH_REDIRECT_URI
+
+- it: an empty list is emitted, so it disables connectors instead of enabling all of them
+  set:
+    config:
+      connectors:
+        enabledAuthTypes: ""
+  template: ../templates/llamacloud/configmaps/features.yaml
+  asserts:
+    - equal:
+        path: .data.CONNECTOR_AUTH_ENABLED_AUTH_TYPES
+        value: ""
+
+- it: the OAuth return URL is derived from the ingress host
+  set:
+    ingress:
+      host: llamacloud.example.com
+      tlsSecretName: llamacloud-tls
+  template: ../templates/llamacloud/configmaps/features.yaml
+  asserts:
+    - equal:
+        path: .data.TOKEN_VAULT_OAUTH_REDIRECT_URI
+        value: https://llamacloud.example.com/credential-brokers/return
+    - notExists:
+        path: .data.CONNECTOR_AUTH_WORKOS_RETURN_TO_URL
+
+- it: an explicit OAuth return URL wins over the ingress host
+  set:
+    ingress:
+      host: llamacloud.example.com
+    config:
+      connectors:
+        oauthReturnUrl: https://docs.example.com/credential-brokers/return
+  template: ../templates/llamacloud/configmaps/features.yaml
+  asserts:
+    - equal:
+        path: .data.TOKEN_VAULT_OAUTH_REDIRECT_URI
+        value: https://docs.example.com/credential-brokers/return
+
+- it: KMS keys are published when set
+  set:
+    config:
+      connectors:
+        credentialsKmsKeyArn: arn:aws:kms:us-east-1:111111111111:alias/connector-credentials
+        tokenVaultKmsKeyArn: arn:aws:kms:us-east-1:111111111111:alias/token-vault
+  template: ../templates/llamacloud/configmaps/features.yaml
+  asserts:
+    - equal:
+        path: .data.CONNECTOR_KMS_CMK_ARN
+        value: arn:aws:kms:us-east-1:111111111111:alias/connector-credentials
+    - equal:
+        path: .data.TOKEN_VAULT_KMS_CMK_ARN
+        value: arn:aws:kms:us-east-1:111111111111:alias/token-vault
+
+- it: no connector secret is mounted by default
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud
+  asserts:
+    - notContains:
+        path: .spec.template.spec.containers[0].envFrom
+        content:
+          secretRef:
+            name: connector-keys
+
+- it: backend mounts the connector secret when configured
+  set:
+    config:
+      connectors:
+        secret: connector-keys
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud
+  asserts:
+    - contains:
+        path: .spec.template.spec.containers[0].envFrom
+        content:
+          secretRef:
+            name: connector-keys
+
+- it: temporal worker mounts the connector secret when configured
+  set:
+    config:
+      connectors:
+        secret: connector-keys
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: temporal-jobs-worker
+  asserts:
+    - contains:
+        path: .spec.template.spec.containers[0].envFrom
+        content:
+          secretRef:
+            name: connector-keys

@@ -44,7 +44,7 @@ tests:
         path: .data.OCR_CONCURRENCY
         value: "32"
 
-- it: should render layoutExtractionConcurrency keys when set
+- it: should map legacy layout concurrency values to the current layout setting
   set:
     config:
       parse:
@@ -53,12 +53,6 @@ tests:
           layoutExtractionV2Concurrency: "16"
   template: ../templates/llamacloud/configmaps/concurrency.yaml
   asserts:
-    - equal:
-        path: .data.LAYOUT_EXTRACTION_CONCURRENCY
-        value: "8"
-    - equal:
-        path: .data.LAYOUT_EXTRACTION_V2_CONCURRENCY
-        value: "16"
     - equal:
         path: .data.LAYOUT_EXTRACTION_V3_CONCURRENCY
         value: "16"

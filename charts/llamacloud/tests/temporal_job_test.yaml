@@ -1,4 +1,4 @@
-suite: temporal-search-attributes-job-tests
+suite: temporal-job-rendering-tests
 templates:
   - ../templates/llamacloud/deployment.yaml
   - ../templates/llamacloud/service.yaml
@@ -30,7 +30,7 @@ tests:
       temporal.host: "temporal.example.com"
       temporal.port: 7233
       config.temporal.searchAttributesJob.enabled: true
-      config.temporal.searchAttributesJob.image: "temporalio/admin-tools:1.31.0"
+      config.temporal.searchAttributesJob.image: "temporalio/admin-tools:1.31.2"
       config.temporal.searchAttributesJob.attributes:
         - name: "CustomStringAttr"
           type: "Keyword"
@@ -54,7 +54,7 @@ tests:
       temporal.host: "temporal.example.com"
       temporal.port: 7233
       config.temporal.searchAttributesJob.enabled: true
-      config.temporal.searchAttributesJob.image: "temporalio/admin-tools:1.31.0"
+      config.temporal.searchAttributesJob.image: "temporalio/admin-tools:1.31.2"
       config.temporal.searchAttributesJob.attributes:
         - name: "CustomStringAttr"
           type: "Keyword"
@@ -72,7 +72,7 @@ tests:
     set:
       temporal.deploy: true
       config.temporal.searchAttributesJob.enabled: true
-      config.temporal.searchAttributesJob.image: "temporalio/admin-tools:1.31.0"
+      config.temporal.searchAttributesJob.image: "temporalio/admin-tools:1.31.2"
       config.temporal.searchAttributesJob.attributes:
         - name: "Project"
           type: "Keyword"
@@ -94,7 +94,7 @@ tests:
     set:
       temporal.deploy: true
       config.temporal.searchAttributesJob.enabled: true
-      config.temporal.searchAttributesJob.image: "temporalio/admin-tools:1.31.0"
+      config.temporal.searchAttributesJob.image: "temporalio/admin-tools:1.31.2"
       config.temporal.searchAttributesJob.attributes:
         - name: "Project"
           type: "Keyword"
@@ -112,7 +112,7 @@ tests:
     set:
       temporal.deploy: true
       config.temporal.searchAttributesJob.enabled: true
-      config.temporal.searchAttributesJob.image: "temporalio/admin-tools:1.31.0"
+      config.temporal.searchAttributesJob.image: "temporalio/admin-tools:1.31.2"
       config.temporal.searchAttributesJob.attributes:
         - name: "Project"
           type: "Keyword"
@@ -122,56 +122,12 @@ tests:
           path: spec.backoffLimit
           value: 6
 
-  # Test: verify NO temporal resources are created when temporal.disabled is true
-  - it: should not create temporal job when temporal.disabled is true
-    set:
-      temporal.disabled: true
-      config.temporal.searchAttributesJob.enabled: true
-      config.temporal.searchAttributesJob.image: "temporalio/admin-tools:1.31.0"
-      config.temporal.searchAttributesJob.attributes:
-        - name: "Project"
-          type: "Keyword"
-    template: ../templates/llamacloud/job.yaml
-    asserts:
-      - hasDocuments:
-          count: 0
-
-  - it: should not create temporal configmap when temporal.disabled is true
-    set:
-      temporal.disabled: true
-    template: ../templates/llamacloud/configmaps/temporal.yaml
-    asserts:
-      - hasDocuments:
-          count: 0
-
-  - it: should not create temporal deployments when temporal.disabled is true
-    set:
-      temporal.disabled: true
-      config.frontend.enabled: false
-      config.parseOcr.enabled: false
-      config.parseLayoutDetection.enabled: false
-    template: ../templates/llamacloud/deployment.yaml
-    asserts:
-      - hasDocuments:
-          count: 5
-
-  - it: should not create temporal services when temporal.disabled is true
-    set:
-      temporal.disabled: true
-      config.frontend.enabled: false
-      config.parseOcr.enabled: false
-      config.parseLayoutDetection.enabled: false
-    template: ../templates/llamacloud/service.yaml
-    asserts:
-      - hasDocuments:
-          count: 5
-
   # Test: verify job annotations use llamacloud.annotations, not llamacloud.labels
   - it: should not render labels in annotations field
     set:
       temporal.deploy: true
       config.temporal.searchAttributesJob.enabled: true
-      config.temporal.searchAttributesJob.image: "temporalio/admin-tools:1.31.0"
+      config.temporal.searchAttributesJob.image: "temporalio/admin-tools:1.31.2"
       config.temporal.searchAttributesJob.attributes:
         - name: "Project"
           type: "Keyword"
@@ -194,7 +150,7 @@ tests:
     set:
       temporal.deploy: true
       config.temporal.searchAttributesJob.enabled: true
-      config.temporal.searchAttributesJob.image: "temporalio/admin-tools:1.31.0"
+      config.temporal.searchAttributesJob.image: "temporalio/admin-tools:1.31.2"
       config.temporal.searchAttributesJob.attributes:
         - name: "Project"
           type: "Keyword"

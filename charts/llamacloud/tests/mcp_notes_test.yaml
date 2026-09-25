@@ -1,0 +1,139 @@
+suite: mcp-notes-tests
+
+# The install notes are where an operator is told what enabling MCP does not
+# bring with it. Untested, they drift silently — nothing else renders them.
+templates:
+- ../templates/NOTES.txt
+
+release:
+  name: test-release
+  namespace: test-namespace
+
+set: &required
+  redis:
+    host: test-redis
+  postgresql:
+    host: test-pg
+    username: u
+    password: p
+    database: d
+  mongodb:
+    host: m
+    username: u
+    password: p
+  rabbitmq:
+    host: r
+    username: u
+    password: p
+
+tests:
+- it: says nothing about MCP when it is not enabled
+  set: *required
+  asserts:
+    - notMatchRegex:
+        path: raw
+        pattern: MCP server enabled
+
+# The trap this exists for: a running pod and a UI that mentions nothing.
+- it: warns that the UI stays silent when no public URL is set
+  set:
+    <<: *required
+    config:
+      mcp:
+        enabled: true
+  asserts:
+    - matchRegex:
+        path: raw
+        pattern: MCP server enabled
+    - matchRegex:
+        path: raw
+        pattern: will not mention MCP
+    - matchRegex:
+        path: raw
+        pattern: ImagePullBackOff
+
+# No Ingress at all, so advice about which host the chart routes cannot apply.
+- it: names the routing gap once a public URL is set
+  set:
+    <<: *required
+    config:
+      mcp:
+        enabled: true
+        publicUrl: https://mcp.customer.example
+  asserts:
+    - matchRegex:
+        path: raw
+        pattern: no Ingress at all
+    - matchRegex:
+        path: raw
+        pattern: https://mcp\.customer\.example
+    - notMatchRegex:
+        path: raw
+        pattern: will not mention MCP
+    # The routed and same-host branches both name ingress.host, which does not exist here.
+    - notMatchRegex:
+        path: raw
+        pattern: whose host differs
+
+# Deriving no route means not validating the URL either: a deployment with no
+# Ingress must not be blocked from upgrading by a value that changes nothing here.
+- it: does not fail on a scheme-less public URL when there is no ingress
+  set:
+    <<: *required
+    config:
+      mcp:
+        enabled: true
+        publicUrl: mcp.customer.example
+  asserts:
+    - matchRegex:
+        path: raw
+        pattern: no Ingress at all
+
+# The chart routes this one, so the notes must stop claiming it does not, and
+# name what the operator still owns: the DNS record and the certificate.
+- it: names DNS and the certificate when the chart routes the MCP host
+  set:
+    <<: *required
+    ingress:
+      enabled: true
+      host: llamacloud.customer.example
+      ingressClassName: nginx
+      tlsSecretName: customer-tls
+    config:
+      mcp:
+        enabled: true
+        publicUrl: https://mcp.customer.example
+  asserts:
+    - matchRegex:
+        path: raw
+        pattern: routes\s+`mcp\.customer\.example` to the `llamacloud-mcp` Service
+    - matchRegex:
+        path: raw
+        pattern: customer-tls
+    - notMatchRegex:
+        path: raw
+        pattern: send it to the `llamacloud-mcp` Service
+    - notMatchRegex:
+        path: raw
+        pattern: has no route of its own
+
+# Same host as the frontend: the chart deliberately adds no rule, so the notes
+# have to keep saying so even though an Ingress exists.
+- it: still names the routing gap when the public URL is on the ingress host
+  set:
+    <<: *required
+    ingress:
+      enabled: true
+      host: llamacloud.customer.example
+      ingressClassName: nginx
+    config:
+      mcp:
+        enabled: true
+        publicUrl: https://llamacloud.customer.example
+  asserts:
+    - matchRegex:
+        path: raw
+        pattern: has no route of its own
+    - matchRegex:
+        path: raw
+        pattern: paths\s+the frontend already owns

@@ -102,6 +102,8 @@ Parameters:
     name: extract-config
 - configMapRef:
     name: urls-config
+- configMapRef:
+    name: temporal-connection-config
 {{- if (include "llamacloud.component.jobsService.configMap" $) }}
 - configMapRef:
     name: {{ .component.name }}

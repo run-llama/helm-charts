@@ -24,6 +24,50 @@ tests:
     - hasDocuments:
         count: 0
 
+# extraObjects (staging's KEDA ScaledObjects among them) is the only consumer of
+# the endpoint helpers, so pin them here.
+- it: should expose the Temporal endpoint helpers to injected objects
+  set:
+    temporal:
+      deploy: true
+    extraObjects:
+      - |
+        apiVersion: v1
+        kind: ConfigMap
+        metadata:
+          name: temporal-endpoints
+        data:
+          short: {{ include "llamacloud.temporal.endpoint" $ | quote }}
+          qualified: {{ include "llamacloud.temporal.qualifiedEndpoint" $ | quote }}
+  template: ../templates/llamacloud/extra-objects.yaml
+  asserts:
+    - equal:
+        path: .data.short
+        value: "test-release-temporal-subchart-frontend:7233"
+    - equal:
+        path: .data.qualified
+        value: "test-release-temporal-subchart-frontend.test-namespace.svc.cluster.local:7233"
+
+- it: should leave an external Temporal host unqualified in injected objects
+  set:
+    temporal:
+      deploy: false
+      host: temporal.example.com
+      port: 7233
+    extraObjects:
+      - |
+        apiVersion: v1
+        kind: ConfigMap
+        metadata:
+          name: temporal-endpoints
+        data:
+          qualified: {{ include "llamacloud.temporal.qualifiedEndpoint" $ | quote }}
+  template: ../templates/llamacloud/extra-objects.yaml
+  asserts:
+    - equal:
+        path: .data.qualified
+        value: "temporal.example.com:7233"
+
 - it: should render a single injected object
   set:
     extraObjects:

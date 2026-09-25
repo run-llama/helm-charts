@@ -1,5 +1,27 @@
 # CHANGELOG
 
+## [0.10.0] - 2026-09-22
+
+### Platform
+- **[Breaking]** Upgraded the optional Bifrost gateway from `v1.5.8` / chart `2.1.25` to `v2.2.1` / chart `2.1.42`, including the Gemini/Vertex Flash-Lite MINIMAL thinking fix. See the [upgrade notes](./docs/bifrost/README.md#upgrading-from-bifrost-v1x).
+- **[Feature]** Job limits and index usage controls — bound how many jobs a project runs at the same time. For more details refer to documentation for `config.jobs.enableLimits`, `config.jobs.maxConcurrentJobsPerProject`, `config.jobs.maxJobsInExecutionPerJobType`, `config.jobs.maxDocumentIngestionJobsInExecution`, `config.jobs.maxIndexJobsInExecution`, `config.usageCaps.readFromRollup`, and `config.usageCaps.executionGateSkipCache`
+- **[Breaking]** Index v1 always dispatches through Temporal, including explicit AMQP requests. The six `INDEX_V1_*_TEMPORAL_PERCENTAGE` settings are removed; remove overrides and verify Temporal worker capacity before upgrading. Keep legacy consumers until queued jobs finish. Pipeline APIs and MongoDB job records are unchanged.
+- **[Breaking]** `temporal.disabled` has been removed; Temporal is now a hard requirement. Setting it made v1 parse and v1 index fall back to the RabbitMQ transport, which no longer reports Parse usage — those jobs would run and deliver output but bill nothing. The `INDEX_V1_*_TEMPORAL_PERCENTAGE` dials and `V1_PARSE_VIA_TEMPORAL_PERCENTAGE` are gone — the backend dispatches v1 index and v1 parse as workflows unconditionally. An upgrade fails with `additional properties 'disabled' not allowed` if your values file still sets the key: remove it, and make sure `temporal.deploy: true` or `temporal.host`/`temporal.port` point at a Temporal instance before upgrading.
+- **[Feature]** Connector settings in the chart. `config.connectors.enabledAuthTypes` picks which integration/auth pairs the backend accepts. The default, shared by the "Add connection" dialog whose list is built into the frontend image, is Google Drive (OAuth and service account), SharePoint (OAuth and app registration) and S3. Before, an unset list offered every pair, Confluence included. New connections also need encryption keys: set `config.connectors.credentialsKmsKeyArn` / `tokenVaultKmsKeyArn`, or supply `CONNECTOR_MASTER_KEY` / `TOKEN_VAULT_MASTER_KEY` through `config.connectors.secret`, which also carries `CONNECTOR_AUTH_SEAL_KEY` for OAuth. Without them, creating a connection fails rather than storing the credential unencrypted. OAuth grants are held in the deployment's own token vault (the in-house broker), redirecting to `/credential-brokers/return` on `ingress.host`. Register that URL on your Entra or Google app. Existing connections are unaffected.
+- **[Feature]** Optional MCP server, which serves agent clients against this deployment. Set `config.mcp.enabled` (default `false`) and `config.mcp.publicUrl` so the UI offers MCP client configuration. When `publicUrl` uses a different host from `ingress.host`, the chart adds an Ingress rule routing it to the `llamacloud-mcp` Service; DNS for that host must reach the same ingress, and `ingress.tlsSecretName` must cover both hostnames. While MCP is routed, the shared Ingress gets `proxy-read-timeout: "600"`, which you can override in `ingress.annotations`.
+- **[Deprecation]** `rabbitmq.enabled` (still `true` by default) is deprecated, and `helm upgrade` prints a notice while it is on. v1 Parse now works with RabbitMQ off; only the legacy Pipelines surface still needs it. See `examples/profiles/no-rabbitmq.yaml` and [Migrating off RabbitMQ](https://developers.llamaindex.ai/llamaparse/self_hosting/configuration/db_and_queues/migrate-off-rabbitmq).
+- **[Improvement]** Temporal server 1.31.2: the Temporal subchart moves to `~1.6.0` and the admin-tools image to `1.31.2`.
+- **[Breaking]** When `temporal.deploy=true`, the Temporal pods now have default resource requests and memory limits. On a small cluster they can stay `Pending`, so check node capacity before upgrading. Numeric overrides such as `cpu: 1` are accepted.
+- **[Breaking]** These env vars are no longer rendered: `MAX_QUEUE_CONCURRENCY` (`config.parse.maxQueueConcurrency` no longer has any effect), `LAYOUT_EXTRACTION_ENDPOINT` / `LAYOUT_EXTRACTION_V2_ENDPOINT`, `PARSE_PREMIUM`, `ALLOWED_INDEX` and `EVAL_OPENAI_API_KEY`. This only matters if something outside the chart reads them.
+
+### Extract
+- **[Breaking]** Extract v1 always dispatches through Temporal. `TEMPORAL_EXTRACT_ROLLOUT_PERCENT` no longer selects AMQP; remove the override and provision the Temporal jobs worker before upgrading. Keep the old worker running until queued AMQP jobs finish. The v1 API and job-record storage settings are unchanged.
+- **[Breaking]** Extract's creation webhook is now sent as `extract.pending`, the documented name, instead of `extract.created`. Update any webhook consumer that matches on the old name.
+
+### Parse
+- **[Fix]** `config.parseLayoutDetection.gpu: false` now deploys the CPU Layout image; previously the CUDA image was pulled and ran on CPU.
+- **[Feature]** In-cluster form field detection — a deployment that reaches no hosted detector can now run the form field detector itself. Set `config.parseFormFieldDetection.enabled` (default `false`, so an upgrade adds nothing until you ask for it) and, on a GPU node, `config.parseFormFieldDetection.gpu`. The chart deploys the `llamacloud-form-field-detection` service and publishes `FFDETR_ENDPOINT` to the parse workers, which reach it over cluster-internal networking with no credential; sizing for the new pod is in `system-requirements.yaml`. Leave `llamaParseFormFieldDetectionApi.image` empty to get the chart's own image, which uses the CPU build unless the GPU flag is set. The parse workers call the detector whenever `FFDETR_ENDPOINT` is set. Enabling the component also sets `FORM_BBOX_ATTRIBUTION=model_overlay`, which attaches an annotated screenshot of the detected regions to every form-page LLM call, so form pages cost more to parse. Set `FORM_BBOX_ATTRIBUTION` to `off` in `llamaParse.extraEnvVariables` / `temporalWorkloads.llamaParse.extraEnvVariables` to run the detector without it.
+
 ## [0.9.2] - 2026-08-27
 
 ### Platform
@@ -19,7 +41,7 @@
 - **[Security]** Security updates
 
 ### Parse
-- **[Feature]** Form handling — parsed forms are returned as structured fields on the job result ([`form.json` in the get parsing job API](https://developers.api.llamaindex.ai/api/resources/parsing/methods/get/#(resource)%20parsing%20%3E%20(model)%20form%20%3E%20(schema)%20%3E%20(property)%20json))
+- **[Feature]** Form handling — parsed forms are returned as structured fields on the job result ([`form.json` in the get parsing job API](https://developers.llamaindex.ai/reference/resources/parsing/methods/get/#(resource)%20parsing%20%3E%20(model)%20form%20%3E%20(schema)%20%3E%20(property)%20json))
 - **[Feature]** Revision tracking ([Configuring Parse](https://developers.llamaindex.ai/llamaparse/parse/guides/configuring-parse/#revision-tracking))
 - **[Improvement]** Scaling improvements
 - **[Improvement]** Parse jobs submitted through the v1 API now run as Temporal workflows instead of RabbitMQ messages, matching the v2 API. Deployments that set `temporal.disabled: true` keep the RabbitMQ transport.

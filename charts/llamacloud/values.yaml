@@ -25,13 +25,12 @@ postgresql:
   ## @param postgresql.secret Name of the existing secret to use for PostgreSQL credentials
   secret: ""
   ## Connection pool sizing. A pod holds `poolSize` connections open whether busy or idle,
-  ## and may open `poolMaxOverflow` more under load, so the deployment's worst case is
-  ## roughly `sum over components of (replicas x (poolSize + poolMaxOverflow))`. That has
-  ## to fit inside the server's `max_connections` alongside every other client, and
-  ## Temporal is one of those whenever it points at the same host, which is what the
-  ## temporal-subchart configuration below does by default.
-  ## These are delivered by ConfigMap, so changing them on a running release takes effect
-  ## when the affected pods next restart, not at `helm upgrade`.
+  ## and may open `poolMaxOverflow` more under load, so the worst case is roughly
+  ## `sum over components of (replicas x (poolSize + poolMaxOverflow))`. That has to fit
+  ## in the server's `max_connections` alongside every other client, including Temporal
+  ## when it shares the host (the temporal-subchart default below).
+  ## These come from a ConfigMap, so a change takes effect when the pods next restart,
+  ## not at `helm upgrade`.
   ## @param postgresql.poolSize [nullable] Persistent connections each pod keeps open to PostgreSQL. Leave null to use the application default of 10.
   # @schema type: [integer, "null"];minimum: 0
   poolSize: null
@@ -39,8 +38,8 @@ postgresql:
   # @schema type: [integer, "null"];minimum: 0
   poolMaxOverflow: null
 
-  ## Driver behavior, not sizing: applies to the same five components via the same ConfigMap.
-  ## @param postgresql.disablePreparedStatements Disable asyncpg server-side prepared statements. Required when this host is a transaction-mode pooler (PgBouncer 1.21+); leave false for a direct connection, where prepared statements are a performance win.
+  ## Driver behavior. Applies to the same five components via the same ConfigMap.
+  ## @param postgresql.disablePreparedStatements Disable asyncpg server-side prepared statements. Required when this host is a transaction-mode pooler (PgBouncer 1.21+); leave false for a direct connection, where prepared statements are faster.
   disablePreparedStatements: false
 
 ## @section MongoDB Configuration
@@ -67,7 +66,7 @@ mongodb:
 ## @section RabbitMQ Configuration
 # @schema additionalProperties: false
 rabbitmq:
-  ## @param rabbitmq.enabled Whether this deployment uses RabbitMQ. When false, no rabbitmq secret is rendered or mounted, AMQP_DISABLED=true is injected, and the jobs-worker (AMQP consumer) Deployment is not created; v1 parse and pipeline ingestion return errors. Requires an app version with AMQP_DISABLED support.
+  ## @param rabbitmq.enabled Whether this deployment uses RabbitMQ. DEPRECATED: Temporal is the job transport, and Parse, Extract and Index (including legacy Pipelines) can run on it. Drain existing AMQP jobs and check Temporal worker capacity before disabling. When false, no rabbitmq secret is rendered or mounted, AMQP_DISABLED=true is injected, and the jobs-worker (AMQP consumer) Deployment isn't created. See the Migrating off RabbitMQ guide.
   enabled: true
   ## @param rabbitmq.scheme RabbitMQ scheme
   # @schema enum: ["", amqp, amqps]
@@ -119,8 +118,6 @@ qdrant:
 ## @section Temporal configuration (required) - either deploy Temporal as a subchart or connect to an external Temporal instance
 # @schema additionalProperties: false
 temporal:
-  ## @param temporal.disabled Completely disable Temporal and all Temporal workloads (configmaps, jobs, workers). temporal.deploy must be false when this is true.
-  disabled: false
   ## @param temporal.deploy Deploy Temporal as a subchart (if false, use external Temporal)
   deploy: false
   ## @param temporal.host Temporal host (ignored when deploy is true, auto-configured to subchart)
@@ -130,8 +127,8 @@ temporal:
 
 ## @section Temporal Subchart Configuration
 ## Configuration for the Temporal subchart (only used when temporal.deploy is true)
-## Temporal reuses the main postgresql configuration - just set postgresql.* values above
-## and temporal will use the same host/port/username/password with separate databases.
+## Temporal reuses the postgresql.* values above (same host/port/username/password)
+## with separate databases.
 ## See https://github.com/temporalio/helm-charts for all available options
 temporal-subchart:
   serviceAccount:
@@ -145,6 +142,27 @@ temporal-subchart:
     service:
       ## @param temporal-subchart.web.service.port Port for Temporal Web UI service
       port: 80
+    ## @param temporal-subchart.web.resources [object] Resource requests/limits for the Temporal Web UI
+    resources:
+      requests:
+        # @schema type: [string, number]
+        cpu: 50m
+        # @schema type: [string, number]
+        memory: 128Mi
+      limits:
+        # @schema type: [string, number]
+        memory: 512Mi
+  ## @param temporal-subchart.admintools.resources [object] Resource requests/limits for the Temporal admin-tools pod
+  admintools:
+    resources:
+      requests:
+        # @schema type: [string, number]
+        cpu: 50m
+        # @schema type: [string, number]
+        memory: 64Mi
+      limits:
+        # @schema type: [string, number]
+        memory: 256Mi
   server:
     config:
       persistence:
@@ -209,8 +227,8 @@ temporal-subchart:
               maxIdleConns: 20
               ## @param temporal-subchart.server.config.persistence.datastores.visibility.sql.maxConnLifetime Maximum connection lifetime for visibility store
               maxConnLifetime: "1h"
-    # Standalone Activities — requires transition history and CHASM
-    # (Temporal Server >= 1.28). All three flags must be enabled together.
+    # Standalone Activities need transition history and CHASM
+    # (Temporal Server >= 1.28). Enable all three flags together.
     ## @param temporal-subchart.server.dynamicConfig [object] Temporal dynamic config overrides. Enables Standalone Activities (requires Temporal Server >= 1.28); the three flags must be set together.
     dynamicConfig:
       history.enableTransitionHistory:
@@ -222,6 +240,74 @@ temporal-subchart:
       activity.enableStandalone:
         - value: true
           constraints: {}
+    # Subchart >=1.3 defaults this to a tcpSocket probe, which reports Ready
+    # before WorkflowService is serving. Frontend gRPC is not TLS-wrapped, so the
+    # gRPC probe the subchart used through 1.2.0 still applies.
+    ## @param temporal-subchart.server.frontend.readinessProbe [object] Readiness probe for the Temporal frontend
+    ##
+    ## The upstream Temporal chart ships every server role with `resources: {}`.
+    ## With no requests, Kubernetes can pack a role onto any node, including small
+    ## system nodes, and never move it. History holds the shard cache and grows past
+    ## 2 GiB, so unbounded it can exhaust a small node's RAM and livelock it in
+    ## page-fault thrash instead of taking a clean OOM kill. Every other pod on that
+    ## node then fails its probes, which looks like an unrelated outage.
+    ##
+    ## Memory requests are sized from measured steady state so the scheduler places
+    ## these pods correctly, and memory limits bound the damage. There are no CPU
+    ## limits: throttling a Temporal role slows task dispatch for the whole cluster,
+    ## and on a small deployment the CPU headroom is worth more than the isolation.
+    ##
+    ## Scale per-pod memory with replicas, not bigger pods. More history replicas
+    ## means fewer shards and a smaller working set per pod. Raise
+    ## `server.history.replicaCount` before raising these numbers.
+    ## @param temporal-subchart.server.frontend.resources [object] Resource requests/limits for the Temporal frontend role
+    frontend:
+      readinessProbe:
+        grpc:
+          port: 7233
+          service: temporal.api.workflowservice.v1.WorkflowService
+      resources:
+        requests:
+          # @schema type: [string, number]
+          cpu: 100m
+          # @schema type: [string, number]
+          memory: 512Mi
+        limits:
+          # @schema type: [string, number]
+          memory: 2Gi
+    ## @param temporal-subchart.server.history.resources [object] Resource requests/limits for the Temporal history role
+    history:
+      resources:
+        requests:
+          # @schema type: [string, number]
+          cpu: 250m
+          # @schema type: [string, number]
+          memory: 2Gi
+        limits:
+          # @schema type: [string, number]
+          memory: 4Gi
+    ## @param temporal-subchart.server.matching.resources [object] Resource requests/limits for the Temporal matching role
+    matching:
+      resources:
+        requests:
+          # @schema type: [string, number]
+          cpu: 100m
+          # @schema type: [string, number]
+          memory: 512Mi
+        limits:
+          # @schema type: [string, number]
+          memory: 2Gi
+    ## @param temporal-subchart.server.worker.resources [object] Resource requests/limits for the Temporal server worker role
+    worker:
+      resources:
+        requests:
+          # @schema type: [string, number]
+          cpu: 100m
+          # @schema type: [string, number]
+          memory: 256Mi
+        limits:
+          # @schema type: [string, number]
+          memory: 1Gi
 
 ## @section Llama Agents Configuration
 # @schema additionalProperties: false
@@ -241,7 +327,7 @@ llamaAgents:
   crdVersion: "0.7.2"
   ## @param llamaAgents.createAppsNamespace Create the `llama-agents-subchart.apps.namespace` Namespace from this chart. Set false when the namespace is pre-provisioned out-of-band (e.g. managed by cluster ops with PSA/istio/quota labels). When true, the Namespace is rendered with `helm.sh/resource-policy: keep` so `helm uninstall` leaves it and any pre-existing workloads alone.
   createAppsNamespace: true
-  ## @param llamaAgents.controlPlaneBackupEnabled [nullable] Take a periodic backup of the agents control plane, pruning backups older than 30 days. Defaults to `llamaAgents.deploy` — on when this release renders its own control plane, off when pointing at an external `controlPlaneUrl`. The backup API is not tenant-scoped, so it acts on the whole control plane: only enable it for a control plane this release owns, never one shared with another environment.
+  ## @param llamaAgents.controlPlaneBackupEnabled [nullable] Take a periodic backup of the agents control plane, pruning backups older than 30 days. Defaults to `llamaAgents.deploy`: on when this release renders its own control plane, off when pointing at an external `controlPlaneUrl`. The backup API is not tenant-scoped and acts on the whole control plane, so only enable it for a control plane this release owns, never one shared with another environment.
   # @schema type: [boolean, "null"]
   controlPlaneBackupEnabled: null
 
@@ -269,11 +355,11 @@ bifrost:
 ## supported values: https://github.com/maximhq/bifrost/tree/main/helm-charts/bifrost
 bifrost-subchart:
   image:
-    ## @param bifrost-subchart.image.tag Bifrost container image tag. Defaults to the appVersion of the pinned bifrost chart. Override to track a different Bifrost release independently of the chart version.
-    tag: "v1.5.8"
+    ## @param bifrost-subchart.image.tag Bifrost container image tag. Pinned independently of the upstream chart appVersion. Override to use a different Bifrost release.
+    tag: "v2.2.1"
   bifrost:
     client:
-      ## @param bifrost-subchart.bifrost.client.enforceAuthOnInference Require a Bifrost virtual key (sk-bf-*) on inference requests. Defaults to false so the happy-path LlamaCloud integration (configure provider keys under bifrost-subchart.bifrost.providers, then point LlamaCloud at Bifrost via config.llms.providerConfigs with any non-empty placeholder api_key) works out of the box. Set true if you intend to issue per-tenant virtual keys and pass them via the x-bf-vk header.
+      ## @param bifrost-subchart.bifrost.client.enforceAuthOnInference Require a Bifrost virtual key (sk-bf-*) on inference requests. Defaults to false so the basic LlamaCloud integration works without keys: set provider keys under bifrost-subchart.bifrost.providers, then point LlamaCloud at Bifrost via config.llms.providerConfigs with any non-empty placeholder api_key. Set true to issue per-tenant virtual keys passed in the x-bf-vk header.
       enforceAuthOnInference: false
 
 ## @section Monitoring (Prometheus + Grafana) Configuration
@@ -285,7 +371,7 @@ monitoring:
   deploy: false
   # @schema additionalProperties: false
   serviceMonitors:
-    ## @param monitoring.serviceMonitors.enabled Render ServiceMonitor objects for LlamaCloud services. Requires the Prometheus Operator CRDs (monitoring.coreos.com/v1) to be present in the cluster — either via monitoring.deploy=true, or via an externally-managed operator. Templates no-op cleanly if the CRDs are not installed.
+    ## @param monitoring.serviceMonitors.enabled Render ServiceMonitor objects for LlamaCloud services. Requires the Prometheus Operator CRDs (monitoring.coreos.com/v1), from monitoring.deploy=true or an externally-managed operator. Templates render nothing if the CRDs are missing.
     enabled: false
     ## @param monitoring.serviceMonitors.release Value of the `release` label set on ServiceMonitor objects. Must match the Prometheus instance's serviceMonitorSelector (kube-prometheus-stack defaults to "kube-prometheus-stack").
     release: kube-prometheus-stack
@@ -300,7 +386,7 @@ monitoring:
 ## supported values: https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack
 kube-prometheus-stack-subchart:
   crds:
-    ## @param kube-prometheus-stack-subchart.crds.enabled Have the subchart install Prometheus Operator CRDs. Defaults to false so installs into clusters that already have a Prometheus Operator (and its CRDs) do not conflict. Set to true on a fresh cluster with no pre-existing Prometheus Operator.
+    ## @param kube-prometheus-stack-subchart.crds.enabled Have the subchart install Prometheus Operator CRDs. Defaults to false to avoid conflicts in clusters that already have a Prometheus Operator. Set true on a fresh cluster without one.
     enabled: false
 
 ## @section Ingress Configuration
@@ -324,7 +410,7 @@ config:
   # @schema pattern: ^(?i)(debug|info|warning|error|critical)?$
   logLevel: INFO
 
-  ## @param config.v1.enabled Whether v1 products (v1 parse, managed-ingestion, extract's legacy AMQP path) are activated. When false, V1_ENABLED=false is injected: v1-legacy requests return 410 and extract force-routes to the v2 (Temporal) path — even if RabbitMQ/MongoDB are still present. Defaults true; set false to force everything onto v2 ahead of decommissioning v1. Requires an app version with V1_ENABLED support.
+  ## @param config.v1.enabled Whether v1 products (v1 parse, managed-ingestion, extract's legacy AMQP path) are activated. When false, V1_ENABLED=false is injected, v1-legacy requests return 410, and extract routes to the v2 (Temporal) path even if RabbitMQ/MongoDB are still present. Defaults true; set false to move everything onto v2 before decommissioning v1. Requires an app version with V1_ENABLED support.
   # @schema additionalProperties: false
   v1:
     enabled: true
@@ -489,11 +575,10 @@ config:
       region: ""
       ## @param config.defaultIndex.turbopuffer.namespacePrefix Prefix prepended to platform-managed namespace names (optional)
       namespacePrefix: ""
-    ## PostgreSQL (pgvector) vector store for platform-managed directory indexes.
-    ## Used when destination is "postgres". Every field left empty inherits the
-    ## matching postgresql.* value, so with inline postgresql credentials the
-    ## postgres destination needs no extra configuration. If platform PostgreSQL
-    ## is supplied via postgresql.secret (an existing secret), set these fields
+    ## PostgreSQL (pgvector) vector store for platform-managed directory indexes,
+    ## used when destination is "postgres". Empty fields inherit the matching
+    ## postgresql.* value, so inline postgresql credentials need no extra config.
+    ## If platform PostgreSQL comes from postgresql.secret, set these fields
     ## explicitly (or use config.defaultIndex.secret). The database user must be
     ## able to CREATE EXTENSION vector (pgvector must be installed on the server).
     # @schema additionalProperties: false
@@ -517,6 +602,23 @@ config:
   managedEmbeddings:
     ## @param config.managedEmbeddings.enabled Offer managed embeddings as a default option when creating indexes (also requires an embedding model such as openai-text-embedding-3-small registered in the LLM provider config). Applied to both backend and frontend.
     enabled: false
+
+  ## @section Connectors Configuration
+  ## Connected sources (Google Drive, SharePoint, S3, ...) that files sync from. The defaults
+  ## match the hosted product, plus Google Drive OAuth. Creating a connection also needs the encryption settings below:
+  ## without them the backend refuses to store the credential rather than keeping it in the clear.
+  # @schema additionalProperties: false
+  connectors:
+    ## @param config.connectors.enabledAuthTypes Comma-separated `integration:auth_type` pairs this deployment offers. The backend refuses any other pair. The "Add connection" dialog's list is built into the frontend image and matches this default, so narrowing this list leaves cards in the dialog that fail when used. Available pairs: google_drive:oauth, google_drive:service_account, sharepoint:oauth, sharepoint:service_account, s3:service_account, confluence:oauth, confluence:api_key. Set it empty to offer no connectors.
+    enabledAuthTypes: "google_drive:oauth,google_drive:service_account,sharepoint:oauth,sharepoint:service_account,s3:service_account"
+    ## @param config.connectors.oauthReturnUrl Page the OAuth provider redirects to after consent. OAuth grants are held in this deployment's own token vault. Must also be registered as a redirect URI on your OAuth app (Entra, Google). Defaults to `<scheme>://<ingress.host>/credential-brokers/return` when `ingress.host` is set.
+    oauthReturnUrl: ""
+    ## @param config.connectors.credentialsKmsKeyArn AWS KMS key ARN or alias ARN that encrypts the credentials a connection stores (service-account keys, app-registration secrets). The backend and Temporal worker pods need kms:GenerateDataKey, kms:Decrypt and kms:DescribeKey on it. Alternative to CONNECTOR_MASTER_KEY in `config.connectors.secret`.
+    credentialsKmsKeyArn: ""
+    ## @param config.connectors.tokenVaultKmsKeyArn AWS KMS key ARN or alias ARN that encrypts OAuth grants held by the in-house broker. Same permissions as above. Alternative to TOKEN_VAULT_MASTER_KEY in `config.connectors.secret`.
+    tokenVaultKmsKeyArn: ""
+    ## @param config.connectors.secret Name of an existing secret holding connector keys, each a random key generated with `openssl rand -base64 32`. CONNECTOR_AUTH_SEAL_KEY is required for OAuth connections. CONNECTOR_MASTER_KEY and TOKEN_VAULT_MASTER_KEY are needed only when the matching KMS key above is not set, and must be two different keys.
+    secret: ""
 
   ## @section authentication Configuration
   ## Choose exactly one backend authentication mode: Basic Auth, OIDC, or customer-configured WorkOS.
@@ -584,7 +686,7 @@ config:
     provider: "aws"
 
     ## @param config.storageBuckets.extraEnvVariables Extra environment variables to add to the pods for storage buckets
-    ## can be used to set cloud provider credentials if not using IAM roles or workload identity these are stored as a secret
+    ## Use these for cloud provider credentials when not using IAM roles or workload identity. Stored as a secret.
     ##
     ##  Example:
     ##  extraEnvVariables:
@@ -623,11 +725,10 @@ config:
     parseFileOutput: "llama-platform-file-parsing"
 
     ## @section S3Proxy Configuration
-    ## Gated solely on s3proxy.enabled. `provider` is NOT consulted, it only becomes the
+    ## Gated only on s3proxy.enabled. `provider` isn't consulted; it only becomes the
     ## CLOUD_PROVIDER env var. Enable S3Proxy for any non-AWS backend (Azure Blob, GCS,
-    ## MinIO and other S3-compatible stores) AND for AWS when authenticating with access
-    ## keys rather than IRSA. Leave it off only on the AWS + IRSA path, where the platform
-    ## talks to S3 natively.
+    ## MinIO and other S3-compatible stores) and for AWS with access keys instead of
+    ## IRSA. Leave it off only on AWS + IRSA, where the platform talks to S3 natively.
     # @schema additionalProperties: false
     s3proxy:
       ## @param config.storageBuckets.s3proxy.enabled S3Proxy image
@@ -647,9 +748,9 @@ config:
       resources: {}
 
       ## @param config.storageBuckets.s3proxy.config S3Proxy configuration ENV variables
-      ## For reference for configuration examples, please visit the following page:
+      ## Configuration examples:
       ## - https://github.com/gaul/s3proxy/wiki/Storage-backend-examples
-      ## For reference for available configuration options, see the s3proxy Dockerfile here:
+      ## Available options are in the s3proxy Dockerfile:
       ## - https://github.com/gaul/s3proxy/blob/master/Dockerfile
       config: {}
         # Example configuration for azure blob storage:
@@ -666,11 +767,28 @@ config:
   frontend:
     ## @param config.frontend.enabled Enable Frontend service
     enabled: true
+    ## @param config.frontend.storageBrowserOrigins Comma-separated origins the browser fetches presigned document bytes from, for the CSP connect-src allow-list. Leave empty where presigned URLs are routed through /api/s3-proxy.
+    storageBrowserOrigins: ""
+
+  ## @section MCP Configuration
+  # @schema additionalProperties: false
+  mcp:
+    ## @param config.mcp.enabled Enable the MCP server, which serves agent clients against this deployment
+    enabled: false
+    ## @param config.mcp.region Region this deployment serves, reported to MCP clients
+    # @schema enum: [na, eu]
+    region: na
+    ## @param config.mcp.llamaCloudBaseUrl [nullable] LlamaCloud API the MCP server calls. Defaults to the in-cluster backend Service. A public host must use https.
+    # @schema type: [string, "null"]
+    llamaCloudBaseUrl: null
+    ## @param config.mcp.allowPrivateUploadHosts Allow uploadFileByUrl to fetch from private addresses, for documents hosted inside the cluster
+    allowPrivateUploadHosts: false
+    ## @param config.mcp.publicUrl Browser-reachable URL of this deployment's MCP server, without a path. The web UI offers MCP client configuration only when this is set, since that config must name a host the user's agent can reach. Give MCP its own hostname, e.g. https://mcp.your-llamacloud-host. When it differs from ingress.host the chart adds an Ingress rule routing it to the llamacloud-mcp Service, and ingress.tlsSecretName must cover both names. Use a URL on ingress.host only if you route MCP yourself; the chart adds no rule there because MCP answers on paths the frontend already owns.
+    publicUrl: ""
 
   ## @section API Rate Limits Configuration
-  ## Per-project default rate limits for API endpoints. Applied on backend startup
-  ## via the quota sync (defaults are upserted into the quota_configurations table,
-  ## so changing a value and restarting the backend takes effect).
+  ## Per-project default rate limits for API endpoints. The backend upserts them into
+  ## the quota_configurations table on startup, so a change applies after a restart.
   # @schema additionalProperties: false
   rateLimits:
     ## @param config.rateLimits.parseApiCreationQueries Parse job creation: requests allowed per window
@@ -709,11 +827,11 @@ config:
     usageApiQueryQps: 20
 
   ## @section Usage Caps Configuration
-  ## Credit-spend caps evaluated per project and per organization on every
-  ## job-creating request. `enforcementMode` is the master switch; the default
-  ## credit values below are written into the quota_configurations table by the
-  ## quota sync on backend startup as the organization-scope global default, and
-  ## can be overridden per organization from the admin Quota Management page.
+  ## Credit-spend caps checked per project and per organization on every
+  ## job-creating request. `enforcementMode` is the master switch. The backend
+  ## writes the default credit values below into quota_configurations on startup
+  ## as the organization-scope default; override per organization from the admin
+  ## Quota Management page.
   # @schema additionalProperties: false
   usageCaps:
     ## @param config.usageCaps.enforcementMode Cap behavior: `off` skips evaluation, `observe` logs the would-block and allows, `enforce` rejects the request with HTTP 402
@@ -722,6 +840,14 @@ config:
     ## @param config.usageCaps.defaultDailyCredits Global default for the per-organization daily credit cap. Null leaves organizations uncapped daily
     # @schema type: [integer, "null"];minimum: 0
     defaultDailyCredits: null
+    ## @param config.usageCaps.readFromRollup Read spend from the daily rollup, which refreshes at most every 10 minutes. False reads usagemetric directly: slower per check, but the number is current to within seconds
+    ## @skip config.usageCaps.readFromRollup
+    # @schema type: [boolean, "null"]
+    readFromRollup:
+    ## @param config.usageCaps.executionGateSkipCache Read spend uncached in a gate that runs after a job holds its concurrency slot. The cached read lags one read behind for a job that outlives its TTL, so with this off a breached project can run one extra job past the cap. Costs one aggregate per job
+    ## @skip config.usageCaps.executionGateSkipCache
+    # @schema type: [boolean, "null"]
+    executionGateSkipCache:
     ## @param config.usageCaps.defaultMonthlyCredits Global default for the per-organization monthly credit cap. Null leaves organizations uncapped monthly
     # @schema type: [integer, "null"];minimum: 0
     defaultMonthlyCredits: null
@@ -741,12 +867,16 @@ config:
   ## @section Jobs Configuration
   # @schema additionalProperties: false
   jobs:
-    ## @param config.jobs.maxJobsInExecutionPerJobType Maximum number of jobs in execution per job type
+    ## @param config.jobs.enableLimits Enforce the job limits below. Off means a project runs as many jobs at once as it can submit. Never limits Split, LlamaSheets, or Index v2 data source sync
+    enableLimits: false
+    ## @param config.jobs.maxConcurrentJobsPerProject Concurrent jobs per project, counted separately per Document processing product (Parse, Extract, etc.)
+    maxConcurrentJobsPerProject: 100
+    ## @param config.jobs.maxJobsInExecutionPerJobType Concurrent Index v1 sync jobs, per type per project. Includes the file update job that creates one Parse job per file
     maxJobsInExecutionPerJobType: 10
-    ## @param config.jobs.maxIndexJobsInExecution Maximum number of index jobs in execution
-    maxIndexJobsInExecution: 0
-    ## @param config.jobs.maxDocumentIngestionJobsInExecution Maximum number of document ingestion jobs in execution
+    ## @param config.jobs.maxDocumentIngestionJobsInExecution Concurrent Index v1 document ingestion jobs per project
     maxDocumentIngestionJobsInExecution: 1
+    ## @param config.jobs.maxIndexJobsInExecution Concurrent Index v1 jobs per index, across types
+    maxIndexJobsInExecution: 100000
     ## @param config.jobs.includeJobErrorDetails Whether to always include job error details in API and the UI
     includeJobErrorDetails: true
     ## @param config.jobs.defaultTransformDocumentTimeoutSeconds Default timeout in seconds for document transformation jobs
@@ -854,6 +984,16 @@ config:
     ## GPU configuration for Layout processing
     gpu: false
 
+  ## @section Form Field Detection Configuration
+  ## Runs the form-field detector (FFDetr) in-cluster, for deployments that can't
+  ## reach a hosted detector. Off by default because it's a GPU-class workload.
+  # @schema additionalProperties: false
+  parseFormFieldDetection:
+    ## @param config.parseFormFieldDetection.enabled Enable in-cluster LlamaParse form field detection
+    enabled: false
+    ## @param config.parseFormFieldDetection.gpu Enable GPU acceleration for form field detection (if false, uses CPU backend)
+    gpu: false
+
   ## @section Layout Detection V3 (BYOC Self-Hosted) Configuration
   ## Deprecated: use parseLayoutDetection. This alias remains supported for compatibility.
   # @schema additionalProperties: false
@@ -890,7 +1030,10 @@ config:
     # @schema additionalProperties: false
     jobCleanup:
       ## @param config.temporal.jobCleanup.image Image for the kubectl job cleanup hook
-      image: "bitnami/kubectl:latest"
+      # Digest-pinned because this hook runs kubectl with its own ServiceAccount and
+      # `bitnami/kubectl` only publishes `latest`. The digest below is kubectl 1.37.0. A mirrored
+      # registry path keeps the digest valid, since a pull-through cache serves the same manifest.
+      image: "bitnami/kubectl:latest@sha256:b29d8c1665b70817259ceecaea16ab27aab6368b48daf485d19436c809067492"
 
     ## Search Attributes Job
     # @schema additionalProperties: false
@@ -899,7 +1042,7 @@ config:
       enabled: true
 
       ## @param config.temporal.searchAttributesJob.image Image for temporal admin tools
-      image: "docker.io/temporalio/admin-tools:1.31.0"
+      image: "docker.io/temporalio/admin-tools:1.31.2"
 
       ## config.temporal.searchAttributesJob.attributes: Search attributes to be created in Temporal
       ## Each attribute should have a name and type (Text, Keyword, Int, Double, Bool, Datetime, KeywordList)
@@ -956,8 +1099,6 @@ imagePullSecrets: []
 
 ## @param extraObjects
 ## -- Extra kubernetes objects to deploy (value evaluated as a template)
-##
-## In some cases, it can avoid the need for additional, extended or adhoc deployments.
 extraObjects: []
 
 ## @section Frontend Configuration
@@ -978,7 +1119,7 @@ frontend:
   annotations: {}
 
   ## @param frontend.image Frontend image
-  image: docker.io/llamaindex/llamacloud-frontend:0.9.2
+  image: docker.io/llamaindex/llamacloud-frontend:0.10.0
 
   ## @param frontend.imagePullPolicy Frontend image pull policy
   # @schema enum: ["", Always, IfNotPresent, Never]
@@ -1031,6 +1172,79 @@ frontend:
   ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-volume-storage/
   volumes: []
 
+## @section MCP Server Configuration
+## Serves the LlamaCloud MCP endpoints to agent clients. Enable with config.mcp.enabled.
+
+# @schema additionalProperties: false
+mcp:
+  ## @param mcp.horizontalPodAutoscalerSpec HorizontalPodAutoScaler configuration
+  ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/
+  horizontalPodAutoscalerSpec: {}
+
+  ## @param mcp.replicas [nullable] Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set.
+  # @schema type: [integer, "null"];minimum: 0
+  replicas: null
+
+  ## @param mcp.command Override the container command (entrypoint)
+  command: []
+
+  ## @param mcp.annotations Annotations added to the MCP Deployment.
+  annotations: {}
+
+  ## @param mcp.image MCP server image. Released from run-llama/mcp-llamaindex-ai, so the tag doesn't track appVersion and must name a tag published there.
+  image: docker.io/llamaindex/llamacloud-mcp:0.1.0
+
+  ## @param mcp.imagePullPolicy MCP image pull policy
+  # @schema enum: ["", Always, IfNotPresent, Never]
+  imagePullPolicy: IfNotPresent
+
+  ## @param mcp.securityContext Security context for the container
+  securityContext: {}
+
+  ## @param mcp.serviceAccountAnnotations Annotations to add to the service account
+  serviceAccountAnnotations: {}
+
+  ## @param mcp.nodeSelector Node labels for pod assignment
+  ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
+  nodeSelector: {}
+
+  ## @param mcp.tolerations Taints to tolerate on node assignment:
+  ## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+  tolerations: []
+
+  ## @param mcp.affinity Pod scheduling constraints
+  ## Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
+  affinity: {}
+
+  ## @param mcp.topologySpreadConstraints Topology Spread Constraints for MCP pods
+  topologySpreadConstraints: []
+
+  ## @param mcp.podAnnotations Annotations to add to the resulting Pods of the Deployment.
+  podAnnotations: {}
+
+  ## @param mcp.podSecurityContext Annotations to add to the resulting Pods of the Deployment.
+  podSecurityContext: {}
+
+  ## @param mcp.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
+  ## Ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+  resources: {}
+
+  ## @param mcp.extraEnvVariables Extra environment variables to add to MCP pods
+  ## Example:
+  ## extraEnvVars:
+  ##   - name: FOO
+  ##     value: BAR
+  ##
+  extraEnvVariables: []
+
+  ## @param mcp.volumeMounts List of volumeMounts that can be mounted by containers belonging to the pod
+  ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-volume-storage/
+  volumeMounts: []
+
+  ## @param mcp.volumes List of volumes that can be mounted by containers belonging to the pod
+  ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-volume-storage/
+  volumes: []
+
 ## @section Backend Configuration
 # @schema additionalProperties: false
 backend:
@@ -1049,7 +1263,7 @@ backend:
   annotations: {}
 
   ## @param backend.image Backend image
-  image: docker.io/llamaindex/llamacloud-backend:0.9.2
+  image: docker.io/llamaindex/llamacloud-backend:0.10.0
 
   ## @param backend.imagePullPolicy Backend image pull policy
   # @schema enum: ["", Always, IfNotPresent, Never]
@@ -1120,7 +1334,7 @@ jobsService:
   annotations: {}
 
   ## @param jobsService.image JobsService image
-  image: docker.io/llamaindex/llamacloud-backend:0.9.2
+  image: docker.io/llamaindex/llamacloud-backend:0.10.0
 
   ## @param jobsService.imagePullPolicy JobsService image pull policy
   # @schema enum: ["", Always, IfNotPresent, Never]
@@ -1191,7 +1405,7 @@ jobsWorker:
   annotations: {}
 
   ## @param jobsWorker.image JobsWorker image
-  image: docker.io/llamaindex/llamacloud-backend:0.9.2
+  image: docker.io/llamaindex/llamacloud-backend:0.10.0
 
   ## @param jobsWorker.imagePullPolicy JobsWorker image pull policy
   # @schema enum: ["", Always, IfNotPresent, Never]
@@ -1262,7 +1476,7 @@ llamaParse:
   annotations: {}
 
   ## @param llamaParse.image LlamaParse image
-  image: docker.io/llamaindex/llamacloud-llamaparse:0.9.2
+  image: docker.io/llamaindex/llamacloud-llamaparse:0.10.0
 
   ## @param llamaParse.imagePullPolicy LlamaParse image pull policy
   # @schema enum: ["", Always, IfNotPresent, Never]
@@ -1333,7 +1547,7 @@ llamaParseOcr:
   annotations: {}
 
   ## @param llamaParseOcr.image LlamaParseOcr image
-  image: docker.io/llamaindex/llamacloud-llamaparse-ocr:0.9.2
+  image: docker.io/llamaindex/llamacloud-llamaparse-ocr:0.10.0
 
   ## @param llamaParseOcr.imagePullPolicy LlamaParseOcr image pull policy
   # @schema enum: ["", Always, IfNotPresent, Never]
@@ -1466,6 +1680,87 @@ llamaParseLayoutDetectionApi:
   ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-volume-storage/
   volumes: []
 
+## @section LlamaParse Form Field Detection API Configuration
+# @schema additionalProperties: false
+llamaParseFormFieldDetectionApi:
+  ## @param llamaParseFormFieldDetectionApi.horizontalPodAutoscalerSpec HorizontalPodAutoScaler configuration
+  ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/
+  horizontalPodAutoscalerSpec: {}
+
+  ## @param llamaParseFormFieldDetectionApi.replicas [nullable] Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set.
+  # @schema type: [integer, "null"];minimum: 0
+  replicas: null
+
+  ## @param llamaParseFormFieldDetectionApi.command Override the container command (entrypoint)
+  command: []
+
+  ## @param llamaParseFormFieldDetectionApi.annotations Annotations added to the llamaParseFormFieldDetectionApi Deployment.
+  annotations: {}
+
+  ## @param llamaParseFormFieldDetectionApi.image Form field detection image
+  ## Leave empty to use docker.io/llamaindex/llamacloud-form-field-detection-api:<chart appVersion>,
+  ## which gains a -cpu TAG suffix when config.parseFormFieldDetection.gpu is false.
+  ## The suffix applies only to that default. An image set here is used as written.
+  image: ""
+
+  ## @param llamaParseFormFieldDetectionApi.imagePullPolicy llamaParseFormFieldDetectionApi image pull policy
+  # @schema enum: ["", Always, IfNotPresent, Never]
+  imagePullPolicy: IfNotPresent
+
+  ## @param llamaParseFormFieldDetectionApi.securityContext Security context for the container
+  securityContext: {}
+
+  ## @param llamaParseFormFieldDetectionApi.serviceAccountAnnotations Annotations to add to the service account
+  serviceAccountAnnotations: {}
+
+  ## @param llamaParseFormFieldDetectionApi.nodeSelector Node labels for pod assignment
+  ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
+  nodeSelector: {}
+
+  ## @param llamaParseFormFieldDetectionApi.tolerations Taints to tolerate on node assignment:
+  ## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+  tolerations: []
+
+  ## @param llamaParseFormFieldDetectionApi.affinity Pod scheduling constraints
+  ## Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
+  affinity: {}
+
+  ## @param llamaParseFormFieldDetectionApi.topologySpreadConstraints Topology Spread Constraints for llamaParseFormFieldDetectionApi pods
+  topologySpreadConstraints: []
+
+  ## @param llamaParseFormFieldDetectionApi.podAnnotations Annotations to add to the resulting Pods of the Deployment.
+  podAnnotations: {}
+
+  ## @param llamaParseFormFieldDetectionApi.podSecurityContext Annotations to add to the resulting Pods of the Deployment.
+  podSecurityContext: {}
+
+  ## @param llamaParseFormFieldDetectionApi.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
+  ## Ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+  resources: {}
+
+  ## @param llamaParseFormFieldDetectionApi.gpuResourceName Kubernetes GPU resource name used when config.parseFormFieldDetection.gpu is true
+  gpuResourceName: nvidia.com/gpu
+
+  ## @param llamaParseFormFieldDetectionApi.gpuCount Number of GPUs requested when config.parseFormFieldDetection.gpu is true
+  # @schema minimum: 1
+  gpuCount: 1
+
+  ## @param llamaParseFormFieldDetectionApi.extraEnvVariables Extra environment variables to add to llamaParseFormFieldDetectionApi pods
+  ## Example:
+  ## extraEnvVars:
+  ##   - name: FOO
+  ##     value: BAR
+  ##
+  extraEnvVariables: []
+
+  ## @param llamaParseFormFieldDetectionApi.volumeMounts List of volumeMounts that can be mounted by containers belonging to the pod
+  ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-volume-storage/
+  volumeMounts: []
+
+  ## @param llamaParseFormFieldDetectionApi.volumes List of volumes that can be mounted by containers belonging to the pod
+  ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-volume-storage/
+  volumes: []
+
 ## @section LlamaParse Layout Detection API V3 Configuration (BYOC)
 # @schema additionalProperties: false
 ## Deprecated: use llamaParseLayoutDetectionApi. This alias remains supported for compatibility.
@@ -1564,7 +1859,7 @@ usage:
   annotations: {}
 
   ## @param usage.image LlamaParseLayoutDetectionApi image
-  image: docker.io/llamaindex/llamacloud-backend:0.9.2
+  image: docker.io/llamaindex/llamacloud-backend:0.10.0
 
   ## @param usage.imagePullPolicy LlamaParseLayoutDetectionApi image pull policy
   # @schema enum: ["", Always, IfNotPresent, Never]
@@ -1638,7 +1933,7 @@ temporalWorkloads:
     annotations: {}
 
     ## @param temporalWorkloads.llamaParse.image temporal llamaparse image
-    image: docker.io/llamaindex/llamacloud-llamaparse:0.9.2
+    image: docker.io/llamaindex/llamacloud-llamaparse:0.10.0
 
     ## @param temporalWorkloads.llamaParse.imagePullPolicy temporal llamaparse image pull policy
     # @schema enum: ["", Always, IfNotPresent, Never]
@@ -1695,13 +1990,12 @@ temporalWorkloads:
     # @schema type: integer;minimum: 0
     terminationGracePeriodSeconds: 960
 
-  ## Quarantine parse worker: the isolated poison-document lane. Rendered only
-  ## when config.parse.quarantineWorkerEnabled is true, so an install that does
-  ## not opt in is byte-identical to before this key existed. Shares every
+  ## Quarantine parse worker, the isolated lane for poison documents. Rendered only
+  ## when config.parse.quarantineWorkerEnabled is true. Shares every
   ## resources/probe/env/envFrom/volume sub-template with llamaParse above; only
   ## the Deployment name, image, pull policy, command and worker role are its own.
-  ## PARSE_WORKER_ROLE=quarantine is set by the chart itself — nothing below needs
-  ## to supply it, and extraEnvVariables are added on top of it.
+  ## The chart sets PARSE_WORKER_ROLE=quarantine itself, and extraEnvVariables are
+  ## added on top of it.
   # @schema additionalProperties: false
   llamaParseQuarantine:
     ## @param temporalWorkloads.llamaParseQuarantine.horizontalPodAutoscalerSpec HorizontalPodAutoScaler configuration
@@ -1719,7 +2013,7 @@ temporalWorkloads:
     annotations: {}
 
     ## @param temporalWorkloads.llamaParseQuarantine.image temporal llamaparse quarantine image
-    image: docker.io/llamaindex/llamacloud-llamaparse:0.9.2
+    image: docker.io/llamaindex/llamacloud-llamaparse:0.10.0
 
     ## @param temporalWorkloads.llamaParseQuarantine.imagePullPolicy temporal llamaparse quarantine image pull policy
     # @schema enum: ["", Always, IfNotPresent, Never]
@@ -1777,9 +2071,8 @@ temporalWorkloads:
     terminationGracePeriodSeconds: 960
 
   ## @section Temporal Workers Configuration
-  ## Consolidated temporal workers using the dynamic worker CLI
-  ## This is a map of worker names to their configurations
-  ## the configuration is the same as above exept for the additional command field
+  ## Consolidated temporal workers using the dynamic worker CLI, keyed by worker name.
+  ## Each takes the same configuration as above plus a command field.
   workers:
     temporal-jobs-worker:
       ## @param temporalWorkloads.workers.temporal-jobs-worker.horizontalPodAutoscalerSpec HorizontalPodAutoScaler configuration
@@ -1790,7 +2083,7 @@ temporalWorkloads:
       annotations: {}
 
       ## @param temporalWorkloads.workers.temporal-jobs-worker.image Frontend image
-      image: docker.io/llamaindex/llamacloud-backend:0.9.2
+      image: docker.io/llamaindex/llamacloud-backend:0.10.0
 
       ## @param temporalWorkloads.workers.temporal-jobs-worker.imagePullPolicy Frontend image pull policy
       # @schema enum: ["", Always, IfNotPresent, Never]

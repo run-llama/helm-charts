@@ -279,3 +279,50 @@ tests:
   asserts:
     - isKind:
         of: Secret
+
+# Every top-level section closes itself with a `# @schema additionalProperties:
+# false` comment that binds to the key BELOW it, so inserting a new section
+# between that comment and its key silently reopens the section it was meant to
+# close. These pin the two sections most recently adjacent to such an insertion.
+- it: rejects an unknown key inside temporalWorkloads
+  set:
+    temporalWorkloads:
+      llamaParseQuarantne:
+        replicas: 1
+  template: ../templates/llamacloud/secrets/license.yaml
+  asserts:
+    - failedTemplate:
+        errorPattern: "at '/temporalWorkloads': additional properties 'llamaParseQuarantne' not allowed"
+
+- it: rejects an unknown key inside the mcp section
+  set:
+    mcp:
+      imagePullPolice: Always
+  template: ../templates/llamacloud/secrets/license.yaml
+  asserts:
+    - failedTemplate:
+        errorPattern: "at '/mcp': additional properties 'imagePullPolice' not allowed"
+
+- it: rejects an unknown key inside config.mcp
+  set:
+    config:
+      mcp:
+        enable: true
+  template: ../templates/llamacloud/secrets/license.yaml
+  asserts:
+    - failedTemplate:
+        errorPattern: "at '/config/mcp': additional properties 'enable' not allowed"
+
+# temporal.disabled was removed: Temporal is required, and a deployment that
+# switched it off routed v1 parse over RabbitMQ, where nothing reports the
+# worker's usage events. `additionalProperties: false` on the temporal block
+# turns a stale values file into a loud upgrade failure rather than a silently
+# unbilled deployment.
+- it: rejects the removed temporal.disabled key
+  set:
+    temporal:
+      disabled: true
+  template: ../templates/llamacloud/secrets/license.yaml
+  asserts:
+    - failedTemplate:
+        errorPattern: "at '/temporal': additional properties 'disabled' not allowed"

@@ -104,12 +104,10 @@ Parameters:
     name: extract-config
 - configMapRef:
     name: urls-config
-{{- /* Index v1 ingestion dispatches v1 parse from this worker, so it needs the
-       Temporal connection whenever v1 parse routes through a workflow. */}}
-{{- if not .root.Values.temporal.disabled }}
+{{- /* Index v1 ingestion dispatches v1 parse from this worker, and v1 parse is
+       always a Temporal workflow, so this worker always needs the connection. */}}
 - configMapRef:
     name: temporal-connection-config
-{{- end }}
 {{- if (include "llamacloud.component.jobsWorker.configMap" $) }}
 - configMapRef:
     name: {{ .component.name }}
@@ -160,7 +158,7 @@ Parameters:
 JOB_CONSUMER_PORT: "80"
 
 MAX_JOBS_IN_EXECUTION_PER_JOB_TYPE: {{ ((.root.Values.config).jobs).maxJobsInExecutionPerJobType | default 10 | quote }}
-MAX_INDEX_JOBS_IN_EXECUTION: {{ ((.root.Values.config).jobs).maxIndexJobsInExecution | default 0 | quote }}
+MAX_INDEX_JOBS_IN_EXECUTION: {{ ((.root.Values.config).jobs).maxIndexJobsInExecution | default 100000 | quote }}
 MAX_DOCUMENT_INGESTION_JOBS_IN_EXECUTION: {{ ((.root.Values.config).jobs).maxDocumentIngestionJobsInExecution | default 1 | quote }}
 INCLUDE_JOB_ERROR_DETAILS: {{ ((.root.Values.config).jobs).includeJobErrorDetails | default "true" | quote }}
 DEFAULT_TRANSFORM_DOCUMENT_TIMEOUT_SECONDS: {{ ((.root.Values.config).jobs).defaultTransformDocumentTimeoutSeconds | default "240" | quote }}

@@ -19,18 +19,20 @@ chart:
 tests:
 # Regression: first install of the chart deadlocked because the search-attributes
 # Job hardcoded `/bin/bash` as the entrypoint, but the configured image
-# (temporalio/admin-tools:1.31.0) ships only busybox sh. The container crash-
+# (temporalio/admin-tools:1.31.2) ships only busybox sh. The container crash-
 # looped with `exec: "/bin/bash": stat /bin/bash: no such file or directory`,
 # the Temporal namespace (named after $Release.Namespace) never got created,
 # and the temporal-parse worker hung on "Namespace ... is not found." The script
 # body is POSIX-compatible, so /bin/sh is the correct shell.
 - it: should invoke /bin/sh, not /bin/bash (admin-tools image is busybox-only)
   set:
+    temporal:
+      deploy: true
     config:
       temporal:
         searchAttributesJob:
           enabled: true
-          image: "temporalio/admin-tools:1.31.0"
+          image: "temporalio/admin-tools:1.31.2"
           attributes:
           - name: Project
             type: Keyword
@@ -44,6 +46,68 @@ tests:
     - notEqual:
         path: .spec.template.spec.containers[0].command[0]
         value: /bin/bash
+
+# temporal.host is empty in subchart mode, so a naive address renders ":7233".
+- it: should address the subchart frontend Service when temporal.deploy is true
+  set:
+    temporal:
+      deploy: true
+    config:
+      temporal:
+        searchAttributesJob:
+          enabled: true
+          attributes:
+          - name: Project
+            type: Keyword
+  template: ../templates/llamacloud/job.yaml
+  asserts:
+    - contains:
+        path: .spec.template.spec.containers[0].env
+        content:
+          name: TEMPORAL_ADDRESS
+          value: "test-release-temporal-subchart-frontend:7233"
+    - contains:
+        path: .spec.template.spec.containers[0].env
+        content:
+          name: TEMPORAL_CLI_ADDRESS
+          value: "test-release-temporal-subchart-frontend:7233"
+
+- it: should address the configured host when temporal.deploy is false
+  set:
+    temporal:
+      deploy: false
+      host: temporal.example.com
+      port: 7233
+    config:
+      temporal:
+        searchAttributesJob:
+          enabled: true
+          attributes:
+          - name: Project
+            type: Keyword
+  template: ../templates/llamacloud/job.yaml
+  asserts:
+    - contains:
+        path: .spec.template.spec.containers[0].env
+        content:
+          name: TEMPORAL_ADDRESS
+          value: "temporal.example.com:7233"
+
+- it: should fail the render when temporal.deploy is false and no host is set
+  set:
+    temporal:
+      deploy: false
+    config:
+      temporal:
+        searchAttributesJob:
+          enabled: true
+          attributes:
+          - name: Project
+            type: Keyword
+  template: ../templates/llamacloud/job.yaml
+  asserts:
+    - failedTemplate:
+        errorMessage: temporal.host and temporal.port are required when temporal.deploy is false
 
 - it: should not render when searchAttributesJob is disabled
   set:

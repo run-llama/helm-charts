@@ -189,12 +189,6 @@ tests:
     - equal:
         path: .data.IS_DEPLOYED
         value: "true"
-    - equal:
-        path: .data.ALLOWED_INDEX
-        value: "true"
-    - equal:
-        path: .data.PARSE_PREMIUM
-        value: "true"
 
 - it: should create bucket-config ConfigMap with correct bucket names
   set:

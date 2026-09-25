@@ -70,6 +70,37 @@ tests:
           secretRef:
             name: custom-redis-secret
 
+- it: should reference redis-secret in the AMQP LlamaParse deployment
+  set:
+    redis.host: test-redis-host
+    redis.password: test-redis-password
+    config.frontend.enabled: false
+    config.parseOcr.enabled: false
+    config.parseLayoutDetection.enabled: false
+  documentIndex: 3
+  template: ../templates/llamacloud/deployment.yaml
+  asserts:
+    - contains:
+        path: .spec.template.spec.containers[0].envFrom
+        content:
+          secretRef:
+            name: redis-secret
+
+- it: should use the custom redis secret in the Temporal LlamaParse deployment
+  set:
+    redis.secret: custom-redis-secret
+    config.frontend.enabled: false
+    config.parseOcr.enabled: false
+    config.parseLayoutDetection.enabled: false
+  documentIndex: 5
+  template: ../templates/llamacloud/deployment.yaml
+  asserts:
+    - contains:
+        path: .spec.template.spec.containers[0].envFrom
+        content:
+          secretRef:
+            name: custom-redis-secret
+
 - it: should reference redis-secret in jobs-service deployment
   set:
     redis.host: test-redis-host

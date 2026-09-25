@@ -1,0 +1,238 @@
+suite: mcp-tests
+
+templates:
+- ../templates/llamacloud/deployment.yaml
+- ../templates/llamacloud/service.yaml
+- ../templates/llamacloud/configmap.yaml
+
+release:
+  name: test-release
+  namespace: test-namespace
+
+capabilities:
+  majorVersion: 1
+  minorVersion: 31
+  apiVersions:
+    - apps/v1
+    - autoscaling/v2
+
+chart:
+  appVersion: 0.0.0
+
+set: &required
+  config:
+    mcp:
+      enabled: true
+    frontend:
+      enabled: false
+    parseOcr:
+      enabled: false
+    parseLayoutDetection:
+      enabled: false
+  redis:
+    host: test-redis
+    port: "6379"
+    password: test-pass
+  postgresql:
+    host: test-pg
+    port: "5432"
+    username: test-user
+    password: test-pass
+    database: test-db
+  mongodb:
+    host: mongodb
+    username: test-mongo-user
+    password: test-mongo-pass
+  rabbitmq:
+    host: test-rabbit
+    username: test-user
+    password: test-pass
+
+tests:
+# The component registry is the only switch: an unregistered workload renders
+# nothing at all, silently, so the off case is asserted as explicitly as the on.
+- it: renders nothing when config.mcp.enabled is false
+  set:
+    config.mcp.enabled: false
+    config.frontend.enabled: false
+    config.parseOcr.enabled: false
+    config.parseLayoutDetection.enabled: false
+    redis.host: test-redis
+    postgresql.host: test-pg
+    postgresql.username: u
+    postgresql.password: p
+    postgresql.database: d
+    mongodb.host: m
+    mongodb.username: u
+    mongodb.password: p
+    rabbitmq.host: r
+    rabbitmq.username: u
+    rabbitmq.password: p
+  asserts:
+    - not: true
+      matchRegex:
+        path: .metadata.name
+        pattern: llamacloud-mcp
+
+- it: renders a Deployment named llamacloud-mcp when enabled
+  set: *required
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: .metadata.name
+    value: llamacloud-mcp
+  asserts:
+    - isKind:
+        of: Deployment
+    - equal:
+        path: .spec.template.spec.containers[0].ports[0].containerPort
+        value: 3000
+
+# The appVersion fallback is covered in image_default_fallback_test.yaml, which
+# empties .image; this only pins the shipped default.
+- it: uses the image pinned in values.yaml by default
+  set: *required
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: .metadata.name
+    value: llamacloud-mcp
+  asserts:
+    - equal:
+        path: .spec.template.spec.containers[0].image
+        value: docker.io/llamaindex/llamacloud-mcp:0.1.0
+
+# All three probes are called unconditionally by the shared deployment template,
+# and the app has no health endpoint other than this one.
+- it: points every probe at /api/healthz
+  set: *required
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: .metadata.name
+    value: llamacloud-mcp
+  asserts:
+    - equal:
+        path: .spec.template.spec.containers[0].livenessProbe.httpGet.path
+        value: /api/healthz
+    - equal:
+        path: .spec.template.spec.containers[0].readinessProbe.httpGet.path
+        value: /api/healthz
+    - equal:
+        path: .spec.template.spec.containers[0].startupProbe.httpGet.path
+        value: /api/healthz
+
+# The server composes its Redis connection from the discrete keys this secret
+# carries; without it the KV store cannot initialise.
+- it: pulls the license and redis secrets
+  set: *required
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: .metadata.name
+    value: llamacloud-mcp
+  asserts:
+    - contains:
+        path: .spec.template.spec.containers[0].envFrom
+        content:
+          secretRef:
+            name: redis-secret
+
+# readOnlyRootFilesystem is the chart default and a Next.js standalone server
+# writes to both of these.
+- it: mounts writable scratch for the Next.js server
+  set: *required
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: .metadata.name
+    value: llamacloud-mcp
+  asserts:
+    - contains:
+        path: .spec.template.spec.containers[0].volumeMounts
+        content:
+          mountPath: /app/.next/cache
+          name: nextjs-cache
+
+- it: defaults to api_key mode against the in-cluster backend
+  set: *required
+  template: ../templates/llamacloud/configmap.yaml
+  documentSelector:
+    path: .metadata.name
+    value: llamacloud-mcp
+  asserts:
+    - equal:
+        path: .data.MCP_AUTH_MODE
+        value: api_key
+    - equal:
+        path: .data.LLAMA_CLOUD_BASE_URL
+        value: http://llamacloud:80
+
+# A public host must still be stated as https; only cluster-internal hosts may
+# be cleartext, and that is enforced in the server, not here.
+- it: honours an explicit LlamaCloud base URL override
+  set:
+    <<: *required
+    config:
+      mcp:
+        enabled: true
+        region: eu
+        llamaCloudBaseUrl: https://llamacloud.customer.internal
+      frontend:
+        enabled: false
+      parseOcr:
+        enabled: false
+      parseLayoutDetection:
+        enabled: false
+  template: ../templates/llamacloud/configmap.yaml
+  documentSelector:
+    path: .metadata.name
+    value: llamacloud-mcp
+  asserts:
+    - equal:
+        path: .data.LLAMA_CLOUD_BASE_URL
+        value: https://llamacloud.customer.internal
+    - equal:
+        path: .data.LLAMA_CLOUD_REGION
+        value: eu
+
+# The frontend image freezes NEXT_PUBLIC_REGION at build time, so without this
+# the web UI offers MCP configuration pointing at the hosted server. Empty is
+# the signal that this deployment has none.
+- it: tells the frontend there is no MCP server by default
+  set:
+    <<: *required
+    config:
+      mcp:
+        enabled: false
+      frontend:
+        enabled: true
+      parseOcr:
+        enabled: false
+      parseLayoutDetection:
+        enabled: false
+  template: ../templates/llamacloud/configmap.yaml
+  documentSelector:
+    path: .metadata.name
+    value: llamacloud-web
+  asserts:
+    - equal:
+        path: .data.PUBLIC_MCP_URL
+        value: ""
+
+- it: passes the configured MCP URL to the frontend
+  set:
+    <<: *required
+    config:
+      mcp:
+        enabled: true
+        publicUrl: https://mcp.customer.example
+      frontend:
+        enabled: true
+      parseOcr:
+        enabled: false
+      parseLayoutDetection:
+        enabled: false
+  template: ../templates/llamacloud/configmap.yaml
+  documentSelector:
+    path: .metadata.name
+    value: llamacloud-web
+  asserts:
+    - equal:
+        path: .data.PUBLIC_MCP_URL
+        value: https://mcp.customer.example

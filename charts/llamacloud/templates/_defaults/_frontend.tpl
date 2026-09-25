@@ -80,6 +80,10 @@ Parameters:
 - root: $
 */}}
 {{ define "llamacloud.component.frontend.env" }}
+{{- if ((.root.Values.config).parseFormFieldDetection).enabled }}
+- name: IS_PARSE_FORMS_ENABLED
+  value: "true"
+{{- end }}
 {{- if (.component).extraEnvVariables }}
 {{ toYaml (.component).extraEnvVariables }}
 {{- end }}
@@ -128,6 +132,18 @@ Parameters:
 {{ define "llamacloud.component.frontend.configMap" }}
 HOSTNAME: 0.0.0.0
 IS_INDEX_V1_ENABLED: "true"
+{{- /* Always emitted, empty included. NEXT_PUBLIC_REGION is frozen into the
+       frontend image, so without this the UI offers MCP configuration pointing
+       at the hosted server, which holds none of this deployment's data. Empty
+       states that there is no MCP server here and hides those entry points. */}}
+PUBLIC_MCP_URL: {{ (((.root.Values.config).mcp).publicUrl) | default "" | quote }}
+{{- /* Comma-separated origins the browser fetches presigned document bytes
+       from, for the CSP connect-src allow-list. Only needed where presigned
+       URLs point straight at the object store: a deployment that routes them
+       through /api/s3-proxy is already covered by the backend origin. */}}
+{{- with (((.root.Values.config).frontend).storageBrowserOrigins) }}
+PUBLIC_STORAGE_ORIGINS: {{ . | quote }}
+{{- end }}
 {{- if (.root.Values.qdrant).enabled }}
 BYOC_HAS_MANAGED_QDRANT: "true"
 {{- end }}

@@ -280,3 +280,28 @@ tests:
     - equal:
         path: .spec.template.spec.containers[0].securityContext.readOnlyRootFilesystem
         value: true
+
+- it: enables the Playground forms toggle in the pod spec when the detector is enabled
+  set:
+    config.parseFormFieldDetection.enabled: true
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-web
+  asserts:
+    - contains:
+        path: spec.template.spec.containers[0].env
+        content:
+          name: IS_PARSE_FORMS_ENABLED
+          value: "true"
+
+- it: leaves the Playground forms toggle disabled without the detector
+  set:
+    config.parseFormFieldDetection.enabled: false
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-web
+  asserts:
+    - notExists:
+        path: spec.template.spec.containers[0].env[?(@.name == "IS_PARSE_FORMS_ENABLED")]

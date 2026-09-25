@@ -257,3 +257,75 @@ tests:
     - equal:
         path: spec.maxReplicas
         value: 10
+
+- it: should use the CPU image when config.parseLayoutDetection.gpu is false and no image is set
+  set:
+    config:
+      frontend:
+        enabled: false
+      parseOcr:
+        enabled: false
+      parseLayoutDetection:
+        enabled: true
+        gpu: false
+    redis:
+      host: test-redis
+      port: "6379"
+      password: test-pass
+    postgresql:
+      host: test-pg
+      port: "5432"
+      username: test-user
+      password: test-pass
+      database: test-db
+    mongodb:
+      host: mongodb
+      username: test-mongo-user
+      password: test-mongo-pass
+    rabbitmq:
+      host: test-rabbit
+      username: test-user
+      password: test-pass
+  template: ../templates/llamacloud/deployment.yaml
+  documentIndex: 4
+  asserts:
+    - matchRegex:
+        path: spec.template.spec.containers[0].image
+        pattern: ^docker\.io/llamaindex/llamacloud-layout-detection-api-v3:.+-cpu$
+
+- it: should not add the CPU suffix to a configured image when config.parseLayoutDetection.gpu is false
+  set:
+    config:
+      frontend:
+        enabled: false
+      parseOcr:
+        enabled: false
+      parseLayoutDetection:
+        enabled: true
+        gpu: false
+    llamaParseLayoutDetectionApi:
+      image: my-registry.example.com/layout:pinned
+    redis:
+      host: test-redis
+      port: "6379"
+      password: test-pass
+    postgresql:
+      host: test-pg
+      port: "5432"
+      username: test-user
+      password: test-pass
+      database: test-db
+    mongodb:
+      host: mongodb
+      username: test-mongo-user
+      password: test-mongo-pass
+    rabbitmq:
+      host: test-rabbit
+      username: test-user
+      password: test-pass
+  template: ../templates/llamacloud/deployment.yaml
+  documentIndex: 4
+  asserts:
+    - equal:
+        path: spec.template.spec.containers[0].image
+        value: my-registry.example.com/layout:pinned

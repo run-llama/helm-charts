@@ -14,4 +14,70 @@ To view LlamaCloud UI in your browser:
 
   kubectl --namespace {{ .Release.Namespace }} port-forward svc/{{ $frontendValues.name }} 3000:80
   {{- end }}
+{{- if ((.Values.config).mcp).enabled }}
+
+MCP server enabled.
+
+  Two things it does not bring with it, both of which look like a working install
+  until someone tries to use it:
+
+  1. The image. `llamacloud-mcp` is released from run-llama/mcp-llamaindex-ai, not
+     as part of a BYOC release, so its tag does not track this chart. If the pod
+     reports ImagePullBackOff, set `mcp.image` to a tag your cluster can pull.
+{{- $mcpIngressHost := (include "llamacloud.mcp.ingressHost" (dict "root" $)) | trim }}
+{{- if not (((.Values.config).mcp).publicUrl) }}
+
+  2. The web UI will not mention MCP. `config.mcp.publicUrl` is empty, and the UI
+     only offers client configuration when it knows a URL your users' agents can
+     reach — which is not the in-cluster address the server is called on. Set it
+     to the external URL once you have routed one, or leave it empty if you only
+     intend in-cluster clients.
+{{- else if $mcpIngressHost }}
+
+  2. DNS and the certificate, which the chart cannot do for you. It routes
+     `{{ $mcpIngressHost }}` to the `llamacloud-mcp` Service, so that name has to
+     resolve to the same ingress as `{{ .Values.ingress.host }}`
+     {{- if .Values.ingress.tlsSecretName }}, and `{{ .Values.ingress.tlsSecretName }}`
+     has to cover both names — one certificate serves both{{- end }}.
+
+     That rule shares the Ingress object with the web UI, so anything in
+     `ingress.annotations` applies to MCP too, and the reverse: routing MCP sets
+     `proxy-read-timeout: 600` on the whole Ingress, because a tool call holds one
+     request open for a whole job and the usual 60s would cut a long Parse off
+     while it kept running and billing. Set that key in `ingress.annotations` to
+     raise it, or to "" to drop it — `commonAnnotations` will not do, it loses to
+     the default.
+{{- else if not .Values.ingress.enabled }}
+
+  2. Nothing routes `{{ ((.Values.config).mcp).publicUrl }}` yet. This release has
+     no Ingress at all (`ingress.enabled` is false), so that URL has to reach the
+     `llamacloud-mcp` Service on port 80 by whatever you put in front of the
+     cluster.
+{{- else }}
+
+  2. The Service has no route of its own. `{{ ((.Values.config).mcp).publicUrl }}`
+     is on the same host as the web UI, and the chart adds no rule there, because
+     MCP answers on paths the frontend already owns — so send it to the
+     `llamacloud-mcp` Service yourself, and put a read timeout well above 60s on
+     whatever rule you add: one tool call holds a request open for a whole job.
+     Giving MCP its own hostname is the routed path: the chart adds a rule for a
+     `config.mcp.publicUrl` whose host differs from `ingress.host`, and sets that
+     timeout itself.
+{{- end }}
+{{- end }}
+{{- if (.Values.rabbitmq).enabled }}
+
+DEPRECATION: this release still has RabbitMQ enabled.
+
+  Temporal is the job transport. Parse, Extract and Index already run on it, and a
+  future release drops the AMQP code path, so RabbitMQ has to go before then. The
+  only feature still using it is the legacy Pipelines surface.
+
+  Check whether you are affected:
+
+    curl -s "$HOST/api/v1/pipelines" -H "Authorization: Bearer $LLAMA_CLOUD_API_KEY" | jq 'length'
+
+  A count of 0 means you can switch it off now, with -f examples/profiles/no-rabbitmq.yaml.
+  See the "Migrating off RabbitMQ" guide in the self-hosting docs.
+{{- end }}
 

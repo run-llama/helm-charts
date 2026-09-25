@@ -49,20 +49,6 @@ tests:
         path: .spec.template.spec.containers[0].command[0]
         value: /bin/bash
 
-- it: temporal.llamaParse deployment does NOT render when temporal is disabled
-  set:
-    temporal:
-      disabled: true
-      deploy: false
-  template: ../templates/llamacloud/deployment.yaml
-  documentSelector:
-    path: metadata.name
-    value: llamacloud-temporal-parse
-    skipEmptyTemplates: true
-  asserts:
-    - hasDocuments:
-        count: 0
-
 - it: default workers map produces a Deployment named temporal-jobs-worker
   template: ../templates/llamacloud/deployment.yaml
   documentSelector:
@@ -154,17 +140,3 @@ tests:
     - equal:
         path: .spec.template.spec.containers[0].image
         value: docker.io/llamaindex/llamacloud-llamaparse:custom-2.0.0
-
-- it: no temporal worker deployments render when temporal is disabled
-  set:
-    temporal:
-      disabled: true
-      deploy: false
-  template: ../templates/llamacloud/deployment.yaml
-  asserts:
-    # With temporal disabled, 8 non-temporal components remain:
-    # backend, jobsService, jobsWorker, llamaParse, usage (always),
-    # plus frontend, llamaParseOcr, llamaParseLayoutDetectionApi (default enabled).
-    # The temporal.llamaParse worker and every temporalWorkloads.workers entry are absent.
-    - hasDocuments:
-        count: 8

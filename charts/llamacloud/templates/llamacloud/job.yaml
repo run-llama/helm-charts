@@ -1,15 +1,6 @@
-{{- if and (((.Values.config).temporal).searchAttributesJob).enabled (not .Values.temporal.disabled) }}
-{{- /* Determine temporal host and port based on deploy mode */}}
-{{- $temporalHost := "" }}
-{{- $temporalPort := "" }}
+{{- if (((.Values.config).temporal).searchAttributesJob).enabled }}
 {{- $isTemporalDeployed := .Values.temporal.deploy }}
-{{- if $isTemporalDeployed }}
-{{- $temporalHost = printf "%s-temporal-subchart-frontend" .Release.Name }}
-{{- $temporalPort = "7233" }}
-{{- else }}
-{{- $temporalHost = .Values.temporal.host }}
-{{- $temporalPort = .Values.temporal.port | toString }}
-{{- end }}
+{{- $temporalEndpoint := include "llamacloud.temporal.endpoint" . }}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -37,7 +28,7 @@ spec:
         imagePullPolicy: IfNotPresent
         command:
           # Use /bin/sh, not /bin/bash: the configured image
-          # (temporalio/admin-tools:1.31.0 by default) ships only busybox sh.
+          # (temporalio/admin-tools:1.31.2 by default) ships only busybox sh.
           # The script body below is POSIX-compatible.
           - /bin/sh
           - -c
@@ -112,7 +103,7 @@ spec:
             echo "Search attributes setup completed"
         env:
         - name: TEMPORAL_CLI_ADDRESS
-          value: {{ printf "%s:%s" $temporalHost $temporalPort | quote }}
+          value: {{ $temporalEndpoint | quote }}
         - name: TEMPORAL_ADDRESS
-          value: {{ printf "%s:%s" $temporalHost $temporalPort | quote }}
+          value: {{ $temporalEndpoint | quote }}
 {{- end }}

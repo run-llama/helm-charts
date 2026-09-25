@@ -178,6 +178,7 @@ Parameters:
 {{- end }}
 - secretRef:
     name: bucket-secret
+{{- include "llamacloud.secrets.redis" .root }}
 {{- include "llamacloud.secrets.rabbitmq" .root }}
 {{- include "llamacloud.secrets.openAi" .root }}
 {{- include "llamacloud.secrets.anthropic" .root }}
@@ -206,7 +207,6 @@ Parameters:
 */}}
 {{ define "llamacloud.component.temporal.llamaParse.configMap" }}
 DEBUG_MODE: {{ ((.root.Values.config).parse).debugMode | default false | quote }}
-MAX_QUEUE_CONCURRENCY: {{ ((.root.Values.config).parse).maxQueueConcurrency | default 1 | quote }}
 
 {{- if ((.root.Values.config).parse).preferedPremiumModel }}
 PREFERED_PREMIUM_MODE_MODEL: {{ ((.root.Values.config).parse).preferedPremiumModel | quote }}

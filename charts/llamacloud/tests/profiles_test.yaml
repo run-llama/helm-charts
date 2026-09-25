@@ -1,10 +1,12 @@
 suite: profile-preset-tests
 
-# examples/profiles/minimal.yaml and full.yaml are preset overlays. minimal =
+# examples/profiles/{minimal,no-rabbitmq,full}.yaml are preset overlays. minimal =
 # parse+extract-only (no mongo, no rabbit, v1 parse worker scaled to 0, index
-# destination pinned to postgres). full = every store on (identical to no
-# overlay). These tests assert the presets resolve to the intended shape;
-# store-optionality mechanics themselves are covered by store_optionality_test.
+# destination pinned to postgres). no-rabbitmq = the RabbitMQ half of minimal,
+# for deployments decommissioning AMQP while keeping MongoDB. full = every store
+# on (identical to no overlay). These tests assert the presets resolve to the
+# intended shape; store-optionality mechanics themselves are covered by
+# store_optionality_test.
 
 templates:
 - ../templates/llamacloud/configmaps/common.yaml
@@ -108,6 +110,80 @@ tests:
     matchMany: true
   asserts:
     - notContains:
+        path: spec.template.spec.containers[0].envFrom
+        content:
+          secretRef:
+            name: mongodb-secret
+    - notContains:
+        path: spec.template.spec.containers[0].envFrom
+        content:
+          secretRef:
+            name: rabbitmq-secret
+
+# ---------------------------------------------------------------------------
+# no-rabbitmq.yaml: AMQP off, MongoDB deliberately left on
+# ---------------------------------------------------------------------------
+- it: no-rabbitmq preset disables AMQP but keeps MongoDB
+  values:
+    - ../examples/profiles/no-rabbitmq.yaml
+  template: ../templates/llamacloud/configmaps/common.yaml
+  asserts:
+    - equal:
+        path: .data.AMQP_DISABLED
+        value: "true"
+    # The whole point of this preset over minimal.yaml: v1 parse and Extract
+    # still write job records to Mongo, so it must survive.
+    - notExists:
+        path: .data.MONGO_DISABLED
+
+- it: no-rabbitmq preset does not need an index v1 transport override
+  values:
+    - ../examples/profiles/no-rabbitmq.yaml
+  template: ../templates/llamacloud/configmaps/common.yaml
+  asserts:
+    - notExists:
+        path: .data.INDEX_V1_PIPELINE_SYNC_TEMPORAL_PERCENTAGE
+
+- it: no-rabbitmq preset scales the v1 AMQP parse worker to zero
+  values:
+    - ../examples/profiles/no-rabbitmq.yaml
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-parse
+  asserts:
+    - equal:
+        path: spec.replicas
+        value: 0
+
+- it: no-rabbitmq preset drops the jobs-worker AMQP consumer but keeps the Temporal one
+  values:
+    - ../examples/profiles/no-rabbitmq.yaml
+  template: ../templates/llamacloud/deployment.yaml
+  asserts:
+    - not: true
+      containsDocument:
+        any: true
+        kind: Deployment
+        apiVersion: apps/v1
+        name: llamacloud-worker
+        namespace: test-namespace
+    - containsDocument:
+        any: true
+        kind: Deployment
+        apiVersion: apps/v1
+        name: temporal-jobs-worker
+        namespace: test-namespace
+
+- it: no-rabbitmq preset mounts the mongodb secret but not the rabbitmq one
+  values:
+    - ../examples/profiles/no-rabbitmq.yaml
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud
+  asserts:
+    - contains:
         path: spec.template.spec.containers[0].envFrom
         content:
           secretRef:

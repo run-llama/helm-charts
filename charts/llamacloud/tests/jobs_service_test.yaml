@@ -30,6 +30,18 @@ chart:
   appVersion: 0.0.0
 
 tests:
+- it: gives jobs-service the shared Temporal connection and queue routing configuration
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-operator
+  asserts:
+    - contains:
+        path: spec.template.spec.containers[0].envFrom
+        content:
+          configMapRef:
+            name: temporal-connection-config
+
 - it: should be a Deployment
   set:
     jobsService.image: docker.io/llamaindex/llamacloud-jobs-service:latest

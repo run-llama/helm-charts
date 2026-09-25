@@ -1,0 +1,336 @@
+suite: llamaparse-form-field-detection-api-tests
+
+# In-cluster form-field detection (FFDetr).
+#
+# The component is opt-in: an install that never sets
+# config.parseFormFieldDetection.enabled renders exactly what it rendered before
+# the key existed. The first two cases are a PAIR and only mean something
+# together — the disabled case counts the Deployments this values set produces
+# without the component, the enabled case counts one more and names it. Deleting
+# the activation branch in _common.tpl would leave the disabled case passing and
+# break the enabled one, which is the point: a lone absence assertion is
+# satisfied just as well by a component that can never render at all.
+
+templates:
+- ../templates/llamacloud/deployment.yaml
+- ../templates/llamacloud/configmaps/urls.yaml
+
+release:
+  name: test-release
+  namespace: test-namespace
+
+capabilities:
+  majorVersion: 1
+  minorVersion: 31
+  apiVersions:
+    - apps/v1
+    - v1
+
+# Pinned so the image-default cases assert a stable tag instead of tracking
+# Chart.yaml's appVersion, which moves on every release.
+chart:
+  appVersion: 9.9.9
+
+# Every suite in this directory needs the datastore stanza: without it the chart
+# refuses to render with "redis.host cannot be empty", for reasons that have
+# nothing to do with what is under test here. Set once at suite level so each
+# case below carries only the values it is actually about.
+set:
+  config:
+    frontend:
+      enabled: false
+  redis:
+    host: test-redis
+    port: "6379"
+    password: test-pass
+  postgresql:
+    host: test-pg
+    port: "5432"
+    username: test-user
+    password: test-pass
+    database: test-db
+  mongodb:
+    host: mongodb
+    username: test-mongo-user
+    password: test-mongo-pass
+  rabbitmq:
+    host: test-rabbit
+    username: test-user
+    password: test-pass
+
+tests:
+- it: should not render a form field detection Deployment with the default (disabled) config
+  template: ../templates/llamacloud/deployment.yaml
+  asserts:
+    # Applies to every rendered Deployment, so it fails if any of them is the
+    # component. Paired with the document count, which the enabled case below
+    # raises by exactly one.
+    - notEqual:
+        path: .metadata.name
+        value: llamacloud-form-field-detection
+    - hasDocuments:
+        count: 9
+
+- it: should render the Deployment on port 8000 with no GPU when config.parseFormFieldDetection.enabled is true and gpu is false
+  set:
+    config:
+      parseFormFieldDetection:
+        enabled: true
+        gpu: false
+  template: ../templates/llamacloud/deployment.yaml
+  asserts:
+    - hasDocuments:
+        count: 10
+    - equal:
+        path: .metadata.name
+        value: llamacloud-form-field-detection
+      documentSelector:
+        path: metadata.name
+        value: llamacloud-form-field-detection
+    - equal:
+        path: .spec.template.spec.containers[0].ports[0].containerPort
+        value: 8000
+      documentSelector:
+        path: metadata.name
+        value: llamacloud-form-field-detection
+    - notExists:
+        path: .spec.template.spec.containers[0].resources.requests["nvidia.com/gpu"]
+      documentSelector:
+        path: metadata.name
+        value: llamacloud-form-field-detection
+    - notExists:
+        path: .spec.template.spec.containers[0].resources.limits["nvidia.com/gpu"]
+      documentSelector:
+        path: metadata.name
+        value: llamacloud-form-field-detection
+
+# The three probes answer different questions and must not share an endpoint.
+# /health reports 503 for as long as a timed-out request's inference still holds
+# the service's single worker, which is what readiness wants (the pod can accept
+# nothing) and what startup wants (the model is loaded once it answers). That
+# window is recoverable and bounded by the service's WORKER_TIMEOUT, 300 s by
+# default -- far longer than this liveness budget of periodSeconds 15 x
+# failureThreshold 5 = 75 s. Pointed at /health, liveness would restart a pod
+# that was going to recover on its own, so it points at /live, which is 200
+# whenever the process is up. The unrecoverable case is handled inside the
+# service, which exits at its drain deadline and fails liveness that way.
+- it: should probe liveness on /live and readiness and startup on /health
+  set:
+    config:
+      parseFormFieldDetection:
+        enabled: true
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-form-field-detection
+  asserts:
+    - equal:
+        path: .spec.template.spec.containers[0].livenessProbe.httpGet.path
+        value: /live
+    - equal:
+        path: .spec.template.spec.containers[0].readinessProbe.httpGet.path
+        value: /health
+    - equal:
+        path: .spec.template.spec.containers[0].startupProbe.httpGet.path
+        value: /health
+
+- it: should request a GPU when config.parseFormFieldDetection.gpu is true
+  set:
+    config:
+      parseFormFieldDetection:
+        enabled: true
+        gpu: true
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-form-field-detection
+  asserts:
+    - equal:
+        path: .spec.template.spec.containers[0].resources.requests["nvidia.com/gpu"]
+        value: 1
+    - equal:
+        path: .spec.template.spec.containers[0].resources.limits["nvidia.com/gpu"]
+        value: 1
+
+- it: should render custom GPU count when config.parseFormFieldDetection.gpu is true
+  set:
+    config:
+      parseFormFieldDetection:
+        enabled: true
+        gpu: true
+    llamaParseFormFieldDetectionApi:
+      gpuCount: 2
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-form-field-detection
+  asserts:
+    - equal:
+        path: .spec.template.spec.containers[0].resources.requests["nvidia.com/gpu"]
+        value: 2
+    - equal:
+        path: .spec.template.spec.containers[0].resources.limits["nvidia.com/gpu"]
+        value: 2
+
+- it: should render custom GPU resource name when config.parseFormFieldDetection.gpu is true
+  set:
+    config:
+      parseFormFieldDetection:
+        enabled: true
+        gpu: true
+    llamaParseFormFieldDetectionApi:
+      gpuResourceName: example.com/gpu
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-form-field-detection
+  asserts:
+    - equal:
+        path: .spec.template.spec.containers[0].resources.requests["example.com/gpu"]
+        value: 1
+    - equal:
+        path: .spec.template.spec.containers[0].resources.limits["example.com/gpu"]
+        value: 1
+
+# The -cpu suffix belongs to the TAG, not the repository. ECR keeps separate
+# repositories per variant, but utils/byoc/tag-push-byoc-images.sh copies the
+# -cpu ECR repository onto the SAME Docker Hub repository under a suffixed tag,
+# so a repository-suffixed default would name something nothing publishes.
+- it: should default the image to the -cpu tag when gpu is false
+  set:
+    config:
+      parseFormFieldDetection:
+        enabled: true
+        gpu: false
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-form-field-detection
+  asserts:
+    - equal:
+        path: .spec.template.spec.containers[0].image
+        value: docker.io/llamaindex/llamacloud-form-field-detection-api:9.9.9-cpu
+
+- it: should default the image to an unsuffixed tag when gpu is true
+  set:
+    config:
+      parseFormFieldDetection:
+        enabled: true
+        gpu: true
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-form-field-detection
+  asserts:
+    - equal:
+        path: .spec.template.spec.containers[0].image
+        value: docker.io/llamaindex/llamacloud-form-field-detection-api:9.9.9
+
+# A user-supplied image is rendered exactly, INCLUDING in CPU mode where the
+# default carries a suffix. This is the deliberate divergence from the OCR
+# helper, which appends its suffix to a user image too and so rewrites a pinned
+# reference into one that may not exist.
+- it: should keep a custom image unsuffixed in CPU mode
+  set:
+    config:
+      parseFormFieldDetection:
+        enabled: true
+        gpu: false
+    llamaParseFormFieldDetectionApi:
+      image: example.com/ffdetr:pinned
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-form-field-detection
+  asserts:
+    - equal:
+        path: .spec.template.spec.containers[0].image
+        value: example.com/ffdetr:pinned
+
+- it: should publish FFDETR_ENDPOINT and no token key when the component is enabled
+  set:
+    config:
+      parseFormFieldDetection:
+        enabled: true
+  template: ../templates/llamacloud/configmaps/urls.yaml
+  asserts:
+    - equal:
+        path: .data.FFDETR_ENDPOINT
+        value: "http://llamacloud-form-field-detection:80"
+    - equal:
+        path: .data.FORM_BBOX_ATTRIBUTION
+        value: "model_overlay"
+    # The in-cluster detector is reached over cluster networking with no
+    # credential at all; the worker's self-hosted route type carries no token
+    # field. A token key here would be a credential nothing consumes.
+    - isNull:
+        path: .data.FFDETR_MODAL_TOKEN
+    - isNull:
+        path: .data.FFDETR_TOKEN
+
+- it: should omit FFDETR_ENDPOINT entirely when the component is disabled
+  template: ../templates/llamacloud/configmaps/urls.yaml
+  asserts:
+    - isNull:
+        path: .data.FFDETR_ENDPOINT
+    - isNull:
+        path: .data.FFDETR_MODAL_TOKEN
+    - isNull:
+        path: .data.FFDETR_TOKEN
+    - isNull:
+        path: .data.FORM_BBOX_ATTRIBUTION
+
+# build/check_chart_resource_requests.py fails the byoc-build workflow for any
+# rendered container whose effective resources.requests is absent or empty, for
+# the whole chart rather than just this component. The values default is `{}`,
+# so the numbers below come from the component's .resources define.
+- it: should give the container scheduler-visible requests when resources is left at its default
+  set:
+    config:
+      parseFormFieldDetection:
+        enabled: true
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-form-field-detection
+  asserts:
+    - isNotEmpty:
+        path: .spec.template.spec.containers[0].resources.requests
+    - equal:
+        path: .spec.template.spec.containers[0].resources.requests.cpu
+        value: 1
+    - equal:
+        path: .spec.template.spec.containers[0].resources.requests.memory
+        value: 8Gi
+    - equal:
+        path: .spec.template.spec.containers[0].resources.limits.cpu
+        value: 2
+    - equal:
+        path: .spec.template.spec.containers[0].resources.limits.memory
+        value: 16Gi
+
+# deployment.yaml dispatches probes by computed define name from the component's
+# `prefix` key, so a prefix that is unset or names a define set that does not
+# exist fails here rather than rendering a probe-less pod.
+- it: should render all three probes through the component prefix dispatch
+  set:
+    config:
+      parseFormFieldDetection:
+        enabled: true
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-form-field-detection
+  asserts:
+    - isNotEmpty:
+        path: .spec.template.spec.containers[0].livenessProbe
+    - isNotEmpty:
+        path: .spec.template.spec.containers[0].readinessProbe
+    - isNotEmpty:
+        path: .spec.template.spec.containers[0].startupProbe
+    # The path proves the dispatch picked THIS component's define set rather than
+    # another component's. The probe contract itself is asserted above, in the
+    # case that pins all three paths.
+    - equal:
+        path: .spec.template.spec.containers[0].livenessProbe.httpGet.path
+        value: /live

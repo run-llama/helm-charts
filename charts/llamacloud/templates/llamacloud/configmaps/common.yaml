@@ -8,12 +8,6 @@ metadata:
 data:
   IS_DEPLOYED: "true"
   DEPLOYMENT_MODE: "prod"
-  PARSE_PREMIUM: "true"
-  ALLOWED_INDEX: "true"
-  ## Parse v1 dispatch transport. 100 runs every v1 parse job as a Temporal
-  ## parse-job-workflow; 0 keeps the legacy RabbitMQ publish, which is the only
-  ## transport left when Temporal (and with it the parse workers) is switched off.
-  V1_PARSE_VIA_TEMPORAL_PERCENTAGE: {{ ternary "0" "100" .Values.temporal.disabled | quote }}
 {{- if not (.Values.mongodb).enabled }}
   MONGO_DISABLED: "true"
 {{- end }}
@@ -31,4 +25,18 @@ data:
 {{- end }}
 {{- if not (kindIs "invalid" (((.Values.config).usageCaps).defaultMonthlyCredits)) }}
   DEFAULT_MONTHLY_USAGE_CREDITS: {{ ((.Values.config).usageCaps).defaultMonthlyCredits | quote }}
+{{- end }}
+{{- if ((.Values.config).jobs).enableLimits }}
+  ## The switch picks which semaphore admits a job. The limits are quota
+  ## defaults and render either way, since they mean nothing until this is on.
+  JOB_SEMAPHORE_MODE: "v2"
+{{- end }}
+{{- if not (kindIs "invalid" (((.Values.config).jobs).maxConcurrentJobsPerProject)) }}
+  PROJECT_MAX_CONCURRENCY: {{ ((.Values.config).jobs).maxConcurrentJobsPerProject | quote }}
+{{- end }}
+{{- if not (kindIs "invalid" (((.Values.config).usageCaps).readFromRollup)) }}
+  USAGE_CAP_READ_FROM_ROLLUP: {{ ((.Values.config).usageCaps).readFromRollup | quote }}
+{{- end }}
+{{- if not (kindIs "invalid" (((.Values.config).usageCaps).executionGateSkipCache)) }}
+  USAGE_CAP_EXECUTION_GATE_SKIP_CACHE: {{ ((.Values.config).usageCaps).executionGateSkipCache | quote }}
 {{- end }}
