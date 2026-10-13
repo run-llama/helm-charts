@@ -130,7 +130,6 @@ Parameters:
     name: db-pool-config
 {{- include "llamacloud.secrets.postgresql" .root }}
 {{- include "llamacloud.secrets.mongodb" .root }}
-{{- include "llamacloud.secrets.rabbitmq" .root }}
 {{- include "llamacloud.secrets.redis" .root }}
 {{- include "llamacloud.secrets.qdrant" .root }}
 {{- include "llamacloud.secrets.basicAuth" .root }}

@@ -40,21 +40,6 @@ MongoDB Secret envFrom (emits nothing when mongodb is disabled)
 {{- end }}
 
 {{/*
-RabbitMQ Secret envFrom (emits nothing when rabbitmq is disabled)
-*/}}
-{{ define "llamacloud.secrets.rabbitmq" }}
-{{- if (.Values.rabbitmq).enabled }}
-{{- if (.Values.rabbitmq).secret }}
-- secretRef:
-    name: {{ .Values.rabbitmq.secret }}
-{{- else }}
-- secretRef:
-    name: "rabbitmq-secret"
-{{- end }}
-{{- end }}
-{{- end }}
-
-{{/*
 Redis Secret envFrom
 */}}
 {{ define "llamacloud.secrets.redis" }}

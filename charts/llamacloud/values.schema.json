@@ -311,6 +311,12 @@
                         "enabled": {
                             "type": "boolean"
                         },
+                        "enforceConnectSrc": {
+                            "type": [
+                                "boolean",
+                                "null"
+                            ]
+                        },
                         "storageBrowserOrigins": {
                             "type": "string"
                         }
@@ -1157,76 +1163,6 @@
             },
             "additionalProperties": false
         },
-        "jobsWorker": {
-            "type": "object",
-            "properties": {
-                "affinity": {
-                    "type": "object"
-                },
-                "annotations": {
-                    "type": "object"
-                },
-                "command": {
-                    "type": "array"
-                },
-                "extraEnvVariables": {
-                    "type": "array"
-                },
-                "horizontalPodAutoscalerSpec": {
-                    "type": "object"
-                },
-                "image": {
-                    "type": "string"
-                },
-                "imagePullPolicy": {
-                    "type": "string",
-                    "enum": [
-                        "",
-                        "Always",
-                        "IfNotPresent",
-                        "Never"
-                    ]
-                },
-                "nodeSelector": {
-                    "type": "object"
-                },
-                "podAnnotations": {
-                    "type": "object"
-                },
-                "podSecurityContext": {
-                    "type": "object"
-                },
-                "replicas": {
-                    "type": [
-                        "integer",
-                        "null"
-                    ],
-                    "minimum": 0
-                },
-                "resources": {
-                    "type": "object"
-                },
-                "securityContext": {
-                    "type": "object"
-                },
-                "serviceAccountAnnotations": {
-                    "type": "object"
-                },
-                "tolerations": {
-                    "type": "array"
-                },
-                "topologySpreadConstraints": {
-                    "type": "array"
-                },
-                "volumeMounts": {
-                    "type": "array"
-                },
-                "volumes": {
-                    "type": "array"
-                }
-            },
-            "additionalProperties": false
-        },
         "kube-prometheus-stack-subchart": {
             "type": "object",
             "properties": {
@@ -1297,76 +1233,6 @@
                 },
                 "useBackendPublicUrl": {
                     "type": "boolean"
-                }
-            },
-            "additionalProperties": false
-        },
-        "llamaParse": {
-            "type": "object",
-            "properties": {
-                "affinity": {
-                    "type": "object"
-                },
-                "annotations": {
-                    "type": "object"
-                },
-                "command": {
-                    "type": "array"
-                },
-                "extraEnvVariables": {
-                    "type": "array"
-                },
-                "horizontalPodAutoscalerSpec": {
-                    "type": "object"
-                },
-                "image": {
-                    "type": "string"
-                },
-                "imagePullPolicy": {
-                    "type": "string",
-                    "enum": [
-                        "",
-                        "Always",
-                        "IfNotPresent",
-                        "Never"
-                    ]
-                },
-                "nodeSelector": {
-                    "type": "object"
-                },
-                "podAnnotations": {
-                    "type": "object"
-                },
-                "podSecurityContext": {
-                    "type": "object"
-                },
-                "replicas": {
-                    "type": [
-                        "integer",
-                        "null"
-                    ],
-                    "minimum": 0
-                },
-                "resources": {
-                    "type": "object"
-                },
-                "securityContext": {
-                    "type": "object"
-                },
-                "serviceAccountAnnotations": {
-                    "type": "object"
-                },
-                "tolerations": {
-                    "type": "array"
-                },
-                "topologySpreadConstraints": {
-                    "type": "array"
-                },
-                "volumeMounts": {
-                    "type": "array"
-                },
-                "volumes": {
-                    "type": "array"
                 }
             },
             "additionalProperties": false
@@ -1858,41 +1724,6 @@
                     "type": "string"
                 },
                 "url": {
-                    "type": "string"
-                }
-            },
-            "additionalProperties": false
-        },
-        "rabbitmq": {
-            "type": "object",
-            "properties": {
-                "connectionString": {
-                    "type": "string"
-                },
-                "enabled": {
-                    "type": "boolean"
-                },
-                "host": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string"
-                },
-                "port": {
-                    "type": "string"
-                },
-                "scheme": {
-                    "type": "string",
-                    "enum": [
-                        "",
-                        "amqp",
-                        "amqps"
-                    ]
-                },
-                "secret": {
-                    "type": "string"
-                },
-                "username": {
                     "type": "string"
                 }
             },

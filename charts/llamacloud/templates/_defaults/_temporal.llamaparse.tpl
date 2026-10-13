@@ -179,7 +179,6 @@ Parameters:
 - secretRef:
     name: bucket-secret
 {{- include "llamacloud.secrets.redis" .root }}
-{{- include "llamacloud.secrets.rabbitmq" .root }}
 {{- include "llamacloud.secrets.openAi" .root }}
 {{- include "llamacloud.secrets.anthropic" .root }}
 {{- include "llamacloud.secrets.gemini" .root }}

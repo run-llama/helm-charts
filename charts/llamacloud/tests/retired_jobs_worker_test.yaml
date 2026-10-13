@@ -1,4 +1,4 @@
-suite: jobs-worker-tests
+suite: retired-jobs-worker-tests
 
 templates:
 - ../templates/llamacloud/configmaps/common.yaml
@@ -26,24 +26,6 @@ chart:
   appVersion: 0.0.0
 
 tests:
-- it: should be a Deployment
-  set:
-    config.frontend.enabled: false
-    config.parseOcr.enabled: false
-    config.parseLayoutDetection.enabled: false
-    jobsWorker.image: "docker.io/llamaindex/llamacloud-jobs-worker:latest"
-  template: ../templates/llamacloud/deployment.yaml
-  documentIndex: 2
-  asserts:
-    - isKind:
-        of: Deployment
-    - equal:
-        path: .spec.template.spec.containers[0].image
-        value: docker.io/llamaindex/llamacloud-jobs-worker:latest
-    - equal:
-        path: .spec.template.spec.containers[0].env[?(@.name == "UVICORN_PORT")].value
-        value: "8001"
-
 - it: should create common-config ConfigMap with IS_DEPLOYED
   templates:
     - ../templates/llamacloud/configmaps/common.yaml
@@ -122,14 +104,19 @@ tests:
         value: "200"
 
 
-- it: mounts temporal-connection-config so Index v1 ingestion can dispatch v1 parse
+- it: does not create the retired AMQP consumer resources
   template: ../templates/llamacloud/deployment.yaml
-  documentSelector:
-    path: metadata.name
-    value: llamacloud-worker
   asserts:
-    - contains:
-        path: .spec.template.spec.containers[0].envFrom
-        content:
-          configMapRef:
-            name: temporal-connection-config
+    - not: true
+      containsDocument:
+        kind: Deployment
+        apiVersion: apps/v1
+        name: llamacloud-worker
+        namespace: test-namespace
+        any: true
+    - containsDocument:
+        kind: Deployment
+        apiVersion: apps/v1
+        name: temporal-jobs-worker
+        namespace: test-namespace
+        any: true

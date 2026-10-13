@@ -21,13 +21,6 @@ mongodb:
   password: "<REPLACE-WITH-PASSWORD>"
   # secret: "<uncomment-if-using-existing-secret>"
 
-rabbitmq:
-  host: "<REPLACE-WITH-RABBITMQ-HOST>"
-  port: "5672"
-  username: "<REPLACE-WITH-USERNAME>"
-  password: "<REPLACE-WITH-PASSWORD>"
-  # secret: "<uncomment-if-using-existing-secret>"
-
 redis:
   host: "<REPLACE-WITH-REDIS-HOST>"
   port: "6379"

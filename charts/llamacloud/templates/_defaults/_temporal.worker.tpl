@@ -157,7 +157,6 @@ Parameters:
     name: db-pool-config
 {{- include "llamacloud.secrets.postgresql" .root }}
 {{- include "llamacloud.secrets.mongodb" .root }}
-{{- include "llamacloud.secrets.rabbitmq" .root }}
 {{- include "llamacloud.secrets.redis" .root }}
 {{- include "llamacloud.secrets.qdrant" .root }}
 {{- include "llamacloud.secrets.basicAuth" .root }}
@@ -192,7 +191,6 @@ Parameters:
 - root: $
 */}}
 {{ define "llamacloud.component.temporal.worker.configMap" }}
-JOB_CONSUMER_PORT: "80"
 
 {{- /* See LlamaAppSettings.agent_control_plane_backup_enabled. Defaults to
        llamaAgents.deploy (this release renders the control plane, so it owns it),

@@ -141,9 +141,6 @@ tests:
 - it: should retain layout default 736 when workers explicitly override to 640
   set:
     config.parseLayoutDetectionV3.enabled: true
-    llamaParse.extraEnvVariables:
-      - name: LAYOUT_IMAGE_SIZE
-        value: "640"
     temporalWorkloads.llamaParse.extraEnvVariables:
       - name: LAYOUT_IMAGE_SIZE
         value: "640"

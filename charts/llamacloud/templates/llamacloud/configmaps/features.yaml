@@ -8,7 +8,7 @@ metadata:
   labels: {{ include "llamacloud.labels" (dict "root" $) | indent 4 }}
   annotations: {{ include "llamacloud.annotations" (dict "root" $) | indent 4 }}
 data:
-  ## Read by frontend (server-only, non-NEXT_PUBLIC) and backend FeatureFlagSettings
+  ## Read by backend FeatureFlagSettings (gates the agent deployment API)
   IS_AGENT_DEPLOYMENTS_ENABLED: {{ $llamaAgentsEnabled | quote }}
   {{- with (((.Values.config).defaultIndex).destination) }}
   DEFAULT_DIRECTORY_INDEX_DESTINATION: {{ . | quote }}

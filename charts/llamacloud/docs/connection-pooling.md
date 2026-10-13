@@ -7,11 +7,10 @@ one, and the one setting that is mandatory if you add one.
 
 ## Who holds connections
 
-Up to five components run the backend image and each pod holds its own
-PostgreSQL connection pool: `backend`, `jobsService`, `jobsWorker` (only when
-`rabbitmq.enabled` is true), `usage`, and the Temporal workers under
+Each backend pod holds its own PostgreSQL connection pool: `backend`,
+`jobsService`, `usage`, and the Temporal workers under
 `temporalWorkloads.workers`. Their rendered Deployment names are `llamacloud`,
-`llamacloud-operator`, `llamacloud-worker`, `llamacloud-telemetry`, and the
+`llamacloud-operator`, `llamacloud-telemetry`, and the
 worker names themselves.
 
 A pool keeps `poolSize` connections open whether the pod is busy or idle, and

@@ -53,10 +53,6 @@ set:
     host: mongodb
     username: test-mongo-user
     password: test-mongo-pass
-  rabbitmq:
-    host: test-rabbit
-    username: test-user
-    password: test-pass
 
 tests:
 - it: should not render a form field detection Deployment with the default (disabled) config
@@ -69,7 +65,7 @@ tests:
         path: .metadata.name
         value: llamacloud-form-field-detection
     - hasDocuments:
-        count: 9
+        count: 7
 
 - it: should render the Deployment on port 8000 with no GPU when config.parseFormFieldDetection.enabled is true and gpu is false
   set:
@@ -80,7 +76,7 @@ tests:
   template: ../templates/llamacloud/deployment.yaml
   asserts:
     - hasDocuments:
-        count: 10
+        count: 8
     - equal:
         path: .metadata.name
         value: llamacloud-form-field-detection

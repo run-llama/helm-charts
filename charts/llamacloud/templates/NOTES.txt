@@ -65,19 +65,11 @@ MCP server enabled.
      timeout itself.
 {{- end }}
 {{- end }}
-{{- if (.Values.rabbitmq).enabled }}
 
-DEPRECATION: this release still has RabbitMQ enabled.
-
-  Temporal is the job transport. Parse, Extract and Index already run on it, and a
-  future release drops the AMQP code path, so RabbitMQ has to go before then. The
-  only feature still using it is the legacy Pipelines surface.
-
-  Check whether you are affected:
-
-    curl -s "$HOST/api/v1/pipelines" -H "Authorization: Bearer $LLAMA_CLOUD_API_KEY" | jq 'length'
-
-  A count of 0 means you can switch it off now, with -f examples/profiles/no-rabbitmq.yaml.
-  See the "Migrating off RabbitMQ" guide in the self-hosting docs.
-{{- end }}
-
+AMQP migration:
+  Before upgrading beyond 0.10.0, upgrade through 0.10.0 and drain queued and
+  in-flight AMQP jobs. This chart removes the legacy workers and broker wiring.
+  Move Parse worker settings to temporalWorkloads.llamaParse and replace scalers
+  using /api/queue-statusz, which now returns 410 Gone. Remove the retired
+  rabbitmq, jobsWorker, and llamaParse values blocks before upgrading.
+  https://developers.llamaindex.ai/llamaparse/self_hosting/configuration/db_and_queues/migrate-off-rabbitmq

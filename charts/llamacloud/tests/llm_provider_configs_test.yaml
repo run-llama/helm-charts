@@ -107,25 +107,6 @@ tests:
           secretRef:
             name: llm-provider-configs-secret
 
-- it: should include llm-provider-configs-secret in jobs-worker envFrom
-  set:
-    config.llms.providerConfigs:
-      - provider: "anthropic"
-        model_id: "anthropic-sonnet-4.5"
-        credentials:
-          api_key: "test"
-    config.frontend.enabled: false
-    config.parseOcr.enabled: false
-    config.parseLayoutDetection.enabled: false
-  template: ../templates/llamacloud/deployment.yaml
-  documentIndex: 2
-  asserts:
-    - contains:
-        path: .spec.template.spec.containers[0].envFrom
-        content:
-          secretRef:
-            name: llm-provider-configs-secret
-
 - it: should include llm-provider-configs-secret in backend envFrom
   set:
     config.llms.providerConfigs:

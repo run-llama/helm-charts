@@ -1,0 +1,26 @@
+suite: retired-rabbitmq-tests
+templates:
+  - ../templates/llamacloud/deployment.yaml
+  - ../templates/llamacloud/configmaps/common.yaml
+  - ../templates/llamacloud/secrets/*.yaml
+values:
+  - ../examples/basic-config.yaml
+set:
+  postgresql.secret: postgres-credentials
+  mongodb.secret: mongo-credentials
+  redis.secret: redis-credentials
+  license.secret: license-credentials
+tests:
+  - it: does not generate a broker secret
+    asserts:
+      - not: true
+        containsDocument:
+          kind: Secret
+          apiVersion: v1
+          name: rabbitmq-secret
+          any: true
+  - it: never emits AMQP_DISABLED
+    template: ../templates/llamacloud/configmaps/common.yaml
+    asserts:
+      - notExists:
+          path: data.AMQP_DISABLED

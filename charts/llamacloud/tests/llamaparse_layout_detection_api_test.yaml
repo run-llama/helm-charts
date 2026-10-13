@@ -37,12 +37,10 @@ tests:
       host: mongodb
       username: test-mongo-user
       password: test-mongo-pass
-    rabbitmq:
-      host: test-rabbit
-      username: test-user
-      password: test-pass
   template: ../templates/llamacloud/deployment.yaml
-  documentIndex: 4
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-layout
   asserts:
     - isKind:
         of: Deployment
@@ -84,12 +82,10 @@ tests:
       host: mongodb
       username: test-mongo-user
       password: test-mongo-pass
-    rabbitmq:
-      host: test-rabbit
-      username: test-user
-      password: test-pass
   template: ../templates/llamacloud/deployment.yaml
-  documentIndex: 4
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-layout
   asserts:
     - equal:
         path: .spec.template.spec.containers[0].env[?(@.name == "LOG_LEVEL")].value
@@ -125,15 +121,11 @@ tests:
       host: mongodb
       username: test-mongo-user
       password: test-mongo-pass
-    rabbitmq:
-      host: test-rabbit
-      username: test-user
-      password: test-pass
   template: ../templates/llamacloud/deployment.yaml
   asserts:
     - matchRegex:
         path: metadata.name
-        pattern: ^(llamacloud|llamacloud-operator|llamacloud-worker|llamacloud-parse|llamacloud-telemetry|llamacloud-temporal-operator|llamacloud-temporal-parse|temporal-jobs-worker)$
+        pattern: ^(llamacloud|llamacloud-operator|llamacloud-telemetry|llamacloud-temporal-operator|llamacloud-temporal-parse|temporal-jobs-worker)$
 
 - it: should create a service if config.parseLayoutDetection.enabled is true
   set:
@@ -160,12 +152,10 @@ tests:
       host: mongodb
       username: test-mongo-user
       password: test-mongo-pass
-    rabbitmq:
-      host: test-rabbit
-      username: test-user
-      password: test-pass
   template: ../templates/llamacloud/service.yaml
-  documentIndex: 4
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-layout
   asserts:
     - equal:
         path: metadata.name
@@ -196,10 +186,6 @@ tests:
       host: mongodb
       username: test-mongo-user
       password: test-mongo-pass
-    rabbitmq:
-      host: test-rabbit
-      username: test-user
-      password: test-pass
   template: ../templates/llamacloud/hpa.yaml
   asserts:
     - hasDocuments:
@@ -240,10 +226,6 @@ tests:
       host: mongodb
       username: test-mongo-user
       password: test-mongo-pass
-    rabbitmq:
-      host: test-rabbit
-      username: test-user
-      password: test-pass
   template: ../templates/llamacloud/hpa.yaml
   asserts:
     - hasDocuments:
@@ -282,12 +264,10 @@ tests:
       host: mongodb
       username: test-mongo-user
       password: test-mongo-pass
-    rabbitmq:
-      host: test-rabbit
-      username: test-user
-      password: test-pass
   template: ../templates/llamacloud/deployment.yaml
-  documentIndex: 4
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-layout
   asserts:
     - matchRegex:
         path: spec.template.spec.containers[0].image
@@ -319,12 +299,10 @@ tests:
       host: mongodb
       username: test-mongo-user
       password: test-mongo-pass
-    rabbitmq:
-      host: test-rabbit
-      username: test-user
-      password: test-pass
   template: ../templates/llamacloud/deployment.yaml
-  documentIndex: 4
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-layout
   asserts:
     - equal:
         path: spec.template.spec.containers[0].image

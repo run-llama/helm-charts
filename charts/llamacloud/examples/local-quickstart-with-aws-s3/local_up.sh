@@ -42,12 +42,6 @@ else
   helm upgrade --install redis oci://registry-1.docker.io/bitnamicharts/redis -f redis.yaml --wait --timeout 10m
 fi
 
-if helm status rabbitmq &> /dev/null; then
-  echo "Release rabbitmq exists."
-else
-  echo "Installing RabbitMQ..."
-  helm upgrade --install rabbitmq oci://registry-1.docker.io/bitnamicharts/rabbitmq -f rabbitmq.yaml --wait --timeout 10m
-fi
 
 if helm status temporal &> /dev/null; then
   echo "Release temporal exists."
