@@ -1,7 +1,7 @@
 # This example shows how to configure autoscaling for the LlamaCloud platform.
 # It is used in the `values.yaml` file for each component.
 
-# Autoscaling is enabled by default for llamaParse and llamaParseOcr given the nature of their workloads.
+# This example enables autoscaling for Temporal Parse workers and OCR.
 # To disable autoscaling for a component, set the horizontalPodAutoscalerSpec to an empty object {}.
 
 license:
@@ -20,13 +20,6 @@ postgresql:
 mongodb:
   host: "<REPLACE-WITH-MONGODB-HOST>"
   port: "27017"
-  username: "<REPLACE-WITH-USERNAME>"
-  password: "<REPLACE-WITH-PASSWORD>"
-  # secret: "<uncomment-if-using-existing-secret>"
-
-rabbitmq:
-  host: "<REPLACE-WITH-RABBITMQ-HOST>"
-  port: "5672"
   username: "<REPLACE-WITH-USERNAME>"
   password: "<REPLACE-WITH-PASSWORD>"
   # secret: "<uncomment-if-using-existing-secret>"
@@ -87,41 +80,24 @@ jobsService:
             type: Utilization
             averageUtilization: 80
 
-jobsWorker:
-  horizontalPodAutoscalerSpec:
-    minReplicas: 1
-    maxReplicas: 4
-    metrics:
-      - type: Resource
-        resource:
-          name: cpu
-          target:
-            type: Utilization
-            averageUtilization: 80
-      - type: Resource
-        resource:
-          name: memory
-          target:
-            type: Utilization
-            averageUtilization: 80
-
-llamaParse:
-  horizontalPodAutoscalerSpec:
-    minReplicas: 2
-    maxReplicas: 10
-    metrics:
-      - type: Resource
-        resource:
-          name: cpu
-          target:
-            type: Utilization
-            averageUtilization: 80
-      - type: Resource
-        resource:
-          name: memory
-          target:
-            type: Utilization
-            averageUtilization: 80
+temporalWorkloads:
+  llamaParse:
+    horizontalPodAutoscalerSpec:
+      minReplicas: 2
+      maxReplicas: 10
+      metrics:
+        - type: Resource
+          resource:
+            name: cpu
+            target:
+              type: Utilization
+              averageUtilization: 80
+        - type: Resource
+          resource:
+            name: memory
+            target:
+              type: Utilization
+              averageUtilization: 80
 
 llamaParseOcr:
   horizontalPodAutoscalerSpec:

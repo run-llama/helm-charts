@@ -1,7 +1,7 @@
 suite: profile-preset-tests
 
 # examples/profiles/{minimal,no-rabbitmq,full}.yaml are preset overlays. minimal =
-# parse+extract-only (no mongo, no rabbit, v1 parse worker scaled to 0, index
+# parse+extract-only (no mongo, no rabbit, index
 # destination pinned to postgres). no-rabbitmq = the RabbitMQ half of minimal,
 # for deployments decommissioning AMQP while keeping MongoDB. full = every store
 # on (identical to no overlay). These tests assert the presets resolve to the
@@ -38,9 +38,8 @@ tests:
     - equal:
         path: .data.MONGO_DISABLED
         value: "true"
-    - equal:
+    - notExists:
         path: .data.AMQP_DISABLED
-        value: "true"
 
 - it: minimal preset pins default index destination to postgres
   values:
@@ -51,17 +50,18 @@ tests:
         path: .data.DEFAULT_DIRECTORY_INDEX_DESTINATION
         value: postgres
 
-- it: minimal preset scales the v1 parse worker to zero
+- it: minimal preset omits the retired parse worker
   values:
     - ../examples/profiles/minimal.yaml
   template: ../templates/llamacloud/deployment.yaml
-  documentSelector:
-    path: metadata.name
-    value: llamacloud-parse
   asserts:
-    - equal:
-        path: spec.replicas
-        value: 0
+    - not: true
+      containsDocument:
+        any: true
+        kind: Deployment
+        apiVersion: apps/v1
+        name: llamacloud-parse
+        namespace: test-namespace
 
 - it: minimal preset drops the jobs-worker AMQP consumer
   values:
@@ -128,9 +128,8 @@ tests:
     - ../examples/profiles/no-rabbitmq.yaml
   template: ../templates/llamacloud/configmaps/common.yaml
   asserts:
-    - equal:
+    - notExists:
         path: .data.AMQP_DISABLED
-        value: "true"
     # The whole point of this preset over minimal.yaml: v1 parse and Extract
     # still write job records to Mongo, so it must survive.
     - notExists:
@@ -144,17 +143,18 @@ tests:
     - notExists:
         path: .data.INDEX_V1_PIPELINE_SYNC_TEMPORAL_PERCENTAGE
 
-- it: no-rabbitmq preset scales the v1 AMQP parse worker to zero
+- it: no-rabbitmq preset omits the retired parse worker
   values:
     - ../examples/profiles/no-rabbitmq.yaml
   template: ../templates/llamacloud/deployment.yaml
-  documentSelector:
-    path: metadata.name
-    value: llamacloud-parse
   asserts:
-    - equal:
-        path: spec.replicas
-        value: 0
+    - not: true
+      containsDocument:
+        any: true
+        kind: Deployment
+        apiVersion: apps/v1
+        name: llamacloud-parse
+        namespace: test-namespace
 
 - it: no-rabbitmq preset drops the jobs-worker AMQP consumer but keeps the Temporal one
   values:
@@ -207,12 +207,13 @@ tests:
     - notExists:
         path: .data.AMQP_DISABLED
 
-- it: full preset keeps the jobs-worker Deployment and mounts both store secrets
+- it: full preset does not restore the removed jobs-worker Deployment
   values:
     - ../examples/profiles/full.yaml
   template: ../templates/llamacloud/deployment.yaml
   asserts:
-    - containsDocument:
+    - not: true
+      containsDocument:
         any: true
         kind: Deployment
         apiVersion: apps/v1

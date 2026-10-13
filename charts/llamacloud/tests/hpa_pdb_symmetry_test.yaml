@@ -83,9 +83,9 @@ tests:
         path: .spec.maxReplicas
         value: 7
 
-- it: jobsWorker HPA renders as llamacloud-worker
+- it: usage HPA renders as llamacloud-telemetry
   set:
-    jobsWorker:
+    usage:
       horizontalPodAutoscalerSpec:
         minReplicas: 1
         maxReplicas: 10
@@ -95,21 +95,15 @@ tests:
         count: 1
     - equal:
         path: .metadata.name
-        value: llamacloud-worker
+        value: llamacloud-telemetry
 
-- it: llamaParse HPA renders as llamacloud-parse
-  set:
-    llamaParse:
-      horizontalPodAutoscalerSpec:
-        minReplicas: 1
-        maxReplicas: 4
-  template: ../templates/llamacloud/hpa.yaml
+- it: ignores retired llamaParse HPA configuration
+  templates:
+    - ../templates/llamacloud/hpa.yaml
+    - ../templates/llamacloud/pdb.yaml
   asserts:
     - hasDocuments:
-        count: 1
-    - equal:
-        path: .metadata.name
-        value: llamacloud-parse
+        count: 0
 
 - it: llamaParseOcr HPA renders only when parseOcr feature is enabled
   set:
@@ -200,7 +194,7 @@ tests:
       horizontalPodAutoscalerSpec:
         minReplicas: 1
         maxReplicas: 5
-    jobsWorker:
+    usage:
       horizontalPodAutoscalerSpec:
         minReplicas: 1
         maxReplicas: 5
@@ -230,7 +224,7 @@ tests:
 
 - it: PDB selector labels match the component it protects
   set:
-    jobsWorker:
+    usage:
       horizontalPodAutoscalerSpec:
         minReplicas: 1
         maxReplicas: 5
@@ -238,7 +232,7 @@ tests:
   asserts:
     - equal:
         path: .spec.selector.matchLabels["app.kubernetes.io/name"]
-        value: llamacloud-worker
+        value: llamacloud-telemetry
 
 - it: setting spec to null explicitly prevents HPA/PDB from rendering
   set:
@@ -278,7 +272,7 @@ tests:
 
 - it: HPA auto-injects scaleTargetRef with the correct component name for non-backend components
   set:
-    jobsWorker:
+    usage:
       horizontalPodAutoscalerSpec:
         minReplicas: 1
         maxReplicas: 5
@@ -286,7 +280,7 @@ tests:
   asserts:
     - equal:
         path: .spec.scaleTargetRef.name
-        value: llamacloud-worker
+        value: llamacloud-telemetry
 
 - it: user-provided scaleTargetRef is preserved and NOT overridden by auto-injection
   set:

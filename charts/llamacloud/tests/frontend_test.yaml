@@ -46,10 +46,6 @@ tests:
       host: mongodb
       username: test-mongo-user
       password: test-mongo-pass
-    rabbitmq:
-      host: test-rabbit
-      username: test-user
-      password: test-pass
   documentIndex: 1
   template: ../templates/llamacloud/deployment.yaml
   asserts:
@@ -147,10 +143,6 @@ tests:
       host: mongodb
       username: test-mongo-user
       password: test-mongo-pass
-    rabbitmq:
-      host: test-rabbit
-      username: test-user
-      password: test-pass
   template: ../templates/llamacloud/hpa.yaml
   asserts:
     - hasDocuments:

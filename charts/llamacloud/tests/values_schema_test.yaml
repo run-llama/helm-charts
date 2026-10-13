@@ -245,8 +245,6 @@ tests:
 
 - it: accepts replicas and command on component sections
   set:
-    llamaParse:
-      replicas: 0
     backend:
       replicas: 3
       command: ["python", "-m", "app"]
@@ -326,3 +324,24 @@ tests:
   asserts:
     - failedTemplate:
         errorPattern: "at '/temporal': additional properties 'disabled' not allowed"
+
+- it: rejects retired rabbitmq configuration
+  set:
+    rabbitmq: {}
+  asserts:
+    - failedTemplate:
+        errorPattern: "additional properties 'rabbitmq' not allowed"
+
+- it: rejects retired jobsWorker configuration
+  set:
+    jobsWorker: {}
+  asserts:
+    - failedTemplate:
+        errorPattern: "additional properties 'jobsWorker' not allowed"
+
+- it: rejects retired llamaParse configuration
+  set:
+    llamaParse: {}
+  asserts:
+    - failedTemplate:
+        errorPattern: "additional properties 'llamaParse' not allowed"

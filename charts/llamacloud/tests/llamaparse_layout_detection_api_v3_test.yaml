@@ -30,10 +30,6 @@ tests:
       host: mongodb
       username: test-mongo-user
       password: test-mongo-pass
-    rabbitmq:
-      host: test-rabbit
-      username: test-user
-      password: test-pass
   template: ../templates/llamacloud/deployment.yaml
   documentSelector:
     path: metadata.name
@@ -73,10 +69,6 @@ tests:
       host: mongodb
       username: test-mongo-user
       password: test-mongo-pass
-    rabbitmq:
-      host: test-rabbit
-      username: test-user
-      password: test-pass
   template: ../templates/llamacloud/deployment.yaml
   documentSelector:
     path: metadata.name
@@ -111,10 +103,6 @@ tests:
       host: mongodb
       username: test-mongo-user
       password: test-mongo-pass
-    rabbitmq:
-      host: test-rabbit
-      username: test-user
-      password: test-pass
   template: ../templates/llamacloud/deployment.yaml
   documentSelector:
     path: metadata.name
@@ -151,10 +139,6 @@ tests:
       host: mongodb
       username: test-mongo-user
       password: test-mongo-pass
-    rabbitmq:
-      host: test-rabbit
-      username: test-user
-      password: test-pass
   template: ../templates/llamacloud/deployment.yaml
   documentSelector:
     path: metadata.name
@@ -191,10 +175,6 @@ tests:
       host: mongodb
       username: test-mongo-user
       password: test-mongo-pass
-    rabbitmq:
-      host: test-rabbit
-      username: test-user
-      password: test-pass
   template: ../templates/llamacloud/deployment.yaml
   documentSelector:
     path: metadata.name
@@ -226,10 +206,6 @@ tests:
       host: mongodb
       username: test-mongo-user
       password: test-mongo-pass
-    rabbitmq:
-      host: test-rabbit
-      username: test-user
-      password: test-pass
   template: ../templates/llamacloud/deployment.yaml
   documentSelector:
     path: metadata.name
@@ -263,10 +239,6 @@ tests:
       host: mongodb
       username: test-mongo-user
       password: test-mongo-pass
-    rabbitmq:
-      host: test-rabbit
-      username: test-user
-      password: test-pass
   template: ../templates/llamacloud/deployment.yaml
   documentSelector:
     path: metadata.name

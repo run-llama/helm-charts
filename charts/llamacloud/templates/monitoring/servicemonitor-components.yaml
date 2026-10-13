@@ -12,7 +12,7 @@
   not yet have Prometheus instrumentation; the frontend and temporal worker
   pods are excluded for the same reason.
 */}}
-{{- $monitored := list "backend" "jobsService" "jobsWorker" "llamaParse" "llamaParseOcr" "usage" }}
+{{- $monitored := list "backend" "jobsService" "llamaParseOcr" "usage" }}
 {{- range $name, $component := ((include "llamacloud.components" .) | fromYaml) }}
 {{- if has $name $monitored }}
 ---

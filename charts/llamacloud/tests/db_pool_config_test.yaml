@@ -94,8 +94,6 @@ tests:
       password: secret
     redis:
       host: redis.example.com
-    rabbitmq:
-      enabled: true
     temporal:
       deploy: false
       host: temporal.example.com
@@ -113,16 +111,6 @@ tests:
   documentSelector:
     path: metadata.name
     value: "llamacloud-operator"
-  asserts:
-    - exists:
-        path: .spec.template.spec.containers[0].envFrom[?(@.configMapRef.name == "db-pool-config")]
-
-- it: should be mounted by jobsWorker
-  template: ../templates/llamacloud/deployment.yaml
-  set: *deployable
-  documentSelector:
-    path: metadata.name
-    value: "llamacloud-worker"
   asserts:
     - exists:
         path: .spec.template.spec.containers[0].envFrom[?(@.configMapRef.name == "db-pool-config")]

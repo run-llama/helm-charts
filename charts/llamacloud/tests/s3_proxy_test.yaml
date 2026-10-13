@@ -137,10 +137,6 @@ tests:
       host: mongodb
       username: test-mongo-user
       password: test-mongo-pass
-    rabbitmq:
-      host: test-rabbit
-      username: test-user
-      password: test-pass
   documentIndex: 0
   template: ../templates/llamacloud/deployment.yaml
   asserts:
@@ -205,10 +201,6 @@ tests:
       host: mongodb
       username: test-mongo-user
       password: test-mongo-pass
-    rabbitmq:
-      host: test-rabbit
-      username: test-user
-      password: test-pass
   documentIndex: 0
   template: ../templates/llamacloud/deployment.yaml
   asserts:
@@ -248,10 +240,6 @@ tests:
       host: mongodb
       username: test-mongo-user
       password: test-mongo-pass
-    rabbitmq:
-      host: test-rabbit
-      username: test-user
-      password: test-pass
   documentIndex: 0
   template: ../templates/llamacloud/deployment.yaml
   asserts:
@@ -295,10 +283,6 @@ tests:
       host: mongodb
       username: test-mongo-user
       password: test-mongo-pass
-    rabbitmq:
-      host: test-rabbit
-      username: test-user
-      password: test-pass
   documentIndex: 0
   template: ../templates/llamacloud/deployment.yaml
   asserts:
@@ -335,10 +319,6 @@ tests:
       host: mongodb
       username: test-mongo-user
       password: test-mongo-pass
-    rabbitmq:
-      host: test-rabbit
-      username: test-user
-      password: test-pass
   documentIndex: 0
   template: ../templates/llamacloud/deployment.yaml
   asserts:
@@ -349,100 +329,6 @@ tests:
           emptyDir: {}
 
 # Sidecar Injection Tests - Jobs Worker Component
-- it: should inject s3proxy sidecar into jobs-worker when provider is gcp
-  set:
-    config:
-      frontend:
-        enabled: false
-      parseOcr:
-        enabled: false
-      parseLayoutDetection:
-        enabled: false
-      storageBuckets:
-        provider: gcp
-        s3proxy:
-          enabled: true
-    redis:
-      host: test-redis
-      port: "6379"
-      password: test-pass
-    postgresql:
-      host: test-pg
-      port: "5432"
-      username: test-user
-      password: test-pass
-      database: test-db
-    mongodb:
-      host: mongodb
-      username: test-mongo-user
-      password: test-mongo-pass
-    rabbitmq:
-      host: test-rabbit
-      username: test-user
-      password: test-pass
-  documentIndex: 2
-  template: ../templates/llamacloud/deployment.yaml
-  asserts:
-    - isKind:
-        of: Deployment
-    - equal:
-        path: .metadata.name
-        value: llamacloud-worker
-    - equal:
-        path: .spec.template.spec.containers[1].name
-        value: s3proxy
-    - equal:
-        path: .spec.template.spec.containers[1].image
-        value: docker.io/andrewgaul/s3proxy:sha-001d042
-
-- it: should not inject s3proxy sidecar into jobs-worker when s3proxy is disabled
-  set:
-    config:
-      frontend:
-        enabled: false
-      parseOcr:
-        enabled: false
-      parseLayoutDetection:
-        enabled: false
-      storageBuckets:
-        provider: aws
-        s3proxy:
-          enabled: false
-    redis:
-      host: test-redis
-      port: "6379"
-      password: test-pass
-    postgresql:
-      host: test-pg
-      port: "5432"
-      username: test-user
-      password: test-pass
-      database: test-db
-    mongodb:
-      host: mongodb
-      username: test-mongo-user
-      password: test-mongo-pass
-    rabbitmq:
-      host: test-rabbit
-      username: test-user
-      password: test-pass
-  documentIndex: 2
-  template: ../templates/llamacloud/deployment.yaml
-  asserts:
-    - isKind:
-        of: Deployment
-    - equal:
-        path: .metadata.name
-        value: llamacloud-worker
-    # Should only have 1 container (the main jobs-worker container)
-    - lengthEqual:
-        path: .spec.template.spec.containers
-        count: 1
-    - equal:
-        path: .spec.template.spec.containers[0].name
-        value: llamacloud-worker
-
-# Sidecar Injection Tests - LlamaParse Component
 - it: should inject s3proxy sidecar into llamaparse when provider is gcp
   set:
     config:
@@ -470,18 +356,16 @@ tests:
       host: mongodb
       username: test-mongo-user
       password: test-mongo-pass
-    rabbitmq:
-      host: test-rabbit
-      username: test-user
-      password: test-pass
-  documentIndex: 3
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-temporal-parse
   template: ../templates/llamacloud/deployment.yaml
   asserts:
     - isKind:
         of: Deployment
     - equal:
         path: .metadata.name
-        value: llamacloud-parse
+        value: llamacloud-temporal-parse
     - equal:
         path: .spec.template.spec.containers[1].name
         value: s3proxy
@@ -513,18 +397,16 @@ tests:
       host: mongodb
       username: test-mongo-user
       password: test-mongo-pass
-    rabbitmq:
-      host: test-rabbit
-      username: test-user
-      password: test-pass
-  documentIndex: 3
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-temporal-parse
   template: ../templates/llamacloud/deployment.yaml
   asserts:
     - isKind:
         of: Deployment
     - equal:
         path: .metadata.name
-        value: llamacloud-parse
+        value: llamacloud-temporal-parse
     # Should only have 1 container (the main llamaparse container)
     - lengthEqual:
         path: .spec.template.spec.containers
@@ -558,10 +440,6 @@ tests:
       host: mongodb
       username: test-mongo-user
       password: test-mongo-pass
-    rabbitmq:
-      host: test-rabbit
-      username: test-user
-      password: test-pass
   documentIndex: 0
   template: ../templates/llamacloud/deployment.yaml
   asserts:
@@ -603,10 +481,6 @@ tests:
       host: mongodb
       username: test-mongo-user
       password: test-mongo-pass
-    rabbitmq:
-      host: test-rabbit
-      username: test-user
-      password: test-pass
   documentIndex: 0
   template: ../templates/llamacloud/deployment.yaml
   asserts:
@@ -649,10 +523,6 @@ tests:
       host: mongodb
       username: test-mongo-user
       password: test-mongo-pass
-    rabbitmq:
-      host: test-rabbit
-      username: test-user
-      password: test-pass
   documentIndex: 0
   template: ../templates/llamacloud/deployment.yaml
   asserts:
@@ -694,10 +564,6 @@ tests:
       host: mongodb
       username: test-mongo-user
       password: test-mongo-pass
-    rabbitmq:
-      host: test-rabbit
-      username: test-user
-      password: test-pass
   documentIndex: 0
   template: ../templates/llamacloud/deployment.yaml
   asserts:
@@ -741,10 +607,6 @@ tests:
       host: mongodb
       username: test-mongo-user
       password: test-mongo-pass
-    rabbitmq:
-      host: test-rabbit
-      username: test-user
-      password: test-pass
   documentIndex: 0
   template: ../templates/llamacloud/deployment.yaml
   asserts:
@@ -802,10 +664,6 @@ tests:
       host: mongodb
       username: test-mongo-user
       password: test-mongo-pass
-    rabbitmq:
-      host: test-rabbit
-      username: test-user
-      password: test-pass
   templates:
     - ../templates/llamacloud/deployment.yaml
   asserts:

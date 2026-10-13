@@ -132,6 +132,9 @@ Parameters:
 {{ define "llamacloud.component.frontend.configMap" }}
 HOSTNAME: 0.0.0.0
 IS_INDEX_V1_ENABLED: "true"
+{{- /* Self-hosted admins name the first organization and project themselves
+       on /welcome rather than getting auto-created defaults. */}}
+WELCOME_PAGE_MANUAL_SETUP: "true"
 {{- /* Always emitted, empty included. NEXT_PUBLIC_REGION is frozen into the
        frontend image, so without this the UI offers MCP configuration pointing
        at the hosted server, which holds none of this deployment's data. Empty
@@ -144,6 +147,24 @@ PUBLIC_MCP_URL: {{ (((.root.Values.config).mcp).publicUrl) | default "" | quote 
 {{- with (((.root.Values.config).frontend).storageBrowserOrigins) }}
 PUBLIC_STORAGE_ORIGINS: {{ . | quote }}
 {{- end }}
+{{- /* Enforce the connect-src allow-list only once the browser's storage path
+       is covered: /api/s3-proxy on the ingress host the frontend knows as
+       PUBLIC_BACKEND_URL, or an origin storageOrigins() in csp.ts would keep
+       (scheme-less or http(s)). Otherwise previews would be blocked. */}}
+{{- $frontend := ((.root.Values.config).frontend) | default dict }}
+{{- $storageOrigins := list }}
+{{- range (splitList "," ($frontend.storageBrowserOrigins | default "")) }}
+{{- $origin := trim . }}
+{{- if and $origin (or (not (contains "://" $origin)) (hasPrefix "https://" $origin) (hasPrefix "http://" $origin)) }}
+{{- $storageOrigins = append $storageOrigins $origin }}
+{{- end }}
+{{- end }}
+{{- $s3proxyCovered := and (((((.root.Values.config).storageBuckets).s3proxy).enabled) | default false) (not (empty ((.root.Values.ingress).host))) }}
+{{- $enforceConnectSrc := $frontend.enforceConnectSrc }}
+{{- if kindIs "invalid" $enforceConnectSrc }}
+{{- $enforceConnectSrc = or $s3proxyCovered (gt (len $storageOrigins) 0) }}
+{{- end }}
+CSP_ENFORCE_CONNECT_SRC: {{ $enforceConnectSrc | toString | quote }}
 {{- if (.root.Values.qdrant).enabled }}
 BYOC_HAS_MANAGED_QDRANT: "true"
 {{- end }}

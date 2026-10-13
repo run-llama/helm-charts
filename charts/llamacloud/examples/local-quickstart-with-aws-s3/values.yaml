@@ -15,13 +15,6 @@ mongodb:
   username: "root"
   password: "password"
 
-rabbitmq:
-  scheme: "amqp"
-  host: "rabbitmq"
-  port: "5672"
-  username: "admin"
-  password: "password"
-
 redis:
   host: "redis-master"
   port: "6379"
@@ -187,14 +180,14 @@ config:
     enabled: true
 
 frontend:
-  image: docker.io/llamaindex/llamacloud-frontend:0.10.0
+  image: docker.io/llamaindex/llamacloud-frontend:0.11.0
   resources:
     requests:
       cpu: "250m"
       memory: "256Mi"
 
 backend:
-  image: docker.io/llamaindex/llamacloud-backend:0.10.0
+  image: docker.io/llamaindex/llamacloud-backend:0.11.0
   resources: 
     requests:
       cpu: "250m"
@@ -206,37 +199,12 @@ backend:
     value: "<REPLACE>"
 
 jobsService:
-  image: docker.io/llamaindex/llamacloud-backend:0.10.0
+  image: docker.io/llamaindex/llamacloud-backend:0.11.0
   resources:
     requests:
       cpu: "250m"
       memory: "256Mi"
 
-  extraEnvVariables:
-  - name: AWS_ACCESS_KEY_ID
-    value: "<REPLACE>"
-  - name: AWS_SECRET_ACCESS_KEY
-    value: "<REPLACE>"
-
-jobsWorker:
-  image: docker.io/llamaindex/llamacloud-backend:0.10.0
-  resources:
-    requests:
-      cpu: "250m"
-      memory: "256Mi"
-  extraEnvVariables:
-  - name: AWS_ACCESS_KEY_ID
-    value: "<REPLACE>"
-  - name: AWS_SECRET_ACCESS_KEY
-    value: "<REPLACE>"
-
-## @section LlamaParse Configuration
-llamaParse:
-  image: docker.io/llamaindex/llamacloud-llamaparse:0.10.0
-  resources:
-    requests:
-      cpu: "250m"
-      memory: "256Mi"
   extraEnvVariables:
   - name: AWS_ACCESS_KEY_ID
     value: "<REPLACE>"
@@ -244,7 +212,7 @@ llamaParse:
     value: "<REPLACE>"
 
 llamaParseOcr:
-  image: docker.io/llamaindex/llamacloud-llamaparse-ocr:0.10.0
+  image: docker.io/llamaindex/llamacloud-llamaparse-ocr:0.11.0
   resources:
     requests:
       cpu: "250m"
@@ -267,7 +235,7 @@ llamaParseLayoutDetectionApi:
     value: "<REPLACE>"
 
 usage:
-  image: docker.io/llamaindex/llamacloud-backend:0.10.0
+  image: docker.io/llamaindex/llamacloud-backend:0.11.0
   resources:
     requests:
       cpu: "250m"
@@ -275,7 +243,7 @@ usage:
 
 temporalWorkloads:
   llamaParse:
-    image: docker.io/llamaindex/llamacloud-llamaparse:0.10.0
+    image: docker.io/llamaindex/llamacloud-llamaparse:0.11.0
     resources:
       requests:
         cpu: "250m"
@@ -288,7 +256,7 @@ temporalWorkloads:
 
   workers:
     temporal-jobs-worker:
-      image: docker.io/llamaindex/llamacloud-backend:0.10.0
+      image: docker.io/llamaindex/llamacloud-backend:0.11.0
       imagePullPolicy: IfNotPresent
       resources:
         requests:

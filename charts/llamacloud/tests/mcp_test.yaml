@@ -43,10 +43,6 @@ set: &required
     host: mongodb
     username: test-mongo-user
     password: test-mongo-pass
-  rabbitmq:
-    host: test-rabbit
-    username: test-user
-    password: test-pass
 
 tests:
 # The component registry is the only switch: an unregistered workload renders
@@ -65,9 +61,6 @@ tests:
     mongodb.host: m
     mongodb.username: u
     mongodb.password: p
-    rabbitmq.host: r
-    rabbitmq.username: u
-    rabbitmq.password: p
   asserts:
     - not: true
       matchRegex:

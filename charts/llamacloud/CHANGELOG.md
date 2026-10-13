@@ -1,5 +1,32 @@
 # CHANGELOG
 
+## [0.11.0] - 2026-10-13
+
+### Breaking Changes
+- **[Breaking]** Removed AMQP transport, RabbitMQ/Service Bus configuration and the legacy Parse/jobs worker Deployments. Upgrade through `0.10.0` and drain queued and in-flight AMQP jobs first. Remove `llamaParse`, `rabbitmq` and `jobsWorker` chart values, and move Parse worker settings to `temporalWorkloads.llamaParse`. Replace autoscalers using `/api/queue-statusz` (`410 Gone`) and monitors targeting the retired `llamacloud-parse` and `llamacloud-worker` Deployments. Index v1 APIs and MongoDB job records are unchanged.
+
+### Platform
+- **[Security]** The web app can now enforce its Content-Security-Policy `connect-src` allow-list, which limits the hosts a page may send data to. By default the chart enforces it only where the browser's storage path is covered: `config.storageBuckets.s3proxy.enabled` with `ingress.host` set, or `config.frontend.storageBrowserOrigins` listing the object-store origins. Other installs keep the open policy. Set `config.frontend.enforceConnectSrc` to `true` or `false` to choose explicitly, for example `false` if a browser request to a host outside the list is blocked after upgrading.
+- **[Improvement]** **Files** replaces **File System** in the project sidebar and command palette. Existing folders and their files appear there unchanged, with no migration, and links to `/directories` forward to Files. Files adds a **Connections** tab for connector-synced folders, which needs the `config.connectors` settings from 0.10.0. Files offers only the connection types this install can create, meaning the type is listed in `enabledAuthTypes` and its keys are set (sign-in connections need the seal key and a token-vault key; key-based ones need a credential key). Other types show as unavailable, and existing connections stay listed. Folders fed by a legacy data source keep syncing under **Imports**, and now accept uploads, moves and deletes. **New folder** on the Files page no longer offers syncing from a data source: create such folders from the Index create flow, or use a connected folder (needs `config.connectors`).
+- **[Improvement]** Redesigned Batch pages, now reachable from a **Batch** sidebar entry: the Batches list adds search and a step-by-step "New batch" flow, and a batch's page can cancel it and export a CSV report. The webhook settings dialog now offers the `batch.*` events. Existing batches show up as before, and no configuration change is needed. "New batch" runs on uploaded files or an existing folder, and no longer creates a folder that syncs from a data source: create that folder from the Index create flow, then pick it in "New batch". A batch's page now names its configuration and tier rather than listing every setting and the raw request: open the configuration to see them.
+- **[Improvement]** Organization settings use the redesigned pages. The sidebar groups pages by organization and project, **Preferences** replaces **Platform > General** (the old URL still opens it), and Overview, Members, Usage, Webhooks and Activity Logs get new layouts. The Usage page leaves out the credit balance banner, since credits cannot be bought on a self-hosted install.
+
+### Extract
+- **[Feature]** Added Extract v2.6.
+- **[Feature]** Extract v2.5 improves extraction of long lists, records spanning pages and scanned forms on Cost-effective, Agentic and Agentic Plus. It includes Advanced Citations for better grounding on Agentic and Agentic Plus.
+- **[Improvement]** Uploading a spreadsheet (`.xlsx`, `.xlsm`, `.xltx`, `.xltm`, `.xls` or `.csv`) in the Extract playground now opens a **Reading This Spreadsheet** choice under **Advanced options**: read it as a document, one page per worksheet, or use Spreadsheet mode. Excel files also get a worksheet picker. The API supports Spreadsheet mode on Cost-effective, Agentic and Agentic Plus; Cost-effective and Agentic require v2.1 or later. Spreadsheet mode does not return citations or confidence scores.
+- **[Improvement]** The Agentic Plus tier can now be selected in the Extract playground, where it was greyed out, and appears in the **New batch** flow's custom Extract settings, where it was missing. The API already accepted `tier: agentic_plus`.
+
+### Parse
+- **[Improvement]** The Parse playground now shows **Granular Boundary Boxes** (Line, Word, Cell) under **Output Options**, and the result viewer's **View options** gain a **Show all boxes** switch and a **Highlights** layer picker on jobs with bounding boxes. Line, Word and Cell layers appear for jobs that requested them. Boxes come from the page text layer or OCR, so scanned pages may have sparser word boxes. No configuration change is needed.
+
+### Index
+- **[Improvement]** The Index playground now shows the retrieval score of each retrieved text node (page screenshot nodes still show none). No configuration change is needed.
+
+### Infrastructure
+- **[Improvement]** Extract v2.5 uses newer OpenAI and Anthropic models. Review your `config.llms` model configuration before upgrading.
+- **[Fix]** Fixed OCR Triton startup on FIPS-enabled hosts.
+
 ## [0.10.0] - 2026-09-22
 
 ### Platform

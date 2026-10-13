@@ -5,7 +5,7 @@ This example demonstrates how to deploy LlamaCloud locally using AWS S3 for stor
 ## Overview
 
 This deployment configuration includes:
-- Local infrastructure services (PostgreSQL, MongoDB, RabbitMQ, Redis, Temporal)
+- Local infrastructure services (PostgreSQL, MongoDB, Redis, Temporal)
 - AWS S3 for object storage (parsed documents, files, outputs)
 - OIDC authentication support
 - Optional LLM provider integrations
@@ -93,20 +93,6 @@ backend:
     value: "<REPLACE>"
 
 jobsService:
-  extraEnvVariables:
-  - name: AWS_ACCESS_KEY_ID
-    value: "<REPLACE>"
-  - name: AWS_SECRET_ACCESS_KEY
-    value: "<REPLACE>"
-
-jobsWorker:
-  extraEnvVariables:
-  - name: AWS_ACCESS_KEY_ID
-    value: "<REPLACE>"
-  - name: AWS_SECRET_ACCESS_KEY
-    value: "<REPLACE>"
-
-llamaParse:
   extraEnvVariables:
   - name: AWS_ACCESS_KEY_ID
     value: "<REPLACE>"
@@ -275,16 +261,6 @@ mongodb:
   host: "mongodb"
   port: "27017"
   username: "root"
-  password: "password"
-```
-
-#### RabbitMQ
-```yaml
-rabbitmq:
-  scheme: "amqp"
-  host: "rabbitmq"
-  port: "5672"
-  username: "admin"
   password: "password"
 ```
 

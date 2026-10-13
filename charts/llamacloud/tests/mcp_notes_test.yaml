@@ -21,10 +21,6 @@ set: &required
     host: m
     username: u
     password: p
-  rabbitmq:
-    host: r
-    username: u
-    password: p
 
 tests:
 - it: says nothing about MCP when it is not enabled
