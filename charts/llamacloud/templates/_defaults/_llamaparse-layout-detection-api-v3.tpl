@@ -16,7 +16,9 @@ canonical llamaParseLayoutDetectionApi component and llamacloud-layout identity.
 {{- end }}
 {{- $component = set $component "image" ( ($.Values.llamaParseLayoutDetectionApiV3).image | default $defaultImage ) }}
 {{- $component = set $component "imagePullPolicy" ( ($.Values.llamaParseLayoutDetectionApiV3).imagePullPolicy | default "IfNotPresent" ) }}
+{{- $component = set $component "terminationGracePeriodSeconds" ( ($.Values.llamaParseLayoutDetectionApiV3).terminationGracePeriodSeconds | default 60 ) }}
 {{- $component = set $component "port" 8000 }}
+{{- $component = set $component "skipDefaultEnv" true }}
 {{- $component | toYaml }}
 {{- end }}
 
@@ -112,6 +114,8 @@ Parameters:
 - root: $
 */}}
 {{ define "llamacloud.component.llamaParseLayoutDetectionApiV3.env" }}
+- name: LAYOUT_DEVICE
+  value: {{ ternary "cuda" "cpu" (.component).gpuEnabled | quote }}
 {{- if (.component).extraEnvVariables }}
 {{ toYaml (.component).extraEnvVariables }}
 {{- end }}

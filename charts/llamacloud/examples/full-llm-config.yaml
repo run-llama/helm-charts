@@ -98,7 +98,8 @@ config:
       region: "<REPLACE-WITH-AWS-BEDROCK-REGION>"
       accessKeyId: "<REPLACE-WITH-AWS-BEDROCK-ACCESS-KEY-ID>"
       secretAccessKey: "<REPLACE-WITH-AWS-BEDROCK-SECRET-ACCESS-KEY>"
-      sonnet3_5ModelVersionName: "<REPLACE-WITH-AWS-BEDROCK-SONNET-3-5-MODEL-VERSION-NAME>"
-      sonnet3_7ModelVersionName: "<REPLACE-WITH-AWS-BEDROCK-SONNET-3-7-MODEL-VERSION-NAME>"
-      sonnet4_0ModelVersionName: "<REPLACE-WITH-AWS-BEDROCK-SONNET-4-0-MODEL-VERSION-NAME>"
-      haiku3_5ModelVersionName: "<REPLACE-WITH-AWS-BEDROCK-HAIKU-3-5-MODEL-VERSION-NAME>"
+    providerConfigs:
+      - provider: bedrock
+        model_id: anthropic-sonnet-4.5
+        provider_model_name: "us.anthropic.claude-sonnet-4-5-20250929-v1:0"
+        priority: 200

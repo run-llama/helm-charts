@@ -59,6 +59,17 @@ Parameters:
 {{-     $merged = set $merged $key $value }}
 {{-   end }}
 {{- end }}
+{{- $llms := .root.Values.config.llms | default dict }}
+{{- $llmConsumers := list "llamacloud.component.backend" "llamacloud.component.jobsService" "llamacloud.component.jobsWorker" "llamacloud.component.llamaParse" "llamacloud.component.temporal.worker" "llamacloud.component.temporal.llamaParse" }}
+{{- if and .component (has .component.prefix $llmConsumers) }}
+{{-   $llmConfig := dict "providerConfigs" ($llms.providerConfigs | default list) }}
+{{-   $merged = set $merged "checksum/llm-provider-configs" ($llmConfig | toJson | sha256sum) }}
+{{- end }}
+{{- /* Env from a Secret is read at container start, so a changed gateway URL or key restarts its consumers. */}}
+{{- $gatewayConsumers := list "llamacloud.component.backend" "llamacloud.component.jobsService" "llamacloud.component.usage" "llamacloud.component.temporal.worker" "llamacloud.component.temporal.llamaParse" }}
+{{- if and .component (has .component.prefix $gatewayConsumers) (include "llamacloud.managedInference.url" .root) }}
+{{-   $merged = set $merged "checksum/managed-inference" (.root.Values.config.managedInference | toJson | sha256sum) }}
+{{- end }}
 {{- range $key, $value := $merged }}
 {{ $key }}: {{ $value | quote }}
 {{- end }}
@@ -120,6 +131,8 @@ Activated Components
 {{- if (($.Values.config).mcp).enabled }}
 {{- $activated = set $activated "mcp" (include "llamacloud.component.mcp" . | fromYaml) }}
 {{- end }}
+{{- /* With a managed inference gateway, Parse calls these GPU services there (urls-config). */}}
+{{- if not (include "llamacloud.managedInference.url" .) }}
 {{- if (($.Values.config).parseOcr).enabled }}
 {{- $activated = set $activated "llamaParseOcr" (include "llamacloud.component.llamaParseOcr" . | fromYaml) }}
 {{- end }}
@@ -136,6 +149,7 @@ Activated Components
        a pod, a GPU request and a cost line on upgrade. */}}
 {{- if (($.Values.config).parseFormFieldDetection).enabled }}
 {{- $activated = set $activated "llamaParseFormFieldDetectionApi" (include "llamacloud.component.llamaParseFormFieldDetectionApi" . | fromYaml) }}
+{{- end }}
 {{- end }}
 {{- /* Temporal workloads. Temporal is required: v1 and v2 parse both dispatch
        as workflows, so these are activated unconditionally. */}}

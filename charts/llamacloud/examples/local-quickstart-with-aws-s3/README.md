@@ -210,8 +210,11 @@ config:
       region: "<REPLACE_OR_REMOVE>"
       accessKeyId: "<REPLACE_OR_REMOVE>"
       secretAccessKey: "<REPLACE_OR_REMOVE>"
-      sonnet3_5ModelVersionName: "anthropic.claude-3-5-sonnet-20240620-v1:0"
-      # ... additional model configurations
+    providerConfigs:
+      - provider: bedrock
+        model_id: anthropic-sonnet-4.5
+        provider_model_name: "us.anthropic.claude-sonnet-4-5-20250929-v1:0"
+        priority: 200
 ```
 
 **Instructions:**
@@ -220,7 +223,7 @@ config:
   - Replace `region` with your AWS region (e.g., `us-east-1`)
   - Replace `accessKeyId` with your AWS access key ID
   - Replace `secretAccessKey` with your AWS secret access key
-  - Adjust model version names as needed for your Bedrock configuration
+  - Set exact model or inference profile IDs with `providerConfigs[].provider_model_name`
 
 #### Google Vertex AI (Optional)
 

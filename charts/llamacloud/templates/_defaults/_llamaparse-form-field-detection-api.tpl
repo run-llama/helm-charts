@@ -139,7 +139,7 @@ FFDETR_RESOLUTION is the square edge length, in pixels, that each page image is
 resized to before inference. They are emitted here with the same values the
 image bakes in, so the numbers a cluster runs with are visible in the rendered
 manifest instead of hidden inside the container. Keep them in step with the
-ENV lines in ffdetr/Dockerfile.*; a value set in extraEnvVariables is rendered
+ENV lines in models/ffdetr/Dockerfile.*; a value set in extraEnvVariables is rendered
 after these and wins, because a duplicate name later in a container's env list
 is the one that takes effect.
 

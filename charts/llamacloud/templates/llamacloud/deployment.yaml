@@ -41,13 +41,20 @@ spec:
         readinessProbe: {{ include (printf "%s.readinessProbe" $componentPrefix) $ | indent 10 }}
         startupProbe: {{ include (printf "%s.startupProbe" $componentPrefix) $ | indent 10 }}
         resources: {{ include (printf "%s.resources" $componentPrefix) $params | indent 10 }}
-        env: {{ include (printf "%s.env" $componentPrefix) $params | indent 8 }}
+        {{- $componentEnv := include (printf "%s.env" $componentPrefix) $params }}
+        {{- if and $component.skipDefaultEnv (not (trim $componentEnv)) }}
+        env: []
+        {{- else }}
+        env: {{ $componentEnv | indent 8 }}
+        {{- if not $component.skipDefaultEnv }}
         - name: LOG_LEVEL
           value: {{ ($.Values.config).logLevel | default "info" }}
         - name: PORT
           value: {{ $component.port | quote }}
         - name: UVICORN_PORT
           value: {{ $component.port | quote }}
+        {{- end }}
+        {{- end }}
         envFrom: {{ include (printf "%s.envFrom" $componentPrefix) $params | indent 8 }}
         volumeMounts: {{- include (printf "%s.volumeMounts" $componentPrefix) $params | indent 8 -}}
         {{- if $component.usesS3 }}

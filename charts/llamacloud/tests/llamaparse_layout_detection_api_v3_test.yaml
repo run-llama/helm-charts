@@ -46,6 +46,11 @@ tests:
     - equal:
         path: spec.template.spec.containers[0].resources.limits["nvidia.com/gpu"]
         value: 1
+    - contains:
+        path: spec.template.spec.containers[0].env
+        content:
+          name: LAYOUT_DEVICE
+          value: cuda
 
 - it: should not render GPU resources when config.parseLayoutDetectionV3.gpu is false
   set:
@@ -151,7 +156,7 @@ tests:
         path: spec.template.spec.containers[0].resources.limits["example.com/gpu"]
         value: 1
 
-- it: should keep custom layout image unsuffixed in GPU mode
+- it: should keep custom layout image in GPU mode
   set:
     config:
       frontend:
@@ -214,8 +219,17 @@ tests:
     - matchRegex:
         path: spec.template.spec.containers[0].image
         pattern: ^docker\.io/llamaindex/llamacloud-layout-detection-api-v3:.+-cpu$
+    - contains:
+        path: spec.template.spec.containers[0].env
+        content:
+          name: LAYOUT_DEVICE
+          value: cpu
+    - notExists:
+        path: spec.template.spec.containers[0].resources.requests["nvidia.com/gpu"]
+    - notExists:
+        path: spec.template.spec.containers[0].resources.limits["nvidia.com/gpu"]
 
-- it: should keep custom layout image unsuffixed in CPU mode
+- it: should keep custom layout image in CPU mode
   set:
     config:
       frontend:

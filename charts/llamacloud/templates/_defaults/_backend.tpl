@@ -84,6 +84,7 @@ Parameters:
 - root: $
 */}}
 {{ define "llamacloud.component.backend.env" }}
+{{- include "llamacloud.managedInference.env" (dict "root" .root) }}
 {{- if (.component).extraEnvVariables }}
 {{ toYaml (.component).extraEnvVariables }}
 {{- end }}

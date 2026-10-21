@@ -110,6 +110,7 @@ Parameters:
   value: "0.0.0.0"
 - name: WORKER_PORT
   value: "8000"
+{{- include "llamacloud.managedInference.env" (dict "root" .root) }}
 {{- if (.component).extraEnvVariables }}
 {{ toYaml (.component).extraEnvVariables }}
 {{- end }}
