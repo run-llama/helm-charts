@@ -1,0 +1,53 @@
+suite: layout-monitoring
+
+templates:
+  - templates/monitoring/servicemonitor-components.yaml
+
+capabilities:
+  apiVersions:
+    - monitoring.coreos.com/v1
+
+set:
+  monitoring.serviceMonitors.enabled: true
+  config.parseLayoutDetection.enabled: true
+  config.parseLayoutDetection.gpu: true
+
+tests:
+  - it: scrapes the GPU layout server
+    documentSelector:
+      path: metadata.name
+      value: llamacloud-layout
+    asserts:
+      - equal:
+          path: spec.endpoints[0].path
+          value: /metrics
+  - it: scrapes the legacy GPU layout server
+    set:
+      config.parseLayoutDetectionV3.enabled: true
+      config.parseLayoutDetectionV3.gpu: true
+    documentSelector:
+      path: metadata.name
+      value: llamacloud-layout-v3
+    asserts:
+      - equal:
+          path: spec.endpoints[0].path
+          value: /metrics
+  - it: scrapes the CPU layout server
+    set:
+      config.parseLayoutDetection.gpu: false
+    asserts:
+      - containsDocument:
+          kind: ServiceMonitor
+          apiVersion: monitoring.coreos.com/v1
+          name: llamacloud-layout
+          any: true
+  - it: scrapes the legacy CPU layout server
+    set:
+      config.parseLayoutDetectionV3.enabled: true
+      config.parseLayoutDetectionV3.gpu: false
+    asserts:
+      - containsDocument:
+          kind: ServiceMonitor
+          apiVersion: monitoring.coreos.com/v1
+          name: llamacloud-layout-v3
+          any: true

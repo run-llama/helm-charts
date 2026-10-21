@@ -76,6 +76,38 @@ Layout V3 is the only bundled Layout runtime. The version-neutral
 `llamacloud-layout-v3` names remain supported for compatibility but are
 deprecated and will be removed in a future chart release.
 
+## Managed inference
+
+`config.managedInference` sends the install's inference calls and usage to the managed
+inference gateway, so the install runs no GPU workloads and holds no model provider keys. Set
+the gateway's private-link URL and its API key, or the name of an existing Secret that holds
+the key under `MANAGED_INFERENCE_GATEWAY_API_KEY`:
+
+```yaml
+config:
+  managedInference:
+    url: https://<region>.inference.cloud.llamaindex.ai
+    apiKey: <gateway API key>
+```
+
+With `url` set, the chart does the following:
+
+- Points the parse worker's OCR, layout and form-field detection calls at the gateway's
+  `/ocr`, `/ocr/non-granular`, `/layout/` and `/ffdetr/predict` routes, with the gateway key as
+  the bearer. `config.parseOcr`, `config.parseLayoutDetection` and
+  `config.parseFormFieldDetection` still decide which of these services Parse uses.
+- Renders no in-cluster OCR, layout or form-field detection Deployment, Service or
+  ServiceAccount.
+- Gives the backend, jobs service, usage service, Python Temporal workers and parse workers the
+  gateway URL and key. Their model calls go to the gateway, and the install reports usage to it.
+- Sets `IS_OCRIA_ROUTING_ENABLED=true`, so every eligible Cost-effective and Agentic Parse job
+  runs on Ocria.
+- Fails the render if `config.llms` configures a model provider (an API key, Secret, base URL,
+  Azure deployment, Bedrock region or credential, or Vertex project, location or credential) or
+  sets `config.llms.providerConfigs`. The error names each value to unset.
+
+With `url` unset, the chart renders the same manifests as a chart without this setting.
+
 ## Parameters
 
 ### License Configuration
@@ -287,18 +319,18 @@ deprecated and will be removed in a future chart release.
 
 ### AWS Bedrock Configuration
 
-| Name                                               | Description                                                                               | Value                                       |
-| -------------------------------------------------- | ----------------------------------------------------------------------------------------- | ------------------------------------------- |
-| `config.llms.awsBedrock.region`                    | AWS Bedrock region                                                                        | `""`                                        |
-| `config.llms.awsBedrock.accessKeyId`               | AWS Bedrock access key ID                                                                 | `""`                                        |
-| `config.llms.awsBedrock.secretAccessKey`           | AWS Bedrock secret access key                                                             | `""`                                        |
-| `config.llms.awsBedrock.sonnet3_5ModelVersionName` | Sonnet 3.5 model version name example. Usually needs a 'us.', 'global.', or 'eu.' prefix. | `anthropic.claude-3-5-sonnet-20240620-v1:0` |
-| `config.llms.awsBedrock.sonnet3_7ModelVersionName` | Sonnet 3.7 model version name example. Usually needs a 'us.', 'global.', or 'eu.' prefix. | `anthropic.claude-3-7-sonnet-20250219-v1:0` |
-| `config.llms.awsBedrock.sonnet4_0ModelVersionName` | Sonnet 4.0 model version name example. Usually needs a 'us.', 'global.', or 'eu.' prefix. | `anthropic.claude-sonnet-4-20250514-v1:0`   |
-| `config.llms.awsBedrock.sonnet4_5ModelVersionName` | Sonnet 4.5 model version name example. Usually needs a 'us.', 'global.', or 'eu.' prefix. | `anthropic.claude-sonnet-4-5-20250929-v1:0` |
-| `config.llms.awsBedrock.haiku3_5ModelVersionName`  | Haiku 3.5 model version name example. Usually needs a 'us.', 'global.', or 'eu.' prefix.  | `anthropic.claude-3-5-haiku-20241022-v1:0`  |
-| `config.llms.awsBedrock.haiku4_5ModelVersionName`  | Haiku 4.5 model version name example. Usually needs a 'us.', 'global.', or 'eu.' prefix.  | `anthropic.claude-haiku-4-5-20251001-v1:0`  |
-| `config.llms.awsBedrock.secret`                    | Name of the existing secret to use for the AWS Bedrock API key                            | `""`                                        |
+| Name                                               | Description                                                                                                | Value                                       |
+| -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
+| `config.llms.awsBedrock.region`                    | AWS Bedrock region                                                                                         | `""`                                        |
+| `config.llms.awsBedrock.accessKeyId`               | AWS Bedrock access key ID                                                                                  | `""`                                        |
+| `config.llms.awsBedrock.secretAccessKey`           | AWS Bedrock secret access key                                                                              | `""`                                        |
+| `config.llms.awsBedrock.sonnet3_5ModelVersionName` | Sonnet 3.5 model version name example. Usually needs a 'us.', 'global.', or 'eu.' prefix.                  | `anthropic.claude-3-5-sonnet-20240620-v1:0` |
+| `config.llms.awsBedrock.sonnet3_7ModelVersionName` | Ignored. Claude Sonnet 3.7 is retired on Bedrock; the key is kept so existing values files still validate. | `""`                                        |
+| `config.llms.awsBedrock.sonnet4_0ModelVersionName` | Ignored. Claude Sonnet 4.0 is retired on Bedrock; the key is kept so existing values files still validate. | `""`                                        |
+| `config.llms.awsBedrock.sonnet4_5ModelVersionName` | Sonnet 4.5 model version name example. Usually needs a 'us.', 'global.', or 'eu.' prefix.                  | `anthropic.claude-sonnet-4-5-20250929-v1:0` |
+| `config.llms.awsBedrock.haiku3_5ModelVersionName`  | Ignored. Claude Haiku 3.5 is retired on Bedrock; the key is kept so existing values files still validate.  | `""`                                        |
+| `config.llms.awsBedrock.haiku4_5ModelVersionName`  | Haiku 4.5 model version name example. Usually needs a 'us.', 'global.', or 'eu.' prefix.                   | `anthropic.claude-haiku-4-5-20251001-v1:0`  |
+| `config.llms.awsBedrock.secret`                    | Name of the existing secret to use for the AWS Bedrock API key                                             | `""`                                        |
 
 ### Google Vertex AI Configuration
 
@@ -339,6 +371,14 @@ deprecated and will be removed in a future chart release.
 | Name                               | Description                                                                                                                                                                                                              | Value   |
 | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------- |
 | `config.managedEmbeddings.enabled` | Offer managed embeddings as a default option when creating indexes (also requires an embedding model such as openai-text-embedding-3-small registered in the LLM provider config). Applied to both backend and frontend. | `false` |
+
+### Managed Inference Configuration
+
+| Name                             | Description                                                                                                                     | Value |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | ----- |
+| `config.managedInference.url`    | Private-link URL of the managed inference gateway. Empty keeps every inference call and usage on the install.                   | `""`  |
+| `config.managedInference.apiKey` | Gateway API key. The chart stores it in a Secret.                                                                               | `""`  |
+| `config.managedInference.secret` | Name of an existing Secret holding the gateway API key under the key MANAGED_INFERENCE_GATEWAY_API_KEY. Used instead of apiKey. | `""`  |
 
 ### Connectors Configuration
 
@@ -541,10 +581,10 @@ deprecated and will be removed in a future chart release.
 
 ### Form Field Detection Configuration
 
-| Name                                     | Description                                                                   | Value   |
-| ---------------------------------------- | ----------------------------------------------------------------------------- | ------- |
-| `config.parseFormFieldDetection.enabled` | Enable in-cluster LlamaParse form field detection                             | `false` |
-| `config.parseFormFieldDetection.gpu`     | Enable GPU acceleration for form field detection (if false, uses CPU backend) | `false` |
+| Name                                     | Description                                                                                                                         | Value   |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| `config.parseFormFieldDetection.enabled` | Enable LlamaParse form field detection, in-cluster or through the managed inference gateway when config.managedInference.url is set | `false` |
+| `config.parseFormFieldDetection.gpu`     | Enable GPU acceleration for form field detection (if false, uses CPU backend)                                                       | `false` |
 
 ### Layout Detection V3 (BYOC Self-Hosted) Configuration
 
@@ -611,7 +651,7 @@ deprecated and will be removed in a future chart release.
 | `frontend.replicas`                    | Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set. | `nil`                                             |
 | `frontend.command`                     | Override the container command (entrypoint)                                                                                      | `[]`                                              |
 | `frontend.annotations`                 | Annotations added to the Frontend Deployment.                                                                                    | `{}`                                              |
-| `frontend.image`                       | Frontend image                                                                                                                   | `docker.io/llamaindex/llamacloud-frontend:0.11.0` |
+| `frontend.image`                       | Frontend image                                                                                                                   | `docker.io/llamaindex/llamacloud-frontend:0.11.1` |
 | `frontend.imagePullPolicy`             | Frontend image pull policy                                                                                                       | `IfNotPresent`                                    |
 | `frontend.securityContext`             | Security context for the container                                                                                               | `{}`                                              |
 | `frontend.serviceAccountAnnotations`   | Annotations to add to the service account                                                                                        | `{}`                                              |
@@ -657,7 +697,7 @@ deprecated and will be removed in a future chart release.
 | `backend.replicas`                    | Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set. | `nil`                                            |
 | `backend.command`                     | Override the container command (entrypoint)                                                                                      | `[]`                                             |
 | `backend.annotations`                 | Annotations added to the Backend Deployment.                                                                                     | `{}`                                             |
-| `backend.image`                       | Backend image                                                                                                                    | `docker.io/llamaindex/llamacloud-backend:0.11.0` |
+| `backend.image`                       | Backend image                                                                                                                    | `docker.io/llamaindex/llamacloud-backend:0.11.1` |
 | `backend.imagePullPolicy`             | Backend image pull policy                                                                                                        | `IfNotPresent`                                   |
 | `backend.securityContext`             | Security context for the container                                                                                               | `{}`                                             |
 | `backend.serviceAccountAnnotations`   | Annotations to add to the service account                                                                                        | `{}`                                             |
@@ -680,7 +720,7 @@ deprecated and will be removed in a future chart release.
 | `jobsService.replicas`                    | Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set. | `nil`                                            |
 | `jobsService.command`                     | Override the container command (entrypoint)                                                                                      | `[]`                                             |
 | `jobsService.annotations`                 | Annotations added to the JobsService Deployment.                                                                                 | `{}`                                             |
-| `jobsService.image`                       | JobsService image                                                                                                                | `docker.io/llamaindex/llamacloud-backend:0.11.0` |
+| `jobsService.image`                       | JobsService image                                                                                                                | `docker.io/llamaindex/llamacloud-backend:0.11.1` |
 | `jobsService.imagePullPolicy`             | JobsService image pull policy                                                                                                    | `IfNotPresent`                                   |
 | `jobsService.securityContext`             | Security context for the container                                                                                               | `{}`                                             |
 | `jobsService.serviceAccountAnnotations`   | Annotations to add to the service account                                                                                        | `{}`                                             |
@@ -701,9 +741,10 @@ deprecated and will be removed in a future chart release.
 | ------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
 | `llamaParseOcr.horizontalPodAutoscalerSpec` | HorizontalPodAutoScaler configuration                                                                                            | `{}`                                                    |
 | `llamaParseOcr.replicas`                    | Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set. | `nil`                                                   |
+| `llamaParseOcr.terminationGracePeriodSeconds` | Pod termination grace period in seconds. Allows the server to finish its 40-second drain and close native predictors. | `60` |
 | `llamaParseOcr.command`                     | Override the container command (entrypoint)                                                                                      | `[]`                                                    |
 | `llamaParseOcr.annotations`                 | Annotations added to the LlamaParseOcr Deployment.                                                                               | `{}`                                                    |
-| `llamaParseOcr.image`                       | LlamaParseOcr image                                                                                                              | `docker.io/llamaindex/llamacloud-llamaparse-ocr:0.11.0` |
+| `llamaParseOcr.image`                       | LlamaParseOcr image                                                                                                              | `docker.io/llamaindex/llamacloud-llamaparse-ocr:0.11.1` |
 | `llamaParseOcr.imagePullPolicy`             | LlamaParseOcr image pull policy                                                                                                  | `IfNotPresent`                                          |
 | `llamaParseOcr.securityContext`             | Security context for the container                                                                                               | `{}`                                                    |
 | `llamaParseOcr.serviceAccountAnnotations`   | Annotations to add to the service account                                                                                        | `{}`                                                    |
@@ -726,6 +767,7 @@ deprecated and will be removed in a future chart release.
 | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | -------------- |
 | `llamaParseLayoutDetectionApi.horizontalPodAutoscalerSpec` | HorizontalPodAutoScaler configuration                                                                                            | `{}`           |
 | `llamaParseLayoutDetectionApi.replicas`                    | Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set. | `nil`          |
+| `llamaParseLayoutDetectionApi.terminationGracePeriodSeconds` | Pod termination grace period in seconds. Allows the server to finish its 40-second drain and close native predictors. | `60` |
 | `llamaParseLayoutDetectionApi.command`                     | Override the container command (entrypoint)                                                                                      | `[]`           |
 | `llamaParseLayoutDetectionApi.annotations`                 | Annotations added to the LlamaParseLayoutDetectionApi Deployment.                                                                | `{}`           |
 | `llamaParseLayoutDetectionApi.image`                       | Layout V3 image behind the canonical Layout component                                                                            | `""`           |
@@ -774,6 +816,7 @@ deprecated and will be removed in a future chart release.
 | ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- | ---------------- |
 | `llamaParseLayoutDetectionApiV3.horizontalPodAutoscalerSpec` | Deprecated compatibility alias; use llamaParseLayoutDetectionApi.horizontalPodAutoscalerSpec                                     | `{}`             |
 | `llamaParseLayoutDetectionApiV3.replicas`                    | Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set. | `nil`            |
+| `llamaParseLayoutDetectionApiV3.terminationGracePeriodSeconds` | Pod termination grace period in seconds. Allows the server to finish its 40-second drain and close native predictors. | `60` |
 | `llamaParseLayoutDetectionApiV3.command`                     | Override the container command (entrypoint)                                                                                      | `[]`             |
 | `llamaParseLayoutDetectionApiV3.annotations`                 | Annotations added to the LlamaParseLayoutDetectionApiV3 Deployment.                                                              | `{}`             |
 | `llamaParseLayoutDetectionApiV3.image`                       | LlamaParseLayoutDetectionApiV3 image (layout detection + figure classifier)                                                      | `""`             |
@@ -801,7 +844,7 @@ deprecated and will be removed in a future chart release.
 | `usage.replicas`                    | Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set. | `nil`                                            |
 | `usage.command`                     | Override the container command (entrypoint)                                                                                      | `[]`                                             |
 | `usage.annotations`                 | Annotations added to the LlamaParseLayoutDetectionApi Deployment.                                                                | `{}`                                             |
-| `usage.image`                       | LlamaParseLayoutDetectionApi image                                                                                               | `docker.io/llamaindex/llamacloud-backend:0.11.0` |
+| `usage.image`                       | LlamaParseLayoutDetectionApi image                                                                                               | `docker.io/llamaindex/llamacloud-backend:0.11.1` |
 | `usage.imagePullPolicy`             | LlamaParseLayoutDetectionApi image pull policy                                                                                   | `IfNotPresent`                                   |
 | `usage.securityContext`             | Security context for the container                                                                                               | `{}`                                             |
 | `usage.serviceAccountAnnotations`   | Annotations to add to the service account                                                                                        | `{}`                                             |
@@ -824,7 +867,7 @@ deprecated and will be removed in a future chart release.
 | `temporalWorkloads.llamaParse.replicas`                                | Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set.                                                                    | `nil`                                               |
 | `temporalWorkloads.llamaParse.command`                                 | Override the container command (entrypoint)                                                                                                                                                         | `[]`                                                |
 | `temporalWorkloads.llamaParse.annotations`                             | Annotations added to the temporal llamaparse Deployment.                                                                                                                                            | `{}`                                                |
-| `temporalWorkloads.llamaParse.image`                                   | temporal llamaparse image                                                                                                                                                                           | `docker.io/llamaindex/llamacloud-llamaparse:0.11.0` |
+| `temporalWorkloads.llamaParse.image`                                   | temporal llamaparse image                                                                                                                                                                           | `docker.io/llamaindex/llamacloud-llamaparse:0.11.1` |
 | `temporalWorkloads.llamaParse.imagePullPolicy`                         | temporal llamaparse image pull policy                                                                                                                                                               | `IfNotPresent`                                      |
 | `temporalWorkloads.llamaParse.securityContext`                         | Security context for the container                                                                                                                                                                  | `{}`                                                |
 | `temporalWorkloads.llamaParse.serviceAccountAnnotations`               | Annotations to add to the service account                                                                                                                                                           | `{}`                                                |
@@ -843,7 +886,7 @@ deprecated and will be removed in a future chart release.
 | `temporalWorkloads.llamaParseQuarantine.replicas`                      | Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set.                                                                    | `nil`                                               |
 | `temporalWorkloads.llamaParseQuarantine.command`                       | Override the container command (entrypoint)                                                                                                                                                         | `[]`                                                |
 | `temporalWorkloads.llamaParseQuarantine.annotations`                   | Annotations added to the temporal llamaparse quarantine Deployment.                                                                                                                                 | `{}`                                                |
-| `temporalWorkloads.llamaParseQuarantine.image`                         | temporal llamaparse quarantine image                                                                                                                                                                | `docker.io/llamaindex/llamacloud-llamaparse:0.11.0` |
+| `temporalWorkloads.llamaParseQuarantine.image`                         | temporal llamaparse quarantine image                                                                                                                                                                | `docker.io/llamaindex/llamacloud-llamaparse:0.11.1` |
 | `temporalWorkloads.llamaParseQuarantine.imagePullPolicy`               | temporal llamaparse quarantine image pull policy                                                                                                                                                    | `IfNotPresent`                                      |
 | `temporalWorkloads.llamaParseQuarantine.securityContext`               | Security context for the container                                                                                                                                                                  | `{}`                                                |
 | `temporalWorkloads.llamaParseQuarantine.serviceAccountAnnotations`     | Annotations to add to the service account                                                                                                                                                           | `{}`                                                |
@@ -865,7 +908,7 @@ deprecated and will be removed in a future chart release.
 | ---------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
 | `temporalWorkloads.workers.temporal-jobs-worker.horizontalPodAutoscalerSpec` | HorizontalPodAutoScaler configuration                                                                             | `{}`                                             |
 | `temporalWorkloads.workers.temporal-jobs-worker.annotations`                 | Annotations added to the temporal-jobs-worker Deployment.                                                         | `{}`                                             |
-| `temporalWorkloads.workers.temporal-jobs-worker.image`                       | Frontend image                                                                                                    | `docker.io/llamaindex/llamacloud-backend:0.11.0` |
+| `temporalWorkloads.workers.temporal-jobs-worker.image`                       | Frontend image                                                                                                    | `docker.io/llamaindex/llamacloud-backend:0.11.1` |
 | `temporalWorkloads.workers.temporal-jobs-worker.imagePullPolicy`             | Frontend image pull policy                                                                                        | `IfNotPresent`                                   |
 | `temporalWorkloads.workers.temporal-jobs-worker.command`                     | Command to run in the container                                                                                   | `[]`                                             |
 | `temporalWorkloads.workers.temporal-jobs-worker.securityContext`             | Security context for the container                                                                                | `{}`                                             |

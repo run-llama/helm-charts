@@ -531,6 +531,21 @@
                     },
                     "additionalProperties": false
                 },
+                "managedInference": {
+                    "type": "object",
+                    "properties": {
+                        "apiKey": {
+                            "type": "string"
+                        },
+                        "secret": {
+                            "type": "string"
+                        },
+                        "url": {
+                            "type": "string"
+                        }
+                    },
+                    "additionalProperties": false
+                },
                 "mcp": {
                     "type": "object",
                     "properties": {
@@ -1369,6 +1384,10 @@
                 "serviceAccountAnnotations": {
                     "type": "object"
                 },
+                "terminationGracePeriodSeconds": {
+                    "type": "integer",
+                    "minimum": 0
+                },
                 "tolerations": {
                     "type": "array"
                 },
@@ -1446,6 +1465,10 @@
                 "serviceAccountAnnotations": {
                     "type": "object"
                 },
+                "terminationGracePeriodSeconds": {
+                    "type": "integer",
+                    "minimum": 0
+                },
                 "tolerations": {
                     "type": "array"
                 },
@@ -1522,6 +1545,10 @@
                 },
                 "serviceAccountAnnotations": {
                     "type": "object"
+                },
+                "terminationGracePeriodSeconds": {
+                    "type": "integer",
+                    "minimum": 0
                 },
                 "tolerations": {
                     "type": "array"

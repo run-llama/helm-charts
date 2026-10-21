@@ -77,7 +77,7 @@ tests:
     - isNotEmpty:
         path: .data.LLM_PROVIDER_CONFIGS_JSON
 
-- it: should not create secret when providerConfigs is empty
+- it: emits an empty provider list by default
   set:
     config.llms.providerConfigs: []
     config.frontend.enabled: false
@@ -85,8 +85,9 @@ tests:
     config.parseLayoutDetection.enabled: false
   template: ../templates/llamacloud/secrets/llm.provider-configs.yaml
   asserts:
-    - hasDocuments:
-        count: 0
+    - equal:
+        path: .data.LLM_PROVIDER_CONFIGS_JSON
+        value: W10=
 
 - it: should include llm-provider-configs-secret in jobs-service envFrom
   set:
@@ -127,6 +128,20 @@ tests:
         content:
           secretRef:
             name: llm-provider-configs-secret
+
+- it: should include llm-provider-configs-secret in Parse worker envFrom
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-temporal-parse
+  asserts:
+    - contains:
+        path: .spec.template.spec.containers[0].envFrom
+        content:
+          secretRef:
+            name: llm-provider-configs-secret
+    - isNotEmpty:
+        path: .spec.template.metadata.annotations['checksum/llm-provider-configs']
 
 - it: should support bedrock credentials with all optional fields
   set:

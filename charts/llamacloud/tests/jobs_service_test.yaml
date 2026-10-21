@@ -255,15 +255,12 @@ tests:
     - equal:
         path: .data.AWS_BEDROCK_SONNET_3_5_MODEL_VERSION_NAME
         value: YW50aHJvcGljLmNsYXVkZS0zLTUtc29ubmV0LTIwMjQwNjIwLXYxOjA=
-    - equal:
+    - notExists:
         path: .data.AWS_BEDROCK_SONNET_3_7_MODEL_VERSION_NAME
-        value: YW50aHJvcGljLmNsYXVkZS0zLTctc29ubmV0LTIwMjUwMjE5LXYxOjA=
-    - equal:
+    - notExists:
         path: .data.AWS_BEDROCK_SONNET_4_0_MODEL_VERSION_NAME
-        value: YW50aHJvcGljLmNsYXVkZS1zb25uZXQtNC0yMDI1MDUxNC12MTow
-    - equal:
+    - notExists:
         path: .data.AWS_BEDROCK_HAIKU_3_5_MODEL_VERSION_NAME
-        value: YW50aHJvcGljLmNsYXVkZS0zLTUtaGFpa3UtMjAyNDEwMjItdjE6MA==
     - equal:
         path: .data.AWS_BEDROCK_HAIKU_4_5_MODEL_VERSION_NAME
         value: YW50aHJvcGljLmNsYXVkZS1oYWlrdS00LTUtMjAyNTEwMDEtdjE6MA==

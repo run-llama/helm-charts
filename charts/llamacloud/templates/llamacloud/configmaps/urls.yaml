@@ -36,24 +36,36 @@ data:
   {{- if (((.Values.config).storageBuckets).s3proxy.enabled | default false) }}
   S3_ENDPOINT_URL: {{ printf "http://localhost:%d" (int ((($.Values.config).storageBuckets).s3proxy.containerPort | default 80)) | quote }}
   {{- end }}
+  {{- /* Each gateway route's bearer is the gateway key, set in the parse worker env under
+         the same setting by llamacloud.managedInference.parseTokenNames. */}}
+  {{- $gateway := include "llamacloud.managedInference.url" . }}
   {{- if (((.Values.config).parseOcr).enabled) }}
+  {{- if $gateway }}
+  OCR_SERVICE_ENDPOINT: {{ printf "%s/ocr" $gateway | quote }}
+  NON_GRANULAR_OCR_SERVICE_ENDPOINT_V2: {{ printf "%s/ocr/non-granular" $gateway | quote }}
+  {{- else }}
   OCR_SERVER_URL: {{ printf "http://%s:%d/ocr" (include "llamacloud.component.llamaParseOcr" $ | fromYaml).name ( "80" | int) | quote }}
   {{- end }}
-  {{- /* One key, no aliases: the worker reads FFDETR_ENDPOINT and there is no
-         earlier spelling to stay compatible with. No token key accompanies it —
-         the in-cluster detector is reached over cluster networking and the
-         worker's self-hosted route carries no credential at all. Emitted only
-         under the component's own gate, so a deployment that runs no detector
-         does not advertise one. */}}
+  {{- end }}
   {{- if (((.Values.config).parseFormFieldDetection).enabled) }}
+  {{- if $gateway }}
+  FFDETR_MODAL_ENDPOINT: {{ printf "%s/ffdetr/predict" $gateway | quote }}
+  {{- else }}
   FFDETR_ENDPOINT: {{ printf "http://%s:%d" (include "llamacloud.component.llamaParseFormFieldDetectionApi" $ | fromYaml).name ( "80" | int) | quote }}
+  {{- end }}
   {{- /* The endpoint alone runs the detector; this attaches the detected boxes to the
          form fields. Costs an overlay image per form-page LLM call; override in the
          parse component's extraEnvVariables, which outranks this ConfigMap. */}}
   FORM_BBOX_ATTRIBUTION: "model_overlay"
   {{- end }}
   {{- if $layoutComponent.name }}
+  {{- if $gateway }}
+  {{- /* The gateway serves predict at /layout/, trailing slash included, and batch at
+         /layout/batch, which the worker derives from this value. */}}
+  LAYOUT_EXTRACTION_V3_MODAL_ENDPOINT: {{ printf "%s/layout/" $gateway | quote }}
+  {{- else }}
   LAYOUT_EXTRACTION_V3_ENDPOINT: {{ printf "http://%s:%d" $layoutComponent.name ( "80" | int) | quote }}
+  {{- end }}
   # Match Modal SaaS detector input resolution. Operators can override through
   # worker environment when running an explicit A/B.
   LAYOUT_IMAGE_SIZE: "736"

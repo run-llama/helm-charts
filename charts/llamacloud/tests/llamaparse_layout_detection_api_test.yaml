@@ -21,6 +21,7 @@ tests:
         enabled: false
       parseLayoutDetection:
         enabled: true
+        gpu: true
     llamaParseLayoutDetectionApi:
       image: docker.io/llamaindex/llamacloud-layout-detection-api:latest
     redis:
@@ -56,6 +57,11 @@ tests:
     - notEqual:
         path: .spec.template.spec.containers[0].envFrom
         value: []
+    - contains:
+        path: spec.template.spec.containers[0].env
+        content:
+          name: LAYOUT_DEVICE
+          value: cuda
 
 - it: should create a deployment if config.parseLayoutDetection.enabled is true
   set:
@@ -87,9 +93,12 @@ tests:
     path: metadata.name
     value: llamacloud-layout
   asserts:
-    - equal:
+    - notExists:
         path: .spec.template.spec.containers[0].env[?(@.name == "LOG_LEVEL")].value
-        value: INFO
+    - notExists:
+        path: .spec.template.spec.containers[0].env[?(@.name == "PORT")].value
+    - notExists:
+        path: .spec.template.spec.containers[0].env[?(@.name == "UVICORN_PORT")].value
     - equal:
         path: .spec.template.spec.serviceAccountName
         value: llamacloud-layout
@@ -272,8 +281,17 @@ tests:
     - matchRegex:
         path: spec.template.spec.containers[0].image
         pattern: ^docker\.io/llamaindex/llamacloud-layout-detection-api-v3:.+-cpu$
+    - contains:
+        path: spec.template.spec.containers[0].env
+        content:
+          name: LAYOUT_DEVICE
+          value: cpu
+    - notExists:
+        path: spec.template.spec.containers[0].resources.requests["nvidia.com/gpu"]
+    - notExists:
+        path: spec.template.spec.containers[0].resources.limits["nvidia.com/gpu"]
 
-- it: should not add the CPU suffix to a configured image when config.parseLayoutDetection.gpu is false
+- it: should preserve a configured image when config.parseLayoutDetection.gpu is false
   set:
     config:
       frontend:

@@ -21,7 +21,9 @@ Parse OCR Component Settings.
 {{- $component = set $component "image" ( print "docker.io/llamaindex/llamacloud-llamaparse-ocr:" .Chart.AppVersion $suffix ) }}
 {{- end }}
 {{- $component = set $component "imagePullPolicy" ( ($.Values.llamaParseOcr).imagePullPolicy | default "IfNotPresent" ) }}
+{{- $component = set $component "terminationGracePeriodSeconds" ( ($.Values.llamaParseOcr).terminationGracePeriodSeconds | default 60 ) }}
 {{- $component = set $component "port" 8080 }}
+{{- $component = set $component "skipDefaultEnv" true }}
 {{- $component = set $component "command" (list "serve") }}
 {{- $component | toYaml }}
 {{- end }}
@@ -106,10 +108,6 @@ Parameters:
 - root: $
 */}}
 {{ define "llamacloud.component.llamaParseOcr.env" }}
-{{- if ((.root.Values.config).parseOcr).gpu }}
-- name: PADDLE_OCR_ENABLED
-  value: "true"
-{{- end }}
 {{- if (.component).extraEnvVariables }}
 {{ toYaml (.component).extraEnvVariables }}
 {{- end }}

@@ -146,6 +146,7 @@ Parameters:
 - name: PARSE_WORKER_ROLE
   value: {{ (.component).workerRole | quote }}
 {{- end }}
+{{- include "llamacloud.managedInference.env" (dict "root" .root "tokenNames" (include "llamacloud.managedInference.parseTokenNames" .root | fromYamlArray)) }}
 {{- if (.component).extraEnvVariables }}
 {{ toYaml (.component).extraEnvVariables }}
 {{- end }}
@@ -185,6 +186,7 @@ Parameters:
 {{- include "llamacloud.secrets.azureOpenAi" .root }}
 {{- include "llamacloud.secrets.awsBedrock" .root }}
 {{- include "llamacloud.secrets.googleVertexAi" .root }}
+{{- include "llamacloud.secrets.llmProviderConfigs" .root }}
 {{- end }}
 
 {{/*

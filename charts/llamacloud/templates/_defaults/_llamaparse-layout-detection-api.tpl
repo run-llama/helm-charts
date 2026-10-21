@@ -8,9 +8,8 @@ identity remain stable for BYOC upgrades while the component runs Layout V3.
 {{- $component = set $component "name" "llamacloud-layout" }}
 {{- $component = set $component "gpuEnabled" ((.Values.config).parseLayoutDetection).gpu }}
 {{- $defaultImage := printf "docker.io/llamaindex/llamacloud-layout-detection-api-v3:%s" .Chart.AppVersion }}
-{{- /* CPU mode pulls the separately published -cpu build, which is the same image
-     without the CUDA runtime. The suffix lands on the default tag only: an
-     operator who pins llamaParseLayoutDetectionApi.image gets that image verbatim. */}}
+{{- /* CPU mode pulls the separately published -cpu build. The suffix applies only
+     to the default tag. An explicit image is used unchanged. */}}
 {{- if not (((.Values.config).parseLayoutDetection).gpu) }}
 {{- $defaultImage = printf "%s-cpu" $defaultImage }}
 {{- end }}
@@ -20,6 +19,8 @@ identity remain stable for BYOC upgrades while the component runs Layout V3.
 {{- end }}
 {{- $component = set $component "image" $configuredImage }}
 {{- $component = set $component "imagePullPolicy" ( ($.Values.llamaParseLayoutDetectionApi).imagePullPolicy | default "IfNotPresent" ) }}
+{{- $component = set $component "terminationGracePeriodSeconds" ( ($.Values.llamaParseLayoutDetectionApi).terminationGracePeriodSeconds | default 60 ) }}
 {{- $component = set $component "port" 8000 }}
+{{- $component = set $component "skipDefaultEnv" true }}
 {{- $component | toYaml }}
 {{- end }}

@@ -1,18 +1,9 @@
 {{- if .Values.monitoring.serviceMonitors.enabled }}
 {{- if .Capabilities.APIVersions.Has "monitoring.coreos.com/v1" }}
 {{- /*
-  ServiceMonitors for in-chart LlamaCloud components that expose Prometheus
-  metrics at /metrics on their HTTP port. The "llamacloud.components" helper
-  already filters out components whose feature flag is off (e.g. parseOcr.enabled),
-  so a component appearing here is always actually deployed.
-
-  Components on this whitelist are confirmed to serve /metrics in the SaaS
-  deployment manifests (prometheus.io/scrape annotations). The layout /
-  layoutV3 detection APIs are intentionally excluded today because they do
-  not yet have Prometheus instrumentation; the frontend and temporal worker
-  pods are excluded for the same reason.
+  The components helper filters out disabled services.
 */}}
-{{- $monitored := list "backend" "jobsService" "llamaParseOcr" "usage" }}
+{{- $monitored := list "backend" "jobsService" "llamaParseOcr" "usage" "llamaParseLayoutDetectionApi" "llamaParseLayoutDetectionApiV3" }}
 {{- range $name, $component := ((include "llamacloud.components" .) | fromYaml) }}
 {{- if has $name $monitored }}
 ---

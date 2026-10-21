@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## [0.11.1] - 2026-10-21
+
+### Parse
+- **[Improvement]** OCR and layout detection run on a new, optimized serving layer with lower CPU, memory and GPU usage and higher throughput.
+
+### Infrastructure
+- **[Removal]** Bedrock routes for Claude Sonnet 3.7, Sonnet 4.0 and Haiku 3.5, which have reached end of life on Amazon Bedrock, are removed. The `config.llms.awsBedrock.sonnet3_7ModelVersionName`, `sonnet4_0ModelVersionName` and `haiku3_5ModelVersionName` values still validate and are ignored.
+
 ## [0.11.0] - 2026-10-13
 
 ### Breaking Changes

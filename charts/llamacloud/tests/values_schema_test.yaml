@@ -7,6 +7,7 @@ suite: values-schema-tests
 
 templates:
 - ../templates/llamacloud/secrets/license.yaml
+- ../templates/llamacloud/secrets/llm.aws.yaml
 
 release:
   name: test-release
@@ -143,16 +144,67 @@ tests:
     - failedTemplate:
         errorPattern: "at '/config/parse/concurrency': additional properties 'geminy25Flash' not allowed"
 
-- it: rejects the misspelled Bedrock model key that shipped in full-llm-config.yaml
+- it: accepts all six per-model Bedrock override keys and ignores the retired ones
   set:
     config:
       llms:
         awsBedrock:
-          haiku3_5_ModelVersionName: "anthropic.claude-3-5-haiku-20241022-v1:0"
-  template: ../templates/llamacloud/secrets/license.yaml
+          region: us-east-1
+          sonnet3_5ModelVersionName: "us.anthropic.claude-3-5-sonnet-20240620-v1:0"
+          sonnet3_7ModelVersionName: "us.anthropic.claude-3-7-sonnet-20250219-v1:0"
+          sonnet4_0ModelVersionName: "us.anthropic.claude-sonnet-4-20250514-v1:0"
+          sonnet4_5ModelVersionName: "us.anthropic.claude-sonnet-4-5-20250929-v1:0"
+          haiku3_5ModelVersionName: "us.anthropic.claude-3-5-haiku-20241022-v1:0"
+          haiku4_5ModelVersionName: "us.anthropic.claude-haiku-4-5-20251001-v1:0"
+  template: ../templates/llamacloud/secrets/llm.aws.yaml
   asserts:
-    - failedTemplate:
-        errorPattern: "at '/config/llms/awsBedrock': additional properties 'haiku3_5_ModelVersionName' not allowed"
+    - isKind:
+        of: Secret
+    - equal:
+        path: .data.AWS_BEDROCK_SONNET_3_5_MODEL_VERSION_NAME
+        value: dXMuYW50aHJvcGljLmNsYXVkZS0zLTUtc29ubmV0LTIwMjQwNjIwLXYxOjA=
+    - equal:
+        path: .data.BEDROCK_ANTHROPIC_SONNET_3_5_VERSION_NAME
+        value: dXMuYW50aHJvcGljLmNsYXVkZS0zLTUtc29ubmV0LTIwMjQwNjIwLXYxOjA=
+    - equal:
+        path: .data.BEDROCK_ANTHROPIC_SONNET_3_5_MODEL_ID
+        value: dXMuYW50aHJvcGljLmNsYXVkZS0zLTUtc29ubmV0LTIwMjQwNjIwLXYxOjA=
+    - notExists:
+        path: .data.AWS_BEDROCK_SONNET_3_7_MODEL_VERSION_NAME
+    - notExists:
+        path: .data.BEDROCK_ANTHROPIC_SONNET_3_7_VERSION_NAME
+    - notExists:
+        path: .data.BEDROCK_ANTHROPIC_SONNET_3_7_MODEL_ID
+    - notExists:
+        path: .data.AWS_BEDROCK_SONNET_4_0_MODEL_VERSION_NAME
+    - notExists:
+        path: .data.BEDROCK_ANTHROPIC_SONNET_4_0_VERSION_NAME
+    - notExists:
+        path: .data.BEDROCK_ANTHROPIC_SONNET_4_0_MODEL_ID
+    - equal:
+        path: .data.AWS_BEDROCK_SONNET_4_5_MODEL_VERSION_NAME
+        value: dXMuYW50aHJvcGljLmNsYXVkZS1zb25uZXQtNC01LTIwMjUwOTI5LXYxOjA=
+    - equal:
+        path: .data.BEDROCK_ANTHROPIC_SONNET_4_5_VERSION_NAME
+        value: dXMuYW50aHJvcGljLmNsYXVkZS1zb25uZXQtNC01LTIwMjUwOTI5LXYxOjA=
+    - equal:
+        path: .data.BEDROCK_ANTHROPIC_SONNET_4_5_MODEL_ID
+        value: dXMuYW50aHJvcGljLmNsYXVkZS1zb25uZXQtNC01LTIwMjUwOTI5LXYxOjA=
+    - notExists:
+        path: .data.AWS_BEDROCK_HAIKU_3_5_MODEL_VERSION_NAME
+    - notExists:
+        path: .data.BEDROCK_ANTHROPIC_HAIKU_3_5_VERSION_NAME
+    - notExists:
+        path: .data.BEDROCK_ANTHROPIC_HAIKU_3_5_MODEL_ID
+    - equal:
+        path: .data.AWS_BEDROCK_HAIKU_4_5_MODEL_VERSION_NAME
+        value: dXMuYW50aHJvcGljLmNsYXVkZS1oYWlrdS00LTUtMjAyNTEwMDEtdjE6MA==
+    - equal:
+        path: .data.BEDROCK_ANTHROPIC_HAIKU_4_5_VERSION_NAME
+        value: dXMuYW50aHJvcGljLmNsYXVkZS1oYWlrdS00LTUtMjAyNTEwMDEtdjE6MA==
+    - equal:
+        path: .data.BEDROCK_ANTHROPIC_HAIKU_4_5_MODEL_ID
+        value: dXMuYW50aHJvcGljLmNsYXVkZS1oYWlrdS00LTUtMjAyNTEwMDEtdjE6MA==
 
 - it: rejects a logLevel typo (pattern) but accepts any casing the backend accepts
   # logLevel is a case-insensitive pattern, not an enum: the backend does

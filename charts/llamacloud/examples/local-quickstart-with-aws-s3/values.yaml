@@ -104,12 +104,11 @@ config:
       region: "<REPLACE_OR_REMOVE>"
       accessKeyId: "<REPLACE_OR_REMOVE>"
       secretAccessKey: "<REPLACE_OR_REMOVE>"
-      sonnet3_5ModelVersionName: "anthropic.claude-3-5-sonnet-20240620-v1:0"
-      sonnet3_7ModelVersionName: "us.anthropic.claude-3-7-sonnet-20250219-v1:0"
-      sonnet4_0ModelVersionName: "us.anthropic.claude-sonnet-4-20250514-v1:0"
-      sonnet4_5ModelVersionName: "us.anthropic.claude-sonnet-4-5-20250929-v1:0"
-      haiku3_5ModelVersionName: "us.anthropic.claude-3-5-haiku-20241022-v1:0"
-      haiku4_5ModelVersionName: "us.anthropic.claude-haiku-4-5-20251001-v1:0"
+    providerConfigs:
+      - provider: bedrock
+        model_id: anthropic-sonnet-4.5
+        provider_model_name: "us.anthropic.claude-sonnet-4-5-20250929-v1:0"
+        priority: 200
 
     googleVertexAi:
       projectId: "<REPLACE_OR_REMOVE>"
@@ -180,14 +179,14 @@ config:
     enabled: true
 
 frontend:
-  image: docker.io/llamaindex/llamacloud-frontend:0.11.0
+  image: docker.io/llamaindex/llamacloud-frontend:0.11.1
   resources:
     requests:
       cpu: "250m"
       memory: "256Mi"
 
 backend:
-  image: docker.io/llamaindex/llamacloud-backend:0.11.0
+  image: docker.io/llamaindex/llamacloud-backend:0.11.1
   resources: 
     requests:
       cpu: "250m"
@@ -199,7 +198,7 @@ backend:
     value: "<REPLACE>"
 
 jobsService:
-  image: docker.io/llamaindex/llamacloud-backend:0.11.0
+  image: docker.io/llamaindex/llamacloud-backend:0.11.1
   resources:
     requests:
       cpu: "250m"
@@ -212,7 +211,7 @@ jobsService:
     value: "<REPLACE>"
 
 llamaParseOcr:
-  image: docker.io/llamaindex/llamacloud-llamaparse-ocr:0.11.0
+  image: docker.io/llamaindex/llamacloud-llamaparse-ocr:0.11.1
   resources:
     requests:
       cpu: "250m"
@@ -235,7 +234,7 @@ llamaParseLayoutDetectionApi:
     value: "<REPLACE>"
 
 usage:
-  image: docker.io/llamaindex/llamacloud-backend:0.11.0
+  image: docker.io/llamaindex/llamacloud-backend:0.11.1
   resources:
     requests:
       cpu: "250m"
@@ -243,7 +242,7 @@ usage:
 
 temporalWorkloads:
   llamaParse:
-    image: docker.io/llamaindex/llamacloud-llamaparse:0.11.0
+    image: docker.io/llamaindex/llamacloud-llamaparse:0.11.1
     resources:
       requests:
         cpu: "250m"
@@ -256,7 +255,7 @@ temporalWorkloads:
 
   workers:
     temporal-jobs-worker:
-      image: docker.io/llamaindex/llamacloud-backend:0.11.0
+      image: docker.io/llamaindex/llamacloud-backend:0.11.1
       imagePullPolicy: IfNotPresent
       resources:
         requests:

@@ -1,0 +1,662 @@
+suite: managed-inference-tests
+
+templates:
+- ../templates/llamacloud/deployment.yaml
+- ../templates/llamacloud/service.yaml
+- ../templates/llamacloud/serviceaccount.yaml
+- ../templates/llamacloud/configmaps/urls.yaml
+- ../templates/llamacloud/configmaps/features.yaml
+- ../templates/llamacloud/secrets/managed-inference.yaml
+
+release:
+  name: test-release
+  namespace: test-namespace
+
+capabilities:
+  majorVersion: 1
+  minorVersion: 31
+  apiVersions:
+    - apps/v1
+    - v1
+
+chart:
+  appVersion: 9.9.9
+
+set:
+  config:
+    frontend:
+      enabled: false
+  redis:
+    host: test-redis
+    port: "6379"
+    password: test-pass
+  postgresql:
+    host: test-pg
+    port: "5432"
+    username: test-user
+    password: test-pass
+    database: test-db
+  mongodb:
+    host: mongodb
+    username: test-mongo-user
+    password: test-mongo-pass
+
+tests:
+- it: renders no gateway env and no Secret while the URL is unset
+  asserts:
+    - notContains:
+        path: .spec.template.spec.containers[0].env
+        content:
+          name: MANAGED_INFERENCE_GATEWAY_URL
+        any: true
+      template: ../templates/llamacloud/deployment.yaml
+    - hasDocuments:
+        count: 0
+      template: ../templates/llamacloud/secrets/managed-inference.yaml
+
+- it: gives every component that records or forwards usage the gateway URL and key
+  set:
+    config:
+      managedInference:
+        url: https://us-east-1.inference.cloud.llamaindex.ai/
+        apiKey: igw_fixture-key
+  template: ../templates/llamacloud/deployment.yaml
+  asserts:
+    - contains:
+        path: .spec.template.spec.containers[0].env
+        content:
+          name: MANAGED_INFERENCE_GATEWAY_URL
+          value: https://us-east-1.inference.cloud.llamaindex.ai
+      documentSelector:
+        path: metadata.name
+        value: llamacloud
+    - contains:
+        path: .spec.template.spec.containers[0].env
+        content:
+          name: MANAGED_INFERENCE_GATEWAY_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: managed-inference-secret
+              key: MANAGED_INFERENCE_GATEWAY_API_KEY
+      documentSelector:
+        path: metadata.name
+        value: llamacloud
+    - contains:
+        path: .spec.template.spec.containers[0].env
+        content:
+          name: MANAGED_INFERENCE_GATEWAY_URL
+          value: https://us-east-1.inference.cloud.llamaindex.ai
+      documentSelector:
+        path: metadata.name
+        value: llamacloud-operator
+    - contains:
+        path: .spec.template.spec.containers[0].env
+        content:
+          name: MANAGED_INFERENCE_GATEWAY_URL
+          value: https://us-east-1.inference.cloud.llamaindex.ai
+      documentSelector:
+        path: metadata.name
+        value: llamacloud-telemetry
+    - contains:
+        path: .spec.template.spec.containers[0].env
+        content:
+          name: MANAGED_INFERENCE_GATEWAY_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: managed-inference-secret
+              key: MANAGED_INFERENCE_GATEWAY_API_KEY
+      documentSelector:
+        path: metadata.name
+        value: temporal-jobs-worker
+
+- it: gives the parse worker the gateway URL and key, so its model rows point at the gateway
+  set:
+    config:
+      managedInference:
+        url: https://us-east-1.inference.cloud.llamaindex.ai
+        apiKey: igw_fixture-key
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-temporal-parse
+  asserts:
+    - contains:
+        path: .spec.template.spec.containers[0].env
+        content:
+          name: MANAGED_INFERENCE_GATEWAY_URL
+          value: https://us-east-1.inference.cloud.llamaindex.ai
+    - contains:
+        path: .spec.template.spec.containers[0].env
+        content:
+          name: MANAGED_INFERENCE_GATEWAY_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: managed-inference-secret
+              key: MANAGED_INFERENCE_GATEWAY_API_KEY
+
+- it: gives the quarantine parse worker the same gateway env
+  set:
+    config:
+      parse:
+        quarantineWorkerEnabled: true
+      managedInference:
+        url: https://us-east-1.inference.cloud.llamaindex.ai
+        apiKey: igw_fixture-key
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-temporal-parse-quarantine
+  asserts:
+    - contains:
+        path: .spec.template.spec.containers[0].env
+        content:
+          name: MANAGED_INFERENCE_GATEWAY_URL
+          value: https://us-east-1.inference.cloud.llamaindex.ai
+    - contains:
+        path: .spec.template.spec.containers[0].env
+        content:
+          name: OCR_SERVICE_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: managed-inference-secret
+              key: MANAGED_INFERENCE_GATEWAY_API_KEY
+
+- it: gives the parse worker no gateway URL or bearer while the URL is unset
+  set:
+    config:
+      parseFormFieldDetection:
+        enabled: true
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-temporal-parse
+  asserts:
+    - notContains:
+        path: .spec.template.spec.containers[0].env
+        content:
+          name: MANAGED_INFERENCE_GATEWAY_URL
+        any: true
+    - notContains:
+        path: .spec.template.spec.containers[0].env
+        content:
+          name: OCR_SERVICE_TOKEN
+        any: true
+    - notContains:
+        path: .spec.template.spec.containers[0].env
+        content:
+          name: LAYOUT_EXTRACTION_V3_MODAL_TOKEN
+        any: true
+    - notContains:
+        path: .spec.template.spec.containers[0].env
+        content:
+          name: FFDETR_MODAL_TOKEN
+        any: true
+
+- it: sends OCR and layout to the gateway routes and drops the in-cluster URLs
+  set:
+    config:
+      managedInference:
+        url: https://us-east-1.inference.cloud.llamaindex.ai/
+        apiKey: igw_fixture-key
+  template: ../templates/llamacloud/configmaps/urls.yaml
+  asserts:
+    - equal:
+        path: .data.OCR_SERVICE_ENDPOINT
+        value: https://us-east-1.inference.cloud.llamaindex.ai/ocr
+    - equal:
+        path: .data.NON_GRANULAR_OCR_SERVICE_ENDPOINT_V2
+        value: https://us-east-1.inference.cloud.llamaindex.ai/ocr/non-granular
+    - equal:
+        path: .data.LAYOUT_EXTRACTION_V3_MODAL_ENDPOINT
+        value: https://us-east-1.inference.cloud.llamaindex.ai/layout/
+    - equal:
+        path: .data.LAYOUT_IMAGE_SIZE
+        value: "736"
+    - notExists:
+        path: .data.OCR_SERVER_URL
+    - notExists:
+        path: .data.LAYOUT_EXTRACTION_V3_ENDPOINT
+    - notExists:
+        path: .data.FFDETR_ENDPOINT
+    - notExists:
+        path: .data.FFDETR_MODAL_ENDPOINT
+
+- it: keeps the in-cluster OCR, layout and form-field URLs while the URL is unset
+  set:
+    config:
+      parseFormFieldDetection:
+        enabled: true
+  template: ../templates/llamacloud/configmaps/urls.yaml
+  asserts:
+    - equal:
+        path: .data.OCR_SERVER_URL
+        value: http://llamacloud-ocr:80/ocr
+    - equal:
+        path: .data.LAYOUT_EXTRACTION_V3_ENDPOINT
+        value: http://llamacloud-layout:80
+    - equal:
+        path: .data.FFDETR_ENDPOINT
+        value: http://llamacloud-form-field-detection:80
+    - notExists:
+        path: .data.OCR_SERVICE_ENDPOINT
+    - notExists:
+        path: .data.NON_GRANULAR_OCR_SERVICE_ENDPOINT_V2
+    - notExists:
+        path: .data.LAYOUT_EXTRACTION_V3_MODAL_ENDPOINT
+    - notExists:
+        path: .data.FFDETR_MODAL_ENDPOINT
+
+- it: sends the parse worker's OCR and layout calls with the gateway key from its Secret
+  set:
+    config:
+      managedInference:
+        url: https://us-east-1.inference.cloud.llamaindex.ai
+        secret: customer-gateway-key
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-temporal-parse
+  asserts:
+    - contains:
+        path: .spec.template.spec.containers[0].env
+        content:
+          name: OCR_SERVICE_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: customer-gateway-key
+              key: MANAGED_INFERENCE_GATEWAY_API_KEY
+    - contains:
+        path: .spec.template.spec.containers[0].env
+        content:
+          name: LAYOUT_EXTRACTION_V3_MODAL_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: customer-gateway-key
+              key: MANAGED_INFERENCE_GATEWAY_API_KEY
+    - notContains:
+        path: .spec.template.spec.containers[0].env
+        content:
+          name: FFDETR_MODAL_TOKEN
+        any: true
+
+- it: routes no OCR or layout call to the gateway when those settings are off
+  set:
+    config:
+      managedInference:
+        url: https://us-east-1.inference.cloud.llamaindex.ai
+        apiKey: igw_fixture-key
+      parseOcr:
+        enabled: false
+      parseLayoutDetection:
+        enabled: false
+  asserts:
+    - notExists:
+        path: .data.OCR_SERVICE_ENDPOINT
+      template: ../templates/llamacloud/configmaps/urls.yaml
+    - notExists:
+        path: .data.LAYOUT_EXTRACTION_V3_MODAL_ENDPOINT
+      template: ../templates/llamacloud/configmaps/urls.yaml
+    - notExists:
+        path: .data.LAYOUT_IMAGE_SIZE
+      template: ../templates/llamacloud/configmaps/urls.yaml
+    - notContains:
+        path: .spec.template.spec.containers[0].env
+        content:
+          name: OCR_SERVICE_TOKEN
+        any: true
+      template: ../templates/llamacloud/deployment.yaml
+      documentSelector:
+        path: metadata.name
+        value: llamacloud-temporal-parse
+    - notContains:
+        path: .spec.template.spec.containers[0].env
+        content:
+          name: LAYOUT_EXTRACTION_V3_MODAL_TOKEN
+        any: true
+      template: ../templates/llamacloud/deployment.yaml
+      documentSelector:
+        path: metadata.name
+        value: llamacloud-temporal-parse
+
+- it: routes layout to the gateway when only the deprecated V3 alias enables it
+  set:
+    config:
+      managedInference:
+        url: https://us-east-1.inference.cloud.llamaindex.ai
+        apiKey: igw_fixture-key
+      parseLayoutDetection:
+        enabled: false
+      parseLayoutDetectionV3:
+        enabled: true
+  asserts:
+    - equal:
+        path: .data.LAYOUT_EXTRACTION_V3_MODAL_ENDPOINT
+        value: https://us-east-1.inference.cloud.llamaindex.ai/layout/
+      template: ../templates/llamacloud/configmaps/urls.yaml
+    - contains:
+        path: .spec.template.spec.containers[0].env
+        content:
+          name: LAYOUT_EXTRACTION_V3_MODAL_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: managed-inference-secret
+              key: MANAGED_INFERENCE_GATEWAY_API_KEY
+      template: ../templates/llamacloud/deployment.yaml
+      documentSelector:
+        path: metadata.name
+        value: llamacloud-temporal-parse
+
+- it: sends form-field detection to the gateway with its key when the forms setting is on
+  set:
+    config:
+      managedInference:
+        url: https://us-east-1.inference.cloud.llamaindex.ai
+        apiKey: igw_fixture-key
+      parseFormFieldDetection:
+        enabled: true
+  asserts:
+    - equal:
+        path: .data.FFDETR_MODAL_ENDPOINT
+        value: https://us-east-1.inference.cloud.llamaindex.ai/ffdetr/predict
+      template: ../templates/llamacloud/configmaps/urls.yaml
+    - equal:
+        path: .data.FORM_BBOX_ATTRIBUTION
+        value: model_overlay
+      template: ../templates/llamacloud/configmaps/urls.yaml
+    - notExists:
+        path: .data.FFDETR_ENDPOINT
+      template: ../templates/llamacloud/configmaps/urls.yaml
+    - contains:
+        path: .spec.template.spec.containers[0].env
+        content:
+          name: FFDETR_MODAL_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: managed-inference-secret
+              key: MANAGED_INFERENCE_GATEWAY_API_KEY
+      template: ../templates/llamacloud/deployment.yaml
+      documentSelector:
+        path: metadata.name
+        value: llamacloud-temporal-parse
+
+- it: leaves the backend's form-field detector without a token, so it stays off
+  set:
+    config:
+      managedInference:
+        url: https://us-east-1.inference.cloud.llamaindex.ai
+        apiKey: igw_fixture-key
+      parseFormFieldDetection:
+        enabled: true
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud
+  asserts:
+    - notContains:
+        path: .spec.template.spec.containers[0].env
+        content:
+          name: FFDETR_MODAL_TOKEN
+        any: true
+
+- it: keeps the gateway key out of the URL and feature ConfigMaps
+  set:
+    config:
+      managedInference:
+        url: https://us-east-1.inference.cloud.llamaindex.ai
+        apiKey: igw_fixture-key
+      parseFormFieldDetection:
+        enabled: true
+  asserts:
+    - notMatchRegex:
+        path: .data[*]
+        pattern: igw_fixture-key
+      template: ../templates/llamacloud/configmaps/urls.yaml
+    - notMatchRegex:
+        path: .data[*]
+        pattern: igw_fixture-key
+      template: ../templates/llamacloud/configmaps/features.yaml
+
+- it: deploys none of the in-cluster OCR, layout or form-field detection workloads
+  set:
+    config:
+      managedInference:
+        url: https://us-east-1.inference.cloud.llamaindex.ai
+        apiKey: igw_fixture-key
+      parseOcr:
+        enabled: true
+        gpu: true
+      parseLayoutDetection:
+        enabled: true
+      parseLayoutDetectionV3:
+        enabled: true
+      parseFormFieldDetection:
+        enabled: true
+  asserts:
+    - notMatchRegex:
+        path: .metadata.name
+        pattern: ^llamacloud-(ocr|layout|layout-v3|form-field-detection)$
+      template: ../templates/llamacloud/deployment.yaml
+    - notMatchRegex:
+        path: .metadata.name
+        pattern: ^llamacloud-(ocr|layout|layout-v3|form-field-detection)$
+      template: ../templates/llamacloud/service.yaml
+    - notMatchRegex:
+        path: .metadata.name
+        pattern: ^llamacloud-(ocr|layout|layout-v3|form-field-detection)$
+      template: ../templates/llamacloud/serviceaccount.yaml
+
+- it: deploys the in-cluster OCR, layout and form-field detection workloads while the URL is unset
+  set:
+    config:
+      parseFormFieldDetection:
+        enabled: true
+  template: ../templates/llamacloud/deployment.yaml
+  asserts:
+    - containsDocument:
+        any: true
+        kind: Deployment
+        apiVersion: apps/v1
+        name: llamacloud-ocr
+    - containsDocument:
+        any: true
+        kind: Deployment
+        apiVersion: apps/v1
+        name: llamacloud-layout
+    - containsDocument:
+        any: true
+        kind: Deployment
+        apiVersion: apps/v1
+        name: llamacloud-form-field-detection
+
+- it: routes every eligible Parse job to Ocria
+  set:
+    config:
+      managedInference:
+        url: https://us-east-1.inference.cloud.llamaindex.ai
+        apiKey: igw_fixture-key
+  template: ../templates/llamacloud/configmaps/features.yaml
+  asserts:
+    - equal:
+        path: .data.IS_OCRIA_ROUTING_ENABLED
+        value: "true"
+
+- it: leaves Ocria routing to its existing dials while the URL is unset
+  template: ../templates/llamacloud/configmaps/features.yaml
+  asserts:
+    - notExists:
+        path: .data.IS_OCRIA_ROUTING_ENABLED
+
+- it: stores the inline gateway key in its Secret
+  set:
+    config:
+      managedInference:
+        url: https://us-east-1.inference.cloud.llamaindex.ai
+        apiKey: igw_fixture-key
+  template: ../templates/llamacloud/secrets/managed-inference.yaml
+  asserts:
+    - equal:
+        path: .metadata.name
+        value: managed-inference-secret
+    - equal:
+        path: .data.MANAGED_INFERENCE_GATEWAY_API_KEY
+        value: aWd3X2ZpeHR1cmUta2V5
+
+- it: reads the key from an existing Secret and renders none
+  set:
+    config:
+      managedInference:
+        url: https://us-east-1.inference.cloud.llamaindex.ai
+        secret: customer-gateway-key
+  asserts:
+    - hasDocuments:
+        count: 0
+      template: ../templates/llamacloud/secrets/managed-inference.yaml
+    - contains:
+        path: .spec.template.spec.containers[0].env
+        content:
+          name: MANAGED_INFERENCE_GATEWAY_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: customer-gateway-key
+              key: MANAGED_INFERENCE_GATEWAY_API_KEY
+      template: ../templates/llamacloud/deployment.yaml
+      documentSelector:
+        path: metadata.name
+        value: llamacloud-telemetry
+
+- it: fails the render when the URL is set without a key
+  set:
+    config:
+      managedInference:
+        url: https://us-east-1.inference.cloud.llamaindex.ai
+  template: ../templates/llamacloud/secrets/managed-inference.yaml
+  asserts:
+    - failedTemplate:
+        errorMessage: config.managedInference.apiKey or config.managedInference.secret is required when config.managedInference.url is set
+
+- it: fails the render when the URL is not http(s)
+  set:
+    config:
+      managedInference:
+        url: us-east-1.inference.cloud.llamaindex.ai
+        apiKey: igw_fixture-key
+  template: ../templates/llamacloud/secrets/managed-inference.yaml
+  asserts:
+    - failedTemplate:
+        errorMessage: config.managedInference.url must be an http(s) URL
+
+- it: fails the render when a customer model provider key is set beside the gateway
+  set:
+    config:
+      managedInference:
+        url: https://us-east-1.inference.cloud.llamaindex.ai
+        apiKey: igw_fixture-key
+      llms:
+        openAi:
+          apiKey: sk-customer
+  template: ../templates/llamacloud/secrets/managed-inference.yaml
+  asserts:
+    - failedTemplate:
+        errorMessage: config.managedInference.url cannot be combined with customer model provider settings; unset config.llms.openAi.apiKey
+
+- it: names every customer provider setting and providerConfigs in the render error
+  set:
+    config:
+      managedInference:
+        url: https://us-east-1.inference.cloud.llamaindex.ai
+        apiKey: igw_fixture-key
+      llms:
+        anthropic:
+          secret: customer-anthropic
+        awsBedrock:
+          region: us-east-1
+        azureOpenAi:
+          secret: customer-azure
+        gemini:
+          baseUrl: https://gemini.example.com
+        googleVertexAi:
+          projectId: customer-project
+        providerConfigs:
+          - provider: openai
+            model_id: openai-gpt-4o
+            credentials:
+              api_key: sk-customer
+  template: ../templates/llamacloud/secrets/managed-inference.yaml
+  asserts:
+    - failedTemplate:
+        errorMessage: config.managedInference.url cannot be combined with customer model provider settings; unset config.llms.anthropic.secret, config.llms.awsBedrock.region, config.llms.azureOpenAi.secret, config.llms.gemini.baseUrl, config.llms.googleVertexAi.projectId, config.llms.providerConfigs
+
+- it: accepts the default Bedrock model names beside the gateway
+  set:
+    config:
+      managedInference:
+        url: https://us-east-1.inference.cloud.llamaindex.ai
+        apiKey: igw_fixture-key
+  template: ../templates/llamacloud/secrets/managed-inference.yaml
+  asserts:
+    - hasDocuments:
+        count: 1
+
+- it: keeps customer provider settings working while the URL is unset
+  set:
+    config:
+      llms:
+        openAi:
+          apiKey: sk-customer
+        providerConfigs:
+          - provider: openai
+            model_id: openai-gpt-4o
+            credentials:
+              api_key: sk-customer
+  template: ../templates/llamacloud/secrets/managed-inference.yaml
+  asserts:
+    - hasDocuments:
+        count: 0
+
+- it: restarts every gateway consumer when the inline key rotates
+  set:
+    config:
+      managedInference:
+        url: https://us-east-1.inference.cloud.llamaindex.ai
+        apiKey: igw_rotated-key
+  template: ../templates/llamacloud/deployment.yaml
+  asserts:
+    - equal:
+        path: .spec.template.metadata.annotations["checksum/managed-inference"]
+        value: 9c84ab8cdc69358d9c0ba604a053ea1ae9fc984b7044b65d34ccfe2d599e0194
+      documentSelector:
+        path: metadata.name
+        value: llamacloud
+    - equal:
+        path: .spec.template.metadata.annotations["checksum/managed-inference"]
+        value: 9c84ab8cdc69358d9c0ba604a053ea1ae9fc984b7044b65d34ccfe2d599e0194
+      documentSelector:
+        path: metadata.name
+        value: llamacloud-operator
+    - equal:
+        path: .spec.template.metadata.annotations["checksum/managed-inference"]
+        value: 9c84ab8cdc69358d9c0ba604a053ea1ae9fc984b7044b65d34ccfe2d599e0194
+      documentSelector:
+        path: metadata.name
+        value: llamacloud-telemetry
+    - equal:
+        path: .spec.template.metadata.annotations["checksum/managed-inference"]
+        value: 9c84ab8cdc69358d9c0ba604a053ea1ae9fc984b7044b65d34ccfe2d599e0194
+      documentSelector:
+        path: metadata.name
+        value: temporal-jobs-worker
+    - equal:
+        path: .spec.template.metadata.annotations["checksum/managed-inference"]
+        value: 9c84ab8cdc69358d9c0ba604a053ea1ae9fc984b7044b65d34ccfe2d599e0194
+      documentSelector:
+        path: metadata.name
+        value: llamacloud-temporal-parse
+
+- it: adds no gateway checksum while the URL is unset
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-temporal-parse
+  asserts:
+    - notExists:
+        path: .spec.template.metadata.annotations["checksum/managed-inference"]
