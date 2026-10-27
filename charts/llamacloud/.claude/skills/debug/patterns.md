@@ -95,11 +95,11 @@ When matching: search for substrings, not exact lines. Log timestamps and pod-na
 - **Azure Blob via s3proxy**: the storage account key / SAS configured in `s3proxy-secret` is wrong or scoped too narrowly.
 
 **Fix:**
-- For AWS IRSA: `aws iam get-role --role-name <role>` and confirm the trust relationship's `sub` condition matches `system:serviceaccount:<ns>:<sa-name>` for each ServiceAccount listed under the chart's components (`llamacloud`, `llamacloud-operator`, `llamacloud-worker`, `llamacloud-parse`, etc.).
+- For AWS IRSA: `aws iam get-role --role-name <role>` and confirm the trust relationship's `sub` condition matches `system:serviceaccount:<ns>:<sa-name>` for each ServiceAccount listed under the chart's components (`llamacloud`, `llamacloud-operator`, `temporal-jobs-worker`, `llamacloud-temporal-parse`, and the others in the debug skill's component table).
 - Confirm the buckets in `config.storageBuckets.*` exist and the role / static credentials have `Get`, `Put`, `List`, and `Delete` permissions on them.
 - For s3proxy backends: render the `s3proxy-secret` with `helm template` (with secrets masked) and confirm the credentials match what the upstream provider expects.
 
-**Field:** `backend.serviceAccountAnnotations.*`, `jobsService.serviceAccountAnnotations.*`, `jobsWorker.serviceAccountAnnotations.*` (annotation key is cloud-specific: `eks.amazonaws.com/role-arn` for AWS, `iam.gke.io/gcp-service-account` for GKE workload identity, etc.), plus the IAM role / IAM binding / static credentials.
+**Field:** `backend.serviceAccountAnnotations.*`, `jobsService.serviceAccountAnnotations.*`, `temporalWorkloads.workers.temporal-jobs-worker.serviceAccountAnnotations.*`, `temporalWorkloads.llamaParse.serviceAccountAnnotations.*` (annotation key is cloud-specific: `eks.amazonaws.com/role-arn` for AWS, `iam.gke.io/gcp-service-account` for GKE workload identity, etc.), plus the IAM role / IAM binding / static credentials.
 
 ---
 
@@ -162,7 +162,7 @@ When matching: search for substrings, not exact lines. Log timestamps and pod-na
 
 ---
 
-## LlamaParse (`llamacloud-parse-*`)
+## LlamaParse (`llamacloud-temporal-parse-*`)
 
 ### Parse pods can't reach OCR service
 **Signature:** Parse worker logs contain `Connection refused` or `timeout` to an OCR endpoint.
@@ -181,16 +181,16 @@ When matching: search for substrings, not exact lines. Log timestamps and pod-na
 ---
 
 ### Parse jobs queueing but never starting
-**Signature:** RabbitMQ queue depth on parse-related queues climbs but parse pods are idle. Or in Temporal mode, workflows visible but no activities running.
+**Signature:** Parse workflows are visible in Temporal but no activities run, and `llamacloud-temporal-parse` pods are idle or missing.
 
 **Likely causes:**
-- Worker count too low for the load. Scale `llamaParse.replicas` up.
-- Workers can't reach RabbitMQ / Temporal (auth or routing).
+- Worker count too low for the load. Raise `temporalWorkloads.llamaParse.replicas` or set `temporalWorkloads.llamaParse.horizontalPodAutoscalerSpec`.
+- Workers can't reach Temporal (auth or routing). The diagnosis matches `Backend can't reach Temporal frontend` above.
 - Workers in `CrashLoopBackOff` — check pod state first.
 
 **Fix:** scale workers, or fix connectivity, or fix the underlying pod crash.
 
-**Field:** `llamaParse.replicas`, RabbitMQ config, Temporal config.
+**Field:** `temporalWorkloads.llamaParse.{replicas,horizontalPodAutoscalerSpec}`, `temporal.*`.
 
 ---
 
@@ -296,30 +296,16 @@ temporal-subchart:
 
 ---
 
-## Jobs worker (`llamacloud-worker-*`)
+## Jobs Temporal worker (`temporal-jobs-worker-*`)
 
 ### Worker `OOMKilled`
-**Signature:** Pod terminated with reason `OOMKilled`, typically during a large parse or extract job.
+**Signature:** Pod terminated with reason `OOMKilled`, typically during a large job.
 
-**Likely cause:** Default memory limit (10Gi guarantee, no burst by default) is too tight for the workload.
+**Likely cause:** The default memory limit (6Gi, with a 4Gi request) is too tight for the workload.
 
-**Fix:** raise `jobsWorker.resources.limits.memory` (and matching `requests` if you want guaranteed QoS), or split work into smaller batches.
+**Fix:** raise `temporalWorkloads.workers.temporal-jobs-worker.resources.limits.memory`, or split work into smaller batches.
 
-**Field:** `jobsWorker.resources.{requests,limits}.memory`.
-
----
-
-### Worker can't reach RabbitMQ
-**Signature:** `Connection refused` / `auth failed` / `Channel closed unexpectedly` to the RabbitMQ host.
-
-**Likely causes:** Same shape as Postgres-unreachable but for AMQP. Routing or auth.
-
-**Fix:**
-- For Amazon MQ AMQPS (5671): confirm `rabbitmq.scheme: amqps` and the cluster SG is in the broker's inbound rules on TCP 5671.
-- For Azure Service Bus: use `rabbitmq.connectionString` instead of host/port/username/password.
-- For RabbitMQ on a public endpoint (uncommon): no firewall rule needed but auth and TLS still apply.
-
-**Field:** `rabbitmq.scheme`, `rabbitmq.host`, `rabbitmq.port`, `rabbitmq.connectionString`, plus cloud-side networking.
+**Field:** `temporalWorkloads.workers.temporal-jobs-worker.resources.{requests,limits}.memory`.
 
 ---
 

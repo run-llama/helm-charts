@@ -60,9 +60,12 @@ Parameters:
 {{-   end }}
 {{- end }}
 {{- $llms := .root.Values.config.llms | default dict }}
-{{- $llmConsumers := list "llamacloud.component.backend" "llamacloud.component.jobsService" "llamacloud.component.jobsWorker" "llamacloud.component.llamaParse" "llamacloud.component.temporal.worker" "llamacloud.component.temporal.llamaParse" }}
+{{- $llmConsumers := list "llamacloud.component.backend" "llamacloud.component.jobsService" "llamacloud.component.temporal.worker" "llamacloud.component.temporal.llamaParse" }}
 {{- if and .component (has .component.prefix $llmConsumers) }}
 {{-   $llmConfig := dict "providerConfigs" ($llms.providerConfigs | default list) }}
+{{-   if $llms.modelPolicy }}
+{{-     $llmConfig = set $llmConfig "modelPolicy" $llms.modelPolicy }}
+{{-   end }}
 {{-   $merged = set $merged "checksum/llm-provider-configs" ($llmConfig | toJson | sha256sum) }}
 {{- end }}
 {{- /* Env from a Secret is read at container start, so a changed gateway URL or key restarts its consumers. */}}

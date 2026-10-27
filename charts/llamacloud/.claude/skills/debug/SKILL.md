@@ -35,16 +35,17 @@ Tabulate the pod list. Note the **deployment naming convention**: the LlamaCloud
 | Backend | `llamacloud-*` (yes — bare release-named, not `llamacloud-backend`) | 1+ Ready |
 | Frontend | `llamacloud-web-*` | 1+ Ready |
 | Jobs service | `llamacloud-operator-*` | 1+ Ready |
-| Jobs worker | `llamacloud-worker-*` | 1+ Ready |
 | Usage / telemetry | `llamacloud-telemetry-*` | 1 Ready |
-| Parse | `llamacloud-parse-*` | 1+ Ready |
 | Parse OCR (GPU) | `llamacloud-ocr-*` | 0+ Ready depending on `config.parseOcr.enabled` |
 | Layout detection (GPU) | `llamacloud-layout-*` | 0+ depending on `config.parseLayoutDetection.enabled` |
 | Layout V3 (GPU) | `llamacloud-layout-v3-*` | 0+ depending on `config.parseLayoutDetectionV3.enabled` |
-| Parse Temporal worker | `llamacloud-temporal-parse-*` | 1+ Ready when temporal workloads enabled |
-| Jobs Temporal worker | `temporal-jobs-worker-*` | 1+ Ready when temporal workloads enabled |
+| Parse Temporal worker | `llamacloud-temporal-parse-*` | 1+ Ready |
+| Parse quarantine worker | `llamacloud-temporal-parse-quarantine-*` | 1+ Ready when `config.parse.quarantineWorkerEnabled: true` |
+| Jobs Temporal worker | `temporal-jobs-worker-*` | 1+ Ready |
 | Temporal subchart | `<release>-temporal-subchart-*` | frontend / history / matching / worker / web / admintools all Ready |
 | llama-agents subchart | varies | optional |
+
+Chart 0.10 and earlier also ran `llamacloud-worker` and `llamacloud-parse`, which consumed RabbitMQ. If you find those Deployments, the install is on an older chart. Upgrade it by following [Migrating off RabbitMQ](https://developers.llamaindex.ai/llamaparse/self_hosting/configuration/db_and_queues/migrate-off-rabbitmq).
 
 When the user gives a pod name, treat the bare `llamacloud-<hash>-<random>` as the **backend** unambiguously. This trips up newcomers because the obvious guess is "frontend".
 
@@ -53,8 +54,8 @@ To unambiguously isolate one component, use label selectors instead of name glob
 ```bash
 kubectl get pods -n <ns> -l app.kubernetes.io/name=llamacloud           # backend only
 kubectl get pods -n <ns> -l app.kubernetes.io/name=llamacloud-web        # frontend
-kubectl get pods -n <ns> -l app.kubernetes.io/name=llamacloud-worker     # jobs worker
-kubectl get pods -n <ns> -l app.kubernetes.io/name=llamacloud-parse      # parse
+kubectl get pods -n <ns> -l app.kubernetes.io/name=temporal-jobs-worker      # jobs Temporal worker
+kubectl get pods -n <ns> -l app.kubernetes.io/name=llamacloud-temporal-parse # parse
 # ...etc — every component has matching app.kubernetes.io/name
 ```
 
@@ -69,7 +70,6 @@ Standard Secrets the chart creates (look for these when debugging missing-secret
 | `llamacloud-license-key` | `license.key` | License |
 | `postgresql-secret` | `postgresql.password` | Postgres credentials |
 | `mongodb-secret` | `mongodb.password` or `mongodb.mongodb_url` | MongoDB credentials / connection URL |
-| `rabbitmq-secret` | `rabbitmq.password` or `rabbitmq.connectionString` | RabbitMQ credentials |
 | `redis-secret` | `redis.password` | Redis credentials |
 | `bucket-secret` | `config.storageBuckets.*` credentials | Object storage credentials (for non-IRSA setups, e.g. static AWS keys, GCS HMAC, Azure SAS) |
 
@@ -125,7 +125,7 @@ ConfigMaps the chart creates:
 
 **Per-deployment ConfigMaps (one per component, named after the Deployment):**
 
-`llamacloud-web`, `llamacloud-worker`, `llamacloud-parse`, `llamacloud-temporal-parse`, `temporal-jobs-worker`, etc. — these hold component-specific env. When debugging a single component's environment, this is the ConfigMap to read.
+`llamacloud-web`, `llamacloud-temporal-parse`, and `temporal-jobs-worker` hold component-specific env. When debugging a single component's environment, this is the ConfigMap to read.
 
 **Temporal subchart ConfigMaps (when `temporal.deploy: true`):**
 

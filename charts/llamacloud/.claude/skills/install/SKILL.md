@@ -189,7 +189,7 @@ These are the highest-frequency failure signatures during a fresh install. When 
 - For tags that don't exist: typo in `appVersion` or one of the `<component>.image` overrides.
 
 ### `CrashLoopBackOff` on backend with `connection refused` / `could not translate host name`
-- Postgres / MongoDB / RabbitMQ / Redis hostname doesn't resolve from inside the cluster, or the cluster security group is not in the inbound rules of the dependency. Re-run `preinstall-check` Phase 4 to verify routing. The fix is almost always a security group / NSG / firewall rule, not a values change.
+- Postgres / MongoDB / Redis hostname doesn't resolve from inside the cluster, or the cluster security group is not in the inbound rules of the dependency. Re-run `preinstall-check` Phase 4 to verify routing. The fix is almost always a security group / NSG / firewall rule, not a values change.
 
 ### `CrashLoopBackOff` on backend with `License validation failed`
 - `license.key` is wrong, expired, or being read from a Secret that is empty / wrong key name. Confirm the value with the user (without echoing it).
@@ -198,7 +198,7 @@ These are the highest-frequency failure signatures during a fresh install. When 
 - Postgres database state is ahead of the chart version (e.g. user attempted to install an older chart over a newer schema). Stop and route to `runbooks/downgrade.md` — this needs the manual schema-downgrade procedure before the install can proceed.
 
 ### Pods stuck `Pending` with `0/N nodes available: insufficient cpu/memory`
-- Cluster is too small. Either scale up nodes, or reduce the chart's resource requests. Note that `llamaParse` and `jobsWorker` set `requests == limits` (Guaranteed QoS) so they can't be packed tightly.
+- Cluster is too small. Either scale up nodes, or reduce the chart's resource requests. The largest default requests are the Parse worker (`temporalWorkloads.llamaParse`, 3 CPU and 6Gi), OCR (`llamaParseOcr`, 2 CPU and 12Gi), and layout detection (`llamaParseLayoutDetectionApi`, 1 CPU and 8Gi).
 
 ### Pods stuck `Pending` with `0/N nodes available: 1 node(s) had untolerated taint {nvidia.com/gpu: true}`
 - Inverted: the pod expects GPU but lacks the toleration, or vice versa. Check `llamaParseOcr.tolerations` and `llamaParseLayoutDetection*.tolerations` against the actual taints on the GPU nodes (`kubectl get nodes -o json | jq '.items[].spec.taints'`).

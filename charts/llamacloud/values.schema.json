@@ -90,8 +90,22 @@
                         "client": {
                             "type": "object",
                             "properties": {
+                                "compat": {
+                                    "type": "object",
+                                    "properties": {
+                                        "forceReasoningOnlyModelsToResponses": {
+                                            "type": "boolean"
+                                        }
+                                    }
+                                },
                                 "enforceAuthOnInference": {
                                     "type": "boolean"
+                                },
+                                "whitelistedRoutes": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
                                 }
                             }
                         }
@@ -496,6 +510,9 @@
                                 }
                             },
                             "additionalProperties": false
+                        },
+                        "modelPolicy": {
+                            "type": "object"
                         },
                         "openAi": {
                             "type": "object",

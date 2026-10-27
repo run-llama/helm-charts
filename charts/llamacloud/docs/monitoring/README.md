@@ -40,16 +40,13 @@ kube-prometheus-stack-subchart:
 
 `monitoring.serviceMonitors.enabled: true` makes this chart render a `ServiceMonitor` for every deployed component that exposes `/metrics`:
 
-- `backend` (always)
-- `jobsService` (always)
-- `jobsWorker` (always)
-- `llamaParse` (always)
-- `usage` (always)
-- `llamaParseOcr` (only when `config.parseOcr.enabled: true` — default `true`)
+- `backend`, `jobsService` and `usage`
+- the Temporal workers under `temporalWorkloads`
+- `llamaParseOcr` and `llamaParseLayoutDetectionApi`, when enabled
 
 If `bifrost.deploy` is also `true`, a separate `ServiceMonitor` for the Bifrost gateway is rendered too (targets the Bifrost Service's `/metrics` endpoint on port `http`/8080).
 
-The `llamaParseLayoutDetectionApi` / `llamaParseLayoutDetectionApiV3` and `frontend` components do not expose Prometheus metrics today and are intentionally excluded; same for the Temporal workers.
+`frontend` does not expose Prometheus metrics.
 
 Override subchart settings under the `kube-prometheus-stack-subchart` key — see the [upstream README](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack) for the full set of supported values.
 
@@ -82,12 +79,9 @@ For more information about the kube-prometheus-stack Helm chart, please refer to
 
 The following services expose Prometheus-format metrics at their `/metrics` endpoint:
 
-- `backend`
-- `jobsService`
-- `jobsWorker`
-- `llamaParse`
-- `usage`
-- `llamaParseOcr` (only when `config.parseOcr.enabled: true` — default `true`)
+- `backend`, `jobsService` and `usage`
+- the Temporal workers under `temporalWorkloads`
+- `llamaParseOcr` and `llamaParseLayoutDetectionApi`, when enabled
 - the Bifrost gateway, when `bifrost.deploy: true`
 
 Metrics collection is controlled by the single chart-wide `monitoring.serviceMonitors.enabled` toggle described in Options A/B above — enabling it renders a `ServiceMonitor` for every deployed component automatically, so you don't need to hand-write one per service.
@@ -100,12 +94,9 @@ If you're running kube-prometheus-stack as a standalone release and aren't using
 - [LlamaCloud Parse Service Monitor](./llamacloud-parse-service-monitor.yaml)
 
 Update the `namespace`, `namespaceSelector`, and `release` label to match your environment. The main services to monitor are:
-- `backend`
-- `jobsService`
-- `jobsWorker`
-- `llamaParse`
-- `llamaParseOcr`
-- `usage`
+- `backend`, `jobsService` and `usage`
+- the Temporal workers under `temporalWorkloads`
+- `llamaParseOcr` and `llamaParseLayoutDetectionApi`
 
 You can copy-paste the above samples to create monitors for the other services — only the names change. Bifrost is templated separately by the chart (see `templates/monitoring/servicemonitor-bifrost.yaml`) and isn't included as a standalone sample here.
 

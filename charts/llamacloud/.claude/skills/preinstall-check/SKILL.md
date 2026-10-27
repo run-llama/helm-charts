@@ -43,12 +43,13 @@ Assert each item; record pass/warn/fail in the report:
 - [ ] `helm lint --strict` exits 0. This validates against `values.schema.json` and catches schema-level misconfigurations.
 - [ ] `helm template ... --debug` exits 0. This catches template-level required-field errors that lint misses (the chart's `fail` template functions). If this fails, surface the rendering error verbatim — it points directly at the missing field.
 - [ ] No unreplaced placeholders in the values file. Grep for `<REPLACE-WITH`, `<input-`, `<your-`, `<uncomment-`, `<insert-`. Report each occurrence with line number.
-- [ ] Credential mutex: each of `license`, `postgresql`, `mongodb`, `rabbitmq`, `redis` has *either* inline credentials *or* a non-empty `secret:` ref — not both empty. (For mongodb, `mongodb_url` counts as inline credentials.)
+- [ ] Credential mutex: each of `license`, `postgresql`, `mongodb`, `redis` has *either* inline credentials *or* a non-empty `secret:` ref — not both empty. (For mongodb, `mongodb_url` counts as inline credentials.)
+- [ ] The values file has no top-level `rabbitmq`, `jobsWorker`, or `llamaParse` key. The chart schema rejects them, so `helm lint --strict` fails with `additional properties 'rabbitmq' not allowed` or the same error for the other keys. If the values come from an install on chart 0.10 or earlier, follow [Migrating off RabbitMQ](https://developers.llamaindex.ai/llamaparse/self_hosting/configuration/db_and_queues/migrate-off-rabbitmq) before you upgrade.
 - [ ] If `temporal.deploy: true`, the bundled deps in `temporal-subchart` must be disabled: `cassandra.enabled`, `mysql.enabled`, `postgresql.enabled`, `elasticsearch.enabled`, `prometheus.enabled`, `grafana.enabled` all `false`. Leaving these on is the most common temporal-subchart misconfig and causes pods to fail scheduling or consume unexpected resources.
 - [ ] If `temporal.deploy: true`, `temporal-subchart.server.config.persistence.{default,visibility}.sql.{host,user}` are set (typically to the same values as the top-level `postgresql.host` and `postgresql.username`).
 - [ ] If `llamaAgents.deploy: true`, the user has confirmed the llama-agents CRDs are pre-installed (the chart does not install them). If unsure, point them at the llama-agents subchart documentation.
 - [ ] If `config.storageBuckets.provider` is `gcp` or `azure`, then `config.storageBuckets.s3proxy.enabled` must be `true`. The chart talks S3 protocol natively; non-AWS object stores need s3proxy as a translator.
-- [ ] If any image reference in `frontend.image`, `backend.image`, `jobsService.image`, `jobsWorker.image`, `usage.image`, `llamaParse.image`, `llamaParseOcr.image`, `llamaParseLayoutDetectionApi.image`, `llamaParseLayoutDetectionApiV3.image`, `temporalWorkloads.*.image`, or any subchart image points to a private registry, then `imagePullSecrets` is set at the top level.
+- [ ] If any image reference in `frontend.image`, `backend.image`, `jobsService.image`, `usage.image`, `llamaParseOcr.image`, `llamaParseLayoutDetectionApi.image`, `llamaParseLayoutDetectionApiV3.image`, `temporalWorkloads.*.image`, or any subchart image points to a private registry, then `imagePullSecrets` is set at the top level.
 - [ ] If `imagePullPolicy: IfNotPresent` is set on any custom (non-public) image, warn that `IfNotPresent` only skips the pull when the image is *already cached on the node*; on a fresh node it still has to pull, so `imagePullSecrets` must be configured even with `IfNotPresent`.
 - [ ] OIDC: if `config.authentication.oidc.enabled: true`, a `discoveryUrl` is set and looks like a URL (not a placeholder).
 - [ ] `appVersion` consistency: any explicitly-pinned image tag should match `Chart.yaml`'s `appVersion` unless the user has a deliberate reason to drift (e.g. running a newer image while the chart catches up).
@@ -96,7 +97,7 @@ For each configured dependency host:
 getent hosts <host>                                 # DNS resolution
 nc -zv -w 5 <host> <port>                           # TCP reachability (skip if `nc` unavailable)
 openssl s_client -servername <host> -connect <host>:<port> </dev/null 2>&1 | head -20
-                                                    # only if scheme is amqps / rediss / mongodb+srv / TLS-implied port
+                                                    # only if scheme is rediss / mongodb+srv / TLS-implied port
 ```
 
 For OIDC:
@@ -151,18 +152,13 @@ aws rds describe-db-instances --query "DBInstances[?Endpoint.Address=='<host>'].
 # MongoDB on DocumentDB — match host suffix .docdb.amazonaws.com
 aws docdb describe-db-clusters --query "DBClusters[?contains(Endpoint, '<host>')].{state:Status,sg:VpcSecurityGroups[].VpcSecurityGroupId}"
 
-# RabbitMQ on Amazon MQ — match host suffix .mq.<region>.amazonaws.com or .mq.<region>.on.aws
-aws mq list-brokers
-# then for the matching broker:
-aws mq describe-broker --broker-id <id> --query '{state:BrokerState,sgs:SecurityGroups,subnets:SubnetIds}'
-
 # Redis on ElastiCache — match host suffix .cache.amazonaws.com
 aws elasticache describe-replication-groups --query "ReplicationGroups[?contains(NodeGroups[].PrimaryEndpoint.Address, '<host>')].{state:Status,sg:[].SecurityGroupIds}"
 # Or for non-replication-group clusters:
 aws elasticache describe-cache-clusters --show-cache-node-info --query "CacheClusters[?contains(CacheNodes[].Endpoint.Address, '<host>')].{state:CacheClusterStatus,sg:SecurityGroups[].SecurityGroupId}"
 
 # THE critical cross-check: does the cluster SG appear in inbound rules of each service SG?
-for sg in <db-sg> <redis-sg> <mq-sg> <docdb-sg>; do
+for sg in <db-sg> <redis-sg> <docdb-sg>; do
   aws ec2 describe-security-groups --group-ids "$sg" \
     --query "SecurityGroups[].IpPermissions[].UserIdGroupPairs[?GroupId=='<cluster-sg>']"
 done
@@ -187,7 +183,6 @@ If any bucket returns `404` or `403`, surface — buckets must exist and be reac
 az aks show -g <rg> -n <cluster> --query '{vnet:agentPoolProfiles[0].vnetSubnetId,nodeRg:nodeResourceGroup}'
 az postgres flexible-server show --name <name> --query '{state:state,network:network}'
 az cosmosdb show --name <name> --query '{state:provisioningState,vnetRules:virtualNetworkRules,publicAccess:publicNetworkAccess}'
-az servicebus namespace show --name <name> --query '{state:status,network:networkRuleSets}'
 az redis show --name <name> --query '{state:provisioningState,vnetId:subnetId}'
 az storage account show --name <name> --query '{state:provisioningState,network:networkRuleSet}'
 ```

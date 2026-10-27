@@ -208,6 +208,9 @@ Parameters:
 */}}
 {{ define "llamacloud.component.temporal.llamaParse.configMap" }}
 DEBUG_MODE: {{ ((.root.Values.config).parse).debugMode | default false | quote }}
+{{- /* Installs keep running pre-2026-08-01 Parse tier versions as pinned; SaaS
+   runs them as each tier's latest. */}}
+LLAMAPARSE_DO_NOT_RETIRE_LEGACY_TIER_VERSIONS: "true"
 
 {{- if ((.root.Values.config).parse).preferedPremiumModel }}
 PREFERED_PREMIUM_MODE_MODEL: {{ ((.root.Values.config).parse).preferedPremiumModel | quote }}
