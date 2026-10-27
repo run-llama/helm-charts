@@ -148,3 +148,23 @@ tests:
         apiVersion: monitoring.coreos.com/v1
         name: llamacloud-parse
         namespace: test-namespace
+
+- it: creates a ServiceMonitor for the Parse worker HTTP metrics endpoint
+  set:
+    monitoring.serviceMonitors.enabled: true
+  template: ../templates/monitoring/servicemonitor-components.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-temporal-parse
+  asserts:
+    - isKind:
+        of: ServiceMonitor
+    - equal:
+        path: spec.selector.matchLabels["app.kubernetes.io/name"]
+        value: llamacloud-temporal-parse
+    - equal:
+        path: spec.endpoints[0].port
+        value: http
+    - equal:
+        path: spec.endpoints[0].path
+        value: /metrics

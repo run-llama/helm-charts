@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## [0.11.2] - 2026-10-27
+
+### Platform
+- **[Improvement]** Upgraded the optional Bifrost gateway from `v2.2.1` / chart `2.1.42` to `v2.3.2` / chart `2.1.45`, built on Go 1.27.3 (CVE-2026-111943 in `crypto/x509`, plus the Go 1.27.2 `net/http` and `crypto/tls` fixes). Bifrost now refuses its management API, `/ws` and `/metrics` until dashboard auth or a setup token is configured: set `bifrost-subchart.bifrost.authConfig` or `bifrost-subchart.bifrost.setupToken`, or list paths in `bifrost-subchart.bifrost.client.whitelistedRoutes` (default `["/metrics"]`, which keeps the Bifrost ServiceMonitor scraping). Chat calls stay on Chat Completions, so LlamaCloud keeps getting `seed` and `logprobs`. See the [upgrade notes](./docs/bifrost/README.md#upgrading-to-bifrost-v23).
+
+### Infrastructure
+- **[Feature]** `config.llms.modelPolicy` picks the models Parse and Extract use per product, tier and version, for example `parse/agentic/**` or `extract/agentic/2.6`, using the models registered under `config.llms.providerConfigs`. Leave it empty to keep each product's default models. Changing it restarts the pods that read the provider configuration. The admin System Status page shows which model each released Extract version resolves to under the policy.
+
 ## [0.11.1] - 2026-10-21
 
 ### Parse

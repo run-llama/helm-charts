@@ -207,6 +207,9 @@ tests:
         value: "false"
     - isNull:
         path: .data.PREFERED_PREMIUM_MODE_MODEL
+    - equal:
+        path: .data.LLAMAPARSE_DO_NOT_RETIRE_LEGACY_TIER_VERSIONS
+        value: "true"
 
 - it: temporal Parse ConfigMap exposes PREFERED_PREMIUM_MODE_MODEL when set
   set:

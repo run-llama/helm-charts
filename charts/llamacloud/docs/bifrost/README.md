@@ -26,7 +26,7 @@ bifrost-subchart:
   # Image tag is pre-pinned in the chart defaults to a stable Bifrost release.
   # Override only when you want to track a different Bifrost version.
   image:
-    tag: "v2.2.1"
+    tag: "v2.3.2"
 ```
 
 That renders a runnable Bifrost with no providers configured. The sections below add the real configuration you'll need.
@@ -39,6 +39,29 @@ under `bifrost-subchart.bifrost.providers.<provider>` in your Helm values.
 
 The new chart rejects legacy `<provider>_key_config.deployments` fields. Move those
 maps to key-level `aliases`, as described in the [v1.5 migration guide](https://docs.getbifrost.ai/migration-guides/v1.5.0#breaking-change-10-provider-deployments-removed-migrate-to-aliases).
+
+## Upgrading to Bifrost v2.3
+
+This chart bundles Bifrost `v2.3.2` with upstream chart `2.1.45`, up from `v2.2.1` and chart `2.1.42`. These changes can affect an existing install.
+
+### The management API is locked until you configure access
+
+While dashboard auth is off, Bifrost refuses every `/api` call, the `/ws` socket and `/metrics`. `/health`, the login routes and the paths in `whitelistedRoutes` stay open, and inference routes are not affected. With no setup token configured the answer is `403`. With one configured, a request that does not carry it gets `401`. The dashboard and scripts that call `/api` stop working until you pick one of these:
+
+- **Dashboard auth.** Set `bifrost-subchart.bifrost.authConfig` as in [Admin dashboard authentication](#admin-dashboard-authentication). Scripts can then send the admin credentials as HTTP basic auth.
+- **A setup token.** Set `bifrost-subchart.bifrost.setupToken` (it accepts `env.VAR_NAME`) or the `BIFROST_SETUP_TOKEN` environment variable. Scripts send the token in the `X-Bifrost-Setup-Token` header. The dashboard asks for it once and keeps a 12-hour session cookie. Creating the first admin account from the dashboard also needs this token.
+- **Whitelisted routes.** `bifrost-subchart.bifrost.client.whitelistedRoutes` lists paths that skip the lock and dashboard auth: an exact path, or a prefix ending in `*`. The chart default is `["/metrics"]`, which keeps the Bifrost `ServiceMonitor` scraping. Helm replaces a list instead of merging it, so keep `/metrics` in any list you set. `"/*"` opens the whole management API to anyone who can reach the service, even after you enable dashboard auth, so use it only where the network is the access boundary.
+
+### Chat calls stay on Chat Completions
+
+Bifrost 2.3 sends a chat call to the Responses API when its model datasheet says the model can reason but not together with tool calls. That conversion drops `seed` and `logprobs`, which LlamaCloud reads. This chart sets `bifrost-subchart.bifrost.client.compat.forceReasoningOnlyModelsToResponses: false`, so every chat call stays on Chat Completions.
+
+### Other changes
+
+- **Fallbacks after a rejected request.** When a request names a model without a provider, Bifrost can add fallbacks to the other providers that serve that model. Those fallbacks no longer run when the first provider rejects the request itself (`400`, `409`, `413`, `415` or `422` with a provider error body). The caller gets that error instead. Fallbacks named in the request or in a routing rule still run on any error.
+- **Semantic cache.** The cache no longer stores responses that carry client-executed tool calls. Set `cache_tool_call_responses: true` under `bifrost-subchart.bifrost.plugins.semanticCache.config` to keep caching them.
+- **Postgres stores.** On the first v2.3 boot against a Postgres logs store, a background job replaces the single-column owner indexes on `logs` with `(column, timestamp)` indexes, built concurrently. Expect extra index-build I/O after the upgrade. Bifrost now also sets a 120-second `statement_timeout` and `idle_in_transaction_session_timeout` on its Postgres connections. To keep the server defaults, set `statementTimeout` and `idleInTransactionSessionTimeout` to `"0"` under `bifrost-subchart.storage.configStore` and `bifrost-subchart.storage.logsStore`.
+- **Startup probe.** When Bifrost runs as a Deployment (`storage.mode: postgres`, or SQLite without a chart-managed volume), the chart now adds a startup probe that waits up to 30 minutes for `/health`, so database migrations during an upgrade are not cut short by the liveness probe.
 
 ## Configuration Structure
 
@@ -262,7 +285,7 @@ bifrost-subchart:
 
 ### Admin dashboard authentication
 
-The Bifrost admin dashboard has no auth by default. Enable it for any non-dev install:
+Bifrost starts without an admin account. Until dashboard auth is enabled, it refuses calls to the management API the dashboard uses unless they carry the setup token (see [Upgrading to Bifrost v2.3](#upgrading-to-bifrost-v23)). Enable dashboard auth for any non-dev install:
 
 ```bash
 kubectl create secret generic bifrost-admin \
@@ -366,7 +389,7 @@ config:
 
 ## Monitoring
 
-If `monitoring.serviceMonitors.enabled` is true (either with the bundled `monitoring.deploy=true` stack or your own Prometheus Operator), a `ServiceMonitor` for Bifrost is rendered automatically — see [docs/monitoring/README.md](../monitoring/README.md). It scrapes Bifrost's `/metrics` endpoint on port 8080.
+If `monitoring.serviceMonitors.enabled` is true (either with the bundled `monitoring.deploy=true` stack or your own Prometheus Operator), a `ServiceMonitor` for Bifrost is rendered automatically — see [docs/monitoring/README.md](../monitoring/README.md). It scrapes Bifrost's `/metrics` endpoint on port 8080 without credentials, so `/metrics` must stay in `bifrost-subchart.bifrost.client.whitelistedRoutes`.
 
 ## Verification
 
@@ -376,8 +399,9 @@ After installing, verify the setup:
 2. **Provider config loaded**: Port-forward the Bifrost service and check `/api/providers` — every configured provider should appear with its keys masked.
    ```bash
    kubectl port-forward -n <release-namespace> svc/<release>-bifrost-subchart 8080:8080
-   curl http://localhost:8080/api/providers
+   curl -H "X-Bifrost-Setup-Token: <setup-token>" http://localhost:8080/api/providers
    ```
+   With dashboard auth enabled, pass `-u <admin-username>:<admin-password>` instead of the header.
 3. **End-to-end through LlamaCloud**: Upload a document to LlamaParse / run a chat completion. Bifrost's logs (or dashboard, if enabled) should show the request flowing through.
 
 ## Further reading

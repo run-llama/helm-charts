@@ -1,6 +1,7 @@
 suite: store-optionality-tests
 
-# MongoDB remains optional. Deprecated RabbitMQ values have no effect.
+# MongoDB remains optional. The chart renders no RabbitMQ credentials or AMQP
+# flag, and the schema rejects `rabbitmq` values.
 
 templates:
 - ../templates/llamacloud/configmaps/common.yaml

@@ -209,3 +209,75 @@ tests:
         of: Secret
     - isNotEmpty:
         path: .data.LLM_PROVIDER_CONFIGS_JSON
+
+- it: keeps the bare provider list when modelPolicy is empty
+  set:
+    config.llms.providerConfigs:
+      - provider: "openai"
+        model_id: "openai-gpt-5-4"
+        credentials:
+          api_key: "test"
+    config.llms.modelPolicy: {}
+  template: ../templates/llamacloud/secrets/llm.provider-configs.yaml
+  asserts:
+    - equal:
+        path: .data.LLM_PROVIDER_CONFIGS_JSON
+        value: W3siY3JlZGVudGlhbHMiOnsiYXBpX2tleSI6InRlc3QifSwibW9kZWxfaWQiOiJvcGVuYWktZ3B0LTUtNCIsInByb3ZpZGVyIjoib3BlbmFpIn1d
+
+- it: writes providerConfigs and modelPolicy together when modelPolicy is set
+  set:
+    config.llms.providerConfigs:
+      - provider: "openai"
+        model_id: "openai-gpt-5-4"
+        credentials:
+          api_key: "test"
+    config.llms.modelPolicy:
+      parse/agentic/**:
+        model: [gemini-3.0-flash, anthropic-haiku-4.5]
+      extract/agentic/2.6:
+        models:
+          agent: openai-gpt-5-4
+  template: ../templates/llamacloud/secrets/llm.provider-configs.yaml
+  asserts:
+    - equal:
+        path: .data.LLM_PROVIDER_CONFIGS_JSON
+        value: eyJtb2RlbFBvbGljeSI6eyJleHRyYWN0L2FnZW50aWMvMi42Ijp7Im1vZGVscyI6eyJhZ2VudCI6Im9wZW5haS1ncHQtNS00In19LCJwYXJzZS9hZ2VudGljLyoqIjp7Im1vZGVsIjpbImdlbWluaS0zLjAtZmxhc2giLCJhbnRocm9waWMtaGFpa3UtNC41Il19fSwicHJvdmlkZXJDb25maWdzIjpbeyJjcmVkZW50aWFscyI6eyJhcGlfa2V5IjoidGVzdCJ9LCJtb2RlbF9pZCI6Im9wZW5haS1ncHQtNS00IiwicHJvdmlkZXIiOiJvcGVuYWkifV19
+
+- it: keeps the provider-config checksum when modelPolicy is empty
+  set:
+    config.llms.providerConfigs:
+      - provider: "openai"
+        model_id: "openai-gpt-5-4"
+        credentials:
+          api_key: "test"
+    config.llms.modelPolicy: {}
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-temporal-parse
+  asserts:
+    - equal:
+        path: .spec.template.metadata.annotations['checksum/llm-provider-configs']
+        value: 4185089679b0fb16a8c8d09cd17c7d3c3074db98f65bcc21d9bc28398490f67e
+
+- it: changes the provider-config checksum when modelPolicy is set
+  set:
+    config.llms.providerConfigs:
+      - provider: "openai"
+        model_id: "openai-gpt-5-4"
+        credentials:
+          api_key: "test"
+    config.llms.modelPolicy:
+      parse/agentic/**:
+        model: [gemini-3.0-flash, anthropic-haiku-4.5]
+      extract/agentic/2.6:
+        models:
+          agent: openai-gpt-5-4
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-temporal-parse
+  asserts:
+    - equal:
+        path: .spec.template.metadata.annotations['checksum/llm-provider-configs']
+        value: a259bc39c4d67ef088a40dbe3d45f2a959ce9918663a7a278061dcb7a7c2b5ed

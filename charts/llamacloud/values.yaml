@@ -335,11 +335,17 @@ bifrost:
 bifrost-subchart:
   image:
     ## @param bifrost-subchart.image.tag Bifrost container image tag. Pinned independently of the upstream chart appVersion. Override to use a different Bifrost release.
-    tag: "v2.2.1"
+    tag: "v2.3.2"
   bifrost:
     client:
       ## @param bifrost-subchart.bifrost.client.enforceAuthOnInference Require a Bifrost virtual key (sk-bf-*) on inference requests. Defaults to false so the basic LlamaCloud integration works without keys: set provider keys under bifrost-subchart.bifrost.providers, then point LlamaCloud at Bifrost via config.llms.providerConfigs with any non-empty placeholder api_key. Set true to issue per-tenant virtual keys passed in the x-bf-vk header.
       enforceAuthOnInference: false
+      ## @param bifrost-subchart.bifrost.client.whitelistedRoutes Paths that skip Bifrost's dashboard auth and its setup lock: an exact path, or a prefix ending in `*`. Until dashboard auth is enabled, Bifrost refuses `/api`, `/ws` and `/metrics` to callers without its setup token; the default keeps `/metrics` open for the Bifrost ServiceMonitor. Virtual-key auth on inference still applies to whitelisted paths.
+      whitelistedRoutes:
+        - "/metrics"
+      compat:
+        ## @param bifrost-subchart.bifrost.client.compat.forceReasoningOnlyModelsToResponses Send chat calls for reasoning-only models to the Responses API. Bifrost defaults this to true, which drops the seed and logprobs that LlamaCloud reads; false keeps every chat call on Chat Completions.
+        forceReasoningOnlyModelsToResponses: false
 
 ## @section Monitoring (Prometheus + Grafana) Configuration
 ## Optional kube-prometheus-stack subchart and LlamaCloud ServiceMonitors. Disabled by
@@ -529,6 +535,27 @@ config:
     ##       deployment_id: "gpt-4o-mini"
     ##       api_version: "2024-08-06"
     providerConfigs: []
+    ## @param config.llms.modelPolicy Model choice per product, tier and version, keyed by `product/tier/version` selectors. When set, the secret holds `{"providerConfigs": [...], "modelPolicy": {...}}`
+    ##
+    ## An entry names a row by its `id` in `providerConfigs`, or an ordered list of row ids.
+    ## `model` sets the default role. `models` sets named roles:
+    ## Parse accepts charts and forms; Extract accepts vision, vision.safety, vision.fallback,
+    ## agent, agent.light and citations. The most specific matching selector wins per role.
+    ## A deployment without Agentic Plus's default planner and specialist models names its own
+    ## through the parse/agentic_plus/** roles planner, specialist and forms.
+    ##
+    ## Example:
+    ## modelPolicy:
+    ##   parse/agentic/**:
+    ##     model: [byoc-openai-primary, byoc-azure-fallback]
+    ##   extract/agentic/2.6:
+    ##     models:
+    ##       agent: byoc-azure-fallback
+    ##
+    ## A model id also works and means any enabled row of that model:
+    ##   parse/**:
+    ##     models: {forms: openai-gpt-4o-mini}
+    modelPolicy: {}
 
   ## @section Default Index Configuration
   ## Platform-managed destinations for directory indexes. Optional: when unset,
@@ -1118,7 +1145,7 @@ frontend:
   annotations: {}
 
   ## @param frontend.image Frontend image
-  image: docker.io/llamaindex/llamacloud-frontend:0.11.1
+  image: docker.io/llamaindex/llamacloud-frontend:0.11.2
 
   ## @param frontend.imagePullPolicy Frontend image pull policy
   # @schema enum: ["", Always, IfNotPresent, Never]
@@ -1262,7 +1289,7 @@ backend:
   annotations: {}
 
   ## @param backend.image Backend image
-  image: docker.io/llamaindex/llamacloud-backend:0.11.1
+  image: docker.io/llamaindex/llamacloud-backend:0.11.2
 
   ## @param backend.imagePullPolicy Backend image pull policy
   # @schema enum: ["", Always, IfNotPresent, Never]
@@ -1333,7 +1360,7 @@ jobsService:
   annotations: {}
 
   ## @param jobsService.image JobsService image
-  image: docker.io/llamaindex/llamacloud-backend:0.11.1
+  image: docker.io/llamaindex/llamacloud-backend:0.11.2
 
   ## @param jobsService.imagePullPolicy JobsService image pull policy
   # @schema enum: ["", Always, IfNotPresent, Never]
@@ -1408,7 +1435,7 @@ llamaParseOcr:
   annotations: {}
 
   ## @param llamaParseOcr.image LlamaParseOcr image
-  image: docker.io/llamaindex/llamacloud-llamaparse-ocr:0.11.1
+  image: docker.io/llamaindex/llamacloud-llamaparse-ocr:0.11.2
 
   ## @param llamaParseOcr.imagePullPolicy LlamaParseOcr image pull policy
   # @schema enum: ["", Always, IfNotPresent, Never]
@@ -1728,7 +1755,7 @@ usage:
   annotations: {}
 
   ## @param usage.image LlamaParseLayoutDetectionApi image
-  image: docker.io/llamaindex/llamacloud-backend:0.11.1
+  image: docker.io/llamaindex/llamacloud-backend:0.11.2
 
   ## @param usage.imagePullPolicy LlamaParseLayoutDetectionApi image pull policy
   # @schema enum: ["", Always, IfNotPresent, Never]
@@ -1802,7 +1829,7 @@ temporalWorkloads:
     annotations: {}
 
     ## @param temporalWorkloads.llamaParse.image temporal llamaparse image
-    image: docker.io/llamaindex/llamacloud-llamaparse:0.11.1
+    image: docker.io/llamaindex/llamacloud-llamaparse:0.11.2
 
     ## @param temporalWorkloads.llamaParse.imagePullPolicy temporal llamaparse image pull policy
     # @schema enum: ["", Always, IfNotPresent, Never]
@@ -1882,7 +1909,7 @@ temporalWorkloads:
     annotations: {}
 
     ## @param temporalWorkloads.llamaParseQuarantine.image temporal llamaparse quarantine image
-    image: docker.io/llamaindex/llamacloud-llamaparse:0.11.1
+    image: docker.io/llamaindex/llamacloud-llamaparse:0.11.2
 
     ## @param temporalWorkloads.llamaParseQuarantine.imagePullPolicy temporal llamaparse quarantine image pull policy
     # @schema enum: ["", Always, IfNotPresent, Never]
@@ -1952,7 +1979,7 @@ temporalWorkloads:
       annotations: {}
 
       ## @param temporalWorkloads.workers.temporal-jobs-worker.image Frontend image
-      image: docker.io/llamaindex/llamacloud-backend:0.11.1
+      image: docker.io/llamaindex/llamacloud-backend:0.11.2
 
       ## @param temporalWorkloads.workers.temporal-jobs-worker.imagePullPolicy Frontend image pull policy
       # @schema enum: ["", Always, IfNotPresent, Never]

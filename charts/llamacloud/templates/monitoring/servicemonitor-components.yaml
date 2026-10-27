@@ -3,9 +3,9 @@
 {{- /*
   The components helper filters out disabled services.
 */}}
-{{- $monitored := list "backend" "jobsService" "llamaParseOcr" "usage" "llamaParseLayoutDetectionApi" "llamaParseLayoutDetectionApiV3" }}
+{{- $monitored := list "backend" "jobsService" "llamaParseOcr" "usage" "llamaParseLayoutDetectionApi" "llamaParseLayoutDetectionApiV3" "temporalLlamaParse" "temporalLlamaParseQuarantine" }}
 {{- range $name, $component := ((include "llamacloud.components" .) | fromYaml) }}
-{{- if has $name $monitored }}
+{{- if or (has $name $monitored) (hasKey $.Values.temporalWorkloads.workers $name) }}
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
