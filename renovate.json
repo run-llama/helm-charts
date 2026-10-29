@@ -1,0 +1,63 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": "Weekly dependency updates. GitHub Actions come as one weekly PR; majors, and every change to charts/llamacloud, wait for approval on the Dependency Dashboard.",
+  "extends": [
+    "config:recommended",
+    ":dependencyDashboard",
+    ":semanticCommitsDisabled",
+    "schedule:weekly",
+    "docker:pinDigests",
+    "helpers:pinGitHubActionDigestsToSemver"
+  ],
+  "timezone": "America/New_York",
+  "dependencyDashboardTitle": "Dependency Dashboard (Renovate)",
+  "labels": ["dependencies", "renovate"],
+  "minimumReleaseAge": "7 days",
+  "internalChecksFilter": "strict",
+  "osvVulnerabilityAlerts": true,
+  "vulnerabilityAlerts": {
+    "labels": ["dependencies", "renovate", "security"]
+  },
+  "helm-values": {
+    "enabled": true
+  },
+  "helmv3": {
+    "enabled": true
+  },
+  "packageRules": [
+    {
+      "description": "Majors open only after approval on the Dependency Dashboard.",
+      "matchUpdateTypes": ["major"],
+      "dependencyDashboardApproval": true
+    },
+    {
+      "description": "One weekly PR per manager for minor, patch and digest updates.",
+      "matchUpdateTypes": ["minor", "patch", "digest", "pin", "pinDigest"],
+      "groupName": "{{manager}} non-major",
+      "groupSlug": "{{manager}}-non-major"
+    },
+    {
+      "description": "Some registries publish no release timestamps for digests; do not hold those updates forever.",
+      "matchUpdateTypes": ["digest", "pinDigest"],
+      "minimumReleaseAgeBehaviour": "timestamp-optional"
+    },
+    {
+      "description": "All GitHub Actions updates in one weekly PR.",
+      "matchManagers": ["github-actions"],
+      "matchUpdateTypes": ["minor", "patch", "digest", "pin", "pinDigest"],
+      "groupName": "GitHub Actions",
+      "groupSlug": "github-actions"
+    },
+    {
+      "description": "charts/llamacloud is a copy of platform's infra/charts/llamacloud that each BYOC release overwrites (utils/byoc/update-public-helm-chart-repo.sh), so a change made here alone is lost at the next release. The Dependency Dashboard lists these so the drift of the published chart stays visible; make the change in platform.",
+      "matchFileNames": ["charts/llamacloud/**"],
+      "dependencyDashboardApproval": true,
+      "groupName": null
+    },
+    {
+      "description": "Our own images and charts move with each BYOC release, not with Renovate.",
+      "matchPackageNames": ["docker.io/llamaindex/**", "registry-1.docker.io/llamaindex/**"],
+      "enabled": false
+    }
+  ]
+}
