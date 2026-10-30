@@ -1,5 +1,6 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": "Self-hosted Renovate (run-llama/platform renovate.yml). charts/llamacloud is the BYOC chart customers install, so every chart change waits for approval on the dependency dashboard and ships only with a chart version bump, a changelog entry and the 10-day customer notice. Nothing automerges here: this repo has no automated reviewer.",
   "extends": [
     "config:recommended"
   ],
@@ -14,8 +15,43 @@
   "internalChecksFilter": "strict",
   "packageRules": [
     {
+      "description": "Majors need dashboard approval",
       "matchUpdateTypes": [
         "major"
+      ],
+      "dependencyDashboardApproval": true
+    },
+    {
+      "description": "The BYOC chart ships to customer installs: every dependency and image update waits for approval",
+      "matchFileNames": [
+        "charts/**"
+      ],
+      "dependencyDashboardApproval": true,
+      "prBodyNotes": [
+        "BYOC chart: bump the llamacloud chart version and CHANGELOG in this PR; tenants upgrade after the 10-day customer notice."
+      ]
+    },
+    {
+      "description": "Temporal server: the subchart and the admin-tools image move together, one minor at a time (schema migration on every install)",
+      "matchDepNames": [
+        "temporal",
+        "/(^|/)temporalio/(server|admin-tools|ui)$/"
+      ],
+      "groupName": "Temporal server",
+      "groupSlug": "temporal-server",
+      "separateMultipleMinor": true,
+      "dependencyDashboardApproval": true
+    },
+    {
+      "description": "Runtime versions (setup-python and friends) wait for approval",
+      "matchDepNames": [
+        "python",
+        "node",
+        "go"
+      ],
+      "matchUpdateTypes": [
+        "major",
+        "minor"
       ],
       "dependencyDashboardApproval": true
     }
