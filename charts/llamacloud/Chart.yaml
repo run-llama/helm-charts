@@ -43,7 +43,7 @@ dependencies:
     condition: bifrost.deploy
     alias: bifrost-subchart
   - name: kube-prometheus-stack
-    version: ~85.0.2
+    version: ~85.4.0
     repository: https://prometheus-community.github.io/helm-charts
     condition: monitoring.deploy
     alias: kube-prometheus-stack-subchart
