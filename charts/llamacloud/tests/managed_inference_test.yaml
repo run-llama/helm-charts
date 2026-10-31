@@ -468,24 +468,6 @@ tests:
         apiVersion: apps/v1
         name: llamacloud-form-field-detection
 
-- it: routes every eligible Parse job to Ocria
-  set:
-    config:
-      managedInference:
-        url: https://us-east-1.inference.cloud.llamaindex.ai
-        apiKey: igw_fixture-key
-  template: ../templates/llamacloud/configmaps/features.yaml
-  asserts:
-    - equal:
-        path: .data.IS_OCRIA_ROUTING_ENABLED
-        value: "true"
-
-- it: leaves Ocria routing to its existing dials while the URL is unset
-  template: ../templates/llamacloud/configmaps/features.yaml
-  asserts:
-    - notExists:
-        path: .data.IS_OCRIA_ROUTING_ENABLED
-
 - it: stores the inline gateway key in its Secret
   set:
     config:

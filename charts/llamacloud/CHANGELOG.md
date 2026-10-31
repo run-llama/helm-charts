@@ -1,5 +1,20 @@
 # CHANGELOG
 
+## [0.11.3] - 2026-10-30
+
+### Parse
+- **[Improvement]** Improved form fields, checkboxes and embedded-image coverage in Agentic Plus 2.0.45.
+
+### Extract
+- **[Improvement]** Improve extract 2.6 latency
+- **[Feature]** Added Max effort to the public API and configuration exports where enabled.
+
+### Infrastructure
+- **[Feature]** `config.llms.modelPolicy` picks the models Split uses per version, for example `split/**` or `split/*/1.1`, using models registered under `config.llms.providerConfigs`. Leave it empty to keep each version's default model.
+
+### Platform
+- **[Breaking]** Upgraded the optional kube-prometheus-stack subchart (`monitoring.deploy: true`) from `85.0.3` to `92.14.1`: Prometheus Operator `v0.90.1` to `v0.94.2`, Prometheus `v3.11.3` to `v3.15.1`, Alertmanager `v0.32.1` to `v0.34.1`, the Grafana chart `12.3.2` to `14.1.0` (Grafana `13.2.4`, now distroless with a read-only root filesystem) and the kube-state-metrics chart `7.3.0` to `8.7.1`. Helm does not upgrade CRDs, so apply the Prometheus Operator `v0.94.2` CRDs before `helm upgrade`. Installs with `monitoring.deploy: false` are unaffected. See the [upgrade steps](./docs/monitoring/README.md#upgrading-the-bundled-kube-prometheus-stack).
+
 ## [0.11.2] - 2026-10-27
 
 ### Platform

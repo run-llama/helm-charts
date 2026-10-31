@@ -1057,9 +1057,10 @@ config:
     jobCleanup:
       ## @param config.temporal.jobCleanup.image Image for the kubectl job cleanup hook
       # Digest-pinned because this hook runs kubectl with its own ServiceAccount and
-      # `bitnami/kubectl` only publishes `latest`. The digest below is kubectl 1.37.0. A mirrored
-      # registry path keeps the digest valid, since a pull-through cache serves the same manifest.
-      image: "bitnami/kubectl:latest@sha256:b29d8c1665b70817259ceecaea16ab27aab6368b48daf485d19436c809067492"
+      # `bitnami/kubectl` only publishes `latest`; Renovate moves the digest (and the README's
+      # copy). A mirrored registry path keeps the digest valid, since a pull-through cache
+      # serves the same manifest.
+      image: "bitnami/kubectl:latest@sha256:bedd34c910e2a5ce9836813d16444af449d7fe07a29136d59f34e861e8e660c5"
 
     ## Search Attributes Job
     # @schema additionalProperties: false
@@ -1145,7 +1146,7 @@ frontend:
   annotations: {}
 
   ## @param frontend.image Frontend image
-  image: docker.io/llamaindex/llamacloud-frontend:0.11.2
+  image: docker.io/llamaindex/llamacloud-frontend:0.11.3
 
   ## @param frontend.imagePullPolicy Frontend image pull policy
   # @schema enum: ["", Always, IfNotPresent, Never]
@@ -1289,7 +1290,7 @@ backend:
   annotations: {}
 
   ## @param backend.image Backend image
-  image: docker.io/llamaindex/llamacloud-backend:0.11.2
+  image: docker.io/llamaindex/llamacloud-backend:0.11.3
 
   ## @param backend.imagePullPolicy Backend image pull policy
   # @schema enum: ["", Always, IfNotPresent, Never]
@@ -1360,7 +1361,7 @@ jobsService:
   annotations: {}
 
   ## @param jobsService.image JobsService image
-  image: docker.io/llamaindex/llamacloud-backend:0.11.2
+  image: docker.io/llamaindex/llamacloud-backend:0.11.3
 
   ## @param jobsService.imagePullPolicy JobsService image pull policy
   # @schema enum: ["", Always, IfNotPresent, Never]
@@ -1435,7 +1436,7 @@ llamaParseOcr:
   annotations: {}
 
   ## @param llamaParseOcr.image LlamaParseOcr image
-  image: docker.io/llamaindex/llamacloud-llamaparse-ocr:0.11.2
+  image: docker.io/llamaindex/llamacloud-llamaparse-ocr:0.11.3
 
   ## @param llamaParseOcr.imagePullPolicy LlamaParseOcr image pull policy
   # @schema enum: ["", Always, IfNotPresent, Never]
@@ -1755,7 +1756,7 @@ usage:
   annotations: {}
 
   ## @param usage.image LlamaParseLayoutDetectionApi image
-  image: docker.io/llamaindex/llamacloud-backend:0.11.2
+  image: docker.io/llamaindex/llamacloud-backend:0.11.3
 
   ## @param usage.imagePullPolicy LlamaParseLayoutDetectionApi image pull policy
   # @schema enum: ["", Always, IfNotPresent, Never]
@@ -1829,7 +1830,7 @@ temporalWorkloads:
     annotations: {}
 
     ## @param temporalWorkloads.llamaParse.image temporal llamaparse image
-    image: docker.io/llamaindex/llamacloud-llamaparse:0.11.2
+    image: docker.io/llamaindex/llamacloud-llamaparse:0.11.3
 
     ## @param temporalWorkloads.llamaParse.imagePullPolicy temporal llamaparse image pull policy
     # @schema enum: ["", Always, IfNotPresent, Never]
@@ -1909,7 +1910,7 @@ temporalWorkloads:
     annotations: {}
 
     ## @param temporalWorkloads.llamaParseQuarantine.image temporal llamaparse quarantine image
-    image: docker.io/llamaindex/llamacloud-llamaparse:0.11.2
+    image: docker.io/llamaindex/llamacloud-llamaparse:0.11.3
 
     ## @param temporalWorkloads.llamaParseQuarantine.imagePullPolicy temporal llamaparse quarantine image pull policy
     # @schema enum: ["", Always, IfNotPresent, Never]
@@ -1979,7 +1980,7 @@ temporalWorkloads:
       annotations: {}
 
       ## @param temporalWorkloads.workers.temporal-jobs-worker.image Frontend image
-      image: docker.io/llamaindex/llamacloud-backend:0.11.2
+      image: docker.io/llamaindex/llamacloud-backend:0.11.3
 
       ## @param temporalWorkloads.workers.temporal-jobs-worker.imagePullPolicy Frontend image pull policy
       # @schema enum: ["", Always, IfNotPresent, Never]

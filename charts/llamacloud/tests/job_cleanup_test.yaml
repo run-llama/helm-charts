@@ -105,9 +105,10 @@ tests:
   template: ../templates/llamacloud/job-cleanup.yaml
   documentIndex: 0
   asserts:
-    - equal:
+    # Pinned to a digest; Renovate moves the digest itself.
+    - matchRegex:
         path: .spec.template.spec.containers[0].image
-        value: bitnami/kubectl:latest@sha256:b29d8c1665b70817259ceecaea16ab27aab6368b48daf485d19436c809067492
+        pattern: ^bitnami/kubectl:latest@sha256:[0-9a-f]{64}$
 
 - it: jobCleanup.image override should propagate to cleanup container
   set:
