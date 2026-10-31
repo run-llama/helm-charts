@@ -75,6 +75,30 @@ You can then either enable `monitoring.serviceMonitors.enabled` to have this cha
 
 For more information about the kube-prometheus-stack Helm chart, please refer to the [kube-prometheus-stack README](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack).
 
+## Upgrading the bundled kube-prometheus-stack
+
+This applies only to installs with `monitoring.deploy: true` (Option A). Chart `0.11.3` moves the subchart from kube-prometheus-stack `85.0.3` to `92.14.1`, which runs Prometheus Operator `v0.94.2`. The upstream notes for each major are in [UPGRADE.md](https://github.com/prometheus-community/helm-charts/blob/main/charts/kube-prometheus-stack/UPGRADE.md) (86.x through 92.x).
+
+1. **Update the CRDs first.** Helm installs CRDs only on the first install and never upgrades them, whether or not `kube-prometheus-stack-subchart.crds.enabled` is set. Apply the `v0.94.2` CRDs before `helm upgrade`:
+
+   ```bash
+   for crd in alertmanagerconfigs alertmanagers podmonitors probes prometheusagents \
+              prometheuses prometheusrules scrapeconfigs servicemonitors thanosrulers; do
+     kubectl apply --server-side \
+       -f "https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.94.2/example/prometheus-operator-crd/monitoring.coreos.com_${crd}.yaml"
+   done
+   ```
+
+   If `kubectl` reports field manager conflicts (the CRDs were first installed by Helm), run it again with `--force-conflicts`. If another tool owns these CRDs in your cluster, upgrade them there instead.
+
+2. **Move removed control-plane scrape values.** If you override any of these under `kube-prometheus-stack-subchart`, move them to the component's `serviceMonitor.authorization` or `serviceMonitor.tlsConfig` block before upgrading: `<component>.serviceMonitor.bearerTokenFile`, `kubelet.serviceMonitor.insecureSkipVerify`, `kubeApiServer.tlsConfig.caSecret`, `kubeProxy.serviceMonitor.caSecret`, and the `insecureSkipVerify` / `serverName` / `caFile` / `certFile` / `keyFile` / `*Secret` keys of `kubeControllerManager`, `kubeScheduler` and `kubeEtcd`. The subchart now creates a long-lived token Secret for the Prometheus service account, named `<Prometheus service account>-token`, for those ServiceMonitors. Set `kube-prometheus-stack-subchart.prometheus.serviceAccount.createTokenSecret: false` if you supply the credential yourself.
+
+3. **Check Grafana overrides.** The Grafana chart moves from `12.x` to `14.x`. Grafana now runs the distroless image with a read-only root filesystem and mounts `/tmp` itself, so remove `/tmp` from `grafana.extraVolumeMounts`. `GF_*__FILE` and `GF_INSTALL_PLUGINS` environment variables no longer work: use `GF_<NAME>: $__file{<path>}` and the `grafana.plugins` value instead. The Grafana chart now validates its values against a schema, so quote numeric image tags and label or annotation values, and unquote numbers and booleans.
+
+4. **Check kube-state-metrics overrides.** The kube-state-metrics chart `8.x` no longer renders a `CiliumNetworkPolicy`, and `kube-state-metrics.networkPolicy.flavor` can be dropped.
+
+5. **Expect one restart.** Prometheus, Alertmanager, the operator and its admission webhook restart once, because their pod specs change (they now also default to `nodeSelector: {kubernetes.io/os: linux}`). Without `prometheus.prometheusSpec.storageSpec`, Prometheus keeps its data in an `emptyDir`, so the restart starts it with no history.
+
 ## Metrics
 
 The following services expose Prometheus-format metrics at their `/metrics` endpoint:
