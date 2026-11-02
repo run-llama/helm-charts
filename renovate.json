@@ -2,7 +2,10 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "description": "Self-hosted Renovate (run-llama/platform renovate.yml). charts/llamacloud is the BYOC chart customers install, so every chart change waits for approval on the dependency dashboard and ships only with a chart version bump, a changelog entry and the 10-day customer notice. Nothing automerges here: this repo has no automated reviewer.",
   "extends": [
-    "config:recommended"
+    "config:recommended",
+    ":semanticCommitsDisabled",
+    "docker:pinDigests",
+    "helpers:pinGitHubActionDigestsToSemver"
   ],
   "dependencyDashboard": true,
   "timezone": "Etc/UTC",
@@ -16,6 +19,13 @@
   "prConcurrentLimit": 10,
   "minimumReleaseAge": "7 days",
   "internalChecksFilter": "strict",
+  "osvVulnerabilityAlerts": true,
+  "helm-values": {
+    "enabled": true
+  },
+  "helmv3": {
+    "enabled": true
+  },
   "packageRules": [
     {
       "description": "Majors need dashboard approval",
@@ -25,13 +35,49 @@
       "dependencyDashboardApproval": true
     },
     {
-      "description": "The BYOC chart ships to customer installs: every dependency and image update waits for approval",
+      "description": "One PR per manager for minor, patch and digest updates",
+      "matchUpdateTypes": [
+        "minor",
+        "patch",
+        "digest",
+        "pin",
+        "pinDigest"
+      ],
+      "groupName": "{{manager}} non-major",
+      "groupSlug": "{{manager}}-non-major"
+    },
+    {
+      "description": "Some registries publish no release timestamps for digests; do not hold those updates forever",
+      "matchUpdateTypes": [
+        "digest",
+        "pinDigest"
+      ],
+      "minimumReleaseAgeBehaviour": "timestamp-optional"
+    },
+    {
+      "description": "All non-major GitHub Actions updates in one PR",
+      "matchManagers": [
+        "github-actions"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "patch",
+        "digest",
+        "pin",
+        "pinDigest"
+      ],
+      "groupName": "GitHub Actions",
+      "groupSlug": "github-actions"
+    },
+    {
+      "description": "The BYOC chart ships to customer installs: every dependency and image update waits for approval. charts/llamacloud is a copy of platform's infra/charts/llamacloud that each BYOC release overwrites (utils/byoc/update-public-helm-chart-repo.sh), so a change made here alone is lost at the next release.",
       "matchFileNames": [
         "charts/**"
       ],
       "dependencyDashboardApproval": true,
+      "groupName": null,
       "prBodyNotes": [
-        "BYOC chart: bump the llamacloud chart version and CHANGELOG in this PR; tenants upgrade after the 10-day customer notice."
+        "BYOC chart: make the same change in platform's infra/charts/llamacloud or the next BYOC release overwrites it, bump the llamacloud chart version and CHANGELOG in this PR; tenants upgrade after the 10-day customer notice."
       ]
     },
     {
@@ -57,6 +103,14 @@
         "minor"
       ],
       "dependencyDashboardApproval": true
+    },
+    {
+      "description": "Our own images and charts move with each BYOC release, not with Renovate",
+      "matchPackageNames": [
+        "docker.io/llamaindex/**",
+        "registry-1.docker.io/llamaindex/**"
+      ],
+      "enabled": false
     }
   ]
 }
