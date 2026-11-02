@@ -6,6 +6,9 @@
   ],
   "dependencyDashboard": true,
   "timezone": "Etc/UTC",
+  "assignees": [
+    "meyerkev"
+  ],
   "schedule": [
     "at any time"
   ],
