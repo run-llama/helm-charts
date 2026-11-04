@@ -8,11 +8,15 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
+permissions:
+  contents: read
+
 jobs:
   lint-test:
     name: "Lint and Test Helm Charts"
-    runs-on:
-      labels: helm-charts-runner
+    # GitHub-hosted, never our self-hosted runners: this public repo runs this job for
+    # fork pull requests, and a fork's code must not execute inside our CI cluster.
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
@@ -47,7 +51,7 @@ jobs:
 
       - name: Setup helm unittest
         id: setup-helm-unittest
-        run: helm plugin install https://github.com/helm-unittest/helm-unittest --verify=false
+        run: helm plugin install https://github.com/helm-unittest/helm-unittest --version v1.2.1 --verify=false
 
       - name: Run Unit Test
         id: unit-test-charts
