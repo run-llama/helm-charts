@@ -451,7 +451,7 @@ With `url` unset, the chart renders the same manifests as a chart without this s
 | Name                                            | Description                                                                  | Value                                      |
 | ----------------------------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------ |
 | `config.storageBuckets.s3proxy.enabled`         | S3Proxy image                                                                | `false`                                    |
-| `config.storageBuckets.s3proxy.image`           | S3Proxy image                                                                | `docker.io/andrewgaul/s3proxy:sha-001d042` |
+| `config.storageBuckets.s3proxy.image`           | S3Proxy image                                                                | `docker.io/andrewgaul/s3proxy:sha-001d042@sha256:f5d38056e731aaf19b3a5c7bffda38cfd77bbdad138e98ca7381b4a6fa9b6cda` |
 | `config.storageBuckets.s3proxy.imagePullPolicy` | S3Proxy image pull policy                                                    | `IfNotPresent`                             |
 | `config.storageBuckets.s3proxy.containerPort`   | S3Proxy container port                                                       | `8080`                                     |
 | `config.storageBuckets.s3proxy.logLevel`        | S3Proxy log level. Falls back to config.logLevel, then "info", when empty.   | `""`                                       |

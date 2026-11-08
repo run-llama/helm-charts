@@ -7,7 +7,7 @@ S3Proxy Sidecar Container Definition.
   {{- with ((($.Values.config).storageBuckets).s3proxy).securityContext }}
   securityContext: {{ toYaml . | nindent 4 }}
   {{- end }}
-  image: "{{ ((($.Values.config).storageBuckets).s3proxy).image | default "docker.io/andrewgaul/s3proxy:sha-001d042" }}"
+  image: "{{ ((($.Values.config).storageBuckets).s3proxy).image | default "docker.io/andrewgaul/s3proxy:sha-001d042@sha256:f5d38056e731aaf19b3a5c7bffda38cfd77bbdad138e98ca7381b4a6fa9b6cda" }}"
   imagePullPolicy: {{ ((($.Values.config).storageBuckets).s3proxy).imagePullPolicy | default "IfNotPresent" }}
   ports:
   - name: s3proxy
