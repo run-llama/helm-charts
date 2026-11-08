@@ -756,7 +756,7 @@ config:
       ## @param config.storageBuckets.s3proxy.enabled S3Proxy image
       enabled: false
       ## @param config.storageBuckets.s3proxy.image S3Proxy image
-      image: "docker.io/andrewgaul/s3proxy:sha-001d042"
+      image: "docker.io/andrewgaul/s3proxy:sha-001d042@sha256:f5d38056e731aaf19b3a5c7bffda38cfd77bbdad138e98ca7381b4a6fa9b6cda"
       ## @param config.storageBuckets.s3proxy.imagePullPolicy S3Proxy image pull policy
       # @schema enum: ["", Always, IfNotPresent, Never]
       imagePullPolicy: "IfNotPresent"
