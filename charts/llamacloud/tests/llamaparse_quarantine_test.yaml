@@ -46,7 +46,7 @@ tests:
 
 # The role env is emitted by the SHARED llamaParse.env define, so the guard
 # against over-application is that the normal worker still has no role at all
-# (it defaults to the consolidated/monolithic behaviour without one).
+# (it defaults to monolithic without one).
 - it: the normal parse worker gets no PARSE_WORKER_ROLE from the shared env define
   set:
     config.parse.quarantineWorkerEnabled: true
@@ -59,7 +59,7 @@ tests:
         path: .spec.template.spec.containers[0].env
         content:
           name: PARSE_WORKER_ROLE
-          value: quarantine
+        any: true
     # notContains passes vacuously when the path does not resolve, so anchor on
     # an env entry that IS always present to prove the path resolved at all.
     - contains:

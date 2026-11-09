@@ -23,8 +23,8 @@ keywords:
 - llamacloud
 - rag
 
-version: 0.11.3
-appVersion: "0.11.3"
+version: 0.11.4
+appVersion: "0.11.4"
 
 dependencies:
   - name: temporal
@@ -38,12 +38,12 @@ dependencies:
     condition: llamaAgents.deploy
     alias: llama-agents-subchart
   - name: bifrost
-    version: 2.1.45
+    version: 2.1.48
     repository: https://maximhq.github.io/bifrost/helm-charts
     condition: bifrost.deploy
     alias: bifrost-subchart
   - name: kube-prometheus-stack
-    version: ~92.14.0
+    version: ~92.21.0
     repository: https://prometheus-community.github.io/helm-charts
     condition: monitoring.deploy
     alias: kube-prometheus-stack-subchart

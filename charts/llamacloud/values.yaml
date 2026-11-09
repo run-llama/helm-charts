@@ -756,7 +756,7 @@ config:
       ## @param config.storageBuckets.s3proxy.enabled S3Proxy image
       enabled: false
       ## @param config.storageBuckets.s3proxy.image S3Proxy image
-      image: "docker.io/andrewgaul/s3proxy:sha-001d042@sha256:f5d38056e731aaf19b3a5c7bffda38cfd77bbdad138e98ca7381b4a6fa9b6cda"
+      image: "docker.io/andrewgaul/s3proxy:sha-001d042"
       ## @param config.storageBuckets.s3proxy.imagePullPolicy S3Proxy image pull policy
       # @schema enum: ["", Always, IfNotPresent, Never]
       imagePullPolicy: "IfNotPresent"
@@ -768,6 +768,19 @@ config:
       securityContext: {}
       ## @param config.storageBuckets.s3proxy.resources Set container requests and limits for different resources like CPU or memory
       resources: {}
+
+      ## Authenticate S3Proxy to Azure Blob Storage with Microsoft Entra Workload ID instead
+      ## of an account key. Needs the AKS OIDC issuer and workload identity add-on, a
+      ## user-assigned managed identity with Storage Blob Data Contributor on the storage
+      ## account, and a federated credential on that identity for each S3Proxy pod's service
+      ## account. Set JCLOUDS_PROVIDER "azureblob-sdk" and JCLOUDS_ENDPOINT in `config` below,
+      ## and leave JCLOUDS_CREDENTIAL unset. See docs/s3-proxy-setup.md.
+      # @schema additionalProperties: false
+      azureWorkloadIdentity:
+        ## @param config.storageBuckets.s3proxy.azureWorkloadIdentity.enabled Label S3Proxy pods for the AKS workload identity webhook and authenticate with a federated token
+        enabled: false
+        ## @param config.storageBuckets.s3proxy.azureWorkloadIdentity.clientId Client ID of the user-assigned managed identity S3Proxy authenticates as
+        clientId: ""
 
       ## @param config.storageBuckets.s3proxy.config S3Proxy configuration ENV variables
       ## Configuration examples:
@@ -783,6 +796,11 @@ config:
         # JCLOUDS_IDENTITY: "<azure-storage-account-name>"
         # JCLOUDS_CREDENTIAL: "<azure-storage-account-key>"
         # JCLOUDS_ENDPOINT: "<azure-storage-account-endpoint>"
+        #
+        # Azure blob storage with workload identity (azureWorkloadIdentity.enabled: true):
+        # JCLOUDS_PROVIDER: "azureblob-sdk"
+        # JCLOUDS_IDENTITY: "<azure-storage-account-name>"
+        # JCLOUDS_ENDPOINT: "https://<azure-storage-account-name>.blob.core.windows.net"
 
   ## @section Frontend Configuration
   # @schema additionalProperties: false
@@ -920,6 +938,21 @@ config:
     preferedPremiumModel: ""
     ## @param config.parse.quarantineWorkerEnabled Deploy a dedicated LlamaParse quarantine worker (isolated poison-document lane). Off by default; nothing dispatches to its task queue unless the quarantine re-dispatch is also enabled.
     quarantineWorkerEnabled: false
+    ## @skip config.parse.multiActivityWorkflowEnabled
+    multiActivityWorkflowEnabled: false
+    ## @skip config.parse.ocriaCapacityRetryBudgetMs
+    # @schema type: [integer, "null"]
+    ocriaCapacityRetryBudgetMs: null
+    ## @skip config.parse.resourceTuner
+    # Shared CPU/memory slot tuner for the consolidated parse worker. Applies only
+    # with multiActivityWorkflowEnabled. The worker admits work past
+    # temporalWorkloads.llamaParse.autoscaling's targets, so the autoscaler can fire.
+    # @schema additionalProperties: false
+    resourceTuner:
+      enabled: true
+      # role:min-max activity slots per role. Unlisted roles keep fixed slots. The
+      # maxima sit above what the CPU target admits, so the tuner sets the ceiling.
+      slots: "decode:1-8,decode-enrich:2-12,agent:2-30,output:1-4"
 
     # @schema additionalProperties: false
     concurrency:
@@ -1042,6 +1075,9 @@ config:
     ## See https://github.com/temporalio/helm-charts?tab=readme-ov-file#running-temporal-cli-from-the-admin-tools-container
     namespace: ""
 
+    ## @param config.temporal.schedulesStartPaused Create Temporal schedules paused (TEMPORAL_WORKER_REGISTRY_SCHEDULES_START_PAUSED). For a standby blue/green install that shares a database with the live one: its scheduled sweeps stay off until you unpause them with `temporal schedule toggle --unpause`. A schedule that already exists keeps its pause state.
+    schedulesStartPaused: false
+
     ## Temporal external payload storage
     # @schema additionalProperties: false
     externalPayloadStorage:
@@ -1084,34 +1120,44 @@ config:
         type: Keyword
 
   ## @section Job Cleanup Configuration
-  ## Scheduled Temporal workflows that delete completed jobs past their retention period.
-  ## Each service (parse, extract, classify) has its own cleanup schedule.
-  ## Set retentionDays to 0 (or any value <= 0) to disable cleanup for that service.
+  ## Scheduled Temporal workflows that delete jobs past their retention period, every 15 minutes.
+  ## With retention unset, upgrades keep the previous per-product windows (parse 30d, extract 14d,
+  ## classify 14d, Batch v2 30d). The per-product fields below are deprecated.
   # @schema additionalProperties: false
   jobCleanup:
+    ## @param config.jobCleanup.retention Retention window for every job type (CLEANUP_RETENTION): a whole number followed by m, h, d or w, at least 1h, for example 24h or 7d; "0" disables cleanup. A per-product retentionDays still overrides it for that product. Per-product retentionDays is deprecated and will be removed in a future breaking release, which also drops the implicit 30/14-day defaults used while this is null.
+    # @schema type: [string, "null"];pattern: ^(0|[1-9][0-9]*[mhdw])$
+    retention: null
+
     ## @section Parse Job Cleanup
     # @schema additionalProperties: false
     parse:
-      ## @param config.jobCleanup.parse.retentionDays Number of days to retain completed parse jobs before deletion. Set to 0 to disable.
-      retentionDays: 30
-      ## @param config.jobCleanup.parse.batchSize Number of jobs to delete per batch during cleanup
-      batchSize: 100
+      ## @param config.jobCleanup.parse.retentionDays Deprecated, use config.jobCleanup.retention: overrides it for parse jobs, in days; 0 disables. Removed in a future breaking release.
+      # @schema type: [integer, "null"]
+      retentionDays: null
+      ## @param config.jobCleanup.parse.batchSize Deprecated: ignored; removed in a future breaking release.
+      # @schema type: [integer, "null"]
+      batchSize: null
 
     ## @section Extract Job Cleanup
     # @schema additionalProperties: false
     extract:
-      ## @param config.jobCleanup.extract.retentionDays Number of days to retain completed extract jobs before deletion. Set to 0 to disable.
-      retentionDays: 14
-      ## @param config.jobCleanup.extract.batchSize Number of jobs to delete per batch during cleanup
-      batchSize: 100
+      ## @param config.jobCleanup.extract.retentionDays Deprecated, use config.jobCleanup.retention: overrides it for extract jobs, in days; 0 disables. Removed in a future breaking release.
+      # @schema type: [integer, "null"]
+      retentionDays: null
+      ## @param config.jobCleanup.extract.batchSize Deprecated: ignored; removed in a future breaking release.
+      # @schema type: [integer, "null"]
+      batchSize: null
 
     ## @section Classify Job Cleanup
     # @schema additionalProperties: false
     classify:
-      ## @param config.jobCleanup.classify.retentionDays Number of days to retain completed classify jobs before deletion. Set to 0 to disable.
-      retentionDays: 14
-      ## @param config.jobCleanup.classify.batchSize Number of jobs to delete per batch during cleanup
-      batchSize: 100
+      ## @param config.jobCleanup.classify.retentionDays Deprecated, use config.jobCleanup.retention: overrides it for classify jobs, in days; 0 disables. Removed in a future breaking release.
+      # @schema type: [integer, "null"]
+      retentionDays: null
+      ## @param config.jobCleanup.classify.batchSize Deprecated: ignored; removed in a future breaking release.
+      # @schema type: [integer, "null"]
+      batchSize: null
 
 ## @section Common Configuration
 
@@ -1146,7 +1192,7 @@ frontend:
   annotations: {}
 
   ## @param frontend.image Frontend image
-  image: docker.io/llamaindex/llamacloud-frontend:0.11.3
+  image: docker.io/llamaindex/llamacloud-frontend:0.11.4
 
   ## @param frontend.imagePullPolicy Frontend image pull policy
   # @schema enum: ["", Always, IfNotPresent, Never]
@@ -1290,7 +1336,7 @@ backend:
   annotations: {}
 
   ## @param backend.image Backend image
-  image: docker.io/llamaindex/llamacloud-backend:0.11.3
+  image: docker.io/llamaindex/llamacloud-backend:0.11.4
 
   ## @param backend.imagePullPolicy Backend image pull policy
   # @schema enum: ["", Always, IfNotPresent, Never]
@@ -1327,6 +1373,21 @@ backend:
   ## Ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
   resources: {}
 
+  # @schema additionalProperties: false
+  startupProbe:
+    ## @param backend.startupProbe.initialDelaySeconds Seconds after container start before the first startup check
+    # @schema minimum: 0
+    initialDelaySeconds: 30
+    ## @param backend.startupProbe.periodSeconds Seconds between startup checks. The chart sets failureThreshold so the pod gets 480s to start.
+    # @schema minimum: 1
+    periodSeconds: 15
+
+  # @schema additionalProperties: false
+  readinessProbe:
+    ## @param backend.readinessProbe.initialDelaySeconds Seconds after container start before the first readiness check
+    # @schema minimum: 0
+    initialDelaySeconds: 30
+
   ## @param backend.extraEnvVariables Extra environment variables to add to Backend pods
   ## Example:
   ## extraEnvVars:
@@ -1361,7 +1422,7 @@ jobsService:
   annotations: {}
 
   ## @param jobsService.image JobsService image
-  image: docker.io/llamaindex/llamacloud-backend:0.11.3
+  image: docker.io/llamaindex/llamacloud-backend:0.11.4
 
   ## @param jobsService.imagePullPolicy JobsService image pull policy
   # @schema enum: ["", Always, IfNotPresent, Never]
@@ -1436,7 +1497,7 @@ llamaParseOcr:
   annotations: {}
 
   ## @param llamaParseOcr.image LlamaParseOcr image
-  image: docker.io/llamaindex/llamacloud-llamaparse-ocr:0.11.3
+  image: docker.io/llamaindex/llamacloud-llamaparse-ocr:0.11.4
 
   ## @param llamaParseOcr.imagePullPolicy LlamaParseOcr image pull policy
   # @schema enum: ["", Always, IfNotPresent, Never]
@@ -1756,7 +1817,7 @@ usage:
   annotations: {}
 
   ## @param usage.image LlamaParseLayoutDetectionApi image
-  image: docker.io/llamaindex/llamacloud-backend:0.11.3
+  image: docker.io/llamaindex/llamacloud-backend:0.11.4
 
   ## @param usage.imagePullPolicy LlamaParseLayoutDetectionApi image pull policy
   # @schema enum: ["", Always, IfNotPresent, Never]
@@ -1819,6 +1880,19 @@ temporalWorkloads:
     ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/
     horizontalPodAutoscalerSpec: {}
 
+    ## @skip temporalWorkloads.llamaParse.autoscaling
+    # Chart-owned HPA on the parse container. Needs multiActivityWorkflowEnabled and
+    # config.parse.resourceTuner. Leave horizontalPodAutoscalerSpec empty and replicas
+    # null when enabled. The targets also set the tuner, even with enabled: false.
+    # @schema additionalProperties: false
+    autoscaling:
+      enabled: false
+      minReplicas: 1
+      maxReplicas: 10
+      # Percent of the parse container request where pods are added.
+      targetCpuUtilization: 140
+      targetMemoryUtilization: 110
+
     ## @param temporalWorkloads.llamaParse.replicas [nullable] Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set.
     # @schema type: [integer, "null"];minimum: 0
     replicas: null
@@ -1830,7 +1904,7 @@ temporalWorkloads:
     annotations: {}
 
     ## @param temporalWorkloads.llamaParse.image temporal llamaparse image
-    image: docker.io/llamaindex/llamacloud-llamaparse:0.11.3
+    image: docker.io/llamaindex/llamacloud-llamaparse:0.11.4
 
     ## @param temporalWorkloads.llamaParse.imagePullPolicy temporal llamaparse image pull policy
     # @schema enum: ["", Always, IfNotPresent, Never]
@@ -1910,7 +1984,7 @@ temporalWorkloads:
     annotations: {}
 
     ## @param temporalWorkloads.llamaParseQuarantine.image temporal llamaparse quarantine image
-    image: docker.io/llamaindex/llamacloud-llamaparse:0.11.3
+    image: docker.io/llamaindex/llamacloud-llamaparse:0.11.4
 
     ## @param temporalWorkloads.llamaParseQuarantine.imagePullPolicy temporal llamaparse quarantine image pull policy
     # @schema enum: ["", Always, IfNotPresent, Never]
@@ -1980,7 +2054,7 @@ temporalWorkloads:
       annotations: {}
 
       ## @param temporalWorkloads.workers.temporal-jobs-worker.image Frontend image
-      image: docker.io/llamaindex/llamacloud-backend:0.11.3
+      image: docker.io/llamaindex/llamacloud-backend:0.11.4
 
       ## @param temporalWorkloads.workers.temporal-jobs-worker.imagePullPolicy Frontend image pull policy
       # @schema enum: ["", Always, IfNotPresent, Never]

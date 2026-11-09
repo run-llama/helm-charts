@@ -5,6 +5,10 @@ Temporal Parse Component Settings.
 {{- $component := ($.Values.temporalWorkloads).llamaParse }}
 {{- $component = set $component "prefix" "llamacloud.component.temporal.llamaParse" }}
 {{- $component = set $component "name" "llamacloud-temporal-parse" }}
+{{- if ((.Values.config).parse).multiActivityWorkflowEnabled }}
+{{- $component = set $component "workerRole" "consolidated" }}
+{{- end }}
+{{- include "llamacloud.parseResourceTuner.autoscaling" (dict "component" $component "root" $) }}
 {{- $component = set $component "image" ( (($.Values.temporalWorkloads).llamaParse).image | default ( print "docker.io/llamaindex/llamacloud-llamaparse:" .Chart.AppVersion ) ) }}
 {{- $component = set $component "imagePullPolicy" ( (($.Values.temporalWorkloads).llamaParse).imagePullPolicy | default "IfNotPresent" ) }}
 {{- $component = set $component "port" 8003 }}
@@ -133,9 +137,9 @@ failureThreshold: 10
 Temporal Parse Environment Variables.
 
 Shared by llamaParse and llamaParseQuarantine. `workerRole` is set by the
-component define, not by values, so the quarantine component always ships the
-role that binds it to parse-quarantine-queue. The normal component sets no
-role and so emits none, keeping its rendered env byte-identical.
+component define. Quarantine binds to parse-quarantine-queue. The normal
+component uses consolidated when multiActivityWorkflowEnabled is on and
+omits the role when it is off.
 
 Parameters:
 - component: The component configuration in values.yaml
@@ -146,7 +150,14 @@ Parameters:
 - name: PARSE_WORKER_ROLE
   value: {{ (.component).workerRole | quote }}
 {{- end }}
+{{- if eq ((.component).workerRole | toString) "consolidated" }}
+{{- include "llamacloud.parseResourceTuner.env" .root }}
+{{- end }}
 {{- include "llamacloud.managedInference.env" (dict "root" .root "tokenNames" (include "llamacloud.managedInference.parseTokenNames" .root | fromYamlArray)) }}
+{{- if ne ((.root.Values.config).parse).ocriaCapacityRetryBudgetMs nil }}
+- name: OCRIA_CAPACITY_RETRY_BUDGET_MS
+  value: {{ ((.root.Values.config).parse).ocriaCapacityRetryBudgetMs | quote }}
+{{- end }}
 {{- if (.component).extraEnvVariables }}
 {{ toYaml (.component).extraEnvVariables }}
 {{- end }}

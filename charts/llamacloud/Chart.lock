@@ -7,9 +7,9 @@ dependencies:
   version: 0.12.8
 - name: bifrost
   repository: https://maximhq.github.io/bifrost/helm-charts
-  version: 2.1.45
+  version: 2.1.48
 - name: kube-prometheus-stack
   repository: https://prometheus-community.github.io/helm-charts
-  version: 92.14.1
-digest: sha256:38d6407ffc2cb1123051ad5c9efd4905359c5fa9c382924b98a840ea38655595
-generated: "2026-10-29T10:03:15.57603-04:00"
+  version: 92.21.2
+digest: sha256:826e8b2f6a7b093813af9aef809355e965ca7d5c1199c1f689203fa26c0942de
+generated: "2026-11-09T12:32:51.82868221Z"

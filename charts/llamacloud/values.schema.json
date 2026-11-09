@@ -41,6 +41,16 @@
                 "podSecurityContext": {
                     "type": "object"
                 },
+                "readinessProbe": {
+                    "type": "object",
+                    "properties": {
+                        "initialDelaySeconds": {
+                            "type": "integer",
+                            "minimum": 0
+                        }
+                    },
+                    "additionalProperties": false
+                },
                 "replicas": {
                     "type": [
                         "integer",
@@ -56,6 +66,20 @@
                 },
                 "serviceAccountAnnotations": {
                     "type": "object"
+                },
+                "startupProbe": {
+                    "type": "object",
+                    "properties": {
+                        "initialDelaySeconds": {
+                            "type": "integer",
+                            "minimum": 0
+                        },
+                        "periodSeconds": {
+                            "type": "integer",
+                            "minimum": 1
+                        }
+                    },
+                    "additionalProperties": false
                 },
                 "tolerations": {
                     "type": "array"
@@ -344,10 +368,16 @@
                             "type": "object",
                             "properties": {
                                 "batchSize": {
-                                    "type": "integer"
+                                    "type": [
+                                        "integer",
+                                        "null"
+                                    ]
                                 },
                                 "retentionDays": {
-                                    "type": "integer"
+                                    "type": [
+                                        "integer",
+                                        "null"
+                                    ]
                                 }
                             },
                             "additionalProperties": false
@@ -356,10 +386,16 @@
                             "type": "object",
                             "properties": {
                                 "batchSize": {
-                                    "type": "integer"
+                                    "type": [
+                                        "integer",
+                                        "null"
+                                    ]
                                 },
                                 "retentionDays": {
-                                    "type": "integer"
+                                    "type": [
+                                        "integer",
+                                        "null"
+                                    ]
                                 }
                             },
                             "additionalProperties": false
@@ -368,13 +404,26 @@
                             "type": "object",
                             "properties": {
                                 "batchSize": {
-                                    "type": "integer"
+                                    "type": [
+                                        "integer",
+                                        "null"
+                                    ]
                                 },
                                 "retentionDays": {
-                                    "type": "integer"
+                                    "type": [
+                                        "integer",
+                                        "null"
+                                    ]
                                 }
                             },
                             "additionalProperties": false
+                        },
+                        "retention": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "pattern": "^(0|[1-9][0-9]*[mhdw])$"
                         }
                     },
                     "additionalProperties": false
@@ -699,11 +748,32 @@
                         "maxQueueConcurrency": {
                             "type": "integer"
                         },
+                        "multiActivityWorkflowEnabled": {
+                            "type": "boolean"
+                        },
+                        "ocriaCapacityRetryBudgetMs": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ]
+                        },
                         "preferedPremiumModel": {
                             "type": "string"
                         },
                         "quarantineWorkerEnabled": {
                             "type": "boolean"
+                        },
+                        "resourceTuner": {
+                            "type": "object",
+                            "properties": {
+                                "enabled": {
+                                    "type": "boolean"
+                                },
+                                "slots": {
+                                    "type": "string"
+                                }
+                            },
+                            "additionalProperties": false
                         }
                     },
                     "additionalProperties": false
@@ -861,6 +931,18 @@
                         "s3proxy": {
                             "type": "object",
                             "properties": {
+                                "azureWorkloadIdentity": {
+                                    "type": "object",
+                                    "properties": {
+                                        "clientId": {
+                                            "type": "string"
+                                        },
+                                        "enabled": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                },
                                 "config": {
                                     "type": "object"
                                 },
@@ -929,6 +1011,9 @@
                         },
                         "namespace": {
                             "type": "string"
+                        },
+                        "schedulesStartPaused": {
+                            "type": "boolean"
                         },
                         "searchAttributesJob": {
                             "type": "object",
@@ -2273,6 +2358,27 @@
                         },
                         "annotations": {
                             "type": "object"
+                        },
+                        "autoscaling": {
+                            "type": "object",
+                            "properties": {
+                                "enabled": {
+                                    "type": "boolean"
+                                },
+                                "maxReplicas": {
+                                    "type": "integer"
+                                },
+                                "minReplicas": {
+                                    "type": "integer"
+                                },
+                                "targetCpuUtilization": {
+                                    "type": "integer"
+                                },
+                                "targetMemoryUtilization": {
+                                    "type": "integer"
+                                }
+                            },
+                            "additionalProperties": false
                         },
                         "command": {
                             "type": "array"

@@ -1,0 +1,186 @@
+suite: s3-proxy-azure-workload-identity-tests
+
+templates:
+- ../templates/llamacloud/configmaps/s3proxy.yaml
+- ../templates/llamacloud/deployment.yaml
+- ../templates/llamacloud/serviceaccount.yaml
+
+release:
+  name: test-release
+  namespace: test-namespace
+
+capabilities:
+  majorVersion: 1
+  minorVersion: 31
+  apiVersions:
+    - apps/v1
+    - v1
+
+chart:
+  appVersion: 0.0.0
+
+set:
+  config:
+    frontend:
+      enabled: false
+    parseOcr:
+      enabled: false
+    parseLayoutDetection:
+      enabled: false
+    storageBuckets:
+      provider: azure
+      s3proxy:
+        enabled: true
+        azureWorkloadIdentity:
+          enabled: true
+          clientId: 00000000-1111-2222-3333-444444444444
+        config:
+          JCLOUDS_PROVIDER: azureblob-sdk
+          JCLOUDS_IDENTITY: examplestorage
+          JCLOUDS_ENDPOINT: https://examplestorage.blob.core.windows.net
+  redis:
+    host: test-redis
+    port: "6379"
+    password: test-pass
+  postgresql:
+    host: test-pg
+    port: "5432"
+    username: test-user
+    password: test-pass
+    database: test-db
+  mongodb:
+    host: mongodb
+    username: test-mongo-user
+    password: test-mongo-pass
+
+tests:
+# The webhook only mutates labeled pods. Deployment selectors are immutable, so the label
+# must land on the pod template alone or `helm upgrade` fails on existing installs.
+- it: labels pods that run S3Proxy without changing the Deployment selector
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: .metadata.name
+    value: llamacloud
+  asserts:
+    - equal:
+        path: .spec.template.metadata.labels["azure.workload.identity/use"]
+        value: "true"
+    - notExists:
+        path: .spec.selector.matchLabels["azure.workload.identity/use"]
+
+- it: injects the Azure token into the S3Proxy sidecar only
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: .metadata.name
+    value: llamacloud-temporal-parse
+  asserts:
+    - equal:
+        path: .spec.template.metadata.annotations["azure.workload.identity/skip-containers"]
+        value: llamacloud-temporal-parse
+
+- it: leaves pods without S3Proxy unlabeled
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: .metadata.name
+    value: llamacloud-telemetry
+  asserts:
+    - notExists:
+        path: .spec.template.metadata.labels["azure.workload.identity/use"]
+    - notExists:
+        path: .spec.template.metadata.annotations["azure.workload.identity/skip-containers"]
+
+# The S3Proxy image defaults JCLOUDS_CREDENTIAL to a placeholder that S3Proxy would
+# send as an account key, so the chart must blank it.
+- it: blanks the S3Proxy credential so the Azure SDK falls back to workload identity
+  template: ../templates/llamacloud/configmaps/s3proxy.yaml
+  asserts:
+    - equal:
+        path: .data.JCLOUDS_CREDENTIAL
+        value: ""
+
+- it: leaves the S3Proxy credential to the secret when workload identity is off
+  set:
+    config.storageBuckets.s3proxy.azureWorkloadIdentity.enabled: false
+  template: ../templates/llamacloud/configmaps/s3proxy.yaml
+  asserts:
+    - notExists:
+        path: .data.JCLOUDS_CREDENTIAL
+
+- it: does not label pods when workload identity is off
+  set:
+    config.storageBuckets.s3proxy.azureWorkloadIdentity.enabled: false
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: .metadata.name
+    value: llamacloud
+  asserts:
+    - notExists:
+        path: .spec.template.metadata.labels["azure.workload.identity/use"]
+
+- it: annotates the service accounts of S3Proxy pods with the client ID
+  template: ../templates/llamacloud/serviceaccount.yaml
+  documentSelector:
+    path: .metadata.name
+    value: llamacloud
+  asserts:
+    - equal:
+        path: .metadata.annotations["azure.workload.identity/client-id"]
+        value: 00000000-1111-2222-3333-444444444444
+
+- it: does not annotate service accounts of pods without S3Proxy
+  template: ../templates/llamacloud/serviceaccount.yaml
+  documentSelector:
+    path: .metadata.name
+    value: llamacloud-telemetry
+  asserts:
+    - notExists:
+        path: .metadata.annotations["azure.workload.identity/client-id"]
+
+- it: keeps a client ID set in the component's serviceAccountAnnotations
+  set:
+    backend.serviceAccountAnnotations:
+      azure.workload.identity/client-id: component-client-id
+      example.com/owner: storage-team
+  template: ../templates/llamacloud/serviceaccount.yaml
+  documentSelector:
+    path: .metadata.name
+    value: llamacloud
+  asserts:
+    - equal:
+        path: .metadata.annotations["azure.workload.identity/client-id"]
+        value: component-client-id
+    - equal:
+        path: .metadata.annotations["example.com/owner"]
+        value: storage-team
+
+- it: fails without a client ID
+  set:
+    config.storageBuckets.s3proxy.azureWorkloadIdentity.clientId: ""
+  template: ../templates/llamacloud/configmaps/s3proxy.yaml
+  asserts:
+    - failedTemplate:
+        errorPattern: "azureWorkloadIdentity.clientId is required"
+
+- it: fails with the jclouds azureblob provider, which cannot use workload identity
+  set:
+    config.storageBuckets.s3proxy.config.JCLOUDS_PROVIDER: azureblob
+  template: ../templates/llamacloud/configmaps/s3proxy.yaml
+  asserts:
+    - failedTemplate:
+        errorPattern: "JCLOUDS_PROVIDER must be \"azureblob-sdk\""
+
+- it: fails when an account key is also set, since S3Proxy would use the key
+  set:
+    config.storageBuckets.s3proxy.config.JCLOUDS_CREDENTIAL: example-account-key
+  template: ../templates/llamacloud/configmaps/s3proxy.yaml
+  asserts:
+    - failedTemplate:
+        errorPattern: "JCLOUDS_CREDENTIAL must be empty"
+
+- it: fails without a storage endpoint
+  set:
+    config.storageBuckets.s3proxy.config.JCLOUDS_ENDPOINT: ""
+  template: ../templates/llamacloud/configmaps/s3proxy.yaml
+  asserts:
+    - failedTemplate:
+        errorPattern: "JCLOUDS_ENDPOINT is required"

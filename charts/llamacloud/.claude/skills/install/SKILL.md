@@ -11,7 +11,8 @@ Goal: take the user from a validated `values.yaml` to a healthy release, surface
 
 Before touching anything, confirm:
 
-1. A recent `preinstall-report.md` exists next to the values file and ends in `READY TO INSTALL`. If not, refuse and direct the user to run the `preinstall-check` skill first. Customer installs that skip preinstall checks fail roughly an order of magnitude more often.
+1. A recent `preinstall-report.md` exists next to the values file and ends in `READY TO INSTALL`. If
+   not, refuse and direct the user to run the `preinstall-check` skill first.
 2. Re-confirm `kubectl config current-context` and pause for explicit approval. Yes, this is the second time today — confirm anyway.
 3. Confirm the release name, namespace, chart version, and values file paths.
 4. Confirm the install mode:
@@ -181,7 +182,7 @@ When helm exits non-zero (timeout, dependency failure, etc.) — pods remain in 
 
 ## Common install failures and what to look for
 
-These are the highest-frequency failure signatures during a fresh install. When you see them, jump straight to the matching remediation.
+These are the highest-frequency failure signatures during a fresh install.
 
 ### `ImagePullBackOff` / `ErrImagePull`
 - For `docker.io/llamaindex/...` images: usually Docker Hub anonymous pull rate limits. Suggest configuring `imagePullSecrets` with a Docker Hub PAT, or mirroring images to the customer's own registry. The shape is shown in `examples/private-registry-config.yaml` (note: this is an overlay file, layer it on top of `basic-config.yaml` with `-f basic-config.yaml -f private-registry-config.yaml`).

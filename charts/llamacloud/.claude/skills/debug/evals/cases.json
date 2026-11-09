@@ -1,0 +1,15 @@
+{
+  "max_turns": 4,
+  "cases": [
+    {"prompt": "I installed the LlamaCloud Helm chart and the backend pods are in CrashLoopBackOff. Help me figure out why.", "should_trigger": true},
+    {"prompt": "Our llamacloud-ocr pods have been Pending for 20 minutes: 0/6 nodes are available: insufficient nvidia.com/gpu.", "should_trigger": true},
+    {"prompt": "something's wrong with our llamacloud install, login just redirects in a loop", "should_trigger": true},
+    {"prompt": "Parses never finish on our self-hosted LlamaCloud and the temporal-parse worker keeps restarting. Write up a report I can send LlamaIndex support.", "should_trigger": true},
+    {"prompt": "kubectl get pods -n llamacloud shows CreateContainerConfigError on llamacloud-web. What's missing?", "should_trigger": true},
+    {"prompt": "Before I run helm install for LlamaCloud, validate my values.yaml and check the cluster.", "should_trigger": false},
+    {"prompt": "Run helm install for the LlamaCloud chart with my values.yaml.", "should_trigger": false},
+    {"prompt": "The backend in my local Tilt dev stack won't start.", "should_trigger": false},
+    {"prompt": "I get 'Token has expired and refresh failed' when running kubectl against the dev cluster.", "should_trigger": false},
+    {"prompt": "What's the error rate for the platform-api service in prd over the last hour?", "should_trigger": false}
+  ]
+}

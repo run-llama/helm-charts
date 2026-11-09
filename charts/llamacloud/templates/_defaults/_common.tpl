@@ -54,6 +54,11 @@ Parameters:
 {{- range $key, $value := .root.Values.commonAnnotations }}
 {{-   $merged = set $merged $key $value }}
 {{- end }}
+{{- /* Only the S3Proxy sidecar talks to Azure Blob, so the workload identity webhook
+       skips the main container and its token stays out of the application process. */}}
+{{- if and .component .component.usesS3 (include "llamacloud.s3proxy.azureWorkloadIdentity" .root) }}
+{{-   $merged = set $merged "azure.workload.identity/skip-containers" .component.name }}
+{{- end }}
 {{- if .component }}
 {{-   range $key, $value := .component.podAnnotations }}
 {{-     $merged = set $merged $key $value }}

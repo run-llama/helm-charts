@@ -249,7 +249,7 @@ tests:
         path: .data.MAX_INDEX_JOBS_IN_EXECUTION
         value: "4"
 
-- it: temporal-jobs-worker ConfigMap renders default cleanup retention envs
+- it: fresh install keeps the previous per-product cleanup windows and no CLEANUP_RETENTION
   template: ../templates/llamacloud/configmap.yaml
   documentSelector:
     path: metadata.name
@@ -264,6 +264,52 @@ tests:
     - equal:
         path: .data.CLEANUP_CLASSIFY_V2_RETENTION_DAYS
         value: "14"
+    - equal:
+        path: .data.BATCHES_V2_CLEANUP_RETENTION_DAYS
+        value: "30"
+    - notExists:
+        path: .data.CLEANUP_RETENTION
+    - notExists:
+        path: .data.CLEANUP_PARSE_V2_BATCH_SIZE
+
+- it: jobCleanup.retention renders no legacy retention envs
+  set:
+    config:
+      jobCleanup:
+        retention: 24h
+  template: ../templates/llamacloud/configmap.yaml
+  documentSelector:
+    path: metadata.name
+    value: temporal-jobs-worker
+  asserts:
+    - notExists:
+        path: .data.CLEANUP_PARSE_V2_RETENTION_DAYS
+    - notExists:
+        path: .data.CLEANUP_EXTRACT_V2_RETENTION_DAYS
+    - notExists:
+        path: .data.CLEANUP_CLASSIFY_V2_RETENTION_DAYS
+    - notExists:
+        path: .data.BATCHES_V2_CLEANUP_RETENTION_DAYS
+
+- it: a product's retentionDays alongside jobCleanup.retention keeps its legacy env only for that product
+  set:
+    config:
+      jobCleanup:
+        retention: 24h
+        parse:
+          retentionDays: 7
+  template: ../templates/llamacloud/configmap.yaml
+  documentSelector:
+    path: metadata.name
+    value: temporal-jobs-worker
+  asserts:
+    - equal:
+        path: .data.CLEANUP_PARSE_V2_RETENTION_DAYS
+        value: "7"
+    - notExists:
+        path: .data.CLEANUP_EXTRACT_V2_RETENTION_DAYS
+    - notExists:
+        path: .data.CLEANUP_CLASSIFY_V2_RETENTION_DAYS
 
 - it: explicit retentionDays=0 passes through (disables cleanup, does not fall back to default)
   set:
@@ -289,18 +335,3 @@ tests:
     - equal:
         path: .data.CLEANUP_CLASSIFY_V2_RETENTION_DAYS
         value: "0"
-
-- it: positive override propagates to cleanup retention envs
-  set:
-    config:
-      jobCleanup:
-        parse:
-          retentionDays: 90
-  template: ../templates/llamacloud/configmap.yaml
-  documentSelector:
-    path: metadata.name
-    value: temporal-jobs-worker
-  asserts:
-    - equal:
-        path: .data.CLEANUP_PARSE_V2_RETENTION_DAYS
-        value: "90"

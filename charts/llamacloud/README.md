@@ -448,16 +448,18 @@ With `url` unset, the chart renders the same manifests as a chart without this s
 
 ### S3Proxy Configuration
 
-| Name                                            | Description                                                                  | Value                                      |
-| ----------------------------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------ |
-| `config.storageBuckets.s3proxy.enabled`         | S3Proxy image                                                                | `false`                                    |
-| `config.storageBuckets.s3proxy.image`           | S3Proxy image                                                                | `docker.io/andrewgaul/s3proxy:sha-001d042@sha256:f5d38056e731aaf19b3a5c7bffda38cfd77bbdad138e98ca7381b4a6fa9b6cda` |
-| `config.storageBuckets.s3proxy.imagePullPolicy` | S3Proxy image pull policy                                                    | `IfNotPresent`                             |
-| `config.storageBuckets.s3proxy.containerPort`   | S3Proxy container port                                                       | `8080`                                     |
-| `config.storageBuckets.s3proxy.logLevel`        | S3Proxy log level. Falls back to config.logLevel, then "info", when empty.   | `""`                                       |
-| `config.storageBuckets.s3proxy.securityContext` | Security context for the S3Proxy container                                   | `{}`                                       |
-| `config.storageBuckets.s3proxy.resources`       | Set container requests and limits for different resources like CPU or memory | `{}`                                       |
-| `config.storageBuckets.s3proxy.config`          | S3Proxy configuration ENV variables                                          | `{}`                                       |
+| Name                                                           | Description                                                                                      | Value                                      |
+| -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | ------------------------------------------ |
+| `config.storageBuckets.s3proxy.enabled`                        | S3Proxy image                                                                                    | `false`                                    |
+| `config.storageBuckets.s3proxy.image`                          | S3Proxy image                                                                                    | `docker.io/andrewgaul/s3proxy:sha-001d042` |
+| `config.storageBuckets.s3proxy.imagePullPolicy`                | S3Proxy image pull policy                                                                        | `IfNotPresent`                             |
+| `config.storageBuckets.s3proxy.containerPort`                  | S3Proxy container port                                                                           | `8080`                                     |
+| `config.storageBuckets.s3proxy.logLevel`                       | S3Proxy log level. Falls back to config.logLevel, then "info", when empty.                       | `""`                                       |
+| `config.storageBuckets.s3proxy.securityContext`                | Security context for the S3Proxy container                                                       | `{}`                                       |
+| `config.storageBuckets.s3proxy.resources`                      | Set container requests and limits for different resources like CPU or memory                     | `{}`                                       |
+| `config.storageBuckets.s3proxy.azureWorkloadIdentity.enabled`  | Label S3Proxy pods for the AKS workload identity webhook and authenticate with a federated token | `false`                                    |
+| `config.storageBuckets.s3proxy.azureWorkloadIdentity.clientId` | Client ID of the user-assigned managed identity S3Proxy authenticates as                         | `""`                                       |
+| `config.storageBuckets.s3proxy.config`                         | S3Proxy configuration ENV variables                                                              | `{}`                                       |
 
 ### Frontend Configuration
 
@@ -603,7 +605,7 @@ With `url` unset, the chart renders the same manifests as a chart without this s
 | `config.temporal.externalPayloadStorage.enabled`         | Store oversized Temporal payloads outside workflow history                                    | `false`                                                                                          |
 | `config.temporal.externalPayloadStorage.bucketName`      | S3 bucket for external Temporal payloads                                                      | `""`                                                                                             |
 | `config.temporal.externalPayloadStorage.thresholdBytes`  | Serialized payload size threshold. Empty uses the Temporal SDK default.                       | `""`                                                                                             |
-| `config.temporal.jobCleanup.image`                       | Image for the kubectl job cleanup hook                                                        | `bitnami/kubectl:latest@sha256:bedd34c910e2a5ce9836813d16444af449d7fe07a29136d59f34e861e8e660c5` |
+| `config.temporal.jobCleanup.image`                       | Image for the kubectl job cleanup hook                                                        | `bitnami/kubectl:latest@sha256:8f59408f9e896fc8992a0660a56687545bd06751f26531b4a26fca6d5dc7562d` |
 | `config.temporal.searchAttributesJob.enabled`            | Enable the search attributes job                                                              | `true`                                                                                           |
 | `config.temporal.searchAttributesJob.image`              | Image for temporal admin tools                                                                | `docker.io/temporalio/admin-tools:1.31.2`                                                        |
 | `config.temporal.searchAttributesJob.attributes[0].name` | Name of the first search attribute                                                            | `Project`                                                                                        |
@@ -613,27 +615,30 @@ With `url` unset, the chart renders the same manifests as a chart without this s
 
 ### Job Cleanup Configuration
 
+| Name                          | Description                                                                                                                                                                                                                                                                                                                                                                                      | Value |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----- |
+| `config.jobCleanup.retention` | Retention window for every job type (CLEANUP_RETENTION): a whole number followed by m, h, d or w, at least 1h, for example 24h or 7d; "0" disables cleanup. A per-product retentionDays still overrides it for that product. Per-product retentionDays is deprecated and will be removed in a future breaking release, which also drops the implicit 30/14-day defaults used while this is null. | `nil` |
 
 ### Parse Job Cleanup
 
-| Name                                    | Description                                                                         | Value |
-| --------------------------------------- | ----------------------------------------------------------------------------------- | ----- |
-| `config.jobCleanup.parse.retentionDays` | Number of days to retain completed parse jobs before deletion. Set to 0 to disable. | `30`  |
-| `config.jobCleanup.parse.batchSize`     | Number of jobs to delete per batch during cleanup                                   | `100` |
+| Name                                    | Description                                                                                                                          | Value |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | ----- |
+| `config.jobCleanup.parse.retentionDays` | Deprecated, use config.jobCleanup.retention: overrides it for parse jobs, in days; 0 disables. Removed in a future breaking release. | `nil` |
+| `config.jobCleanup.parse.batchSize`     | Deprecated: ignored; removed in a future breaking release.                                                                           | `nil` |
 
 ### Extract Job Cleanup
 
-| Name                                      | Description                                                                           | Value |
-| ----------------------------------------- | ------------------------------------------------------------------------------------- | ----- |
-| `config.jobCleanup.extract.retentionDays` | Number of days to retain completed extract jobs before deletion. Set to 0 to disable. | `14`  |
-| `config.jobCleanup.extract.batchSize`     | Number of jobs to delete per batch during cleanup                                     | `100` |
+| Name                                      | Description                                                                                                                            | Value |
+| ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- | ----- |
+| `config.jobCleanup.extract.retentionDays` | Deprecated, use config.jobCleanup.retention: overrides it for extract jobs, in days; 0 disables. Removed in a future breaking release. | `nil` |
+| `config.jobCleanup.extract.batchSize`     | Deprecated: ignored; removed in a future breaking release.                                                                             | `nil` |
 
 ### Classify Job Cleanup
 
-| Name                                       | Description                                                                            | Value |
-| ------------------------------------------ | -------------------------------------------------------------------------------------- | ----- |
-| `config.jobCleanup.classify.retentionDays` | Number of days to retain completed classify jobs before deletion. Set to 0 to disable. | `14`  |
-| `config.jobCleanup.classify.batchSize`     | Number of jobs to delete per batch during cleanup                                      | `100` |
+| Name                                       | Description                                                                                                                             | Value |
+| ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- | ----- |
+| `config.jobCleanup.classify.retentionDays` | Deprecated, use config.jobCleanup.retention: overrides it for classify jobs, in days; 0 disables. Removed in a future breaking release. | `nil` |
+| `config.jobCleanup.classify.batchSize`     | Deprecated: ignored; removed in a future breaking release.                                                                              | `nil` |
 
 ### Common Configuration
 
@@ -652,7 +657,7 @@ With `url` unset, the chart renders the same manifests as a chart without this s
 | `frontend.replicas`                    | Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set. | `nil`                                             |
 | `frontend.command`                     | Override the container command (entrypoint)                                                                                      | `[]`                                              |
 | `frontend.annotations`                 | Annotations added to the Frontend Deployment.                                                                                    | `{}`                                              |
-| `frontend.image`                       | Frontend image                                                                                                                   | `docker.io/llamaindex/llamacloud-frontend:0.11.3` |
+| `frontend.image`                       | Frontend image                                                                                                                   | `docker.io/llamaindex/llamacloud-frontend:0.11.4` |
 | `frontend.imagePullPolicy`             | Frontend image pull policy                                                                                                       | `IfNotPresent`                                    |
 | `frontend.securityContext`             | Security context for the container                                                                                               | `{}`                                              |
 | `frontend.serviceAccountAnnotations`   | Annotations to add to the service account                                                                                        | `{}`                                              |
@@ -692,26 +697,29 @@ With `url` unset, the chart renders the same manifests as a chart without this s
 
 ### Backend Configuration
 
-| Name                                  | Description                                                                                                                      | Value                                            |
-| ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
-| `backend.horizontalPodAutoscalerSpec` | HorizontalPodAutoScaler configuration                                                                                            | `{}`                                             |
-| `backend.replicas`                    | Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set. | `nil`                                            |
-| `backend.command`                     | Override the container command (entrypoint)                                                                                      | `[]`                                             |
-| `backend.annotations`                 | Annotations added to the Backend Deployment.                                                                                     | `{}`                                             |
-| `backend.image`                       | Backend image                                                                                                                    | `docker.io/llamaindex/llamacloud-backend:0.11.3` |
-| `backend.imagePullPolicy`             | Backend image pull policy                                                                                                        | `IfNotPresent`                                   |
-| `backend.securityContext`             | Security context for the container                                                                                               | `{}`                                             |
-| `backend.serviceAccountAnnotations`   | Annotations to add to the service account                                                                                        | `{}`                                             |
-| `backend.nodeSelector`                | Node labels for pod assignment                                                                                                   | `{}`                                             |
-| `backend.tolerations`                 | Taints to tolerate on node assignment:                                                                                           | `[]`                                             |
-| `backend.affinity`                    | Pod scheduling constraints                                                                                                       | `{}`                                             |
-| `backend.topologySpreadConstraints`   | Topology Spread Constraints for backend pods                                                                                     | `[]`                                             |
-| `backend.podAnnotations`              | Annotations to add to the resulting Pods of the Deployment.                                                                      | `{}`                                             |
-| `backend.podSecurityContext`          | Annotations to add to the resulting Pods of the Deployment.                                                                      | `{}`                                             |
-| `backend.resources`                   | Set container requests and limits for different resources like CPU or memory (essential for production workloads)                | `{}`                                             |
-| `backend.extraEnvVariables`           | Extra environment variables to add to Backend pods                                                                               | `[]`                                             |
-| `backend.volumeMounts`                | List of volumeMounts that can be mounted by containers belonging to the pod                                                      | `[]`                                             |
-| `backend.volumes`                     | List of volumes that can be mounted by containers belonging to the pod                                                           | `[]`                                             |
+| Name                                         | Description                                                                                                                      | Value                                            |
+| -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| `backend.horizontalPodAutoscalerSpec`        | HorizontalPodAutoScaler configuration                                                                                            | `{}`                                             |
+| `backend.replicas`                           | Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set. | `nil`                                            |
+| `backend.command`                            | Override the container command (entrypoint)                                                                                      | `[]`                                             |
+| `backend.annotations`                        | Annotations added to the Backend Deployment.                                                                                     | `{}`                                             |
+| `backend.image`                              | Backend image                                                                                                                    | `docker.io/llamaindex/llamacloud-backend:0.11.4` |
+| `backend.imagePullPolicy`                    | Backend image pull policy                                                                                                        | `IfNotPresent`                                   |
+| `backend.securityContext`                    | Security context for the container                                                                                               | `{}`                                             |
+| `backend.serviceAccountAnnotations`          | Annotations to add to the service account                                                                                        | `{}`                                             |
+| `backend.nodeSelector`                       | Node labels for pod assignment                                                                                                   | `{}`                                             |
+| `backend.tolerations`                        | Taints to tolerate on node assignment:                                                                                           | `[]`                                             |
+| `backend.affinity`                           | Pod scheduling constraints                                                                                                       | `{}`                                             |
+| `backend.topologySpreadConstraints`          | Topology Spread Constraints for backend pods                                                                                     | `[]`                                             |
+| `backend.podAnnotations`                     | Annotations to add to the resulting Pods of the Deployment.                                                                      | `{}`                                             |
+| `backend.podSecurityContext`                 | Annotations to add to the resulting Pods of the Deployment.                                                                      | `{}`                                             |
+| `backend.resources`                          | Set container requests and limits for different resources like CPU or memory (essential for production workloads)                | `{}`                                             |
+| `backend.startupProbe.initialDelaySeconds`   | Seconds after container start before the first startup check                                                                     | `30`                                             |
+| `backend.startupProbe.periodSeconds`         | Seconds between startup checks. The chart sets failureThreshold so the pod gets 480s to start.                                   | `15`                                             |
+| `backend.readinessProbe.initialDelaySeconds` | Seconds after container start before the first readiness check                                                                   | `30`                                             |
+| `backend.extraEnvVariables`                  | Extra environment variables to add to Backend pods                                                                               | `[]`                                             |
+| `backend.volumeMounts`                       | List of volumeMounts that can be mounted by containers belonging to the pod                                                      | `[]`                                             |
+| `backend.volumes`                            | List of volumes that can be mounted by containers belonging to the pod                                                           | `[]`                                             |
 
 ### JobsService Configuration
 
@@ -721,7 +729,7 @@ With `url` unset, the chart renders the same manifests as a chart without this s
 | `jobsService.replicas`                    | Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set. | `nil`                                            |
 | `jobsService.command`                     | Override the container command (entrypoint)                                                                                      | `[]`                                             |
 | `jobsService.annotations`                 | Annotations added to the JobsService Deployment.                                                                                 | `{}`                                             |
-| `jobsService.image`                       | JobsService image                                                                                                                | `docker.io/llamaindex/llamacloud-backend:0.11.3` |
+| `jobsService.image`                       | JobsService image                                                                                                                | `docker.io/llamaindex/llamacloud-backend:0.11.4` |
 | `jobsService.imagePullPolicy`             | JobsService image pull policy                                                                                                    | `IfNotPresent`                                   |
 | `jobsService.securityContext`             | Security context for the container                                                                                               | `{}`                                             |
 | `jobsService.serviceAccountAnnotations`   | Annotations to add to the service account                                                                                        | `{}`                                             |
@@ -745,7 +753,7 @@ With `url` unset, the chart renders the same manifests as a chart without this s
 | `llamaParseOcr.terminationGracePeriodSeconds` | Pod termination grace period in seconds. Allows the server to finish its 40-second drain and close native predictors.            | `60`                                                    |
 | `llamaParseOcr.command`                       | Override the container command (entrypoint)                                                                                      | `[]`                                                    |
 | `llamaParseOcr.annotations`                   | Annotations added to the LlamaParseOcr Deployment.                                                                               | `{}`                                                    |
-| `llamaParseOcr.image`                         | LlamaParseOcr image                                                                                                              | `docker.io/llamaindex/llamacloud-llamaparse-ocr:0.11.3` |
+| `llamaParseOcr.image`                         | LlamaParseOcr image                                                                                                              | `docker.io/llamaindex/llamacloud-llamaparse-ocr:0.11.4` |
 | `llamaParseOcr.imagePullPolicy`               | LlamaParseOcr image pull policy                                                                                                  | `IfNotPresent`                                          |
 | `llamaParseOcr.securityContext`               | Security context for the container                                                                                               | `{}`                                                    |
 | `llamaParseOcr.serviceAccountAnnotations`     | Annotations to add to the service account                                                                                        | `{}`                                                    |
@@ -845,7 +853,7 @@ With `url` unset, the chart renders the same manifests as a chart without this s
 | `usage.replicas`                    | Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set. | `nil`                                            |
 | `usage.command`                     | Override the container command (entrypoint)                                                                                      | `[]`                                             |
 | `usage.annotations`                 | Annotations added to the LlamaParseLayoutDetectionApi Deployment.                                                                | `{}`                                             |
-| `usage.image`                       | LlamaParseLayoutDetectionApi image                                                                                               | `docker.io/llamaindex/llamacloud-backend:0.11.3` |
+| `usage.image`                       | LlamaParseLayoutDetectionApi image                                                                                               | `docker.io/llamaindex/llamacloud-backend:0.11.4` |
 | `usage.imagePullPolicy`             | LlamaParseLayoutDetectionApi image pull policy                                                                                   | `IfNotPresent`                                   |
 | `usage.securityContext`             | Security context for the container                                                                                               | `{}`                                             |
 | `usage.serviceAccountAnnotations`   | Annotations to add to the service account                                                                                        | `{}`                                             |
@@ -868,7 +876,7 @@ With `url` unset, the chart renders the same manifests as a chart without this s
 | `temporalWorkloads.llamaParse.replicas`                                | Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set.                                                                    | `nil`                                               |
 | `temporalWorkloads.llamaParse.command`                                 | Override the container command (entrypoint)                                                                                                                                                         | `[]`                                                |
 | `temporalWorkloads.llamaParse.annotations`                             | Annotations added to the temporal llamaparse Deployment.                                                                                                                                            | `{}`                                                |
-| `temporalWorkloads.llamaParse.image`                                   | temporal llamaparse image                                                                                                                                                                           | `docker.io/llamaindex/llamacloud-llamaparse:0.11.3` |
+| `temporalWorkloads.llamaParse.image`                                   | temporal llamaparse image                                                                                                                                                                           | `docker.io/llamaindex/llamacloud-llamaparse:0.11.4` |
 | `temporalWorkloads.llamaParse.imagePullPolicy`                         | temporal llamaparse image pull policy                                                                                                                                                               | `IfNotPresent`                                      |
 | `temporalWorkloads.llamaParse.securityContext`                         | Security context for the container                                                                                                                                                                  | `{}`                                                |
 | `temporalWorkloads.llamaParse.serviceAccountAnnotations`               | Annotations to add to the service account                                                                                                                                                           | `{}`                                                |
@@ -887,7 +895,7 @@ With `url` unset, the chart renders the same manifests as a chart without this s
 | `temporalWorkloads.llamaParseQuarantine.replicas`                      | Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set.                                                                    | `nil`                                               |
 | `temporalWorkloads.llamaParseQuarantine.command`                       | Override the container command (entrypoint)                                                                                                                                                         | `[]`                                                |
 | `temporalWorkloads.llamaParseQuarantine.annotations`                   | Annotations added to the temporal llamaparse quarantine Deployment.                                                                                                                                 | `{}`                                                |
-| `temporalWorkloads.llamaParseQuarantine.image`                         | temporal llamaparse quarantine image                                                                                                                                                                | `docker.io/llamaindex/llamacloud-llamaparse:0.11.3` |
+| `temporalWorkloads.llamaParseQuarantine.image`                         | temporal llamaparse quarantine image                                                                                                                                                                | `docker.io/llamaindex/llamacloud-llamaparse:0.11.4` |
 | `temporalWorkloads.llamaParseQuarantine.imagePullPolicy`               | temporal llamaparse quarantine image pull policy                                                                                                                                                    | `IfNotPresent`                                      |
 | `temporalWorkloads.llamaParseQuarantine.securityContext`               | Security context for the container                                                                                                                                                                  | `{}`                                                |
 | `temporalWorkloads.llamaParseQuarantine.serviceAccountAnnotations`     | Annotations to add to the service account                                                                                                                                                           | `{}`                                                |
@@ -909,7 +917,7 @@ With `url` unset, the chart renders the same manifests as a chart without this s
 | ---------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
 | `temporalWorkloads.workers.temporal-jobs-worker.horizontalPodAutoscalerSpec` | HorizontalPodAutoScaler configuration                                                                             | `{}`                                             |
 | `temporalWorkloads.workers.temporal-jobs-worker.annotations`                 | Annotations added to the temporal-jobs-worker Deployment.                                                         | `{}`                                             |
-| `temporalWorkloads.workers.temporal-jobs-worker.image`                       | Frontend image                                                                                                    | `docker.io/llamaindex/llamacloud-backend:0.11.3` |
+| `temporalWorkloads.workers.temporal-jobs-worker.image`                       | Frontend image                                                                                                    | `docker.io/llamaindex/llamacloud-backend:0.11.4` |
 | `temporalWorkloads.workers.temporal-jobs-worker.imagePullPolicy`             | Frontend image pull policy                                                                                        | `IfNotPresent`                                   |
 | `temporalWorkloads.workers.temporal-jobs-worker.command`                     | Command to run in the container                                                                                   | `[]`                                             |
 | `temporalWorkloads.workers.temporal-jobs-worker.securityContext`             | Security context for the container                                                                                | `{}`                                             |
