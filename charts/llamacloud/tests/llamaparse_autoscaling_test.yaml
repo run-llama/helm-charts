@@ -1,0 +1,97 @@
+suite: llamaparse-autoscaling-tests
+
+templates:
+- ../templates/llamacloud/hpa.yaml
+
+release:
+  name: test-release
+  namespace: test-namespace
+
+chart:
+  appVersion: 0.0.0
+
+tests:
+- it: autoscaling renders an HPA on the parse container at the configured targets
+  set:
+    config.parse.multiActivityWorkflowEnabled: true
+    temporalWorkloads.llamaParse.autoscaling.enabled: true
+    temporalWorkloads.llamaParse.autoscaling.maxReplicas: 6
+    temporalWorkloads.llamaParse.autoscaling.targetCpuUtilization: 120
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-temporal-parse
+  asserts:
+    - equal:
+        path: spec.scaleTargetRef.name
+        value: llamacloud-temporal-parse
+    - equal:
+        path: spec.minReplicas
+        value: 1
+    - equal:
+        path: spec.maxReplicas
+        value: 6
+    - equal:
+        path: spec.metrics
+        value:
+          - type: ContainerResource
+            containerResource:
+              name: cpu
+              container: llamacloud-temporal-parse
+              target: { type: Utilization, averageUtilization: 120 }
+          - type: ContainerResource
+            containerResource:
+              name: memory
+              container: llamacloud-temporal-parse
+              target: { type: Utilization, averageUtilization: 110 }
+
+- it: autoscaling is off by default
+  set:
+    config.parse.multiActivityWorkflowEnabled: true
+  asserts:
+    - hasDocuments:
+        count: 0
+
+- it: autoscaling with horizontalPodAutoscalerSpec fails
+  set:
+    config.parse.multiActivityWorkflowEnabled: true
+    temporalWorkloads.llamaParse.autoscaling.enabled: true
+    temporalWorkloads.llamaParse.horizontalPodAutoscalerSpec:
+      minReplicas: 1
+      maxReplicas: 4
+  asserts:
+    - failedTemplate:
+        errorPattern: "set autoscaling.enabled or horizontalPodAutoscalerSpec, not both"
+
+- it: autoscaling without the tuner fails
+  set:
+    config.parse.multiActivityWorkflowEnabled: true
+    config.parse.resourceTuner.enabled: false
+    temporalWorkloads.llamaParse.autoscaling.enabled: true
+  asserts:
+    - failedTemplate:
+        errorPattern: "autoscaling.enabled needs config.parse.multiActivityWorkflowEnabled and config.parse.resourceTuner.enabled"
+
+- it: autoscaling without multi-activity fails
+  set:
+    temporalWorkloads.llamaParse.autoscaling.enabled: true
+  asserts:
+    - failedTemplate:
+        errorPattern: "autoscaling.enabled needs config.parse.multiActivityWorkflowEnabled"
+
+- it: autoscaling with replicas fails
+  set:
+    config.parse.multiActivityWorkflowEnabled: true
+    temporalWorkloads.llamaParse.autoscaling.enabled: true
+    temporalWorkloads.llamaParse.replicas: 3
+  asserts:
+    - failedTemplate:
+        errorPattern: "replicas must stay null when autoscaling.enabled is true"
+
+- it: autoscaling with minReplicas above maxReplicas fails
+  set:
+    config.parse.multiActivityWorkflowEnabled: true
+    temporalWorkloads.llamaParse.autoscaling.enabled: true
+    temporalWorkloads.llamaParse.autoscaling.minReplicas: 11
+  asserts:
+    - failedTemplate:
+        errorPattern: "need 1 <= minReplicas <= maxReplicas, got 11 and 10"

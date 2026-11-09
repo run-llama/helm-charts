@@ -175,3 +175,20 @@ tests:
     - equal:
         path: .data.USAGE_CAP_EXECUTION_GATE_SKIP_CACHE
         value: "true"
+
+- it: renders CLEANUP_RETENTION when jobCleanup.retention is set
+  set:
+    config:
+      jobCleanup:
+        retention: 24h
+  template: ../templates/llamacloud/configmaps/common.yaml
+  asserts:
+    - equal:
+        path: .data.CLEANUP_RETENTION
+        value: 24h
+
+- it: omits CLEANUP_RETENTION when jobCleanup.retention is unset
+  template: ../templates/llamacloud/configmaps/common.yaml
+  asserts:
+    - notExists:
+        path: .data.CLEANUP_RETENTION

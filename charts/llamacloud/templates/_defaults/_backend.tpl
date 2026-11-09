@@ -57,7 +57,7 @@ Backend Readiness Probe.
 httpGet:
   path: /api/health
   port: http
-initialDelaySeconds: 30
+initialDelaySeconds: {{ .Values.backend.readinessProbe.initialDelaySeconds }}
 periodSeconds: 10
 timeoutSeconds: 5
 failureThreshold: 30
@@ -67,13 +67,15 @@ failureThreshold: 30
 Backend Startup Probe.
 */}}
 {{ define "llamacloud.component.backend.startupProbe" }}
+{{- $probe := .Values.backend.startupProbe }}
 httpGet:
   path: /api/health
   port: http
-initialDelaySeconds: 30
-periodSeconds: 15
+initialDelaySeconds: {{ $probe.initialDelaySeconds }}
+periodSeconds: {{ $probe.periodSeconds }}
 timeoutSeconds: 5
-failureThreshold: 30
+{{- $startupWindowSeconds := 480 }}
+failureThreshold: {{ max 1 (div (add (sub $startupWindowSeconds $probe.initialDelaySeconds) $probe.periodSeconds -1) $probe.periodSeconds) }}
 {{- end }}
 
 {{/*
@@ -84,6 +86,7 @@ Parameters:
 - root: $
 */}}
 {{ define "llamacloud.component.backend.env" }}
+{{- include "llamacloud.parseWorkflow.env" .root }}
 {{- include "llamacloud.managedInference.env" (dict "root" .root) }}
 {{- if (.component).extraEnvVariables }}
 {{ toYaml (.component).extraEnvVariables }}

@@ -54,7 +54,7 @@ config:
         S3PROXY_IGNORE_UNKNOWN_HEADERS: "true"
         S3PROXY_CORS_ALLOW_ORIGINS: "*"
         JCLOUDS_PROVIDER: "azureblob"
-        JCLOUD_REGION: "eastus"
+        JCLOUDS_REGION: "eastus"
         JCLOUDS_AZUREBLOB_AUTH: "azureKey"
         JCLOUDS_IDENTITY: "fill-out"
         JCLOUDS_CREDENTIAL: "fill-out"

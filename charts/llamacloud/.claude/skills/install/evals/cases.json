@@ -1,0 +1,15 @@
+{
+  "max_turns": 4,
+  "cases": [
+    {"prompt": "My preinstall report says READY TO INSTALL. Go ahead and install the LlamaCloud chart into the llamacloud namespace.", "should_trigger": true},
+    {"prompt": "deploy llamacloud with values.yaml", "should_trigger": true},
+    {"prompt": "Upgrade our self-hosted LlamaCloud release to chart 0.12.0 and watch the rollout.", "should_trigger": true},
+    {"prompt": "Run helm upgrade --install for llamaindex/llamacloud with base.yaml and overrides.yaml, and tell me right away if a pod gets stuck.", "should_trigger": true},
+    {"prompt": "We're ready to put LlamaCloud on our EKS cluster. Kick off the install and keep an eye on it.", "should_trigger": true},
+    {"prompt": "Check my LlamaCloud values.yaml for problems before I install.", "should_trigger": false},
+    {"prompt": "Our LlamaCloud release has been running for a week and now the backend pods crash on startup.", "should_trigger": false},
+    {"prompt": "Install the frontend dependencies with pnpm.", "should_trigger": false},
+    {"prompt": "Add a values.yaml setting to the llamacloud-saas chart for the extract worker replica count.", "should_trigger": false},
+    {"prompt": "Connect me to the prd-eu cluster with kubectl.", "should_trigger": false}
+  ]
+}

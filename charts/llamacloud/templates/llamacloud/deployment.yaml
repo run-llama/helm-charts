@@ -20,6 +20,10 @@ spec:
   template:
     metadata:
       labels: {{ include "llamacloud.labels" (dict "name" $component.name "root" $) | indent 8 }}
+        {{- /* Pod-template only: selectors are immutable, so this label stays out of matchLabels. */}}
+        {{- if and $component.usesS3 (include "llamacloud.s3proxy.azureWorkloadIdentity" $) }}
+        azure.workload.identity/use: "true"
+        {{- end }}
       annotations: {{ include "llamacloud.podAnnotations" $params | indent 8 }}
     spec:
       imagePullSecrets: {{ $.Values.imagePullSecrets | toYaml | nindent 8 }}

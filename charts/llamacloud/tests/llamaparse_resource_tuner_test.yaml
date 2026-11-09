@@ -1,0 +1,116 @@
+suite: llamaparse-resource-tuner-tests
+
+templates:
+- ../templates/llamacloud/deployment.yaml
+
+release:
+  name: test-release
+  namespace: test-namespace
+
+chart:
+  appVersion: 0.0.0
+
+tests:
+- it: multi-activity renders the shared tuner env on the parse worker
+  set:
+    config.parse.multiActivityWorkflowEnabled: true
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-temporal-parse
+  asserts:
+    - contains:
+        path: spec.template.spec.containers[0].env
+        content:
+          name: PARSE_RESOURCE_TUNER_ENABLED
+          value: "true"
+    - contains:
+        path: spec.template.spec.containers[0].env
+        content:
+          name: PARSE_RESOURCE_TUNER_SLOTS
+          value: decode:1-8,decode-enrich:2-12,agent:2-30,output:1-4
+    - contains:
+        path: spec.template.spec.containers[0].env
+        content:
+          name: PARSE_RESOURCE_TUNER_SCALE_AT_CPU_PERCENT
+          value: "140"
+    - contains:
+        path: spec.template.spec.containers[0].env
+        content:
+          name: PARSE_RESOURCE_TUNER_SCALE_AT_MEMORY_PERCENT
+          value: "110"
+    # The worker reads its own request and limit, in units it parses as integers.
+    - contains:
+        path: spec.template.spec.containers[0].env
+        content:
+          name: PARSE_CONTAINER_CPU_LIMIT_MILLICORES
+          valueFrom:
+            resourceFieldRef:
+              containerName: llamacloud-temporal-parse
+              resource: limits.cpu
+              divisor: 1m
+    - contains:
+        path: spec.template.spec.containers[0].env
+        content:
+          name: PARSE_CONTAINER_MEMORY_REQUEST_MIB
+          valueFrom:
+            resourceFieldRef:
+              containerName: llamacloud-temporal-parse
+              resource: requests.memory
+              divisor: 1Mi
+    - equal:
+        path: spec.template.spec.containers[0].name
+        value: llamacloud-temporal-parse
+
+- it: the quarantine worker gets no tuner env
+  set:
+    config.parse.multiActivityWorkflowEnabled: true
+    config.parse.quarantineWorkerEnabled: true
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-temporal-parse-quarantine
+  asserts:
+    - contains:
+        path: spec.template.spec.containers[0].env
+        content:
+          name: PARSE_WORKER_ROLE
+          value: quarantine
+    - notContains:
+        path: spec.template.spec.containers[0].env
+        content:
+          name: PARSE_RESOURCE_TUNER_ENABLED
+        any: true
+
+- it: tuner disabled renders no tuner env
+  set:
+    config.parse.multiActivityWorkflowEnabled: true
+    config.parse.resourceTuner.enabled: false
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-temporal-parse
+  asserts:
+    - contains:
+        path: spec.template.spec.containers[0].env
+        content:
+          name: PARSE_WORKER_ROLE
+          value: consolidated
+    - notContains:
+        path: spec.template.spec.containers[0].env
+        content:
+          name: PARSE_RESOURCE_TUNER_ENABLED
+        any: true
+
+- it: multi-activity off renders no tuner env even with the tuner enabled
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-temporal-parse
+  asserts:
+    - contains:
+        path: spec.template.spec.containers[0].env
+        content:
+          name: PORT
+          value: "8003"
+    - notContains:
+        path: spec.template.spec.containers[0].env
+        content:
+          name: PARSE_RESOURCE_TUNER_ENABLED
+        any: true

@@ -24,7 +24,7 @@ Then, before the first cluster-touching command:
 kubectl config current-context
 ```
 
-Read the context name back to the user verbatim and wait for explicit confirmation. Mistargeting kubeconfig is the highest-blast-radius failure mode for this skill — never skip this step.
+Read the context name back to the user verbatim and wait for explicit confirmation.
 
 ## Phase 1 — Static validation (no cluster contact)
 
@@ -76,7 +76,7 @@ predate `system-requirements.yaml`.
 - [ ] Sum of `.status.allocatable.cpu` across all nodes `>= cluster.minimum.allocatableCpu` and sum of `.status.allocatable.memory` `>= cluster.minimum.allocatableMemory` (fallback: 14 CPUs / 80Gi). These assume default component sizing; deployments below that will pack tightly and may fail to schedule the larger workloads. For a values file that overrides `<component>.resources`, sum the per-component entries in `system-requirements.yaml` `components[]` (respecting each `enabledWhen`) instead of using the aggregate.
 - [ ] If any of the `cluster.gpu.requiredWhen` values expressions is true in the values file (fallback set: `config.parseOcr.gpu`, `config.parseLayoutDetection.gpu`, `config.parseLayoutDetectionV3.gpu`) → at least one node advertises the `cluster.gpu.resource` resource (default `nvidia.com/gpu`) in `.status.allocatable`. Without GPU nodes these pods stay `Pending` indefinitely. Note: `enabled: true` with `gpu: false` runs the CPU backend and does NOT need GPU nodes — the GPU requirement keys off the `gpu` flags, not `enabled`.
 - [ ] At least one StorageClass exists, and either it is annotated as the default (`storageclass.kubernetes.io/is-default-class: "true"`) or the user has configured `storageClassName` explicitly on PVC-using subcharts. Temporal subchart, if deployed, needs PVCs.
-- [ ] `kubectl auth can-i` returns `yes` for each required resource type in the target namespace. Discovering RBAC gaps now beats discovering them 15 minutes into the install.
+- [ ] `kubectl auth can-i` returns `yes` for each required resource type in the target namespace.
 
 Detect cloud provider from any node's `.spec.providerID` prefix:
 
@@ -205,9 +205,7 @@ For each: assert running state, network/VPC alignment with the cluster, and IAM 
 After Phases 1–4 complete, if no auth verification has happened, prompt:
 
 > "Phases 1–4 verified that the cluster *can* reach your dependencies, but did not verify that the configured credentials work. May I run a one-shot `Job` named `llamacloud-preflight-<unix-ts>` in the `<namespace>` namespace?
->
 > The job uses image `alpine:3.20`, installs `postgresql-client`, `redis`, `curl` on-the-fly, runs `pg_isready`/`PGPASSWORD=... psql -c 'SELECT 1'`, `redis-cli ping`, and an HTTP probe of the OIDC discovery URL. It exits within 60 seconds, has TTL 60 seconds, and resources `cpu: 100m, memory: 128Mi`. Credentials are passed via env from a one-shot `Secret` that is also TTL-deleted.
->
 > Proceed? [y/N]"
 
 Default is no. If the user says no, document that auth was not verified and remind them that the `install` skill will exercise the credentials when backend pods start — connection failures will show up in pod logs at that point.
@@ -274,8 +272,12 @@ The report is meant to be safe to share with LlamaIndex support. **Re-scan it fo
 ## Critical rules
 
 - **Read-only by default.** Phase 5 is the only phase that may mutate the cluster, and only on explicit consent.
-- **Never echo a secret.** Mask `password`, `apiKey`, `clientSecret`, `key`, `connectionString`, `credentialsJson`, `accessKey`, `secretKey`, `token`, `JCLOUDS_IDENTITY`, `JCLOUDS_CREDENTIAL`, and any field listed under a `secret:` ref. When in doubt, mask.
+- Mask `password`, `apiKey`, `clientSecret`, `key`, `connectionString`, `credentialsJson`,
+  `accessKey`, `secretKey`, `token`, `JCLOUDS_IDENTITY`, `JCLOUDS_CREDENTIAL`, and any field listed
+  under a `secret:` ref. When in doubt, mask.
 - **Confirm context before every cluster command sequence.** A re-confirmation is cheap; a wrong-cluster mutation is not.
-- **Reference `examples/`, don't invent.** When recommending a fix, point to a file under `examples/` (`basic-config.yaml`, `basic-azure-openai.yaml`, `basic-ingress-config.yaml`, `private-registry-config.yaml`, `s3proxy-config.yaml`, etc.) that demonstrates the right shape.
+- When recommending a fix, point to a file under `examples/` (`basic-config.yaml`,
+  `basic-azure-openai.yaml`, `basic-ingress-config.yaml`, `private-registry-config.yaml`,
+  `s3proxy-config.yaml`, etc.) that demonstrates the right shape.
 - **State the laptop-vs-cluster caveat for every Phase 3 result.** A passing local probe does not prove the cluster can reach the same host.
-- **Stop on cancel.** If the user says "stop" or declines a phase, stop. Do not run "just one more check."
+- If the user says "stop" or declines a phase, stop.

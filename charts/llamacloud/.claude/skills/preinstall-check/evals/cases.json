@@ -1,0 +1,15 @@
+{
+  "max_turns": 4,
+  "cases": [
+    {"prompt": "validate my values.yaml for the LlamaCloud chart", "should_trigger": true},
+    {"prompt": "Before we run helm install, make sure our cluster can actually reach the RDS Postgres and ElastiCache Redis in our values file.", "should_trigger": true},
+    {"prompt": "preflight check for llamacloud on our AKS cluster", "should_trigger": true},
+    {"prompt": "Are we ready to install LlamaCloud? Values are in ./values/base.yaml and ./values/prod.yaml.", "should_trigger": true},
+    {"prompt": "helm lint passes, but I want to know whether anything in my LlamaCloud values will make the install hang, like leftover placeholders or missing GPU nodes.", "should_trigger": true},
+    {"prompt": "Install the LlamaCloud chart now; the preinstall report already says READY TO INSTALL.", "should_trigger": false},
+    {"prompt": "LlamaCloud backend pods are in CrashLoopBackOff after the install.", "should_trigger": false},
+    {"prompt": "Lint the Kubernetes manifests under infra/kubernetes.", "should_trigger": false},
+    {"prompt": "Add an HPA for the web deployment to the llamacloud-saas chart.", "should_trigger": false},
+    {"prompt": "Connect me to the prd-eu cluster with kubectl.", "should_trigger": false}
+  ]
+}

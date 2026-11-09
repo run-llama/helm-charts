@@ -378,3 +378,25 @@ tests:
   asserts:
     - hasDocuments:
         count: 0
+
+- it: keeps the startup probe's 480s window when the delay and period shrink
+  documentIndex: 0
+  set:
+    backend.startupProbe.initialDelaySeconds: 0
+    backend.startupProbe.periodSeconds: 2
+  template: ../templates/llamacloud/deployment.yaml
+  asserts:
+    - equal:
+        path: .spec.template.spec.containers[0].startupProbe.failureThreshold
+        value: 240
+
+- it: rounds the startup probe's failureThreshold up so the window never shrinks
+  documentIndex: 0
+  set:
+    backend.startupProbe.initialDelaySeconds: 5
+    backend.startupProbe.periodSeconds: 7
+  template: ../templates/llamacloud/deployment.yaml
+  asserts:
+    - equal:
+        path: .spec.template.spec.containers[0].startupProbe.failureThreshold
+        value: 68

@@ -12,6 +12,7 @@ data:
   TEMPORAL_PORT: {{ $temporalPort | quote }}
   TEMPORAL_NAMESPACE: {{ ((.Values.config).temporal).namespace | default $.Release.Namespace | quote }}
   TEMPORAL_WORKER_REGISTRY_PROFILE: {{ ((.Values.config).temporal).workerRegistryProfile | default "consolidated" | quote }}
+  TEMPORAL_WORKER_REGISTRY_SCHEDULES_START_PAUSED: {{ ((.Values.config).temporal).schedulesStartPaused | default false | quote }}
   TEMPORAL_EXTERNAL_PAYLOAD_STORAGE_ENABLED: {{ (((.Values.config).temporal).externalPayloadStorage).enabled | default false | quote }}
 {{- with (((.Values.config).temporal).externalPayloadStorage).bucketName }}
   TEMPORAL_EXTERNAL_PAYLOAD_STORAGE_BUCKET_NAME: {{ . | quote }}

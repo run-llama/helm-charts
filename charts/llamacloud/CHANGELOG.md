@@ -1,5 +1,27 @@
 # CHANGELOG
 
+## [0.11.4] - 2026-11-09
+
+### Platform
+- **[Security]** Security updates
+- **[Feature]** S3Proxy can authenticate to Azure Blob Storage with Microsoft Entra Workload ID instead of an account key. Set `config.storageBuckets.s3proxy.azureWorkloadIdentity.enabled: true` and `clientId`, use `JCLOUDS_PROVIDER: "azureblob-sdk"`, and leave `JCLOUDS_CREDENTIAL` unset. See [S3Proxy setup](./docs/s3-proxy-setup.md).
+- **[Feature]** `config.temporal.schedulesStartPaused: true` creates Temporal schedules paused, for a standby blue/green install that shares the database with the live one. Its scheduled sweeps stay off until you unpause them (`temporal schedule toggle --unpause`). Schedules that already exist keep their pause state, so an unpaused schedule stays on through later upgrades.
+- **[Improvement]** Job cleanup runs every 15 minutes and takes one retention window for every job type, `config.jobCleanup.retention` (for example `7d`, at least `1h`, or `"0"` to disable). With it unset, the previous windows stay in effect: Parse 30 days, Extract 14 days, Classify 14 days and Batch 30 days. The per-product `retentionDays` values still override it but are deprecated, and `batchSize` is ignored.
+- **[Improvement]** The API and the Temporal job workers create, read and update job records in their own process, over the MongoDB and PostgreSQL connections they already have, and no longer call the `jobsService` Deployment. No values change is needed. The `jobsService` Deployment stays in this release, and a later release removes it.
+
+### Parse
+- **[Improvement]** Cost-effective and Agentic `latest` now run version `2026-11-05`, which can use `anthropic-haiku-5.5` and `openai-gpt-6-luna`. Register them under `config.llms.providerConfigs` to use them. Existing model configurations keep working.
+- **[Improvement]** Agentic Plus `latest` now runs version `2026-11-07`, with better tables, charts and forms. It uses the same models as `2026-10-28`.
+- **[Feature]** `granular_bboxes` accepts `"char"` on Agentic Plus. Each grounded word then carries its character boxes in `chars`.
+- **[Improvement]** GPT-5.6 and later OpenAI models, including `openai-gpt-6-luna`, are called through the Responses API on OpenAI and Azure OpenAI. Azure deployments of these models must accept Responses API requests.
+
+### Extract
+- **[Improvement]** `latest`, `2` and `2.6` now select `2.6.3` (`2026-11-06`) on Cost Effective, Agentic, Agentic Plus and Agentic Max, with improved citation grounding. It uses the same models as `2.6.2`. Turbo stays on `2.6.2`.
+
+### Split
+- **[Improvement]** `latest` is now `1.1.1`. A page whose model call fails is retried on the next model registered for Split.
+- **[Feature]** Version `1.0.1` is for deployments that only have Gemini models. Pin `version: "1.0.1"`. It tries `gemini-3.1-flash-lite`, then `gemini-3.5-flash`, then `gemini-2.5-flash`.
+
 ## [0.11.3] - 2026-10-30
 
 ### Parse

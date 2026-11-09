@@ -168,3 +168,28 @@ tests:
     - equal:
         path: spec.endpoints[0].path
         value: /metrics
+
+- it: renders an explicit zero OCRia capacity retry budget without extra env variables
+  set:
+    config.parse.ocriaCapacityRetryBudgetMs: 0
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-temporal-parse
+  asserts:
+    - contains:
+        path: .spec.template.spec.containers[0].env
+        content:
+          name: OCRIA_CAPACITY_RETRY_BUDGET_MS
+          value: "0"
+
+- it: leaves the OCRia capacity retry budget unset by default
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-temporal-parse
+  asserts:
+    - isKind:
+        of: Deployment
+    - notExists:
+        path: .spec.template.spec.containers[0].env[?(@.name == "OCRIA_CAPACITY_RETRY_BUDGET_MS")]

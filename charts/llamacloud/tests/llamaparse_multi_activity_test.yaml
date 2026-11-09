@@ -1,0 +1,151 @@
+suite: llamaparse-multi-activity-tests
+
+templates:
+- ../templates/llamacloud/deployment.yaml
+
+release:
+  name: test-release
+  namespace: test-namespace
+
+chart:
+  appVersion: 0.0.0
+
+tests:
+- it: enabling multi-activity serves all parse stages and preserves extra env
+  set:
+    config.parse.multiActivityWorkflowEnabled: true
+    temporalWorkloads.llamaParse.extraEnvVariables:
+      - name: LOCAL_DEV
+        value: "true"
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-temporal-parse
+  asserts:
+    - contains:
+        path: spec.template.spec.containers[0].env
+        content:
+          name: PARSE_WORKER_ROLE
+          value: consolidated
+    - contains:
+        path: spec.template.spec.containers[0].env
+        content:
+          name: LOCAL_DEV
+          value: "true"
+
+- it: explicitly disabling multi-activity keeps the default monolithic worker
+  set:
+    config.parse.multiActivityWorkflowEnabled: false
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-temporal-parse
+  asserts:
+    - contains:
+        path: spec.template.spec.containers[0].env
+        content:
+          name: PORT
+          value: "8003"
+    - notContains:
+        path: spec.template.spec.containers[0].env
+        content:
+          name: PARSE_WORKER_ROLE
+        any: true
+
+- it: enabling multi-activity preserves quarantine isolation
+  set:
+    config.parse.multiActivityWorkflowEnabled: true
+    config.parse.quarantineWorkerEnabled: true
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-temporal-parse-quarantine
+  asserts:
+    - contains:
+        path: spec.template.spec.containers[0].env
+        content:
+          name: PARSE_WORKER_ROLE
+          value: quarantine
+    - notContains:
+        path: spec.template.spec.containers[0].env
+        content:
+          name: PARSE_WORKER_ROLE
+          value: consolidated
+
+- it: enabling multi-activity rolls llamacloud onto the served workflow
+  set:
+    config.parse.multiActivityWorkflowEnabled: true
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud
+  asserts:
+    - contains:
+        path: spec.template.spec.containers[0].env
+        content:
+          name: MULTI_ACTIVITY_WORKFLOW_PERCENTAGE
+          value: "100"
+
+- it: llamacloud keeps default dispatch when multi-activity is off
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud
+  asserts:
+    - notContains:
+        path: spec.template.spec.containers[0].env
+        content:
+          name: MULTI_ACTIVITY_WORKFLOW_PERCENTAGE
+        any: true
+
+- it: enabling multi-activity rolls llamacloud-operator onto the served workflow
+  set:
+    config.parse.multiActivityWorkflowEnabled: true
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-operator
+  asserts:
+    - contains:
+        path: spec.template.spec.containers[0].env
+        content:
+          name: MULTI_ACTIVITY_WORKFLOW_PERCENTAGE
+          value: "100"
+
+- it: llamacloud-operator keeps default dispatch when multi-activity is off
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-operator
+  asserts:
+    - notContains:
+        path: spec.template.spec.containers[0].env
+        content:
+          name: MULTI_ACTIVITY_WORKFLOW_PERCENTAGE
+        any: true
+
+- it: enabling multi-activity rolls temporal-jobs-worker onto the served workflow
+  set:
+    config.parse.multiActivityWorkflowEnabled: true
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: temporal-jobs-worker
+  asserts:
+    - contains:
+        path: spec.template.spec.containers[0].env
+        content:
+          name: MULTI_ACTIVITY_WORKFLOW_PERCENTAGE
+          value: "100"
+
+- it: temporal-jobs-worker keeps default dispatch when multi-activity is off
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: temporal-jobs-worker
+  asserts:
+    - notContains:
+        path: spec.template.spec.containers[0].env
+        content:
+          name: MULTI_ACTIVITY_WORKFLOW_PERCENTAGE
+        any: true

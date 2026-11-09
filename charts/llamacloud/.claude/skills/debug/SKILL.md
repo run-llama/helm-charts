@@ -5,7 +5,8 @@ description: Diagnose problems with an installed LlamaCloud release — pods cra
 
 # Debug a running LlamaCloud release
 
-Goal: take "something is broken" and produce a structured diagnosis: which pod, what symptom, which `values.yaml` field (or external dependency) is the root cause, and what to change. Read-only against the cluster.
+Produce a structured diagnosis: which pod, what symptom, which `values.yaml` field (or external
+dependency) is the root cause, and what to change. Read-only against the cluster.
 
 For known error signatures, the catalog is in `patterns.md` next to this file. **Read it lazily** — only when you've narrowed down to a candidate symptom — to keep this skill's context budget small.
 
@@ -32,7 +33,7 @@ Tabulate the pod list. Note the **deployment naming convention**: the LlamaCloud
 
 | Group | Deployment / pod prefix | What's normal |
 |---|---|---|
-| Backend | `llamacloud-*` (yes — bare release-named, not `llamacloud-backend`) | 1+ Ready |
+| Backend | `llamacloud-*` (bare, not `llamacloud-backend`) | 1+ Ready |
 | Frontend | `llamacloud-web-*` | 1+ Ready |
 | Jobs service | `llamacloud-operator-*` | 1+ Ready |
 | Usage / telemetry | `llamacloud-telemetry-*` | 1 Ready |
@@ -47,9 +48,10 @@ Tabulate the pod list. Note the **deployment naming convention**: the LlamaCloud
 
 Chart 0.10 and earlier also ran `llamacloud-worker` and `llamacloud-parse`, which consumed RabbitMQ. If you find those Deployments, the install is on an older chart. Upgrade it by following [Migrating off RabbitMQ](https://developers.llamaindex.ai/llamaparse/self_hosting/configuration/db_and_queues/migrate-off-rabbitmq).
 
-When the user gives a pod name, treat the bare `llamacloud-<hash>-<random>` as the **backend** unambiguously. This trips up newcomers because the obvious guess is "frontend".
+When the user gives a pod name, treat the bare `llamacloud-<hash>-<random>` as the **backend**
+unambiguously.
 
-To unambiguously isolate one component, use label selectors instead of name globs:
+To isolate one component, use label selectors instead of name globs:
 
 ```bash
 kubectl get pods -n <ns> -l app.kubernetes.io/name=llamacloud           # backend only
@@ -59,7 +61,11 @@ kubectl get pods -n <ns> -l app.kubernetes.io/name=llamacloud-temporal-parse # p
 # ...etc — every component has matching app.kubernetes.io/name
 ```
 
-When `<component>.horizontalPodAutoscalerSpec` is set on a component (default: empty, no HPA), the chart creates a standard `HorizontalPodAutoscaler` named after the Deployment (e.g. `llamacloud`, `llamacloud-web`). If you see HPAs with different naming (e.g. `keda-hpa-*-scaledobject`), that's the customer's KEDA / external autoscaler managing the same Deployments — the `Deployment/<name>` reference is authoritative regardless of how the HPA was named.
+When `<component>.horizontalPodAutoscalerSpec` is set (default: empty, no HPA), the chart creates a
+`HorizontalPodAutoscaler` named after the Deployment (e.g. `llamacloud`, `llamacloud-web`). If you
+see HPAs with different naming (e.g. `keda-hpa-*-scaledobject`), that's the customer's KEDA /
+external autoscaler managing the same Deployments — the `Deployment/<name>` reference is
+authoritative regardless of how the HPA was named.
 
 Standard Secrets the chart creates (look for these when debugging missing-secret errors). Each is generated only when the corresponding values block is configured inline; if the user sets the matching `*.secret:` reference instead, the chart skips generating its own Secret and reads from the user-provided one.
 
@@ -172,7 +178,7 @@ kubectl get endpoints -n <ns>
 # Pick a Running pod; nslookup of dependency hostnames and sibling Services.
 # NOTE: the LlamaCloud backend Service is named `llamacloud` (not
 # `<release>-backend`); see the deployment-naming table above. Subchart
-# Services like temporal DO use the `<release>-` prefix.
+# Services like temporal use the `<release>-` prefix.
 kubectl exec -n <ns> <healthy-pod> -- nslookup llamacloud
 kubectl exec -n <ns> <healthy-pod> -- nslookup llamacloud-web
 kubectl exec -n <ns> <healthy-pod> -- nslookup <release>-temporal-subchart-frontend
@@ -270,4 +276,4 @@ This report (after a final secret review). Specifically:
 - **Mask secrets in every file you write.** Run a regex sweep before declaring a report written.
 - **Don't re-run preinstall checks aggressively.** If the install is up but unhealthy, the relevant subset of preinstall checks is fine — but full Phase 4 cloud surveys can flood the customer's CloudTrail with surprising activity.
 - **One symptom at a time.** If multiple pods are unhealthy with different errors, work through them in priority order (backend > workers > optional services), not in parallel — they often have a shared root cause.
-- **Stop on cancel.** If the user says "stop" or "that's enough", stop and write whatever is in the report so far.
+- If the user says "stop", stop and write the report so far.
