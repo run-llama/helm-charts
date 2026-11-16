@@ -134,7 +134,7 @@ tests:
   asserts:
     - matchRegex:
         path: metadata.name
-        pattern: ^(llamacloud|llamacloud-operator|llamacloud-telemetry|llamacloud-temporal-operator|llamacloud-temporal-parse|temporal-jobs-worker)$
+        pattern: ^(llamacloud|llamacloud-telemetry|llamacloud-temporal-operator|llamacloud-temporal-parse|temporal-jobs-worker)$
 
 - it: should create a service if config.parseLayoutDetection.enabled is true
   set:

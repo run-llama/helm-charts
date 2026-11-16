@@ -56,7 +56,7 @@ form-field detection routes. Each follows the setting that gates its route in ur
 {{/*
 Fails the render when config.managedInference.url is set but is not an http(s) URL, when
 neither config.managedInference.apiKey nor config.managedInference.secret is set, or when
-config.llms configures a model provider.
+config.llms configures a model provider or sets customerPaysProviders.
 */}}
 {{- define "llamacloud.managedInference.validate" -}}
 {{- $managed := .Values.config.managedInference }}
@@ -85,6 +85,9 @@ config.llms configures a model provider.
 {{- end }}
 {{- if $llms.providerConfigs }}
 {{- $conflicts = append $conflicts "config.llms.providerConfigs" }}
+{{- end }}
+{{- if $llms.customerPaysProviders }}
+{{- $conflicts = append $conflicts "config.llms.customerPaysProviders" }}
 {{- end }}
 {{- with $conflicts }}
 {{- fail (printf "config.managedInference.url cannot be combined with customer model provider settings; unset %s" (join ", " .)) }}

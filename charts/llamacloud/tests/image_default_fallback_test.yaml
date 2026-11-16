@@ -53,19 +53,6 @@ tests:
         path: .spec.template.spec.containers[0].image
         value: docker.io/llamaindex/llamacloud-frontend:9.9.9
 
-- it: jobsService image falls back to chart.AppVersion when jobsService.image is emptied
-  set:
-    jobsService:
-      image: ""
-  template: ../templates/llamacloud/deployment.yaml
-  documentSelector:
-    path: metadata.name
-    value: llamacloud-operator
-  asserts:
-    - equal:
-        path: .spec.template.spec.containers[0].image
-        value: docker.io/llamaindex/llamacloud-backend:9.9.9
-
 - it: usage image falls back to chart.AppVersion when usage.image is emptied
   set:
     usage:

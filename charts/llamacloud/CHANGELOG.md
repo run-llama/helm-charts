@@ -1,5 +1,33 @@
 # CHANGELOG
 
+## [0.12.0] - 2026-11-16
+
+### Breaking Changes
+- **[Breaking]** Removed the jobs service. The chart no longer renders the `llamacloud-operator` Deployment or its Service, ServiceAccount, autoscaler, PodDisruptionBudget and ServiceMonitor. Upgrade from `0.11.4` or later to avoid failed job calls while older pods roll. Remove anything outside the chart that targets `llamacloud-operator`, such as KEDA ScaledObjects, monitors, deploy scripts or cloud permissions on its ServiceAccount. `jobsService` values are ignored, and you can delete that block.
+
+### Platform
+- **[Security]** Security updates
+- **[Security]** The S3Proxy sidecar listens on `127.0.0.1` only. No values change is needed. The chart ignores `S3PROXY_ENDPOINT` under `config.storageBuckets.s3proxy.config`, so you can delete it. With `nativeSidecar: true`, a custom S3Proxy `image` must include `bash`. See [S3Proxy setup](./docs/s3-proxy-setup.md).
+- **[Feature]** Opt-in verified TLS to your datastores: `postgresql.sslMode` and `postgresql.sslRootCert`, `redis.sslCheckHostname` and `redis.sslCaCert`, and `temporal.tls`. All are off by default. A bundled Temporal needs its own `sql.tls` setting, and the chart refuses to render when it is weaker than `postgresql.sslMode`. See [Verified TLS to PostgreSQL, Redis and Temporal](./docs/datastore-tls.md).
+- **[Feature]** `fips.enabled: true` runs the OCR and layout servers in FIPS 140-3 mode. It is off by default.
+- **[Fix]** A member can hold a different role on each project.
+- **[Fix]** The bundled Temporal frontend accepts up to 2400 concurrent long polls per namespace, up from 1200, so large parse fleets no longer back up their task queues.
+- **[Fix]** The **Add connection** dialog offers exactly the connectors listed in `config.connectors.enabledAuthTypes` whose keys are set, including Confluence and Jira.
+- **[Fix]** The chart's PodDisruptionBudgets set `unhealthyPodEvictionPolicy: AlwaysAllow`, so a node drain can evict a pod that is not Ready.
+
+### Parse
+- **[Improvement]** `latest` moves to `2026-11-12` on Fast, `2026-11-09` on Cost Effective and Agentic, and `2026-11-11` on Agentic Plus. They need no new models. Pin the previous version to keep its output.
+
+### Extract
+- **[Improvement]** Max effort is available on every install and no longer needs `IS_EXTRACT_EFFORT_MAX_ENABLED`. It needs the same `config.llms.providerConfigs` entries as Agentic Plus `latest`.
+- **[Feature]** `config.llms.customerPaysProviders: true` bills Max effort at the Agentic Plus page price, for installs whose model providers bill your own accounts. It is off by default.
+
+### Split
+- **[Improvement]** `latest` is `1.2.0`, with the same model as `1.1.1`. A `config.llms.modelPolicy` key such as `split/*/1.1` does not match `1.2.0`, so use `split/**` or add `split/*/1.2`.
+
+### Index
+- **[Fix]** `custom_filters` on retrieval match document metadata when the index is stored in PostgreSQL.
+
 ## [0.11.4] - 2026-11-09
 
 ### Platform

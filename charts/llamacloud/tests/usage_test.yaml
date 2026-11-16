@@ -138,3 +138,27 @@ tests:
     - equal:
         path: .spec.template.spec.containers[0].env[?(@.name == "EXTRA_FOO")].value
         value: extra-bar
+
+- it: keeps the usage startup probe's 480s window when the delay and period shrink
+  set:
+    usage.startupProbe.initialDelaySeconds: 0
+    usage.startupProbe.periodSeconds: 2
+    usage.readinessProbe.initialDelaySeconds: 0
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-telemetry
+  asserts:
+    - equal:
+        path: .spec.template.spec.containers[0].startupProbe
+        value:
+          httpGet:
+            path: /health_check
+            port: http
+          initialDelaySeconds: 0
+          periodSeconds: 2
+          timeoutSeconds: 5
+          failureThreshold: 240
+    - equal:
+        path: .spec.template.spec.containers[0].readinessProbe.initialDelaySeconds
+        value: 0

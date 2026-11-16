@@ -7,11 +7,10 @@ one, and the one setting that is mandatory if you add one.
 
 ## Who holds connections
 
-Each backend pod holds its own PostgreSQL connection pool: `backend`,
-`jobsService`, `usage`, and the Temporal workers under
-`temporalWorkloads.workers`. Their rendered Deployment names are `llamacloud`,
-`llamacloud-operator`, `llamacloud-telemetry`, and the
-worker names themselves.
+Each backend pod holds its own PostgreSQL connection pool: `backend`, `usage`,
+and the Temporal workers under `temporalWorkloads.workers`. Their rendered
+Deployment names are `llamacloud`, `llamacloud-telemetry`, and the worker
+names themselves.
 
 A pool keeps `poolSize` connections open whether the pod is busy or idle, and
 may open `poolMaxOverflow` more under load. The application defaults are 10

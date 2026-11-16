@@ -1,18 +1,43 @@
 {{/*
 S3Proxy Sidecar Container Definition.
+
+S3Proxy runs with S3PROXY_AUTHORIZATION "none": any client that reaches its
+listener can read and write the buckets with S3Proxy's backend credentials. So it
+listens on 127.0.0.1 only, and only the containers in its own pod can reach it.
+The app containers connect to http://localhost:<port> (S3_ENDPOINT_URL in
+urls-config), and browsers go through the API's /api/s3-proxy route, which
+forwards to that same localhost URL.
+
+S3PROXY_ENDPOINT is set in `env`, not only in the ConfigMap, because `env` takes
+precedence over `envFrom`. Older docs told users to put S3PROXY_ENDPOINT
+"http://0.0.0.0:80" under s3proxy.config, which lands in s3proxy-secret and would
+otherwise win. The port stays containerPort, which S3_ENDPOINT_URL already uses.
+
+Nothing outside the pod connects, so the container declares no port. The
+native-sidecar startup probe runs inside the container because a kubelet tcpSocket
+or httpGet probe dials the pod IP, where nothing listens. It opens a TCP
+connection with bash's /dev/tcp and sends no request, so it never calls the
+storage backend.
 */}}
 {{ define "llamacloud.s3proxy.container" }}
 {{- if ((($.Values.config).storageBuckets).s3proxy.enabled | default false) }}
 - name: s3proxy
+  {{- if $.Values.config.storageBuckets.s3proxy.nativeSidecar }}
+  restartPolicy: Always
+  startupProbe:
+    exec:
+      command:
+      - bash
+      - -c
+      - {{ printf "exec 3<>/dev/tcp/127.0.0.1/%d" (int ((($.Values.config).storageBuckets).s3proxy.containerPort | default 80)) | quote }}
+    periodSeconds: 2
+    failureThreshold: 150
+  {{- end }}
   {{- with ((($.Values.config).storageBuckets).s3proxy).securityContext }}
   securityContext: {{ toYaml . | nindent 4 }}
   {{- end }}
   image: "{{ ((($.Values.config).storageBuckets).s3proxy).image | default "docker.io/andrewgaul/s3proxy:sha-001d042" }}"
   imagePullPolicy: {{ ((($.Values.config).storageBuckets).s3proxy).imagePullPolicy | default "IfNotPresent" }}
-  ports:
-  - name: s3proxy
-    containerPort: {{ print (int ((($.Values.config).storageBuckets).s3proxy.containerPort | default 80))}}
-    protocol: TCP
   resources:
     requests:
       cpu: {{ ((((($.Values.config).storageBuckets).s3proxy).resources).requests).cpu | default "500m" }}
@@ -21,6 +46,8 @@ S3Proxy Sidecar Container Definition.
       cpu: {{ ((((($.Values.config).storageBuckets).s3proxy).resources).limits).cpu | default "1" }}
       memory: {{ ((((($.Values.config).storageBuckets).s3proxy).resources).limits).memory | default "1Gi" }}
   env:
+  - name: S3PROXY_ENDPOINT
+    value: {{ printf "http://127.0.0.1:%d" (int ((($.Values.config).storageBuckets).s3proxy.containerPort | default 80)) | quote }}
   - name: LOG_LEVEL
     value: {{ ((($.Values.config).storageBuckets).s3proxy).logLevel | default ($.Values.config).logLevel | default "info" }}
   - name: S3PROXY_LOG_LEVEL
@@ -81,11 +108,15 @@ S3Proxy Secret.
 
 {{/*
 S3Proxy ConfigMap Data.
+
+S3PROXY_ENDPOINT here is a fallback for pods created before the container set it
+in `env` (see "llamacloud.s3proxy.container"), so one that restarts mid-upgrade
+still binds 127.0.0.1 on the same port. The `env` value wins in current pods.
 */}}
 {{ define "llamacloud.s3proxy.configMap" }}
 S3PROXY_AUTHORIZATION: "none"
 S3PROXY_CORS_ALLOW_ORIGINS: "*"
-S3PROXY_ENDPOINT: {{ printf "http://0.0.0.0:%d" (int ((($.Values.config).storageBuckets).s3proxy.containerPort | default 80)) | quote }}
+S3PROXY_ENDPOINT: {{ printf "http://127.0.0.1:%d" (int ((($.Values.config).storageBuckets).s3proxy.containerPort | default 80)) | quote }}
 S3PROXY_IGNORE_UNKNOWN_HEADERS: "true"
 {{- if include "llamacloud.s3proxy.azureWorkloadIdentity" $ }}
 {{- /* The S3Proxy image defaults JCLOUDS_CREDENTIAL to a placeholder, which

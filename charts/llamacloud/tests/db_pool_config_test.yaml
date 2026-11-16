@@ -105,16 +105,6 @@ tests:
     - exists:
         path: .spec.template.spec.containers[0].envFrom[?(@.configMapRef.name == "db-pool-config")]
 
-- it: should be mounted by jobsService
-  template: ../templates/llamacloud/deployment.yaml
-  set: *deployable
-  documentSelector:
-    path: metadata.name
-    value: "llamacloud-operator"
-  asserts:
-    - exists:
-        path: .spec.template.spec.containers[0].envFrom[?(@.configMapRef.name == "db-pool-config")]
-
 - it: should be mounted by usage
   template: ../templates/llamacloud/deployment.yaml
   set: *deployable

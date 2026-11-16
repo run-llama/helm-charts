@@ -1,0 +1,451 @@
+suite: datastore-tls-tests
+
+# Opt-in TLS verification to PostgreSQL, Redis and an external Temporal
+# (templates/_defaults/_datastore-tls.tpl, docs/datastore-tls.md). Every value is
+# off by default, and the "off" cases pin that an install which sets none of them
+# gets no new env, volume or mount.
+
+templates:
+- ../templates/llamacloud/deployment.yaml
+- ../templates/llamacloud/job.yaml
+- ../templates/llamacloud/validate-datastore-tls.yaml
+- charts/temporal-subchart/templates/server-configmap.yaml
+
+release:
+  name: test-release
+  namespace: test-namespace
+
+capabilities:
+  majorVersion: 1
+  minorVersion: 31
+  apiVersions:
+    - apps/v1
+    - v1
+
+chart:
+  appVersion: 0.0.0
+
+# job.yaml renders in every test, and fails without a Temporal endpoint.
+set:
+  temporal.host: temporal.example.com
+
+tests:
+# ---------------------------------------------------------------- defaults
+- it: adds no TLS env or volumes to the backend by default
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud
+  asserts:
+    - notExists:
+        path: spec.template.spec.containers[0].env[?(@.name =~ /.*(SSL|TLS|NODE_EXTRA_CA).*/)]
+    - notExists:
+        path: spec.template.spec.containers[0].volumeMounts[?(@.name =~ /^tls-.*/)]
+    - notExists:
+        path: spec.template.spec.volumes[?(@.name =~ /^tls-.*/)]
+
+- it: adds no TLS env or volumes to the parse worker by default
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-temporal-parse
+  asserts:
+    - notExists:
+        path: spec.template.spec.containers[0].env[?(@.name =~ /.*(SSL|TLS|NODE_EXTRA_CA).*/)]
+    - notExists:
+        path: spec.template.spec.volumes[?(@.name =~ /^tls-.*/)]
+
+- it: adds no TLS env to the search-attributes job by default
+  set:
+    temporal.host: temporal.example.com
+  template: ../templates/llamacloud/job.yaml
+  asserts:
+    - notExists:
+        path: spec.template.spec.containers[0].env[?(@.name =~ /^TEMPORAL_TLS.*/)]
+    - notExists:
+        path: spec.template.spec.volumes
+    - notExists:
+        path: spec.template.spec.containers[0].volumeMounts
+
+- it: validation renders nothing by default
+  template: ../templates/llamacloud/validate-datastore-tls.yaml
+  asserts:
+    - hasDocuments:
+        count: 0
+
+# ---------------------------------------------------------------- PostgreSQL
+- it: sslMode reaches the backend, the Python worker and usage
+  set:
+    postgresql.sslMode: require
+  template: ../templates/llamacloud/deployment.yaml
+  asserts:
+    - contains:
+        path: spec.template.spec.containers[0].env
+        content:
+          name: DATABASE_SSL_MODE
+          value: require
+      documentSelector:
+        path: metadata.name
+        value: llamacloud
+    - contains:
+        path: spec.template.spec.containers[0].env
+        content:
+          name: DATABASE_SSL_MODE
+          value: require
+      documentSelector:
+        path: metadata.name
+        value: temporal-jobs-worker
+    - contains:
+        path: spec.template.spec.containers[0].env
+        content:
+          name: DATABASE_SSL_MODE
+          value: require
+      documentSelector:
+        path: metadata.name
+        value: llamacloud-telemetry
+    - notExists:
+        path: spec.template.spec.containers[0].env[?(@.name == "DATABASE_SSL_MODE")]
+      documentSelector:
+        path: metadata.name
+        value: llamacloud-temporal-parse
+
+- it: mounts the PostgreSQL CA from a Secret
+  set:
+    postgresql.sslMode: verify-full
+    postgresql.sslRootCert.secretName: pg-ca
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: temporal-jobs-worker
+  asserts:
+    - contains:
+        path: spec.template.spec.containers[0].env
+        content:
+          name: DATABASE_SSL_ROOT_CERT
+          value: /etc/llamacloud/tls/postgresql/ca.crt
+    - contains:
+        path: spec.template.spec.containers[0].volumeMounts
+        content:
+          name: tls-postgresql-ca
+          mountPath: /etc/llamacloud/tls/postgresql
+          readOnly: true
+    - contains:
+        path: spec.template.spec.volumes
+        content:
+          name: tls-postgresql-ca
+          secret:
+            secretName: pg-ca
+            items:
+              - key: ca.crt
+                path: ca.crt
+
+- it: mounts the PostgreSQL CA from a ConfigMap key
+  set:
+    postgresql.sslMode: verify-ca
+    postgresql.sslRootCert.configMapName: pg-ca
+    postgresql.sslRootCert.key: global-bundle.pem
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-telemetry
+  asserts:
+    - contains:
+        path: spec.template.spec.volumes
+        content:
+          name: tls-postgresql-ca
+          configMap:
+            name: pg-ca
+            items:
+              - key: global-bundle.pem
+                path: ca.crt
+
+- it: rejects a PostgreSQL CA without a verifying mode
+  set:
+    postgresql.sslRootCert.secretName: pg-ca
+  template: ../templates/llamacloud/validate-datastore-tls.yaml
+  asserts:
+    - failedTemplate:
+        errorPattern: postgresql.sslRootCert needs postgresql.sslMode
+
+- it: rejects a PostgreSQL CA from both a Secret and a ConfigMap
+  set:
+    postgresql.sslMode: verify-full
+    postgresql.sslRootCert.secretName: a
+    postgresql.sslRootCert.configMapName: b
+  template: ../templates/llamacloud/validate-datastore-tls.yaml
+  asserts:
+    - failedTemplate:
+        errorPattern: "postgresql.sslRootCert: set secretName or configMapName, not both"
+
+# ---------------------------------------------------------------- bundled Temporal -> PostgreSQL
+- it: refuses a bundled Temporal that would connect without TLS
+  set:
+    temporal.deploy: true
+    postgresql.sslMode: require
+  template: ../templates/llamacloud/validate-datastore-tls.yaml
+  asserts:
+    - failedTemplate:
+        errorPattern: "postgresql.sslMode is require but the bundled Temporal's default store connects with sslmode=disable"
+
+- it: refuses a bundled Temporal that skips host verification under verify-full
+  set:
+    temporal.deploy: true
+    postgresql.sslMode: verify-full
+    temporal-subchart.server.config.persistence.datastores.default.sql.tls.enabled: true
+    temporal-subchart.server.config.persistence.datastores.visibility.sql.tls.enabled: true
+  template: ../templates/llamacloud/validate-datastore-tls.yaml
+  asserts:
+    - failedTemplate:
+        errorPattern: "connects with sslmode=require"
+
+- it: accepts a bundled Temporal with verified TLS on both stores
+  set:
+    temporal.deploy: true
+    postgresql.sslMode: verify-full
+    temporal-subchart.server.config.persistence.datastores.default.sql.tls:
+      enabled: true
+      enableHostVerification: true
+    temporal-subchart.server.config.persistence.datastores.visibility.sql.tls:
+      enabled: true
+      enableHostVerification: true
+  template: ../templates/llamacloud/validate-datastore-tls.yaml
+  asserts:
+    - hasDocuments:
+        count: 0
+
+- it: accepts connectAttributes.sslmode for verify-ca
+  set:
+    temporal.deploy: true
+    postgresql.sslMode: verify-ca
+    temporal-subchart.server.config.persistence.datastores.default.sql.connectAttributes.sslmode: verify-ca
+    temporal-subchart.server.config.persistence.datastores.visibility.sql.connectAttributes.sslmode: verify-ca
+  template: ../templates/llamacloud/validate-datastore-tls.yaml
+  asserts:
+    - hasDocuments:
+        count: 0
+
+- it: does not check the bundled Temporal for non-verifying modes
+  set:
+    temporal.deploy: true
+    postgresql.sslMode: prefer
+  template: ../templates/llamacloud/validate-datastore-tls.yaml
+  asserts:
+    - hasDocuments:
+        count: 0
+
+- it: the documented subchart values reach the Temporal server config
+  set:
+    temporal.deploy: true
+    temporal-subchart.server.config.persistence.datastores.default.sql.connectAddr: pg.example.com:5432
+    temporal-subchart.server.config.persistence.datastores.visibility.sql.connectAddr: pg.example.com:5432
+    temporal-subchart.server.config.persistence.datastores.default.sql.tls:
+      enabled: true
+      enableHostVerification: true
+      caFile: /etc/llamacloud/tls/postgresql/ca.crt
+  template: charts/temporal-subchart/templates/server-configmap.yaml
+  asserts:
+    - matchRegex:
+        path: data["config_template.yaml"]
+        pattern: "tls:\\n\\s+caFile: /etc/llamacloud/tls/postgresql/ca.crt\\n\\s+enableHostVerification: true\\n\\s+enabled: true"
+
+# ---------------------------------------------------------------- Redis
+- it: turns on Redis hostname checks for the Python components only
+  set:
+    redis.scheme: rediss
+    redis.sslCheckHostname: true
+  template: ../templates/llamacloud/deployment.yaml
+  asserts:
+    - contains:
+        path: spec.template.spec.containers[0].env
+        content:
+          name: REDIS_SSL_CHECK_HOSTNAME
+          value: "true"
+      documentSelector:
+        path: metadata.name
+        value: llamacloud
+    - notExists:
+        path: spec.template.spec.containers[0].env[?(@.name == "REDIS_SSL_CHECK_HOSTNAME")]
+      documentSelector:
+        path: metadata.name
+        value: llamacloud-temporal-parse
+
+- it: gives Python the Redis CA path and Node components NODE_EXTRA_CA_CERTS
+  set:
+    redis.scheme: rediss
+    redis.sslCaCert.secretName: redis-ca
+    config.mcp.enabled: true
+  template: ../templates/llamacloud/deployment.yaml
+  asserts:
+    - contains:
+        path: spec.template.spec.containers[0].env
+        content:
+          name: REDIS_SSL_CA_CERTS
+          value: /etc/llamacloud/tls/redis/ca.crt
+      documentSelector:
+        path: metadata.name
+        value: llamacloud-telemetry
+    - contains:
+        path: spec.template.spec.containers[0].env
+        content:
+          name: NODE_EXTRA_CA_CERTS
+          value: /etc/llamacloud/tls/redis/ca.crt
+      documentSelector:
+        path: metadata.name
+        value: llamacloud-temporal-parse
+    - contains:
+        path: spec.template.spec.containers[0].env
+        content:
+          name: NODE_EXTRA_CA_CERTS
+          value: /etc/llamacloud/tls/redis/ca.crt
+      documentSelector:
+        path: metadata.name
+        value: llamacloud-mcp
+    - contains:
+        path: spec.template.spec.volumes
+        content:
+          name: tls-redis-ca
+          secret:
+            secretName: redis-ca
+            items:
+              - key: ca.crt
+                path: ca.crt
+      documentSelector:
+        path: metadata.name
+        value: llamacloud-mcp
+
+- it: rejects Redis TLS options on a plaintext scheme
+  set:
+    redis.sslCheckHostname: true
+  template: ../templates/llamacloud/validate-datastore-tls.yaml
+  asserts:
+    - failedTemplate:
+        errorPattern: need redis.scheme. rediss
+
+- it: skips the scheme check when credentials come from an existing secret
+  set:
+    redis.secret: my-redis
+    redis.sslCheckHostname: true
+  template: ../templates/llamacloud/validate-datastore-tls.yaml
+  asserts:
+    - hasDocuments:
+        count: 0
+
+# ---------------------------------------------------------------- Temporal client
+- it: configures Temporal TLS for the Python and Node workers
+  set:
+    temporal.host: temporal.example.com
+    temporal.tls.enabled: true
+    temporal.tls.serverName: temporal.internal
+    temporal.tls.caCert.secretName: temporal-ca
+    temporal.tls.clientCert.secretName: temporal-client
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-temporal-parse
+  asserts:
+    - contains:
+        path: spec.template.spec.containers[0].env
+        content:
+          name: TEMPORAL_TLS
+          value: "true"
+    - contains:
+        path: spec.template.spec.containers[0].env
+        content:
+          name: TEMPORAL_TLS_CA_CERT
+          value: /etc/llamacloud/tls/temporal/ca.crt
+    - contains:
+        path: spec.template.spec.containers[0].env
+        content:
+          name: TEMPORAL_TLS_CLIENT_KEY
+          value: /etc/llamacloud/tls/temporal-client/tls.key
+    - contains:
+        path: spec.template.spec.containers[0].env
+        content:
+          name: TEMPORAL_TLS_SERVER_NAME
+          value: temporal.internal
+    - contains:
+        path: spec.template.spec.volumes
+        content:
+          name: tls-temporal-client
+          secret:
+            secretName: temporal-client
+            items:
+              - key: tls.crt
+                path: tls.crt
+              - key: tls.key
+                path: tls.key
+
+- it: TLS alone uses the system trust store
+  set:
+    temporal.host: temporal.example.com
+    temporal.tls.enabled: true
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: temporal-jobs-worker
+  asserts:
+    - contains:
+        path: spec.template.spec.containers[0].env
+        content:
+          name: TEMPORAL_TLS
+          value: "true"
+    - notExists:
+        path: spec.template.spec.containers[0].env[?(@.name == "TEMPORAL_TLS_CA_CERT")]
+    - notExists:
+        path: spec.template.spec.volumes[?(@.name =~ /^tls-temporal.*/)]
+
+- it: the search-attributes job uses the temporal CLI's TLS env and mounts
+  set:
+    temporal.host: temporal.example.com
+    temporal.tls.enabled: true
+    temporal.tls.caCert.configMapName: temporal-ca
+    temporal.tls.clientCert.secretName: temporal-client
+  template: ../templates/llamacloud/job.yaml
+  asserts:
+    - contains:
+        path: spec.template.spec.containers[0].env
+        content:
+          name: TEMPORAL_TLS
+          value: "true"
+    - contains:
+        path: spec.template.spec.containers[0].env
+        content:
+          name: TEMPORAL_TLS_CA_PATH
+          value: /etc/llamacloud/tls/temporal/ca.crt
+    - contains:
+        path: spec.template.spec.containers[0].env
+        content:
+          name: TEMPORAL_TLS_CERT_PATH
+          value: /etc/llamacloud/tls/temporal-client/tls.crt
+    - contains:
+        path: spec.template.spec.containers[0].volumeMounts
+        content:
+          name: tls-temporal-ca
+          mountPath: /etc/llamacloud/tls/temporal
+          readOnly: true
+    - contains:
+        path: spec.template.spec.volumes
+        content:
+          name: tls-temporal-ca
+          configMap:
+            name: temporal-ca
+            items:
+              - key: ca.crt
+                path: ca.crt
+
+- it: rejects Temporal client TLS against the bundled Temporal
+  set:
+    temporal.deploy: true
+    temporal.tls.enabled: true
+  template: ../templates/llamacloud/validate-datastore-tls.yaml
+  asserts:
+    - failedTemplate:
+        errorPattern: temporal.tls.enabled is for an external Temporal
+
+- it: rejects Temporal TLS options without temporal.tls.enabled
+  set:
+    temporal.tls.caCert.secretName: temporal-ca
+  template: ../templates/llamacloud/validate-datastore-tls.yaml
+  asserts:
+    - failedTemplate:
+        errorPattern: need temporal.tls.enabled

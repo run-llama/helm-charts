@@ -65,7 +65,7 @@ tests:
         path: .metadata.name
         value: llamacloud-form-field-detection
     - hasDocuments:
-        count: 7
+        count: 6
 
 - it: should render the Deployment on port 8000 with no GPU when config.parseFormFieldDetection.enabled is true and gpu is false
   set:
@@ -76,7 +76,7 @@ tests:
   template: ../templates/llamacloud/deployment.yaml
   asserts:
     - hasDocuments:
-        count: 8
+        count: 7
     - equal:
         path: .metadata.name
         value: llamacloud-form-field-detection

@@ -130,6 +130,7 @@ Parameters:
 - root: $
 */}}
 {{ define "llamacloud.component.mcp.env" }}
+{{- include "llamacloud.tls.env" (dict "root" .root "redisNode" true) }}
 {{- if (.component).extraEnvVariables }}
 {{ toYaml (.component).extraEnvVariables }}
 {{- end }}
@@ -207,6 +208,7 @@ Parameters:
   name: tmp
 - mountPath: /app/.next/cache
   name: nextjs-cache
+{{- include "llamacloud.tls.volumeMounts" (dict "root" .root "redisNode" true) }}
 {{- if (.component).volumeMounts }}
 {{ toYaml (.component).volumeMounts }}
 {{- end }}
@@ -224,6 +226,7 @@ Parameters:
   name: tmp
 - emptyDir: {}
   name: nextjs-cache
+{{- include "llamacloud.tls.volumes" (dict "root" .root "redisNode" true) }}
 {{- if (.component).volumes }}
 {{ toYaml (.component).volumes }}
 {{- end }}

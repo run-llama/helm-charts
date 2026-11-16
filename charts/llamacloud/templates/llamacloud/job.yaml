@@ -106,4 +106,29 @@ spec:
           value: {{ $temporalEndpoint | quote }}
         - name: TEMPORAL_ADDRESS
           value: {{ $temporalEndpoint | quote }}
+        {{- if include "llamacloud.tls.temporal.enabled" . }}
+        {{- /* The temporal CLI's own env names for its --tls-* flags. */}}
+        {{- $mount := include "llamacloud.tls.mountRoot" . }}
+        - name: TEMPORAL_TLS
+          value: "true"
+        {{- if include "llamacloud.tls.temporal.ca" . }}
+        - name: TEMPORAL_TLS_CA_PATH
+          value: {{ printf "%s/temporal/ca.crt" $mount | quote }}
+        {{- end }}
+        {{- if include "llamacloud.tls.temporal.clientCert" . }}
+        - name: TEMPORAL_TLS_CERT_PATH
+          value: {{ printf "%s/temporal-client/tls.crt" $mount | quote }}
+        - name: TEMPORAL_TLS_KEY_PATH
+          value: {{ printf "%s/temporal-client/tls.key" $mount | quote }}
+        {{- end }}
+        {{- with .Values.temporal.tls.serverName }}
+        - name: TEMPORAL_TLS_SERVER_NAME
+          value: {{ . | quote }}
+        {{- end }}
+        {{- $tlsMounts := include "llamacloud.tls.volumeMounts" (dict "root" . "temporal" true) }}
+        {{- if $tlsMounts }}
+        volumeMounts: {{- $tlsMounts | indent 8 }}
+      volumes: {{- include "llamacloud.tls.volumes" (dict "root" . "temporal" true) | indent 6 }}
+        {{- end }}
+        {{- end }}
 {{- end }}

@@ -63,26 +63,6 @@ tests:
         path: .spec.maxReplicas
         value: 5
 
-- it: jobsService HPA renders as llamacloud-operator
-  set:
-    jobsService:
-      horizontalPodAutoscalerSpec:
-        minReplicas: 3
-        maxReplicas: 7
-  template: ../templates/llamacloud/hpa.yaml
-  asserts:
-    - hasDocuments:
-        count: 1
-    - equal:
-        path: .metadata.name
-        value: llamacloud-operator
-    - equal:
-        path: .spec.minReplicas
-        value: 3
-    - equal:
-        path: .spec.maxReplicas
-        value: 7
-
 - it: usage HPA renders as llamacloud-telemetry
   set:
     usage:
@@ -190,10 +170,6 @@ tests:
       horizontalPodAutoscalerSpec:
         minReplicas: 2
         maxReplicas: 10
-    jobsService:
-      horizontalPodAutoscalerSpec:
-        minReplicas: 1
-        maxReplicas: 5
     usage:
       horizontalPodAutoscalerSpec:
         minReplicas: 1
@@ -201,11 +177,11 @@ tests:
   template: ../templates/llamacloud/hpa.yaml
   asserts:
     - hasDocuments:
-        count: 3
+        count: 2
 
 - it: corresponding PDB is created for each component with an HPA spec
   set:
-    jobsService:
+    usage:
       horizontalPodAutoscalerSpec:
         minReplicas: 1
         maxReplicas: 5
@@ -217,10 +193,24 @@ tests:
         of: PodDisruptionBudget
     - equal:
         path: .metadata.name
-        value: llamacloud-operator
+        value: llamacloud-telemetry
     - equal:
         path: .spec.maxUnavailable
         value: 1
+
+- it: PDB lets a drain evict a pod that is not Ready (AlwaysAllow)
+  set:
+    usage:
+      horizontalPodAutoscalerSpec:
+        minReplicas: 1
+        maxReplicas: 5
+  template: ../templates/llamacloud/pdb.yaml
+  asserts:
+    - equal:
+        path: .spec.unhealthyPodEvictionPolicy
+        value: AlwaysAllow
+    - notExists:
+        path: .spec.minAvailable
 
 - it: PDB selector labels match the component it protects
   set:

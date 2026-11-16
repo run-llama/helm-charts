@@ -12,7 +12,6 @@ metadata:
   labels: {{ include "llamacloud.labels" (dict "root" $) | indent 4 }}
   annotations: {{ include "llamacloud.annotations" (dict "root" $) | indent 4 }}
 data:
-  JOB_SERVICE_URL: {{ printf "http://%s:%d" (include "llamacloud.component.jobsService" $ | fromYaml).name ( "80" | int) | quote }}
   TRACKING_SERVICE_URL: {{ printf "http://%s:%d" (include "llamacloud.component.usage" $ | fromYaml).name ( "80" | int) | quote }}
   # BACKEND_URL is the in-cluster backend Service URL. It is consumed only by
   # server-side code (SSR outbound fetches and the /api /deployments proxy

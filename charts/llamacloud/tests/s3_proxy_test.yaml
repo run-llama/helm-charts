@@ -21,6 +21,81 @@ chart:
   appVersion: 0.0.0
 
 tests:
+- it: waits for S3Proxy to listen before starting the parse worker
+  set:
+    config.storageBuckets.s3proxy.enabled: true
+    config.storageBuckets.s3proxy.nativeSidecar: true
+    config.storageBuckets.s3proxy.containerPort: 9080
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-temporal-parse
+  template: ../templates/llamacloud/deployment.yaml
+  asserts:
+    - equal:
+        path: spec.template.spec.initContainers[0].name
+        value: s3proxy
+    - equal:
+        path: spec.template.spec.initContainers[0].restartPolicy
+        value: Always
+    # Probes from the kubelet dial the pod IP; S3Proxy listens on loopback only.
+    - equal:
+        path: spec.template.spec.initContainers[0].startupProbe
+        value:
+          exec:
+            command:
+              - bash
+              - -c
+              - exec 3<>/dev/tcp/127.0.0.1/9080
+          periodSeconds: 2
+          failureThreshold: 150
+    - contains:
+        path: spec.template.spec.initContainers[0].env
+        content:
+          name: S3PROXY_ENDPOINT
+          value: http://127.0.0.1:9080
+    - notExists:
+        path: spec.template.spec.initContainers[0].ports
+    - lengthEqual:
+        path: spec.template.spec.containers
+        count: 1
+    - equal:
+        path: spec.template.spec.containers[0].name
+        value: llamacloud-temporal-parse
+
+- it: keeps S3Proxy in containers when native sidecars are disabled
+  set:
+    config.storageBuckets.s3proxy.enabled: true
+    config.storageBuckets.s3proxy.nativeSidecar: false
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-temporal-parse
+  template: ../templates/llamacloud/deployment.yaml
+  asserts:
+    - notExists:
+        path: spec.template.spec.initContainers
+    - equal:
+        path: spec.template.spec.containers[1].name
+        value: s3proxy
+    - notExists:
+        path: spec.template.spec.containers[1].restartPolicy
+    - notExists:
+        path: spec.template.spec.containers[1].startupProbe
+
+- it: leaves deployments without S3 access free of native sidecars
+  set:
+    config.storageBuckets.s3proxy.enabled: true
+    config.storageBuckets.s3proxy.nativeSidecar: true
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-telemetry
+  template: ../templates/llamacloud/deployment.yaml
+  asserts:
+    - notExists:
+        path: spec.template.spec.initContainers
+    - lengthEqual:
+        path: spec.template.spec.containers
+        count: 1
+
 # ConfigMap Tests
 - it: should create s3proxy configmap when provider is gcp
   set:
@@ -41,7 +116,7 @@ tests:
         value: "*"
     - equal:
         path: .data.S3PROXY_ENDPOINT
-        value: "http://0.0.0.0:8080"
+        value: "http://127.0.0.1:8080"
     - equal:
         path: .data.S3PROXY_IGNORE_UNKNOWN_HEADERS
         value: "true"
@@ -66,6 +141,48 @@ tests:
   asserts:
     - hasDocuments:
         count: 0
+
+# S3PROXY_AUTHORIZATION is "none", so the listener must stay on loopback.
+- it: binds S3Proxy to loopback on containerPort, matching S3_ENDPOINT_URL
+  set:
+    config.storageBuckets.s3proxy.enabled: true
+    config.storageBuckets.s3proxy.containerPort: 9080
+  templates:
+    - ../templates/llamacloud/configmaps/s3proxy.yaml
+    - ../templates/llamacloud/configmaps/urls.yaml
+  asserts:
+    - template: ../templates/llamacloud/configmaps/s3proxy.yaml
+      equal:
+        path: .data.S3PROXY_ENDPOINT
+        value: "http://127.0.0.1:9080"
+    - template: ../templates/llamacloud/configmaps/urls.yaml
+      equal:
+        path: .data.S3_ENDPOINT_URL
+        value: "http://localhost:9080"
+
+# Older docs had users set S3PROXY_ENDPOINT "http://0.0.0.0:80" in s3proxy.config.
+# That lands in s3proxy-secret (envFrom); the container env entry takes precedence.
+- it: keeps S3Proxy on loopback when s3proxy.config sets S3PROXY_ENDPOINT
+  set:
+    config.storageBuckets.s3proxy.enabled: true
+    config.storageBuckets.s3proxy.nativeSidecar: false
+    config.storageBuckets.s3proxy.config:
+      S3PROXY_ENDPOINT: "http://0.0.0.0:80"
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-temporal-parse
+  template: ../templates/llamacloud/deployment.yaml
+  asserts:
+    - equal:
+        path: spec.template.spec.containers[1].name
+        value: s3proxy
+    - contains:
+        path: spec.template.spec.containers[1].env
+        content:
+          name: S3PROXY_ENDPOINT
+          value: http://127.0.0.1:8080
+    - notExists:
+        path: spec.template.spec.containers[1].ports
 
 # Secret Tests
 - it: should create s3proxy secret when provider is gcp
@@ -151,9 +268,13 @@ tests:
     - equal:
         path: .spec.template.spec.containers[1].image
         value: docker.io/andrewgaul/s3proxy:sha-001d042
-    - equal:
-        path: .spec.template.spec.containers[1].ports[0].containerPort
-        value: 8080
+    - notExists:
+        path: .spec.template.spec.containers[1].ports
+    - contains:
+        path: .spec.template.spec.containers[1].env
+        content:
+          name: S3PROXY_ENDPOINT
+          value: http://127.0.0.1:8080
     - contains:
         path: .spec.template.spec.containers[1].envFrom
         content:
@@ -667,27 +788,18 @@ tests:
   templates:
     - ../templates/llamacloud/deployment.yaml
   asserts:
-    # Backend (index 0)
     - template: ../templates/llamacloud/deployment.yaml
       documentIndex: 0
       equal:
         path: .spec.template.spec.containers[1].name
         value: s3proxy
-    # Jobs Service (index 1)
     - template: ../templates/llamacloud/deployment.yaml
       documentIndex: 1
       equal:
         path: .spec.template.spec.containers[1].name
         value: s3proxy
-    # Jobs Worker (index 2)
     - template: ../templates/llamacloud/deployment.yaml
       documentIndex: 2
-      equal:
-        path: .spec.template.spec.containers[1].name
-        value: s3proxy
-    # LlamaParse (index 3)
-    - template: ../templates/llamacloud/deployment.yaml
-      documentIndex: 3
       equal:
         path: .spec.template.spec.containers[1].name
         value: s3proxy

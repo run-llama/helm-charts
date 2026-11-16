@@ -55,7 +55,7 @@ Usage Readiness Probe.
 httpGet:
   path: /health_check
   port: http
-initialDelaySeconds: 15
+initialDelaySeconds: {{ .component.readinessProbe.initialDelaySeconds }}
 periodSeconds: 15
 successThreshold: 1
 timeoutSeconds: 5
@@ -66,14 +66,8 @@ failureThreshold: 30
 Usage Startup Probe.
 */}}
 {{ define "llamacloud.component.usage.startupProbe" }}
-httpGet:
-  path: /health_check
-  port: http
-initialDelaySeconds: 15
-periodSeconds: 15
-successThreshold: 1
-timeoutSeconds: 5
-failureThreshold: 30
+{{- $probe := .component.startupProbe }}
+{{- include "llamacloud.httpStartupProbe" (dict "path" "/health_check" "initialDelaySeconds" $probe.initialDelaySeconds "periodSeconds" $probe.periodSeconds) }}
 {{- end }}
 
 {{/*
@@ -85,6 +79,7 @@ Parameters:
 */}}
 {{ define "llamacloud.component.usage.env" }}
 {{- include "llamacloud.managedInference.env" (dict "root" .root) }}
+{{- include "llamacloud.tls.env" (dict "root" .root "postgresql" true "redisPython" true "temporal" true) }}
 {{- if (.root.Values.usage).extraEnvVariables }}
 {{ toYaml (.root.Values.usage).extraEnvVariables }}
 {{- end }}
@@ -148,6 +143,7 @@ Parameters:
 {{ define "llamacloud.component.usage.volumeMounts" }}
 - mountPath: /tmp
   name: tmp
+{{- include "llamacloud.tls.volumeMounts" (dict "root" .root "postgresql" true "redisPython" true "temporal" true) }}
 {{- if (.root.Values.usage).volumeMounts }}
 {{ toYaml (.root.Values.usage).volumeMounts }}
 {{- end }}
@@ -163,6 +159,7 @@ Parameters:
 {{ define "llamacloud.component.usage.volumes" }}
 - emptyDir: {}
   name: tmp
+{{- include "llamacloud.tls.volumes" (dict "root" .root "postgresql" true "redisPython" true "temporal" true) }}
 {{- if (.root.Values.usage).volumes }}
 {{ toYaml (.root.Values.usage).volumes }}
 {{- end }}

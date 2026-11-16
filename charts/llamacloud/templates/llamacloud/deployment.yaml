@@ -1,6 +1,7 @@
 {{- range $name, $component := ((include "llamacloud.components" .) | fromYaml ) }}
 {{- $componentPrefix := $component.prefix }}
 {{- $params := dict "component" $component "root" $ }}
+{{- $nativeS3proxy := and $component.usesS3 $.Values.config.storageBuckets.s3proxy.enabled $.Values.config.storageBuckets.s3proxy.nativeSidecar }}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -29,6 +30,9 @@ spec:
       imagePullSecrets: {{ $.Values.imagePullSecrets | toYaml | nindent 8 }}
       serviceAccountName: {{ $component.name | quote }}
       securityContext: {{ include "llamacloud.podSecurityContext" $params | indent 8 }}
+      {{- if $nativeS3proxy }}
+      initContainers: {{ include "llamacloud.s3proxy.container" $ | indent 6 }}
+      {{- end }}
       containers:
       - name: {{ $component.name | quote }}
         securityContext: {{ include "llamacloud.securityContext" $params | indent 10 }}
@@ -41,9 +45,9 @@ spec:
         {{- if $component.command }}
         command: {{ $component.command | toYaml | nindent 10 }}
         {{- end }}
-        livenessProbe: {{ include (printf "%s.livenessProbe" $componentPrefix) $ | indent 10 }}
-        readinessProbe: {{ include (printf "%s.readinessProbe" $componentPrefix) $ | indent 10 }}
-        startupProbe: {{ include (printf "%s.startupProbe" $componentPrefix) $ | indent 10 }}
+        livenessProbe: {{ include (printf "%s.livenessProbe" $componentPrefix) $params | indent 10 }}
+        readinessProbe: {{ include (printf "%s.readinessProbe" $componentPrefix) $params | indent 10 }}
+        startupProbe: {{ include (printf "%s.startupProbe" $componentPrefix) $params | indent 10 }}
         resources: {{ include (printf "%s.resources" $componentPrefix) $params | indent 10 }}
         {{- $componentEnv := include (printf "%s.env" $componentPrefix) $params }}
         {{- if and $component.skipDefaultEnv (not (trim $componentEnv)) }}
@@ -61,7 +65,7 @@ spec:
         {{- end }}
         envFrom: {{ include (printf "%s.envFrom" $componentPrefix) $params | indent 8 }}
         volumeMounts: {{- include (printf "%s.volumeMounts" $componentPrefix) $params | indent 8 -}}
-        {{- if $component.usesS3 }}
+        {{- if and $component.usesS3 (not $nativeS3proxy) }}
         {{- include "llamacloud.s3proxy.container" $ | indent 6 }}
         {{- end }}
       volumes: {{ include (printf "%s.volumes" $componentPrefix) $params  | indent 6 }}

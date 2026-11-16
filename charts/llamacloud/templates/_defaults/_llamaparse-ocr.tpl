@@ -108,6 +108,7 @@ Parameters:
 - root: $
 */}}
 {{ define "llamacloud.component.llamaParseOcr.env" }}
+{{- include "llamacloud.fips.goEnv" .root }}
 {{- if (.component).extraEnvVariables }}
 {{ toYaml (.component).extraEnvVariables }}
 {{- end }}

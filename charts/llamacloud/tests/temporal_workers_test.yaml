@@ -21,7 +21,7 @@ tests:
     template: ../templates/llamacloud/deployment.yaml
     asserts:
       - hasDocuments:
-          count: 5
+          count: 4
 
   - it: should create services with external temporal
     set:
@@ -34,4 +34,50 @@ tests:
     template: ../templates/llamacloud/service.yaml
     asserts:
       - hasDocuments:
-          count: 5
+          count: 4
+
+  - it: keeps the jobs worker startup probe's 480s window when the delay and period shrink
+    set:
+      temporalWorkloads.workers.temporal-jobs-worker.startupProbe.initialDelaySeconds: 0
+      temporalWorkloads.workers.temporal-jobs-worker.startupProbe.periodSeconds: 2
+      temporalWorkloads.workers.temporal-jobs-worker.readinessProbe.initialDelaySeconds: 0
+    template: ../templates/llamacloud/deployment.yaml
+    documentSelector:
+      path: metadata.name
+      value: temporal-jobs-worker
+    asserts:
+      - equal:
+          path: .spec.template.spec.containers[0].startupProbe
+          value:
+            httpGet:
+              path: /healthcheck
+              port: http
+            initialDelaySeconds: 0
+            periodSeconds: 2
+            timeoutSeconds: 5
+            failureThreshold: 240
+      - equal:
+          path: .spec.template.spec.containers[0].readinessProbe.initialDelaySeconds
+          value: 0
+
+  - it: gives a worker with no probe values the default 30s delay and 15s period
+    set:
+      temporalWorkloads.workers.extra-worker.image: example.com/backend:1.0.0
+    template: ../templates/llamacloud/deployment.yaml
+    documentSelector:
+      path: metadata.name
+      value: extra-worker
+    asserts:
+      - equal:
+          path: .spec.template.spec.containers[0].startupProbe
+          value:
+            httpGet:
+              path: /healthcheck
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 30
+      - equal:
+          path: .spec.template.spec.containers[0].readinessProbe.initialDelaySeconds
+          value: 30

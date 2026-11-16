@@ -16,6 +16,9 @@ data:
   {{- if (((.Values.config).managedEmbeddings).enabled) }}
   IS_MANAGED_EMBEDDINGS_ENABLED: {{ .Values.config.managedEmbeddings.enabled | quote }}
   {{- end }}
+  {{- if (((.Values.config).llms).customerPaysProviders) }}
+  CUSTOMER_PAYS_MODEL_PROVIDERS: "true"
+  {{- end }}
   {{- with ((.Values.config).connectors) }}
   ## Connectors. The backend refuses any integration/auth pair outside
   ## CONNECTOR_AUTH_ENABLED_AUTH_TYPES. Emitted even when empty: empty means

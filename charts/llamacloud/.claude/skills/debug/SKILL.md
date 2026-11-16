@@ -35,7 +35,7 @@ Tabulate the pod list. Note the **deployment naming convention**: the LlamaCloud
 |---|---|---|
 | Backend | `llamacloud-*` (bare, not `llamacloud-backend`) | 1+ Ready |
 | Frontend | `llamacloud-web-*` | 1+ Ready |
-| Jobs service | `llamacloud-operator-*` | 1+ Ready |
+| Jobs service (chart 0.11.4 and earlier) | `llamacloud-operator-*` | 1+ Ready; chart 0.12.0 removed it |
 | Usage / telemetry | `llamacloud-telemetry-*` | 1 Ready |
 | Parse OCR (GPU) | `llamacloud-ocr-*` | 0+ Ready depending on `config.parseOcr.enabled` |
 | Layout detection (GPU) | `llamacloud-layout-*` | 0+ depending on `config.parseLayoutDetection.enabled` |

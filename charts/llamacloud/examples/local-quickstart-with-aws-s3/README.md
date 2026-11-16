@@ -92,13 +92,6 @@ backend:
   - name: AWS_SECRET_ACCESS_KEY
     value: "<REPLACE>"
 
-jobsService:
-  extraEnvVariables:
-  - name: AWS_ACCESS_KEY_ID
-    value: "<REPLACE>"
-  - name: AWS_SECRET_ACCESS_KEY
-    value: "<REPLACE>"
-
 llamaParseOcr:
   extraEnvVariables:
   - name: AWS_ACCESS_KEY_ID
