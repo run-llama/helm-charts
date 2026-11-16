@@ -137,6 +137,48 @@ tests:
         path: .spec.template.spec.containers[0].envFrom[?(@.secretRef.name == "existing-openai-api-key")].secretRef.name
         value: existing-openai-api-key
 
+- it: loads every provider's existing LLM secret via envFrom
+  documentIndex: 0
+  set:
+    config.llms.openAi.secret: existing-openai-api-key
+    config.llms.anthropic.secret: existing-anthropic-api-key
+    config.llms.gemini.secret: existing-gemini-api-key
+    config.llms.azureOpenAi.secret: existing-azure-openai-api-key
+    config.llms.awsBedrock.secret: existing-aws-bedrock-api-key
+    config.llms.googleVertexAi.secret: existing-google-vertex-ai-api-key
+  template: ../templates/llamacloud/deployment.yaml
+  asserts:
+    - contains:
+        path: .spec.template.spec.containers[0].envFrom
+        content:
+          secretRef:
+            name: existing-anthropic-api-key
+    - contains:
+        path: .spec.template.spec.containers[0].envFrom
+        content:
+          secretRef:
+            name: existing-openai-api-key
+    - contains:
+        path: .spec.template.spec.containers[0].envFrom
+        content:
+          secretRef:
+            name: existing-gemini-api-key
+    - contains:
+        path: .spec.template.spec.containers[0].envFrom
+        content:
+          secretRef:
+            name: existing-azure-openai-api-key
+    - contains:
+        path: .spec.template.spec.containers[0].envFrom
+        content:
+          secretRef:
+            name: existing-aws-bedrock-api-key
+    - contains:
+        path: .spec.template.spec.containers[0].envFrom
+        content:
+          secretRef:
+            name: existing-google-vertex-ai-api-key
+
 - it: postgresql secret should be loaded via envFrom
   documentIndex: 0
   set:

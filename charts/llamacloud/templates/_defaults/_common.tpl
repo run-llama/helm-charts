@@ -17,6 +17,25 @@ app.kubernetes.io/name: {{ .name | quote }}
 {{- end }}
 
 {{/*
+HTTP startup probe. failureThreshold is rounded up so the pod always gets at least
+480s to start, whatever the delay and period.
+
+Parameters:
+- path: The health check path
+- initialDelaySeconds: Seconds after container start before the first check
+- periodSeconds: Seconds between checks
+*/}}
+{{ define "llamacloud.httpStartupProbe" }}
+httpGet:
+  path: {{ .path }}
+  port: http
+initialDelaySeconds: {{ .initialDelaySeconds }}
+periodSeconds: {{ .periodSeconds }}
+timeoutSeconds: 5
+failureThreshold: {{ max 1 (div (add (sub 480 .initialDelaySeconds) .periodSeconds -1) .periodSeconds) }}
+{{- end }}
+
+{{/*
 Annotations
 
 Parameters:
@@ -65,7 +84,7 @@ Parameters:
 {{-   end }}
 {{- end }}
 {{- $llms := .root.Values.config.llms | default dict }}
-{{- $llmConsumers := list "llamacloud.component.backend" "llamacloud.component.jobsService" "llamacloud.component.temporal.worker" "llamacloud.component.temporal.llamaParse" }}
+{{- $llmConsumers := list "llamacloud.component.backend" "llamacloud.component.temporal.worker" "llamacloud.component.temporal.llamaParse" }}
 {{- if and .component (has .component.prefix $llmConsumers) }}
 {{-   $llmConfig := dict "providerConfigs" ($llms.providerConfigs | default list) }}
 {{-   if $llms.modelPolicy }}
@@ -74,7 +93,7 @@ Parameters:
 {{-   $merged = set $merged "checksum/llm-provider-configs" ($llmConfig | toJson | sha256sum) }}
 {{- end }}
 {{- /* Env from a Secret is read at container start, so a changed gateway URL or key restarts its consumers. */}}
-{{- $gatewayConsumers := list "llamacloud.component.backend" "llamacloud.component.jobsService" "llamacloud.component.usage" "llamacloud.component.temporal.worker" "llamacloud.component.temporal.llamaParse" }}
+{{- $gatewayConsumers := list "llamacloud.component.backend" "llamacloud.component.usage" "llamacloud.component.temporal.worker" "llamacloud.component.temporal.llamaParse" }}
 {{- if and .component (has .component.prefix $gatewayConsumers) (include "llamacloud.managedInference.url" .root) }}
 {{-   $merged = set $merged "checksum/managed-inference" (.root.Values.config.managedInference | toJson | sha256sum) }}
 {{- end }}
@@ -129,7 +148,6 @@ Activated Components
 {{- define "llamacloud.components" }}
 {{- $activated := dict }}
 {{- $activated = set $activated "backend" (include "llamacloud.component.backend" . | fromYaml) }}
-{{- $activated = set $activated "jobsService" (include "llamacloud.component.jobsService" . | fromYaml) }}
 {{- $activated = set $activated "usage" (include "llamacloud.component.usage" . | fromYaml) }}
 {{- if (($.Values.config).frontend).enabled }}
 {{- $activated = set $activated "frontend" (include "llamacloud.component.frontend" . | fromYaml) }}
@@ -262,4 +280,17 @@ release namespace (KEDA evaluates scaler triggers from the keda-operator pod).
 {{- else -}}
 {{- include "llamacloud.temporal.endpoint" . -}}
 {{- end -}}
+{{- end }}
+
+{{/*
+GODEBUG for Go servers built with GOFIPS140 (OCR, layout). fips.enabled turns on FIPS 140-3
+mode; their images default to fips140=off because SaaS runs the same images.
+
+Parameters: the root context ($).
+*/}}
+{{- define "llamacloud.fips.goEnv" -}}
+{{- if ((.Values.fips).enabled) }}
+- name: GODEBUG
+  value: "fips140=on"
+{{- end }}
 {{- end }}

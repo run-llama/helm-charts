@@ -524,6 +524,9 @@
                             },
                             "additionalProperties": false
                         },
+                        "customerPaysProviders": {
+                            "type": "boolean"
+                        },
                         "gemini": {
                             "type": "object",
                             "properties": {
@@ -967,6 +970,9 @@
                                 "logLevel": {
                                     "type": "string"
                                 },
+                                "nativeSidecar": {
+                                    "type": "boolean"
+                                },
                                 "resources": {
                                     "type": "object"
                                 },
@@ -1108,6 +1114,15 @@
         "extraObjects": {
             "type": "array"
         },
+        "fips": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "type": "boolean"
+                }
+            },
+            "additionalProperties": false
+        },
         "frontend": {
             "type": "object",
             "properties": {
@@ -1212,73 +1227,7 @@
         },
         "jobsService": {
             "type": "object",
-            "properties": {
-                "affinity": {
-                    "type": "object"
-                },
-                "annotations": {
-                    "type": "object"
-                },
-                "command": {
-                    "type": "array"
-                },
-                "extraEnvVariables": {
-                    "type": "array"
-                },
-                "horizontalPodAutoscalerSpec": {
-                    "type": "object"
-                },
-                "image": {
-                    "type": "string"
-                },
-                "imagePullPolicy": {
-                    "type": "string",
-                    "enum": [
-                        "",
-                        "Always",
-                        "IfNotPresent",
-                        "Never"
-                    ]
-                },
-                "nodeSelector": {
-                    "type": "object"
-                },
-                "podAnnotations": {
-                    "type": "object"
-                },
-                "podSecurityContext": {
-                    "type": "object"
-                },
-                "replicas": {
-                    "type": [
-                        "integer",
-                        "null"
-                    ],
-                    "minimum": 0
-                },
-                "resources": {
-                    "type": "object"
-                },
-                "securityContext": {
-                    "type": "object"
-                },
-                "serviceAccountAnnotations": {
-                    "type": "object"
-                },
-                "tolerations": {
-                    "type": "array"
-                },
-                "topologySpreadConstraints": {
-                    "type": "array"
-                },
-                "volumeMounts": {
-                    "type": "array"
-                },
-                "volumes": {
-                    "type": "array"
-                }
-            },
-            "additionalProperties": false
+            "additionalProperties": true
         },
         "kube-prometheus-stack-subchart": {
             "type": "object",
@@ -1834,6 +1783,32 @@
                 "secret": {
                     "type": "string"
                 },
+                "sslMode": {
+                    "type": "string",
+                    "enum": [
+                        "",
+                        "disable",
+                        "allow",
+                        "prefer",
+                        "require",
+                        "verify-ca",
+                        "verify-full"
+                    ]
+                },
+                "sslRootCert": {
+                    "type": "object",
+                    "properties": {
+                        "configMapName": {
+                            "type": "string"
+                        },
+                        "key": {
+                            "type": "string"
+                        },
+                        "secretName": {
+                            "type": "string"
+                        }
+                    }
+                },
                 "username": {
                     "type": "string"
                 }
@@ -1884,6 +1859,23 @@
                 "secret": {
                     "type": "string"
                 },
+                "sslCaCert": {
+                    "type": "object",
+                    "properties": {
+                        "configMapName": {
+                            "type": "string"
+                        },
+                        "key": {
+                            "type": "string"
+                        },
+                        "secretName": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "sslCheckHostname": {
+                    "type": "boolean"
+                },
                 "username": {
                     "type": "string"
                 }
@@ -1901,6 +1893,45 @@
                 },
                 "port": {
                     "type": "integer"
+                },
+                "tls": {
+                    "type": "object",
+                    "properties": {
+                        "caCert": {
+                            "type": "object",
+                            "properties": {
+                                "configMapName": {
+                                    "type": "string"
+                                },
+                                "key": {
+                                    "type": "string"
+                                },
+                                "secretName": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "clientCert": {
+                            "type": "object",
+                            "properties": {
+                                "certKey": {
+                                    "type": "string"
+                                },
+                                "keyKey": {
+                                    "type": "string"
+                                },
+                                "secretName": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "enabled": {
+                            "type": "boolean"
+                        },
+                        "serverName": {
+                            "type": "string"
+                        }
+                    }
                 }
             },
             "additionalProperties": false
@@ -2081,6 +2112,20 @@
                                             },
                                             "value": {
                                                 "type": "boolean"
+                                            }
+                                        }
+                                    }
+                                },
+                                "frontend.namespaceCount": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "constraints": {
+                                                "type": "object"
+                                            },
+                                            "value": {
+                                                "type": "integer"
                                             }
                                         }
                                     }
@@ -2561,6 +2606,16 @@
                                 "podSecurityContext": {
                                     "type": "object"
                                 },
+                                "readinessProbe": {
+                                    "type": "object",
+                                    "properties": {
+                                        "initialDelaySeconds": {
+                                            "type": "integer",
+                                            "minimum": 0
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                },
                                 "resources": {
                                     "type": "object"
                                 },
@@ -2569,6 +2624,20 @@
                                 },
                                 "serviceAccountAnnotations": {
                                     "type": "object"
+                                },
+                                "startupProbe": {
+                                    "type": "object",
+                                    "properties": {
+                                        "initialDelaySeconds": {
+                                            "type": "integer",
+                                            "minimum": 0
+                                        },
+                                        "periodSeconds": {
+                                            "type": "integer",
+                                            "minimum": 1
+                                        }
+                                    },
+                                    "additionalProperties": false
                                 },
                                 "tolerations": {
                                     "type": "array"
@@ -2628,6 +2697,16 @@
                 "podSecurityContext": {
                     "type": "object"
                 },
+                "readinessProbe": {
+                    "type": "object",
+                    "properties": {
+                        "initialDelaySeconds": {
+                            "type": "integer",
+                            "minimum": 0
+                        }
+                    },
+                    "additionalProperties": false
+                },
                 "replicas": {
                     "type": [
                         "integer",
@@ -2643,6 +2722,20 @@
                 },
                 "serviceAccountAnnotations": {
                     "type": "object"
+                },
+                "startupProbe": {
+                    "type": "object",
+                    "properties": {
+                        "initialDelaySeconds": {
+                            "type": "integer",
+                            "minimum": 0
+                        },
+                        "periodSeconds": {
+                            "type": "integer",
+                            "minimum": 1
+                        }
+                    },
+                    "additionalProperties": false
                 },
                 "tolerations": {
                     "type": "array"

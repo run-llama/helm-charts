@@ -105,17 +105,11 @@ tests:
           secretRef:
             name: rabbitmq-secret
 
-- it: mongodb disabled still renders the jobs-service and temporal-jobs-worker Deployments
+- it: mongodb disabled still renders the temporal-jobs-worker Deployment
   set:
     mongodb.enabled: false
   template: ../templates/llamacloud/deployment.yaml
   asserts:
-    - containsDocument:
-        any: true
-        kind: Deployment
-        apiVersion: apps/v1
-        name: llamacloud-operator
-        namespace: test-namespace
     - containsDocument:
         any: true
         kind: Deployment

@@ -89,25 +89,6 @@ tests:
         path: .data.LLM_PROVIDER_CONFIGS_JSON
         value: W10=
 
-- it: should include llm-provider-configs-secret in jobs-service envFrom
-  set:
-    config.llms.providerConfigs:
-      - provider: "openai"
-        model_id: "openai-gpt-4o"
-        credentials:
-          api_key: "test"
-    config.frontend.enabled: false
-    config.parseOcr.enabled: false
-    config.parseLayoutDetection.enabled: false
-  template: ../templates/llamacloud/deployment.yaml
-  documentIndex: 1
-  asserts:
-    - contains:
-        path: .spec.template.spec.containers[0].envFrom
-        content:
-          secretRef:
-            name: llm-provider-configs-secret
-
 - it: should include llm-provider-configs-secret in backend envFrom
   set:
     config.llms.providerConfigs:

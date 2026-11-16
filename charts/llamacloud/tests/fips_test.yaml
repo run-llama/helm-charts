@@ -1,0 +1,169 @@
+suite: fips-tests
+
+# fips.enabled sets GODEBUG=fips140=on on the Go servers built with GOFIPS140 (OCR and
+# layout). Their images default to fips140=off, so nothing is set when it is off.
+
+templates:
+- ../templates/llamacloud/deployment.yaml
+
+release:
+  name: test-release
+  namespace: test-namespace
+
+tests:
+- it: sets no GODEBUG on OCR or layout by default
+  set: &stores
+    config:
+      frontend:
+        enabled: false
+      parseOcr:
+        enabled: true
+      parseLayoutDetection:
+        enabled: true
+    redis:
+      host: test-redis
+      port: "6379"
+      password: test-pass
+    postgresql:
+      host: test-pg
+      port: "5432"
+      username: test-user
+      password: test-pass
+      database: test-db
+    mongodb:
+      host: mongodb
+      username: test-mongo-user
+      password: test-mongo-pass
+  template: ../templates/llamacloud/deployment.yaml
+  asserts:
+    - notExists:
+        path: spec.template.spec.containers[0].env[?(@.name == "GODEBUG")]
+      documentSelector:
+        path: metadata.name
+        value: llamacloud-ocr
+    - equal:
+        path: spec.template.spec.containers[0].env
+        value: []
+      documentSelector:
+        path: metadata.name
+        value: llamacloud-ocr
+    - notExists:
+        path: spec.template.spec.containers[0].env[?(@.name == "GODEBUG")]
+      documentSelector:
+        path: metadata.name
+        value: llamacloud-layout
+
+- it: sets GODEBUG=fips140=on on OCR and layout when fips.enabled
+  set:
+    <<: *stores
+    fips:
+      enabled: true
+  template: ../templates/llamacloud/deployment.yaml
+  asserts:
+    - contains:
+        path: spec.template.spec.containers[0].env
+        content:
+          name: GODEBUG
+          value: fips140=on
+        count: 1
+      documentSelector:
+        path: metadata.name
+        value: llamacloud-ocr
+    - contains:
+        path: spec.template.spec.containers[0].env
+        content:
+          name: GODEBUG
+          value: fips140=on
+        count: 1
+      documentSelector:
+        path: metadata.name
+        value: llamacloud-layout
+    - contains:
+        path: spec.template.spec.containers[0].env
+        content:
+          name: LAYOUT_DEVICE
+          value: cpu
+      documentSelector:
+        path: metadata.name
+        value: llamacloud-layout
+
+- it: sets GODEBUG=fips140=on on the deprecated layout V3 alias when fips.enabled
+  set:
+    <<: *stores
+    fips:
+      enabled: true
+    config:
+      frontend:
+        enabled: false
+      parseLayoutDetectionV3:
+        enabled: true
+        gpu: true
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-layout-v3
+  asserts:
+    - contains:
+        path: spec.template.spec.containers[0].env
+        content:
+          name: GODEBUG
+          value: fips140=on
+        count: 1
+    - contains:
+        path: spec.template.spec.containers[0].env
+        content:
+          name: LAYOUT_DEVICE
+          value: cuda
+
+- it: keeps OCR extraEnvVariables alongside GODEBUG
+  set:
+    <<: *stores
+    fips:
+      enabled: true
+    llamaParseOcr:
+      extraEnvVariables:
+        - name: OCR_EXTRA
+          value: "1"
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud-ocr
+  asserts:
+    - equal:
+        path: spec.template.spec.containers[0].env
+        value:
+          - name: GODEBUG
+            value: fips140=on
+          - name: OCR_EXTRA
+            value: "1"
+
+- it: leaves the components without validated Go crypto untouched
+  set:
+    <<: *stores
+    fips:
+      enabled: true
+    config:
+      frontend:
+        enabled: true
+      parseOcr:
+        enabled: false
+      parseLayoutDetection:
+        enabled: false
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud
+  asserts:
+    - notExists:
+        path: spec.template.spec.containers[0].env[?(@.name == "GODEBUG")]
+
+- it: rejects unknown fips keys
+  set:
+    <<: *stores
+    fips:
+      enabled: true
+      mode: only
+  template: ../templates/llamacloud/deployment.yaml
+  asserts:
+    - failedTemplate:
+        errorPattern: "at '/fips': additional properties 'mode' not allowed"

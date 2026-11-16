@@ -1,0 +1,43 @@
+suite: staging-disruption-budgets-tests
+
+# The staging byoc overlay (both sides load these files) runs the llama-agents
+# control plane and operator at two replicas, as SaaS does, so a node rotation
+# never takes either down; their PDBs (extras.yaml) evict one pod at a time.
+templates:
+  - charts/llama-agents-subchart/templates/deployment.yaml
+  - charts/llama-agents-subchart/templates/operator-deployment.yaml
+
+release:
+  name: llamacloud
+  namespace: byoc
+
+values:
+  - ../../environments/staging/values.yaml
+  - ../../environments/staging/extras.yaml
+
+tests:
+  - it: runs two llama-agents-control-plane replicas, as SaaS does
+    template: charts/llama-agents-subchart/templates/deployment.yaml
+    documentSelector:
+      path: metadata.name
+      value: llama-agents-control-plane
+    asserts:
+      - equal:
+          path: spec.replicas
+          value: 2
+      - equal:
+          path: spec.selector.matchLabels.app
+          value: llama-agents-control-plane
+
+  - it: runs two llama-agents-operator replicas, as SaaS does
+    template: charts/llama-agents-subchart/templates/operator-deployment.yaml
+    documentSelector:
+      path: metadata.name
+      value: llama-agents-operator
+    asserts:
+      - equal:
+          path: spec.replicas
+          value: 2
+      - equal:
+          path: spec.selector.matchLabels.app
+          value: llama-agents-operator

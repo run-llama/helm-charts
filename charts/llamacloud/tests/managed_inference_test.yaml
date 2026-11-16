@@ -88,14 +88,6 @@ tests:
           value: https://us-east-1.inference.cloud.llamaindex.ai
       documentSelector:
         path: metadata.name
-        value: llamacloud-operator
-    - contains:
-        path: .spec.template.spec.containers[0].env
-        content:
-          name: MANAGED_INFERENCE_GATEWAY_URL
-          value: https://us-east-1.inference.cloud.llamaindex.ai
-      documentSelector:
-        path: metadata.name
         value: llamacloud-telemetry
     - contains:
         path: .spec.template.spec.containers[0].env
@@ -541,6 +533,19 @@ tests:
     - failedTemplate:
         errorMessage: config.managedInference.url cannot be combined with customer model provider settings; unset config.llms.openAi.apiKey
 
+- it: fails the render when the install is marked as paying its own model providers beside the gateway
+  set:
+    config:
+      managedInference:
+        url: https://us-east-1.inference.cloud.llamaindex.ai
+        apiKey: igw_fixture-key
+      llms:
+        customerPaysProviders: true
+  template: ../templates/llamacloud/secrets/managed-inference.yaml
+  asserts:
+    - failedTemplate:
+        errorMessage: config.managedInference.url cannot be combined with customer model provider settings; unset config.llms.customerPaysProviders
+
 - it: names every customer provider setting and providerConfigs in the render error
   set:
     config:
@@ -609,12 +614,6 @@ tests:
       documentSelector:
         path: metadata.name
         value: llamacloud
-    - equal:
-        path: .spec.template.metadata.annotations["checksum/managed-inference"]
-        value: 9c84ab8cdc69358d9c0ba604a053ea1ae9fc984b7044b65d34ccfe2d599e0194
-      documentSelector:
-        path: metadata.name
-        value: llamacloud-operator
     - equal:
         path: .spec.template.metadata.annotations["checksum/managed-inference"]
         value: 9c84ab8cdc69358d9c0ba604a053ea1ae9fc984b7044b65d34ccfe2d599e0194

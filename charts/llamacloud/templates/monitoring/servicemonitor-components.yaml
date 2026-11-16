@@ -3,7 +3,7 @@
 {{- /*
   The components helper filters out disabled services.
 */}}
-{{- $monitored := list "backend" "jobsService" "llamaParseOcr" "usage" "llamaParseLayoutDetectionApi" "llamaParseLayoutDetectionApiV3" "temporalLlamaParse" "temporalLlamaParseQuarantine" }}
+{{- $monitored := list "backend" "llamaParseOcr" "usage" "llamaParseLayoutDetectionApi" "llamaParseLayoutDetectionApiV3" "temporalLlamaParse" "temporalLlamaParseQuarantine" }}
 {{- range $name, $component := ((include "llamacloud.components" .) | fromYaml) }}
 {{- if or (has $name $monitored) (hasKey $.Values.temporalWorkloads.workers $name) }}
 ---

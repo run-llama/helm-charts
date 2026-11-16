@@ -9,6 +9,16 @@ license:
   ## @param license.secret Name of the k8s secret to use for the license key
   secret: ""
 
+## @section FIPS 140-3 Configuration
+## Opt-in FIPS 140-3 mode for components whose cryptography supports it. Today that is the
+## OCR and layout servers: they are built with the Go Cryptographic Module v1.0.0 (CMVP
+## certificate #5247, https://go.dev/doc/security/fips140) and run it in FIPS mode when this
+## is on. Other components do not run validated cryptography yet.
+# @schema additionalProperties: false
+fips:
+  ## @param fips.enabled Run supported components in FIPS 140-3 mode. Sets `GODEBUG=fips140=on` on the OCR and layout servers, which then report `"fips140": {"enabled": true}` on `/statusz` (OCR) and `/status` (layout).
+  enabled: false
+
 ## @section Postgresql Configuration
 # @schema additionalProperties: false
 postgresql:
@@ -41,6 +51,24 @@ postgresql:
   ## Driver behavior. Applies to the same five components via the same ConfigMap.
   ## @param postgresql.disablePreparedStatements Disable asyncpg server-side prepared statements. Required when this host is a transaction-mode pooler (PgBouncer 1.21+); leave false for a direct connection, where prepared statements are faster.
   disablePreparedStatements: false
+
+  ## TLS for the backend, usage and Python Temporal worker pods, which connect to this host.
+  ## Unset keeps today's behavior: the drivers use `prefer`, which encrypts when the server
+  ## offers TLS but never checks its certificate and falls back to plaintext. Use
+  ## `verify-full` to require TLS and verify the certificate and hostname. A bundled
+  ## Temporal (`temporal.deploy: true`) needs its own setting under
+  ## `temporal-subchart.server.config.persistence.datastores.*.sql.tls`; the chart refuses to
+  ## render when that is weaker than this. See docs/datastore-tls.md.
+  ## @param postgresql.sslMode TLS mode, with libpq `sslmode` semantics (disable, allow, prefer, require, verify-ca, verify-full). Empty keeps each driver's default (`prefer`).
+  # @schema enum: ["", disable, allow, prefer, require, verify-ca, verify-full]
+  sslMode: ""
+  sslRootCert:
+    ## @param postgresql.sslRootCert.secretName Secret holding the PEM CA bundle that signs the server certificate, mounted at `/etc/llamacloud/tls/postgresql/ca.crt`. Leave this and configMapName empty to trust the image's system CA store. Used by `verify-ca`, `verify-full` and `require` (which then verifies the CA, as libpq does).
+    secretName: ""
+    ## @param postgresql.sslRootCert.configMapName ConfigMap holding the CA bundle, instead of a Secret. Set at most one of secretName and configMapName.
+    configMapName: ""
+    ## @param postgresql.sslRootCert.key Key of the CA bundle in the Secret or ConfigMap
+    key: "ca.crt"
 
 ## @section MongoDB Configuration
 # @schema additionalProperties: false
@@ -81,6 +109,19 @@ redis:
   db: 0
   ## @param redis.secret Name of the existing secret to use for Redis credentials
   secret: ""
+  ## TLS verification for `rediss`. The Python components always verify the CA but, by
+  ## default, not the hostname: the Redis 5 client they replaced never did, and a cluster
+  ## that advertises nodes by IP address fails the check. The Node components (parse
+  ## worker, MCP) already verify both. See docs/datastore-tls.md.
+  ## @param redis.sslCheckHostname Check that the Redis certificate names the host, in the backend, usage and Python Temporal worker pods. Requires `rediss`.
+  sslCheckHostname: false
+  sslCaCert:
+    ## @param redis.sslCaCert.secretName Secret holding a PEM CA bundle to verify Redis against, mounted at `/etc/llamacloud/tls/redis/ca.crt`. Empty uses the image's system CA store. Node components get it through NODE_EXTRA_CA_CERTS. Requires `rediss`.
+    secretName: ""
+    ## @param redis.sslCaCert.configMapName ConfigMap holding the CA bundle, instead of a Secret
+    configMapName: ""
+    ## @param redis.sslCaCert.key Key of the CA bundle in the Secret or ConfigMap
+    key: "ca.crt"
 
 ## @section Optional QDRANT Data-Sink configuration
 # @schema additionalProperties: false
@@ -103,6 +144,28 @@ temporal:
   host: ""
   ## @param temporal.port Temporal port (ignored when deploy is true, auto-configured to subchart)
   port: 7233
+  ## TLS from LlamaCloud's clients (API, workers, usage, the search-attributes job) to an
+  ## external Temporal frontend. Not supported with `deploy: true`: the bundled frontend
+  ## serves plaintext gRPC. See docs/datastore-tls.md.
+  tls:
+    ## @param temporal.tls.enabled Connect to the Temporal frontend over TLS. With no caCert, the image's system CA store verifies it.
+    enabled: false
+    ## @param temporal.tls.serverName Name to verify the frontend certificate against, when it differs from temporal.host
+    serverName: ""
+    caCert:
+      ## @param temporal.tls.caCert.secretName Secret holding the PEM CA bundle that signs the frontend certificate, mounted at `/etc/llamacloud/tls/temporal/ca.crt`
+      secretName: ""
+      ## @param temporal.tls.caCert.configMapName ConfigMap holding the CA bundle, instead of a Secret
+      configMapName: ""
+      ## @param temporal.tls.caCert.key Key of the CA bundle in the Secret or ConfigMap
+      key: "ca.crt"
+    clientCert:
+      ## @param temporal.tls.clientCert.secretName Secret holding a client certificate and key for mTLS, mounted at `/etc/llamacloud/tls/temporal-client/`. A `kubernetes.io/tls` Secret works as is.
+      secretName: ""
+      ## @param temporal.tls.clientCert.certKey Key of the PEM client certificate in the Secret
+      certKey: "tls.crt"
+      ## @param temporal.tls.clientCert.keyKey Key of the PEM private key in the Secret
+      keyKey: "tls.key"
 
 ## @section Temporal Subchart Configuration
 ## Configuration for the Temporal subchart (only used when temporal.deploy is true)
@@ -208,7 +271,7 @@ temporal-subchart:
               maxConnLifetime: "1h"
     # Standalone Activities need transition history and CHASM
     # (Temporal Server >= 1.28). Enable all three flags together.
-    ## @param temporal-subchart.server.dynamicConfig [object] Temporal dynamic config overrides. Enables Standalone Activities (requires Temporal Server >= 1.28); the three flags must be set together.
+    ## @param temporal-subchart.server.dynamicConfig [object] Temporal dynamic config overrides. Enables Standalone Activities (requires Temporal Server >= 1.28; the three flags must be set together) and raises the per-host, per-namespace long-poll ceiling to 2400.
     dynamicConfig:
       history.enableTransitionHistory:
         - value: true
@@ -218,6 +281,13 @@ temporal-subchart:
           constraints: {}
       activity.enableStandalone:
         - value: true
+          constraints: {}
+      # Long polls a frontend host holds per namespace; Temporal's default is
+      # 1200. A parse worker pod holds about 28 workflow-task long polls, so one
+      # frontend hit the default at about 43 parse pods and rejected polls
+      # (staging, 2026-11-11). 2400 is what LlamaCloud SaaS runs.
+      frontend.namespaceCount:
+        - value: 2400
           constraints: {}
     # Subchart >=1.3 defaults this to a tcpSocket probe, which reports Ready
     # before WorkflowService is serving. Frontend gRPC is not TLS-wrapped, so the
@@ -403,6 +473,8 @@ config:
   ## @section LLMs Configuration
   # @schema additionalProperties: false
   llms:
+    ## @param config.llms.customerPaysProviders Set true when the model providers configured here bill your own accounts.
+    customerPaysProviders: false
 
     ## @section OpenAI Configuration
     # @schema additionalProperties: false
@@ -444,8 +516,8 @@ config:
       # - model: "gpt-4o-mini"
       #   deploymentName: "gpt-4o-mini"
       #   apiKey: ""
-      #   baseUrl: "https://api.openai.com/v1"
-      #   apiVersion: "2024-08-06"
+      #   baseUrl: "https://your-resource.openai.azure.com/"
+      #   apiVersion: "2025-04-01-preview"
 
     ## @section AWS Bedrock Configuration
     # @schema additionalProperties: false
@@ -533,7 +605,9 @@ config:
     ##       api_key: "..."
     ##       endpoint: "https://your-resource.openai.azure.com"
     ##       deployment_id: "gpt-4o-mini"
-    ##       api_version: "2024-08-06"
+    ##       # An Azure API version, not a model version. GPT-5.6 and later OpenAI models use
+    ##       # the Responses API from 2025-03-01-preview on, and Chat Completions before it.
+    ##       api_version: "2025-04-01-preview"
     providerConfigs: []
     ## @param config.llms.modelPolicy Model choice per product, tier and version, keyed by `product/tier/version` selectors. When set, the secret holds `{"providerConfigs": [...], "modelPolicy": {...}}`
     ##
@@ -631,7 +705,7 @@ config:
   ## without them the backend refuses to store the credential rather than keeping it in the clear.
   # @schema additionalProperties: false
   connectors:
-    ## @param config.connectors.enabledAuthTypes Comma-separated `integration:auth_type` pairs this deployment offers. The backend refuses any other pair. The "Add connection" dialog's list is built into the frontend image and matches this default, so narrowing this list leaves cards in the dialog that fail when used. Available pairs: google_drive:oauth, google_drive:service_account, sharepoint:oauth, sharepoint:service_account, s3:service_account, confluence:oauth, confluence:api_key. Set it empty to offer no connectors.
+    ## @param config.connectors.enabledAuthTypes Comma-separated `integration:auth_type` pairs this deployment offers. The backend refuses any other pair, and the "Add connection" dialog offers only the pairs listed here whose keys are set. Available pairs: google_drive:oauth, google_drive:service_account, sharepoint:oauth, sharepoint:service_account, s3:service_account, confluence:oauth, confluence:api_key, jira:oauth, jira:api_key. Set it empty to offer no connectors.
     enabledAuthTypes: "google_drive:oauth,google_drive:service_account,sharepoint:oauth,sharepoint:service_account,s3:service_account"
     ## @param config.connectors.oauthReturnUrl Page the OAuth provider redirects to after consent. OAuth grants are held in this deployment's own token vault. Must also be registered as a redirect URI on your OAuth app (Entra, Google). Defaults to `<scheme>://<ingress.host>/credential-brokers/return` when `ingress.host` is set.
     oauthReturnUrl: ""
@@ -755,12 +829,14 @@ config:
     s3proxy:
       ## @param config.storageBuckets.s3proxy.enabled S3Proxy image
       enabled: false
+      ## @param config.storageBuckets.s3proxy.nativeSidecar Run S3Proxy as a native sidecar and wait for its TCP port before starting app containers. Requires Kubernetes >= 1.29.
+      nativeSidecar: false
       ## @param config.storageBuckets.s3proxy.image S3Proxy image
       image: "docker.io/andrewgaul/s3proxy:sha-001d042"
       ## @param config.storageBuckets.s3proxy.imagePullPolicy S3Proxy image pull policy
       # @schema enum: ["", Always, IfNotPresent, Never]
       imagePullPolicy: "IfNotPresent"
-      ## @param config.storageBuckets.s3proxy.containerPort S3Proxy container port
+      ## @param config.storageBuckets.s3proxy.containerPort Port S3Proxy listens on, on 127.0.0.1 only. App containers in the pod reach it on localhost.
       containerPort: 8080
       ## @param config.storageBuckets.s3proxy.logLevel S3Proxy log level. Falls back to config.logLevel, then "info", when empty.
       logLevel: ""
@@ -788,8 +864,8 @@ config:
       ## Available options are in the s3proxy Dockerfile:
       ## - https://github.com/gaul/s3proxy/blob/master/Dockerfile
       config: {}
-        # Example configuration for azure blob storage:
-        # S3PROXY_ENDPOINT: "http://0.0.0.0:8080"
+        # Example configuration for azure blob storage. The chart sets S3PROXY_ENDPOINT
+        # (127.0.0.1 only) and ignores it here.
         # S3PROXY_AUTHORIZATION: "none"
         # JCLOUDS_PROVIDER: "azureblob"
         # JCLOUDS_AZUREBLOB_AUTH: "azureKey"
@@ -1096,7 +1172,7 @@ config:
       # `bitnami/kubectl` only publishes `latest`; Renovate moves the digest (and the README's
       # copy). A mirrored registry path keeps the digest valid, since a pull-through cache
       # serves the same manifest.
-      image: "bitnami/kubectl:latest@sha256:8f59408f9e896fc8992a0660a56687545bd06751f26531b4a26fca6d5dc7562d"
+      image: "bitnami/kubectl:latest@sha256:8919c149c2e3d6860e0143c117900e64d71395172aaef0e01e604bb98c8e7ce0"
 
     ## Search Attributes Job
     # @schema additionalProperties: false
@@ -1192,7 +1268,7 @@ frontend:
   annotations: {}
 
   ## @param frontend.image Frontend image
-  image: docker.io/llamaindex/llamacloud-frontend:0.11.4
+  image: docker.io/llamaindex/llamacloud-frontend:0.12.0
 
   ## @param frontend.imagePullPolicy Frontend image pull policy
   # @schema enum: ["", Always, IfNotPresent, Never]
@@ -1336,7 +1412,7 @@ backend:
   annotations: {}
 
   ## @param backend.image Backend image
-  image: docker.io/llamaindex/llamacloud-backend:0.11.4
+  image: docker.io/llamaindex/llamacloud-backend:0.12.0
 
   ## @param backend.imagePullPolicy Backend image pull policy
   # @schema enum: ["", Always, IfNotPresent, Never]
@@ -1405,75 +1481,9 @@ backend:
   volumes: []
 
 ## @section JobsService Configuration
-# @schema additionalProperties: false
-jobsService:
-  ## @param jobsService.horizontalPodAutoscalerSpec HorizontalPodAutoScaler configuration
-  ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/
-  horizontalPodAutoscalerSpec: {}
-
-  ## @param jobsService.replicas [nullable] Fixed replica count for the Deployment. Leave null to use the Kubernetes default (1) or when horizontalPodAutoscalerSpec is set.
-  # @schema type: [integer, "null"];minimum: 0
-  replicas: null
-
-  ## @param jobsService.command Override the container command (entrypoint)
-  command: []
-
-  ## @param jobsService.annotations Annotations added to the JobsService Deployment.
-  annotations: {}
-
-  ## @param jobsService.image JobsService image
-  image: docker.io/llamaindex/llamacloud-backend:0.11.4
-
-  ## @param jobsService.imagePullPolicy JobsService image pull policy
-  # @schema enum: ["", Always, IfNotPresent, Never]
-  imagePullPolicy: IfNotPresent
-
-  ## @param jobsService.securityContext Security context for the container
-  securityContext: {}
-
-  ## @param jobsService.serviceAccountAnnotations Annotations to add to the service account
-  serviceAccountAnnotations: {}
-
-  ## @param jobsService.nodeSelector Node labels for pod assignment
-  ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
-  nodeSelector: {}
-
-  ## @param jobsService.tolerations Taints to tolerate on node assignment:
-  ## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
-  tolerations: []
-
-  ## @param jobsService.affinity Pod scheduling constraints
-  ## Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
-  affinity: {}
-
-  ## @param jobsService.topologySpreadConstraints Topology Spread Constraints for JobsService pods
-  topologySpreadConstraints: []
-
-  ## @param jobsService.podAnnotations Annotations to add to the resulting Pods of the Deployment.
-  podAnnotations: {}
-
-  ## @param jobsService.podSecurityContext Annotations to add to the resulting Pods of the Deployment.
-  podSecurityContext: {}
-
-  ## @param jobsService.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
-  ## Ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
-  resources: {}
-
-  ## @param jobsService.extraEnvVariables Extra environment variables to add to JobsService pods
-  ## Example:
-  ## extraEnvVars:
-  ##   - name: FOO
-  ##     value: BAR
-  ##
-  extraEnvVariables: []
-
-  ## @param jobsService.volumeMounts List of volumeMounts that can be mounted by containers belonging to the pod
-  ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-volume-storage/
-  volumeMounts: []
-
-  ## @param jobsService.volumes List of volumes that can be mounted by containers belonging to the pod
-  ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-volume-storage/
-  volumes: []
+## @param jobsService Ignored. The jobs service Deployment was removed in 0.12.0; the key is kept so existing values files still validate.
+# @schema type: object; additionalProperties: true
+jobsService: {}
 
 ## @section LlamaParseOcr Configuration
 # @schema additionalProperties: false
@@ -1497,7 +1507,7 @@ llamaParseOcr:
   annotations: {}
 
   ## @param llamaParseOcr.image LlamaParseOcr image
-  image: docker.io/llamaindex/llamacloud-llamaparse-ocr:0.11.4
+  image: docker.io/llamaindex/llamacloud-llamaparse-ocr:0.12.0
 
   ## @param llamaParseOcr.imagePullPolicy LlamaParseOcr image pull policy
   # @schema enum: ["", Always, IfNotPresent, Never]
@@ -1817,7 +1827,7 @@ usage:
   annotations: {}
 
   ## @param usage.image LlamaParseLayoutDetectionApi image
-  image: docker.io/llamaindex/llamacloud-backend:0.11.4
+  image: docker.io/llamaindex/llamacloud-backend:0.12.0
 
   ## @param usage.imagePullPolicy LlamaParseLayoutDetectionApi image pull policy
   # @schema enum: ["", Always, IfNotPresent, Never]
@@ -1853,6 +1863,21 @@ usage:
   ## @param usage.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
   ## Ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
   resources: {}
+
+  # @schema additionalProperties: false
+  startupProbe:
+    ## @param usage.startupProbe.initialDelaySeconds Seconds after container start before the first startup check
+    # @schema minimum: 0
+    initialDelaySeconds: 15
+    ## @param usage.startupProbe.periodSeconds Seconds between startup checks. The chart sets failureThreshold so the pod gets 480s to start.
+    # @schema minimum: 1
+    periodSeconds: 15
+
+  # @schema additionalProperties: false
+  readinessProbe:
+    ## @param usage.readinessProbe.initialDelaySeconds Seconds after container start before the first readiness check
+    # @schema minimum: 0
+    initialDelaySeconds: 15
 
   ## @param usage.extraEnvVariables Extra environment variables to add to LlamaParseLayoutDetectionApi pods
   ## Example:
@@ -1904,7 +1929,7 @@ temporalWorkloads:
     annotations: {}
 
     ## @param temporalWorkloads.llamaParse.image temporal llamaparse image
-    image: docker.io/llamaindex/llamacloud-llamaparse:0.11.4
+    image: docker.io/llamaindex/llamacloud-llamaparse:0.12.0
 
     ## @param temporalWorkloads.llamaParse.imagePullPolicy temporal llamaparse image pull policy
     # @schema enum: ["", Always, IfNotPresent, Never]
@@ -1984,7 +2009,7 @@ temporalWorkloads:
     annotations: {}
 
     ## @param temporalWorkloads.llamaParseQuarantine.image temporal llamaparse quarantine image
-    image: docker.io/llamaindex/llamacloud-llamaparse:0.11.4
+    image: docker.io/llamaindex/llamacloud-llamaparse:0.12.0
 
     ## @param temporalWorkloads.llamaParseQuarantine.imagePullPolicy temporal llamaparse quarantine image pull policy
     # @schema enum: ["", Always, IfNotPresent, Never]
@@ -2054,7 +2079,7 @@ temporalWorkloads:
       annotations: {}
 
       ## @param temporalWorkloads.workers.temporal-jobs-worker.image Frontend image
-      image: docker.io/llamaindex/llamacloud-backend:0.11.4
+      image: docker.io/llamaindex/llamacloud-backend:0.12.0
 
       ## @param temporalWorkloads.workers.temporal-jobs-worker.imagePullPolicy Frontend image pull policy
       # @schema enum: ["", Always, IfNotPresent, Never]
@@ -2093,6 +2118,21 @@ temporalWorkloads:
       ## @param temporalWorkloads.workers.temporal-jobs-worker.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
       ## Ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
       resources: {}
+
+      # @schema additionalProperties: false
+      startupProbe:
+        ## @param temporalWorkloads.workers.temporal-jobs-worker.startupProbe.initialDelaySeconds Seconds after container start before the first startup check
+        # @schema minimum: 0
+        initialDelaySeconds: 30
+        ## @param temporalWorkloads.workers.temporal-jobs-worker.startupProbe.periodSeconds Seconds between startup checks. The chart sets failureThreshold so the pod gets 480s to start.
+        # @schema minimum: 1
+        periodSeconds: 15
+
+      # @schema additionalProperties: false
+      readinessProbe:
+        ## @param temporalWorkloads.workers.temporal-jobs-worker.readinessProbe.initialDelaySeconds Seconds after container start before the first readiness check
+        # @schema minimum: 0
+        initialDelaySeconds: 30
 
       ## @param temporalWorkloads.workers.temporal-jobs-worker.extraEnvVariables Extra environment variables to add to temporal-jobs-worker pods
       ## Example:

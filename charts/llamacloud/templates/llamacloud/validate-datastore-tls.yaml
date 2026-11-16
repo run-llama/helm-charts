@@ -1,0 +1,2 @@
+{{- /* Renders nothing; fails the render on an inconsistent datastore TLS setting. */}}
+{{- include "llamacloud.tls.validate" . }}

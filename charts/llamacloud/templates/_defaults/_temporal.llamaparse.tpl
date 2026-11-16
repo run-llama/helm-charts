@@ -158,6 +158,7 @@ Parameters:
 - name: OCRIA_CAPACITY_RETRY_BUDGET_MS
   value: {{ ((.root.Values.config).parse).ocriaCapacityRetryBudgetMs | quote }}
 {{- end }}
+{{- include "llamacloud.tls.env" (dict "root" .root "redisNode" true "temporal" true) }}
 {{- if (.component).extraEnvVariables }}
 {{ toYaml (.component).extraEnvVariables }}
 {{- end }}
@@ -241,6 +242,7 @@ Parameters:
 {{ define "llamacloud.component.temporal.llamaParse.volumeMounts" }}
 - mountPath: /tmp
   name: tmp
+{{- include "llamacloud.tls.volumeMounts" (dict "root" .root "redisNode" true "temporal" true) }}
 {{- if (.component).volumeMounts }}
 {{ toYaml (.component).volumeMounts }}
 {{- end }}
@@ -256,6 +258,7 @@ Parameters:
 {{ define "llamacloud.component.temporal.llamaParse.volumes" }}
 - emptyDir: {}
   name: tmp
+{{- include "llamacloud.tls.volumes" (dict "root" .root "redisNode" true "temporal" true) }}
 {{- if (((.root.Values.config).storageBuckets).s3proxy.enabled | default false) }}
 - emptyDir: {}
   name: s3proxy-tmp

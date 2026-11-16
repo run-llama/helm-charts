@@ -57,7 +57,7 @@ Backend Readiness Probe.
 httpGet:
   path: /api/health
   port: http
-initialDelaySeconds: {{ .Values.backend.readinessProbe.initialDelaySeconds }}
+initialDelaySeconds: {{ .component.readinessProbe.initialDelaySeconds }}
 periodSeconds: 10
 timeoutSeconds: 5
 failureThreshold: 30
@@ -67,15 +67,8 @@ failureThreshold: 30
 Backend Startup Probe.
 */}}
 {{ define "llamacloud.component.backend.startupProbe" }}
-{{- $probe := .Values.backend.startupProbe }}
-httpGet:
-  path: /api/health
-  port: http
-initialDelaySeconds: {{ $probe.initialDelaySeconds }}
-periodSeconds: {{ $probe.periodSeconds }}
-timeoutSeconds: 5
-{{- $startupWindowSeconds := 480 }}
-failureThreshold: {{ max 1 (div (add (sub $startupWindowSeconds $probe.initialDelaySeconds) $probe.periodSeconds -1) $probe.periodSeconds) }}
+{{- $probe := .component.startupProbe }}
+{{- include "llamacloud.httpStartupProbe" (dict "path" "/api/health" "initialDelaySeconds" $probe.initialDelaySeconds "periodSeconds" $probe.periodSeconds) }}
 {{- end }}
 
 {{/*
@@ -88,6 +81,7 @@ Parameters:
 {{ define "llamacloud.component.backend.env" }}
 {{- include "llamacloud.parseWorkflow.env" .root }}
 {{- include "llamacloud.managedInference.env" (dict "root" .root) }}
+{{- include "llamacloud.tls.env" (dict "root" .root "postgresql" true "redisPython" true "temporal" true) }}
 {{- if (.component).extraEnvVariables }}
 {{ toYaml (.component).extraEnvVariables }}
 {{- end }}
@@ -180,6 +174,7 @@ Parameters:
 {{ define "llamacloud.component.backend.volumeMounts" }}
 - mountPath: /tmp
   name: tmp
+{{- include "llamacloud.tls.volumeMounts" (dict "root" .root "postgresql" true "redisPython" true "temporal" true) }}
 {{- if (.component).volumeMounts }}
 {{ toYaml (.component).volumeMounts }}
 {{- end }}
@@ -195,6 +190,7 @@ Parameters:
 {{ define "llamacloud.component.backend.volumes" }}
 - emptyDir: {}
   name: tmp
+{{- include "llamacloud.tls.volumes" (dict "root" .root "postgresql" true "redisPython" true "temporal" true) }}
 {{- if (((.root.Values.config).storageBuckets).s3proxy.enabled | default false) }}
 - emptyDir: {}
   name: s3proxy-tmp

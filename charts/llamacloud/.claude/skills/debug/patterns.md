@@ -95,11 +95,11 @@ When matching: search for substrings, not exact lines. Log timestamps and pod-na
 - **Azure Blob via s3proxy**: the storage account key / SAS configured in `s3proxy-secret` is wrong or scoped too narrowly.
 
 **Fix:**
-- For AWS IRSA: `aws iam get-role --role-name <role>` and confirm the trust relationship's `sub` condition matches `system:serviceaccount:<ns>:<sa-name>` for each ServiceAccount listed under the chart's components (`llamacloud`, `llamacloud-operator`, `temporal-jobs-worker`, `llamacloud-temporal-parse`, and the others in the debug skill's component table).
+- For AWS IRSA: `aws iam get-role --role-name <role>` and confirm the trust relationship's `sub` condition matches `system:serviceaccount:<ns>:<sa-name>` for each ServiceAccount listed under the chart's components (`llamacloud`, `temporal-jobs-worker`, `llamacloud-temporal-parse`, and the others in the debug skill's component table).
 - Confirm the buckets in `config.storageBuckets.*` exist and the role / static credentials have `Get`, `Put`, `List`, and `Delete` permissions on them.
 - For s3proxy backends: render the `s3proxy-secret` with `helm template` (with secrets masked) and confirm the credentials match what the upstream provider expects.
 
-**Field:** `backend.serviceAccountAnnotations.*`, `jobsService.serviceAccountAnnotations.*`, `temporalWorkloads.workers.temporal-jobs-worker.serviceAccountAnnotations.*`, `temporalWorkloads.llamaParse.serviceAccountAnnotations.*` (annotation key is cloud-specific: `eks.amazonaws.com/role-arn` for AWS, `iam.gke.io/gcp-service-account` for GKE workload identity, etc.), plus the IAM role / IAM binding / static credentials.
+**Field:** `backend.serviceAccountAnnotations.*`, `temporalWorkloads.workers.temporal-jobs-worker.serviceAccountAnnotations.*`, `temporalWorkloads.llamaParse.serviceAccountAnnotations.*` (annotation key is cloud-specific: `eks.amazonaws.com/role-arn` for AWS, `iam.gke.io/gcp-service-account` for GKE workload identity, etc.), plus the IAM role / IAM binding / static credentials.
 
 ---
 

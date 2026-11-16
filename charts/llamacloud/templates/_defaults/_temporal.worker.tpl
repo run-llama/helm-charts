@@ -71,29 +71,25 @@ failureThreshold: 30
 {{- end }}
 
 {{/*
-Temporal Worker Readiness Probe.
+Temporal Worker Readiness Probe. Workers are keyed by any name, so dig falls back to a
+30s delay when a worker's values omit readinessProbe.
 */}}
 {{ define "llamacloud.component.temporal.worker.readinessProbe" }}
 httpGet:
   path: /healthcheck
   port: http
-initialDelaySeconds: 30
+initialDelaySeconds: {{ dig "readinessProbe" "initialDelaySeconds" 30 .component }}
 periodSeconds: 15
 timeoutSeconds: 5
 failureThreshold: 30
 {{- end }}
 
 {{/*
-Temporal Worker Startup Probe.
+Temporal Worker Startup Probe. Workers are keyed by any name, so dig falls back to a
+30s delay and 15s period when a worker's values omit startupProbe.
 */}}
 {{ define "llamacloud.component.temporal.worker.startupProbe" }}
-httpGet:
-  path: /healthcheck
-  port: http
-initialDelaySeconds: 30
-periodSeconds: 15
-timeoutSeconds: 5
-failureThreshold: 30
+{{- include "llamacloud.httpStartupProbe" (dict "path" "/healthcheck" "initialDelaySeconds" (dig "startupProbe" "initialDelaySeconds" 30 .component) "periodSeconds" (dig "startupProbe" "periodSeconds" 15 .component)) }}
 {{- end }}
 
 {{/*
@@ -112,6 +108,7 @@ Parameters:
   value: "8000"
 {{- include "llamacloud.parseWorkflow.env" .root }}
 {{- include "llamacloud.managedInference.env" (dict "root" .root) }}
+{{- include "llamacloud.tls.env" (dict "root" .root "postgresql" true "redisPython" true "temporal" true) }}
 {{- if (.component).extraEnvVariables }}
 {{ toYaml (.component).extraEnvVariables }}
 {{- end }}
@@ -239,6 +236,7 @@ Parameters:
 {{ define "llamacloud.component.temporal.worker.volumeMounts" }}
 - mountPath: /tmp
   name: tmp
+{{- include "llamacloud.tls.volumeMounts" (dict "root" .root "postgresql" true "redisPython" true "temporal" true) }}
 {{- if (.component).volumeMounts }}
 {{ toYaml (.component).volumeMounts }}
 {{- end }}
@@ -254,6 +252,7 @@ Parameters:
 {{ define "llamacloud.component.temporal.worker.volumes" }}
 - emptyDir: {}
   name: tmp
+{{- include "llamacloud.tls.volumes" (dict "root" .root "postgresql" true "redisPython" true "temporal" true) }}
 {{- if (((.root.Values.config).storageBuckets).s3proxy.enabled | default false) }}
 - emptyDir: {}
   name: s3proxy-tmp

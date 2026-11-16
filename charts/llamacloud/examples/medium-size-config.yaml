@@ -71,32 +71,6 @@ backend:
       cpu: 2
       memory: 4Gi
 
-jobsService:
-  horizontalPodAutoscalerSpec:
-    minReplicas: 4
-    maxReplicas: 8
-    metrics:
-      - type: Resource
-        resource:
-          name: cpu
-          target:
-            type: Utilization
-            averageUtilization: 80
-      - type: Resource
-        resource:
-          name: memory
-          target:
-            type: Utilization
-            averageUtilization: 80
-
-  resources:
-    requests:
-      cpu: 1
-      memory: 500Mi
-    limits:
-      cpu: 2
-      memory: 2Gi
-
 temporalWorkloads:
   llamaParse:
     horizontalPodAutoscalerSpec:

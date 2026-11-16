@@ -116,6 +116,7 @@ Parameters:
 {{ define "llamacloud.component.llamaParseLayoutDetectionApiV3.env" }}
 - name: LAYOUT_DEVICE
   value: {{ ternary "cuda" "cpu" (.component).gpuEnabled | quote }}
+{{- include "llamacloud.fips.goEnv" .root }}
 {{- if (.component).extraEnvVariables }}
 {{ toYaml (.component).extraEnvVariables }}
 {{- end }}

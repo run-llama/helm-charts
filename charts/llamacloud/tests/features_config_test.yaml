@@ -129,3 +129,20 @@ tests:
     - equal:
         path: .data.IS_MANAGED_EMBEDDINGS_ENABLED
         value: "true"
+
+- it: CUSTOMER_PAYS_MODEL_PROVIDERS is absent by default
+  template: ../templates/llamacloud/configmaps/features.yaml
+  asserts:
+    - notExists:
+        path: .data.CUSTOMER_PAYS_MODEL_PROVIDERS
+
+- it: CUSTOMER_PAYS_MODEL_PROVIDERS is set when config.llms.customerPaysProviders is true
+  set:
+    config:
+      llms:
+        customerPaysProviders: true
+  template: ../templates/llamacloud/configmaps/features.yaml
+  asserts:
+    - equal:
+        path: .data.CUSTOMER_PAYS_MODEL_PROVIDERS
+        value: "true"

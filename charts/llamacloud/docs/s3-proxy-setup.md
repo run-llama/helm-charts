@@ -25,7 +25,11 @@ Everything you place under `config.storageBuckets.s3proxy.config` is rendered in
 
 ### Endpoint settings are managed for you
 
-You do **not** need to set `S3PROXY_ENDPOINT` or `S3PROXY_AUTHORIZATION` yourself. The chart generates them automatically from `config.storageBuckets.s3proxy.containerPort` (default `8080`), so the proxy always listens on `http://0.0.0.0:<containerPort>` with authorization disabled inside the pod. Setting these keys manually is unnecessary and can conflict with the generated values.
+You do **not** need to set `S3PROXY_ENDPOINT` or `S3PROXY_AUTHORIZATION` yourself. The chart sets the sidecar to listen on `http://127.0.0.1:<containerPort>` (default `8080`) with authorization disabled. The LlamaCloud containers in the same pod reach it at `http://localhost:<containerPort>`, and browsers reach storage through the API's `/api/s3-proxy` route.
+
+Because authorization is disabled, s3proxy listens on the loopback interface only. Other pods in the cluster cannot connect to it, even when they can reach the pod IP. The chart ignores any `S3PROXY_ENDPOINT` under `config.storageBuckets.s3proxy.config`. Earlier docs suggested `S3PROXY_ENDPOINT: "http://0.0.0.0:80"`, which exposed the proxy on the pod IP; you can delete that line. To change the port, set `containerPort`.
+
+With `nativeSidecar: true`, the sidecar's startup probe runs `bash` inside the s3proxy container and checks that the port accepts connections on `127.0.0.1`. A probe from the kubelet would dial the pod IP, where s3proxy does not listen. The default image includes `bash`. If you set a custom `image`, it must include `bash` too.
 
 ### Other s3proxy settings
 
@@ -69,10 +73,10 @@ Rendering fails if `clientId` or `JCLOUDS_ENDPOINT` is empty, `JCLOUDS_PROVIDER`
 
    The role includes the user delegation key permission S3Proxy needs for server-side copies.
 
-3. Add a federated credential to the identity for each service account whose pods run S3Proxy. With default component names these are `llamacloud`, `llamacloud-operator`, `llamacloud-temporal-parse`, one per entry under `temporalWorkloads.workers` (default `temporal-jobs-worker`) and, when `config.parse.quarantineWorkerEnabled` is true, `llamacloud-temporal-parse-quarantine`:
+3. Add a federated credential to the identity for each service account whose pods run S3Proxy. With default component names these are `llamacloud`, `llamacloud-temporal-parse`, one per entry under `temporalWorkloads.workers` (default `temporal-jobs-worker`) and, when `config.parse.quarantineWorkerEnabled` is true, `llamacloud-temporal-parse-quarantine`:
 
    ```bash
-   for sa in llamacloud llamacloud-operator llamacloud-temporal-parse temporal-jobs-worker; do
+   for sa in llamacloud llamacloud-temporal-parse temporal-jobs-worker; do
      az identity federated-credential create -g <resource-group> --identity-name llamacloud-storage \
        --name "llamacloud-${sa}" --issuer "<oidc-issuer-url>" \
        --subject "system:serviceaccount:<release-namespace>:${sa}" --audiences api://AzureADTokenExchange
