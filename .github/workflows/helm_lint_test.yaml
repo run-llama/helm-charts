@@ -55,7 +55,10 @@ jobs:
 
       - name: Run Unit Test
         id: unit-test-charts
+        # ct lint only builds dependencies for changed charts; the tests render subchart
+        # templates (temporal-subchart), so build them here for every PR.
         run: |
+          helm dependency build ./charts/llamacloud
           helm unittest ./charts/llamacloud
 
   # install-test:
