@@ -176,6 +176,25 @@ tests:
         path: .data.USAGE_CAP_EXECUTION_GATE_SKIP_CACHE
         value: "true"
 
+- it: leaves credit rates at the built-in catalog by default
+  template: ../templates/llamacloud/configmaps/common.yaml
+  asserts:
+    - notExists:
+        path: .data.USAGE_CREDIT_RATE_OVERRIDES
+
+- it: renders credit rate overrides as one JSON object
+  set:
+    config:
+      usageCaps:
+        creditRateOverrides:
+          Pages Parsed - Agentic Tier: 4
+          Extracted Pages - V2: 2.5
+  template: ../templates/llamacloud/configmaps/common.yaml
+  asserts:
+    - equal:
+        path: .data.USAGE_CREDIT_RATE_OVERRIDES
+        value: '{"Extracted Pages - V2":2.5,"Pages Parsed - Agentic Tier":4}'
+
 - it: renders CLEANUP_RETENTION when jobCleanup.retention is set
   set:
     config:

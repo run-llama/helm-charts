@@ -1,0 +1,70 @@
+suite: credit-rate-overrides-tests
+
+# Usage writers read config.usageCaps.creditRateOverrides from
+# common-config at container start, so a rate change must restart them.
+
+templates:
+- ../templates/llamacloud/deployment.yaml
+
+release:
+  name: test-release
+  namespace: test-namespace
+
+capabilities:
+  majorVersion: 1
+  minorVersion: 31
+  apiVersions:
+    - v1
+    - apps/v1
+
+chart:
+  appVersion: 0.0.0
+
+tests:
+- it: restarts the usage writers when a credit rate changes
+  set:
+    config:
+      usageCaps:
+        creditRateOverrides:
+          Pages Parsed - Agentic Tier: 4
+  template: ../templates/llamacloud/deployment.yaml
+  asserts:
+    - equal:
+        path: .spec.template.metadata.annotations["checksum/credit-rate-overrides"]
+        value: 57ba41f78fc583f83848b0a262c3dba6ab509fe878f0bd1913fe3bd47e7d1f8c
+      documentSelector:
+        path: metadata.name
+        value: llamacloud
+    - equal:
+        path: .spec.template.metadata.annotations["checksum/credit-rate-overrides"]
+        value: 57ba41f78fc583f83848b0a262c3dba6ab509fe878f0bd1913fe3bd47e7d1f8c
+      documentSelector:
+        path: metadata.name
+        value: temporal-jobs-worker
+
+    - equal:
+        path: .spec.template.metadata.annotations["checksum/credit-rate-overrides"]
+        value: 57ba41f78fc583f83848b0a262c3dba6ab509fe878f0bd1913fe3bd47e7d1f8c
+      documentSelector:
+        path: metadata.name
+        value: llamacloud-telemetry
+    - contains:
+        path: .spec.template.spec.containers[0].env
+        content:
+          name: USAGE_CREDIT_RATE_OVERRIDES
+          valueFrom:
+            configMapKeyRef:
+              name: common-config
+              key: USAGE_CREDIT_RATE_OVERRIDES
+      documentSelector:
+        path: metadata.name
+        value: llamacloud-telemetry
+
+- it: adds no credit rate checksum without overrides
+  template: ../templates/llamacloud/deployment.yaml
+  documentSelector:
+    path: metadata.name
+    value: llamacloud
+  asserts:
+    - notExists:
+        path: .spec.template.metadata.annotations["checksum/credit-rate-overrides"]

@@ -13,6 +13,9 @@ data:
   {{- with (((.Values.config).defaultIndex).destination) }}
   DEFAULT_DIRECTORY_INDEX_DESTINATION: {{ . | quote }}
   {{- end }}
+  {{- with (((.Values.config).defaultIndex).embeddingModel) }}
+  INDEX_EMBEDDING_MODEL_ID: {{ . | quote }}
+  {{- end }}
   {{- if (((.Values.config).managedEmbeddings).enabled) }}
   IS_MANAGED_EMBEDDINGS_ENABLED: {{ .Values.config.managedEmbeddings.enabled | quote }}
   {{- end }}

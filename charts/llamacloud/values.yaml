@@ -405,7 +405,7 @@ bifrost:
 bifrost-subchart:
   image:
     ## @param bifrost-subchart.image.tag Bifrost container image tag. Pinned independently of the upstream chart appVersion. Override to use a different Bifrost release.
-    tag: "v2.3.2"
+    tag: "v2.4.0"
   bifrost:
     client:
       ## @param bifrost-subchart.bifrost.client.enforceAuthOnInference Require a Bifrost virtual key (sk-bf-*) on inference requests. Defaults to false so the basic LlamaCloud integration works without keys: set provider keys under bifrost-subchart.bifrost.providers, then point LlamaCloud at Bifrost via config.llms.providerConfigs with any non-empty placeholder api_key. Set true to issue per-tenant virtual keys passed in the x-bf-vk header.
@@ -676,6 +676,8 @@ config:
     ## @param config.defaultIndex.destination Default destination for new directory indexes. Accepted values: "turbopuffer", "mongodb", "postgres". When unset the backend falls back to "mongodb" ("postgres" when MongoDB is disabled, on app versions with MONGO_DISABLED support).
     # @schema enum: ["", turbopuffer, mongodb, postgres]
     destination: ""
+    ## @param config.defaultIndex.embeddingModel Embedding model id for directory indexes, e.g. "amazon-titan-embed-text-v2" or "cohere-embed-v4" when only AWS Bedrock is configured. The LLM provider config must serve it. Empty uses "openai-text-embedding-3-small". Indexes built before a change need a new sync.
+    embeddingModel: ""
 
   ## @section Managed Embeddings Configuration
   # @schema additionalProperties: false
@@ -827,12 +829,12 @@ config:
     ## IRSA. Leave it off only on AWS + IRSA, where the platform talks to S3 natively.
     # @schema additionalProperties: false
     s3proxy:
-      ## @param config.storageBuckets.s3proxy.enabled S3Proxy image
+      ## @param config.storageBuckets.s3proxy.enabled Run the S3Proxy sidecar
       enabled: false
       ## @param config.storageBuckets.s3proxy.nativeSidecar Run S3Proxy as a native sidecar and wait for its TCP port before starting app containers. Requires Kubernetes >= 1.29.
       nativeSidecar: false
       ## @param config.storageBuckets.s3proxy.image S3Proxy image
-      image: "docker.io/andrewgaul/s3proxy:sha-001d042"
+      image: "docker.io/andrewgaul/s3proxy:4.1.1@sha256:87662b2a5afcdfa5f478a1c61650bae4c87bbd15f6ff2823236bcfd66ef7fe04"
       ## @param config.storageBuckets.s3proxy.imagePullPolicy S3Proxy image pull policy
       # @schema enum: ["", Always, IfNotPresent, Never]
       imagePullPolicy: "IfNotPresent"
@@ -970,6 +972,9 @@ config:
     ## @param config.usageCaps.defaultMonthlyCredits Global default for the per-organization monthly credit cap. Null leaves organizations uncapped monthly
     # @schema type: [integer, "null"];minimum: 0
     defaultMonthlyCredits: null
+    ## @param config.usageCaps.creditRateOverrides Credits per unit used by local usage caps, keyed by billable product name. Existing usage keeps its recorded quota amount. Commercial reporting still uses catalog or contract rates. Deployments billing directly through Metronome use commercial credits for caps.
+    # @schema type: object; additionalProperties: {type: number, minimum: 0}
+    creditRateOverrides: {}
 
   ## @section LlamaExtract Configuration
   # @schema additionalProperties: false
@@ -1172,7 +1177,7 @@ config:
       # `bitnami/kubectl` only publishes `latest`; Renovate moves the digest (and the README's
       # copy). A mirrored registry path keeps the digest valid, since a pull-through cache
       # serves the same manifest.
-      image: "bitnami/kubectl:latest@sha256:8919c149c2e3d6860e0143c117900e64d71395172aaef0e01e604bb98c8e7ce0"
+      image: "bitnami/kubectl:latest@sha256:ae71f848f057a71029d092e98548cabf7cd17b11da0adad0a8f4145a9c87c830"
 
     ## Search Attributes Job
     # @schema additionalProperties: false
@@ -1268,7 +1273,7 @@ frontend:
   annotations: {}
 
   ## @param frontend.image Frontend image
-  image: docker.io/llamaindex/llamacloud-frontend:0.12.0
+  image: docker.io/llamaindex/llamacloud-frontend:0.13.0
 
   ## @param frontend.imagePullPolicy Frontend image pull policy
   # @schema enum: ["", Always, IfNotPresent, Never]
@@ -1412,7 +1417,7 @@ backend:
   annotations: {}
 
   ## @param backend.image Backend image
-  image: docker.io/llamaindex/llamacloud-backend:0.12.0
+  image: docker.io/llamaindex/llamacloud-backend:0.13.0
 
   ## @param backend.imagePullPolicy Backend image pull policy
   # @schema enum: ["", Always, IfNotPresent, Never]
@@ -1507,7 +1512,7 @@ llamaParseOcr:
   annotations: {}
 
   ## @param llamaParseOcr.image LlamaParseOcr image
-  image: docker.io/llamaindex/llamacloud-llamaparse-ocr:0.12.0
+  image: docker.io/llamaindex/llamacloud-llamaparse-ocr:0.13.0
 
   ## @param llamaParseOcr.imagePullPolicy LlamaParseOcr image pull policy
   # @schema enum: ["", Always, IfNotPresent, Never]
@@ -1827,7 +1832,7 @@ usage:
   annotations: {}
 
   ## @param usage.image LlamaParseLayoutDetectionApi image
-  image: docker.io/llamaindex/llamacloud-backend:0.12.0
+  image: docker.io/llamaindex/llamacloud-backend:0.13.0
 
   ## @param usage.imagePullPolicy LlamaParseLayoutDetectionApi image pull policy
   # @schema enum: ["", Always, IfNotPresent, Never]
@@ -1929,7 +1934,7 @@ temporalWorkloads:
     annotations: {}
 
     ## @param temporalWorkloads.llamaParse.image temporal llamaparse image
-    image: docker.io/llamaindex/llamacloud-llamaparse:0.12.0
+    image: docker.io/llamaindex/llamacloud-llamaparse:0.13.0
 
     ## @param temporalWorkloads.llamaParse.imagePullPolicy temporal llamaparse image pull policy
     # @schema enum: ["", Always, IfNotPresent, Never]
@@ -2009,7 +2014,7 @@ temporalWorkloads:
     annotations: {}
 
     ## @param temporalWorkloads.llamaParseQuarantine.image temporal llamaparse quarantine image
-    image: docker.io/llamaindex/llamacloud-llamaparse:0.12.0
+    image: docker.io/llamaindex/llamacloud-llamaparse:0.13.0
 
     ## @param temporalWorkloads.llamaParseQuarantine.imagePullPolicy temporal llamaparse quarantine image pull policy
     # @schema enum: ["", Always, IfNotPresent, Never]
@@ -2079,7 +2084,7 @@ temporalWorkloads:
       annotations: {}
 
       ## @param temporalWorkloads.workers.temporal-jobs-worker.image Frontend image
-      image: docker.io/llamaindex/llamacloud-backend:0.12.0
+      image: docker.io/llamaindex/llamacloud-backend:0.13.0
 
       ## @param temporalWorkloads.workers.temporal-jobs-worker.imagePullPolicy Frontend image pull policy
       # @schema enum: ["", Always, IfNotPresent, Never]

@@ -37,6 +37,9 @@ data:
 {{- if not (kindIs "invalid" (((.Values.config).usageCaps).executionGateSkipCache)) }}
   USAGE_CAP_EXECUTION_GATE_SKIP_CACHE: {{ ((.Values.config).usageCaps).executionGateSkipCache | quote }}
 {{- end }}
+{{- with (((.Values.config).usageCaps).creditRateOverrides) }}
+  USAGE_CREDIT_RATE_OVERRIDES: {{ toJson . | quote }}
+{{- end }}
 {{- /* Cleanup workers and API pods (input File expiry at upload) both read this. */}}
 {{- if not (kindIs "invalid" (((.Values.config).jobCleanup).retention)) }}
   CLEANUP_RETENTION: {{ ((.Values.config).jobCleanup).retention | quote }}

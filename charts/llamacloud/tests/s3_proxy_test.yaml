@@ -120,6 +120,32 @@ tests:
     - equal:
         path: .data.S3PROXY_IGNORE_UNKNOWN_HEADERS
         value: "true"
+    - equal:
+        path: .data.S3PROXY_JAVA_OPTS
+        value: "-XX:MaxRAMPercentage=50"
+
+- it: loads s3proxy-secret after s3proxy-config so s3proxy.config replaces the chart's S3PROXY_JAVA_OPTS
+  set:
+    config.storageBuckets.provider: gcp
+    config.storageBuckets.s3proxy.enabled: true
+    config.storageBuckets.s3proxy.config.S3PROXY_JAVA_OPTS: "-Xmx768m"
+  templates:
+    - ../templates/llamacloud/deployment.yaml
+    - ../templates/llamacloud/secrets/s3proxy.yaml
+  asserts:
+    - equal:
+        path: .spec.template.spec.containers[1].envFrom
+        value:
+          - configMapRef:
+              name: s3proxy-config
+          - secretRef:
+              name: s3proxy-secret
+      template: ../templates/llamacloud/deployment.yaml
+      documentIndex: 0
+    - equal:
+        path: .data.S3PROXY_JAVA_OPTS
+        value: LVhteDc2OG0=
+      template: ../templates/llamacloud/secrets/s3proxy.yaml
 
 - it: should create s3proxy configmap when provider is azure
   set:
@@ -267,7 +293,7 @@ tests:
         value: s3proxy
     - equal:
         path: .spec.template.spec.containers[1].image
-        value: docker.io/andrewgaul/s3proxy:sha-001d042
+        value: docker.io/andrewgaul/s3proxy:4.1.1@sha256:87662b2a5afcdfa5f478a1c61650bae4c87bbd15f6ff2823236bcfd66ef7fe04
     - notExists:
         path: .spec.template.spec.containers[1].ports
     - contains:
@@ -742,7 +768,7 @@ tests:
         value: 1
     - equal:
         path: .spec.template.spec.containers[1].resources.limits.memory
-        value: 1Gi
+        value: 2Gi
 
 # S3 Endpoint URL Configuration Test
 - it: should set S3_ENDPOINT_URL in urls-config configmap when s3proxy is enabled

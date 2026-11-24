@@ -4,12 +4,12 @@ dependencies:
   version: 1.6.0
 - name: llama-agents
   repository: oci://registry-1.docker.io/llamaindex
-  version: 0.12.8
+  version: 0.12.9
 - name: bifrost
   repository: https://maximhq.github.io/bifrost/helm-charts
-  version: 2.1.48
+  version: 2.1.49
 - name: kube-prometheus-stack
   repository: https://prometheus-community.github.io/helm-charts
   version: 92.22.0
-digest: sha256:ff6666f41a44bfc28e739c53df6a6094eaca6e5920f0e5978527285d1024afcb
-generated: "2026-11-10T00:02:35.294535185Z"
+digest: sha256:0ab1c9f84ff38200e79205b13ad5979a4801a9a096dc74ad687df95c450aecaa
+generated: "2026-11-23T22:24:45.88990883Z"

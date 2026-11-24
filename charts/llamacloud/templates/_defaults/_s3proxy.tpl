@@ -36,7 +36,7 @@ storage backend.
   {{- with ((($.Values.config).storageBuckets).s3proxy).securityContext }}
   securityContext: {{ toYaml . | nindent 4 }}
   {{- end }}
-  image: "{{ ((($.Values.config).storageBuckets).s3proxy).image | default "docker.io/andrewgaul/s3proxy:sha-001d042" }}"
+  image: "{{ ((($.Values.config).storageBuckets).s3proxy).image | default "docker.io/andrewgaul/s3proxy:4.1.1@sha256:87662b2a5afcdfa5f478a1c61650bae4c87bbd15f6ff2823236bcfd66ef7fe04" }}"
   imagePullPolicy: {{ ((($.Values.config).storageBuckets).s3proxy).imagePullPolicy | default "IfNotPresent" }}
   resources:
     requests:
@@ -44,7 +44,7 @@ storage backend.
       memory: {{ ((((($.Values.config).storageBuckets).s3proxy).resources).requests).memory | default "512Mi" }}
     limits:
       cpu: {{ ((((($.Values.config).storageBuckets).s3proxy).resources).limits).cpu | default "1" }}
-      memory: {{ ((((($.Values.config).storageBuckets).s3proxy).resources).limits).memory | default "1Gi" }}
+      memory: {{ ((((($.Values.config).storageBuckets).s3proxy).resources).limits).memory | default "2Gi" }}
   env:
   - name: S3PROXY_ENDPOINT
     value: {{ printf "http://127.0.0.1:%d" (int ((($.Values.config).storageBuckets).s3proxy.containerPort | default 80)) | quote }}
@@ -118,6 +118,10 @@ S3PROXY_AUTHORIZATION: "none"
 S3PROXY_CORS_ALLOW_ORIGINS: "*"
 S3PROXY_ENDPOINT: {{ printf "http://127.0.0.1:%d" (int ((($.Values.config).storageBuckets).s3proxy.containerPort | default 80)) | quote }}
 S3PROXY_IGNORE_UNKNOWN_HEADERS: "true"
+{{- /* S3Proxy 4.1.1 sizes its heap at 75% of the memory limit, which leaves too
+       little for the rest of the JVM under load. A S3PROXY_JAVA_OPTS in
+       s3proxy.config wins, because the container loads s3proxy-secret after this. */}}
+S3PROXY_JAVA_OPTS: "-XX:MaxRAMPercentage=50"
 {{- if include "llamacloud.s3proxy.azureWorkloadIdentity" $ }}
 {{- /* The S3Proxy image defaults JCLOUDS_CREDENTIAL to a placeholder, which
        S3Proxy would send as an account key. Empty selects DefaultAzureCredential. */}}

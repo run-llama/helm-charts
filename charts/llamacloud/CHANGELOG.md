@@ -1,5 +1,20 @@
 # CHANGELOG
 
+## [0.13.0] - 2026-11-24
+
+### Breaking Changes
+- **[Breaking]** The default S3Proxy image is now `4.1.1`, pinned by digest. It changes how S3Proxy starts and handles some requests:
+  - With `JCLOUDS_PROVIDER: "google-cloud-storage"`, set `JCLOUDS_IDENTITY` to your Google Cloud project ID and `JCLOUDS_CREDENTIAL` to the service account's JSON key. The previous image took the service account's email and PEM private key. With those, S3Proxy now exits at startup with `Failed to initialize GCS credentials`.
+  - `JCLOUDS_PROVIDER: "azureblob"` runs the same Azure SDK backend as `azureblob-sdk`. With either Azure provider, S3Proxy exits at startup when `JCLOUDS_ENDPOINT` is unset, so set it to `https://<storage-account>.blob.core.windows.net`. With `azureblob`, the previous image started without it and failed every request.
+  - A PUT with `Content-Type: application/x-www-form-urlencoded` no longer stores the body as sent. Text up to 200,000 bytes is stored empty on the filesystem backend and fails with HTTP 500 on Azure, unless it holds a malformed `%` escape. Other bodies, including any binary file such as a PDF, fail with HTTP 400. `curl --data-binary` sends this type unless you pass another with `-H`. The LlamaCloud web app doesn't send it.
+  - The filesystem backend exits at startup when neither `JCLOUDS_FILESYSTEM_BASEDIR` nor its parent exists, which the previous image tolerated. Point it at a directory whose parent exists, such as `/data`.
+  - The image has no `curl` or `wget`, so a probe that runs them inside the container fails. The chart's own probe uses bash.
+  - S3Proxy sizes its Java heap at 75% of the container's memory limit, up from 25%. Under heavy Parse upload load, that ran the `1Gi` sidecar out of memory. The chart now sets `S3PROXY_JAVA_OPTS` to `-XX:MaxRAMPercentage=50` and raises the sidecar's default memory limit to `2Gi`. If you set `config.storageBuckets.s3proxy.resources`, give it a memory limit of `2Gi` or more. A `S3PROXY_JAVA_OPTS` under `config.storageBuckets.s3proxy.config` replaces the chart's value, so include `-XX:MaxRAMPercentage=50` or an `-Xmx` in it, or the heap goes back to 75%.
+
+### Platform
+- **[Feature]** OCR and layout run on NVIDIA Blackwell GPUs (B200, B300, RTX PRO 6000).
+- **[Fix]** The optional Bifrost gateway moves from `v2.3.2` to `v2.4.0`, which fixes Decisions API calls to Azure OpenAI. No values change is needed. See the [upgrade notes](./docs/bifrost/README.md#upgrading-to-bifrost-v24).
+
 ## [0.12.0] - 2026-11-16
 
 ### Breaking Changes
@@ -27,6 +42,9 @@
 
 ### Index
 - **[Fix]** `custom_filters` on retrieval match document metadata when the index is stored in PostgreSQL.
+
+### Split
+- **[Improvement]** `latest` is now `1.2.0`, on the same model as `1.1.1` (`openai-gpt-6-luna`). It classifies pages in batches, then re-checks the first page of each new document on its own. A `config.llms.modelPolicy` key for `split/*/1.1` doesn't apply to it; use `split/*/1.2` or `split/**`.
 
 ## [0.11.4] - 2026-11-09
 
