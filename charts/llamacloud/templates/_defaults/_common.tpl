@@ -97,6 +97,12 @@ Parameters:
 {{- if and .component (has .component.prefix $gatewayConsumers) (include "llamacloud.managedInference.url" .root) }}
 {{-   $merged = set $merged "checksum/managed-inference" (.root.Values.config.managedInference | toJson | sha256sum) }}
 {{- end }}
+{{- /* Usage writers read credit rate overrides from common-config at container start, so a rate change restarts them. */}}
+{{- $creditRateConsumers := list "llamacloud.component.backend" "llamacloud.component.temporal.worker" "llamacloud.component.usage" }}
+{{- $creditRates := ((.root.Values.config).usageCaps).creditRateOverrides }}
+{{- if and .component (has .component.prefix $creditRateConsumers) $creditRates }}
+{{-   $merged = set $merged "checksum/credit-rate-overrides" ($creditRates | toJson | sha256sum) }}
+{{- end }}
 {{- range $key, $value := $merged }}
 {{ $key }}: {{ $value | quote }}
 {{- end }}

@@ -79,6 +79,13 @@ Parameters:
 */}}
 {{ define "llamacloud.component.usage.env" }}
 {{- include "llamacloud.managedInference.env" (dict "root" .root) }}
+{{- if (((.root.Values.config).usageCaps).creditRateOverrides) }}
+- name: USAGE_CREDIT_RATE_OVERRIDES
+  valueFrom:
+    configMapKeyRef:
+      name: common-config
+      key: USAGE_CREDIT_RATE_OVERRIDES
+{{- end }}
 {{- include "llamacloud.tls.env" (dict "root" .root "postgresql" true "redisPython" true "temporal" true) }}
 {{- if (.root.Values.usage).extraEnvVariables }}
 {{ toYaml (.root.Values.usage).extraEnvVariables }}

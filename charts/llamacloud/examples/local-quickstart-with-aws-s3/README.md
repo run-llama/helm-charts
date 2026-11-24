@@ -14,7 +14,7 @@ This deployment configuration includes:
 ## Prerequisites
 
 - Kubernetes cluster (local or remote)
-- Helm 3.x installed
+- Helm 3.14+ or 4.x installed
 - AWS account with S3 bucket access
 - LlamaCloud license key
 - OIDC provider (e.g., Auth0, Okta, Google) for authentication

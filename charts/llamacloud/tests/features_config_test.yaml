@@ -146,3 +146,20 @@ tests:
     - equal:
         path: .data.CUSTOMER_PAYS_MODEL_PROVIDERS
         value: "true"
+
+- it: INDEX_EMBEDDING_MODEL_ID is absent by default so the backend keeps its own default
+  template: ../templates/llamacloud/configmaps/features.yaml
+  asserts:
+    - notExists:
+        path: .data.INDEX_EMBEDDING_MODEL_ID
+
+- it: config.defaultIndex.embeddingModel sets INDEX_EMBEDDING_MODEL_ID
+  set:
+    config:
+      defaultIndex:
+        embeddingModel: amazon-titan-embed-text-v2
+  template: ../templates/llamacloud/configmaps/features.yaml
+  asserts:
+    - equal:
+        path: .data.INDEX_EMBEDDING_MODEL_ID
+        value: amazon-titan-embed-text-v2

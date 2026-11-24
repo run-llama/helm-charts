@@ -26,7 +26,7 @@ bifrost-subchart:
   # Image tag is pre-pinned in the chart defaults to a stable Bifrost release.
   # Override only when you want to track a different Bifrost version.
   image:
-    tag: "v2.3.2"
+    tag: "v2.4.0"
 ```
 
 That renders a runnable Bifrost with no providers configured. The sections below add the real configuration you'll need.
@@ -40,9 +40,13 @@ under `bifrost-subchart.bifrost.providers.<provider>` in your Helm values.
 The new chart rejects legacy `<provider>_key_config.deployments` fields. Move those
 maps to key-level `aliases`, as described in the [v1.5 migration guide](https://docs.getbifrost.ai/migration-guides/v1.5.0#breaking-change-10-provider-deployments-removed-migrate-to-aliases).
 
+## Upgrading to Bifrost v2.4
+
+Chart `0.13.0` moves Bifrost from `v2.3.2` to `v2.4.0`. It needs no values change. On startup, Bifrost's database migrations add tables and columns only.
+
 ## Upgrading to Bifrost v2.3
 
-This chart bundles Bifrost `v2.3.2` with upstream chart `2.1.45`, up from `v2.2.1` and chart `2.1.42`. These changes can affect an existing install.
+Chart `0.12.0` moved Bifrost to `v2.3.2` with upstream chart `2.1.45`, up from `v2.2.1` and chart `2.1.42`. These changes can affect an existing install.
 
 ### The management API is locked until you configure access
 

@@ -1,4 +1,5 @@
 #!/bin/zsh
+# shellcheck disable=SC1071 # zsh script; ShellCheck cannot parse zsh
 set -e
 
 CURRENT_CONTEXT=$(kubectl config current-context)

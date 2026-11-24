@@ -179,14 +179,14 @@ config:
     enabled: true
 
 frontend:
-  image: docker.io/llamaindex/llamacloud-frontend:0.12.0
+  image: docker.io/llamaindex/llamacloud-frontend:0.13.0
   resources:
     requests:
       cpu: "250m"
       memory: "256Mi"
 
 backend:
-  image: docker.io/llamaindex/llamacloud-backend:0.12.0
+  image: docker.io/llamaindex/llamacloud-backend:0.13.0
   resources: 
     requests:
       cpu: "250m"
@@ -198,7 +198,7 @@ backend:
     value: "<REPLACE>"
 
 llamaParseOcr:
-  image: docker.io/llamaindex/llamacloud-llamaparse-ocr:0.12.0
+  image: docker.io/llamaindex/llamacloud-llamaparse-ocr:0.13.0
   resources:
     requests:
       cpu: "250m"
@@ -221,7 +221,7 @@ llamaParseLayoutDetectionApi:
     value: "<REPLACE>"
 
 usage:
-  image: docker.io/llamaindex/llamacloud-backend:0.12.0
+  image: docker.io/llamaindex/llamacloud-backend:0.13.0
   resources:
     requests:
       cpu: "250m"
@@ -229,7 +229,7 @@ usage:
 
 temporalWorkloads:
   llamaParse:
-    image: docker.io/llamaindex/llamacloud-llamaparse:0.12.0
+    image: docker.io/llamaindex/llamacloud-llamaparse:0.13.0
     resources:
       requests:
         cpu: "250m"
@@ -242,7 +242,7 @@ temporalWorkloads:
 
   workers:
     temporal-jobs-worker:
-      image: docker.io/llamaindex/llamacloud-backend:0.12.0
+      image: docker.io/llamaindex/llamacloud-backend:0.13.0
       imagePullPolicy: IfNotPresent
       resources:
         requests:

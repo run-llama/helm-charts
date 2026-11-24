@@ -50,9 +50,8 @@ config:
         JCLOUDS_AZUREBLOB_AUTH: "azureKey"
         JCLOUDS_IDENTITY: "<REPLACE-WITH-STORAGE-ACCOUNT-NAME>"
         JCLOUDS_CREDENTIAL: "<REPLACE-WITH-STORAGE-ACCOUNT-KEY>"
-        # Optional. Defaults to https://<identity>.blob.core.windows.net; set it
-        # only for a sovereign cloud or a custom storage endpoint.
-        # JCLOUDS_ENDPOINT: "<REPLACE-WITH-STORAGE-ACCOUNT-ENDPOINT>"
+        # Required. S3Proxy exits at startup without it.
+        JCLOUDS_ENDPOINT: "https://<REPLACE-WITH-STORAGE-ACCOUNT-NAME>.blob.core.windows.net"
         # Optional. Not used by the azureblob backend.
         # JCLOUDS_REGION: "<REPLACE-WITH-REGION>"
         # The S3PROXY_* listener settings (endpoint, authorization, CORS,
